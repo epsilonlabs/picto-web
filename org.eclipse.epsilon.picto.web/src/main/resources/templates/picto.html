@@ -1,0 +1,160 @@
+<!DOCTYPE HTML>
+<html xmlns:th="http://www.thymeleaf.org">
+
+<head>
+  <title th:text="'Picto: ' + ${pictoName}"></title>
+  <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+  <link type="text/css" rel="stylesheet" href="/webjars/bootstrap/css/bootstrap.min.css">
+  <link type="text/css" rel="stylesheet" href="css/goldenlayout-base.css" />
+  <link type="text/css" rel="stylesheet" href="css/goldenlayout-dark-theme.css" />
+  <link type="text/css" rel="stylesheet" href="main.css">
+  <link type="text/css" rel="stylesheet" href="dist/themes/default/style.css">
+  <script type="text/javascript" src="/webjars/jquery/jquery.min.js"></script>
+  <script type="text/javascript" src="/webjars/sockjs-client/sockjs.min.js"></script>
+  <script type="text/javascript" src="/webjars/stomp-websocket/stomp.min.js"></script>
+  <script type="text/javascript" src="js/goldenlayout.js"></script>
+  <script type="text/javascript" src="js/marked.min.js"></script>
+  <script type="text/javascript" src="js/svg-pan-zoom.js"></script>
+  <script type="text/javascript" src="dist/jstree.js"></script>
+  <script type="text/javascript" src="/picto.js"></script>
+</head>
+
+<body>
+  <script th:inline="javascript">
+    var pictoName = [[${pictoName}]];
+    var selectedUri = [[${selectedUri}]];
+    var treeResponse = JSON.parse([[${treeResponse}]]);
+    var treeContent = JSON.parse(treeResponse.content);
+    var viewResponse = JSON.parse([[${viewResponse}]]);
+
+    window.addEventListener('popstate', function (event) {
+      window.location.reload();
+    });
+
+    /*** GOLDEN LAYOUT ***/
+    var config = {
+      content: [
+        {
+          type: 'row',
+          content: [
+            {
+              componentName: 'LeftColumn',
+              width: 30,
+              type: 'column',
+              content: [{
+                type: 'component',
+                componentName: pictoName,
+                componentState: {
+                  label: 'C'
+                }
+              }]
+            },
+            {
+              type: 'column',
+              width: 70,
+              content: [{
+                type: 'component',
+                componentName: 'Visualization',
+                componentState: {
+                  label: 'A'
+                }
+              }]
+            }]
+        }]
+    };
+
+    var myLayout = new GoldenLayout(config);
+
+    myLayout.registerComponent('Visualization', function (container,
+      componentState) {
+      container.getElement()
+        .html('<div id="visualization" class="visualization"></div>');
+    });
+
+    myLayout.registerComponent(pictoName, function (container, componentState) {
+      container.getElement()
+        .html('<input type="text" id="searchTree" name="searchTree"></input>' +
+          '<div id="tree" class="tree"></div>');
+    });
+
+    /// Callback for every created stack
+    myLayout.on('stackCreated', function (stack) {
+
+      var executeButton = document.createElement("div");
+      executeButton.setAttribute("id", "executeButton");
+      executeButton.setAttribute("class", "executeButton");
+      //executeButton.setAttribute("onclick", "executeCode()");
+      //executeButton.setAttribute("onclick", "projectTree()");
+
+      stack.header.controlsContainer.prepend(executeButton);
+
+    });
+
+    myLayout.on('initialised', function (stack) {
+      console.log("PICTO: Golden-layout Initialised");
+
+      var jsTreeConfig = {
+        'core': {
+          'data': treeContent,
+          'check_callback': true
+        },
+        "plugins": ["search", "contextmenu"],
+        "contextmenu": {
+          items: {
+            "open": {
+              "separator_before": true,
+              "separator_after": true,
+              "label": "Open Tab ...",
+              "title": "Open in a new tab",
+              "action": function () {alert("Open in a new tab");}
+            }
+            //
+          }
+          //
+        }
+        //
+      };
+
+      $('#tree').jstree(jsTreeConfig);
+
+      $('#tree').on("select_node.jstree", function (event, data) {
+        if (data.selected.length) {
+          var path = Picto.getSelectedViewPath(data);
+          Picto.selectedPath = path;
+          console.log(path);
+          var label = pictoName + '#' + path;
+          var url = '/picto?file=' + pictoName + '&path=' + path + '&name=' + data.node.text;
+          Picto.draw(label, url);
+        }
+      });
+
+      var to = false;
+      $('#searchTree').keyup(function () {
+        if (to) {clearTimeout(to);}
+        to = setTimeout(function () {
+          var v = $('#searchTree').val();
+          console.log(v);
+          $('#tree').jstree(true).search(v, false, true);
+        }, 250);
+      });
+
+      //$.jstree.defaults.contextmenu.items = 
+
+      $('#tree').on("show_contextmenu.jstree", function (event, data) {
+        console.log(event);
+        console.log(data);
+      });
+
+      // Render the default view, the most top, first view 
+      Picto.render(viewResponse);
+    });
+
+    myLayout.init();
+
+
+
+    Picto.connectToServer(pictoName);
+  </script>
+</body>
+
+</html>
