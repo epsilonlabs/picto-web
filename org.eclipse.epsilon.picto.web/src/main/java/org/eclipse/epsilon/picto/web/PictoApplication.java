@@ -5,6 +5,7 @@ import java.security.PublicKey;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.eclipse.epsilon.picto.dom.PictoPackage;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 
@@ -46,7 +47,6 @@ public class PictoApplication {
 
 	public static void main(String[] args) {
 		PictoApplication.args = args;
-
 		// run the Spring application
 		SpringApplication.run(PictoApplication.class, args);
 	}

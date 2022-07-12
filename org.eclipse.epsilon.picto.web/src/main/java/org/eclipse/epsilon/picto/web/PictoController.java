@@ -18,30 +18,6 @@ import org.springframework.web.bind.annotation.GetMapping;
 @Controller
 public class PictoController {
 
-//	/* Instance variable(s): */
-//	@Autowired
-//	@Qualifier("messageTemplateEngine")
-//	protected SpringTemplateEngine mMessageTemplateEngine;
-
-//	@GetMapping("/greeting")
-//	public String greeting(@RequestParam(name="name", required=false, defaultValue="World") String name, Model model) {
-//		model.addAttribute("name", name);
-//		return "greeting";
-//	}
-
-//	@RequestMapping(value = "/pictofiles", method = RequestMethod.GET)
-////	@GetMapping("/pictofiles", method=RequestMethod.GET)
-//	public String getPictoFiles(String information, Model model) throws IOException {
-//		String temp = ProjectTreeToJson.convert(PictoApplication.WORKSPACE);
-////		model.addAttribute("json", temp);
-////		Context theContext = new Context();
-////		theContext.setVariable("pictofiles", temp);
-////		final String theJsonMessage = mMessageTemplateEngine.process("json/pictofiles", theContext);
-//		model.addAttribute("pictofiles", temp);
-//		return "json/pictofiles";
-//
-////		return temp;
-//	}
 
 	@GetMapping(value = "/")
 	public String getPictoFiles(String information, Model model) throws IOException {
@@ -50,20 +26,14 @@ public class PictoController {
 		return "pictofiles";
 	}
 
-//	@GetMapping(value = "/pictojson", produces = MediaType.APPLICATION_JSON_VALUE)
-//	public String getPictoJson(String file, String target, String name, Model model) throws Exception {
-//		String result = FileViewContentCache.getElementViewContentMap(file).getElementViewTree(target);
-//		return result;
-//	}
-
 	@GetMapping(value = "/picto")
 	public String getPicto(String file, String path, String name, Model model) throws Exception {
 		model.addAttribute("pictoName", file);
-		if (FileViewContentCache.getViewContentCache(file) == null) {
+//		if (FileViewContentCache.getViewContentCache(file) == null) {
 			File pictoFile = new File((new File(PictoApplication.WORKSPACE + file)).getAbsolutePath());
 			WebEglPictoSource source = new WebEglPictoSource();
 			source.transform(pictoFile);
-		}
+//		}
 		if (path == null) {
 			String treeResult = FileViewContentCache.getViewContentCache(file)
 					.getViewContentCache(FileViewContentCache.PICTO_TREE);
