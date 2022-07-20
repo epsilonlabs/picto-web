@@ -3,6 +3,7 @@ package org.eclipse.epsilon.picto.web;
 import java.io.File;
 import java.io.IOException;
 import java.net.URI;
+import java.util.AbstractMap.SimpleEntry;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
@@ -10,6 +11,7 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Objects;
 import java.util.stream.Collectors;
 
@@ -20,16 +22,23 @@ import org.eclipse.emf.ecore.EcorePackage;
 import org.eclipse.emf.ecore.resource.Resource;
 import org.eclipse.emf.ecore.resource.ResourceSet;
 import org.eclipse.emf.ecore.resource.impl.ResourceSetImpl;
+import org.eclipse.emf.ecore.xmi.XMIResource;
 import org.eclipse.emf.ecore.xmi.impl.EcoreResourceFactoryImpl;
 import org.eclipse.emf.ecore.xmi.impl.XMIResourceFactoryImpl;
 import org.eclipse.epsilon.common.util.StringProperties;
 import org.eclipse.epsilon.common.util.UriUtil;
 import org.eclipse.epsilon.egl.EglFileGeneratingTemplateFactory;
 import org.eclipse.epsilon.egl.EglTemplateFactoryModuleAdapter;
+import org.eclipse.epsilon.egl.dom.GenerationRule;
 import org.eclipse.epsilon.emc.emf.EmfModel;
 import org.eclipse.epsilon.emc.emf.EmfUtil;
 import org.eclipse.epsilon.emc.emf.InMemoryEmfModel;
 import org.eclipse.epsilon.eol.IEolModule;
+import org.eclipse.epsilon.eol.dom.CollectionLiteralExpression;
+import org.eclipse.epsilon.eol.dom.Expression;
+import org.eclipse.epsilon.eol.dom.MapLiteralExpression;
+import org.eclipse.epsilon.eol.dom.StringLiteral;
+import org.eclipse.epsilon.eol.exceptions.EolRuntimeException;
 import org.eclipse.epsilon.eol.execute.context.FrameStack;
 import org.eclipse.epsilon.eol.execute.context.IEolContext;
 import org.eclipse.epsilon.eol.execute.context.Variable;
@@ -38,6 +47,7 @@ import org.eclipse.epsilon.eol.models.IModel;
 import org.eclipse.epsilon.eol.models.IRelativePathResolver;
 import org.eclipse.epsilon.eol.types.EolAnyType;
 import org.eclipse.epsilon.flexmi.FlexmiResourceFactory;
+import org.eclipse.epsilon.picto.ContentPromise;
 import org.eclipse.epsilon.picto.Layer;
 import org.eclipse.epsilon.picto.LazyEgxModule;
 import org.eclipse.epsilon.picto.LazyEgxModule.LazyGenerationRule;
@@ -54,6 +64,12 @@ import org.eclipse.epsilon.picto.dom.Patch;
 import org.eclipse.epsilon.picto.dom.Picto;
 import org.eclipse.epsilon.picto.dom.PictoPackage;
 import org.eclipse.epsilon.picto.dummy.IEditorPart;
+import org.eclipse.epsilon.picto.incrementality.GenerationRulePropertyAccess;
+import org.eclipse.epsilon.picto.incrementality.IncrementalLazyEgxModule;
+import org.eclipse.epsilon.picto.incrementality.IncrementalResource;
+import org.eclipse.epsilon.picto.incrementality.PropertyAccessRecord;
+import org.eclipse.epsilon.picto.incrementality.PropertyAccessRecordTable;
+import org.eclipse.epsilon.picto.incrementality.Util;
 import org.eclipse.epsilon.picto.source.EglPictoSource;
 import org.eclipse.epsilon.picto.transformers.CsvContentTransformer;
 import org.eclipse.epsilon.picto.transformers.GraphvizContentTransformer;
@@ -68,9 +84,11 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 
 public class WebEglPictoSource extends EglPictoSource {
 
+	protected static final List<ViewContentTransformer> TRANSFORMERS = new ArrayList<>();
+	public static final IncrementalResource INCREMENTAL_RESOURCE = new PropertyAccessRecordTable();
+
 	protected File modelFile;
 	protected File pictoFile;
-	protected static final List<ViewContentTransformer> TRANSFORMERS = new ArrayList<>();
 	protected List<EPackage> ePackages = new ArrayList<>();
 
 	public WebEglPictoSource() throws Exception {
@@ -157,7 +175,7 @@ public class WebEglPictoSource extends EglPictoSource {
 				renderingMetadata.setFormat("egx");
 
 			if ("egx".equals(renderingMetadata.getFormat())) {
-				module = new PictoLazyEglModule();
+				module = new IncrementalLazyEgxModule(INCREMENTAL_RESOURCE);
 			} else {
 				module = new EglTemplateFactoryModuleAdapter(new EglFileGeneratingTemplateFactory());
 			}
@@ -192,182 +210,29 @@ public class WebEglPictoSource extends EglPictoSource {
 			if ("egx".equals(renderingMetadata.getFormat())) {
 
 				/** PROPERTY ACCESS RECORDS **/
-				// start recording for property access
-				((PictoLazyEglModule) module).startRecording();
-
+				((IncrementalLazyEgxModule) module).startRecording();
 				List<LazyGenerationRuleContentPromise> instances = (List<LazyGenerationRuleContentPromise>) module
 						.execute();
+				((IncrementalLazyEgxModule) module).stopRecording();
+				WebEglPictoSource.updateIncrementalResource(module, null);
 
-				// stop recording for property access
-				((PictoLazyEglModule) module).stopRecording();
-				/** END **/
+				// the handleDynamicViews will add the generated lazy contents to instances
+				// to handled later in the next loop
+				handleDynamicViews(renderingMetadata, module, context, fs, instances);
 
-				// Handle dynamic views (i.e. where type != null)'
-				List<CustomView> customViews = renderingMetadata.getCustomViews().stream()
-						.filter(cv -> cv.getType() != null).collect(Collectors.toList());
-				for (CustomView customView : customViews) {
-
-					LazyGenerationRule generationRule = ((LazyEgxModule) module).getGenerationRules().stream()
-							.filter(r -> r.getName().equals(customView.getType()) && r instanceof LazyGenerationRule)
-							.map(LazyGenerationRule.class::cast).findFirst().orElse(null);
-
-					if (generationRule != null) {
-						Object source = null;
-						if (generationRule.getSourceParameter() != null) {
-							String sourceParameterName = generationRule.getSourceParameter().getName();
-							Parameter sourceParameter = customView.getParameters().stream()
-									.filter(sp -> sp.getName().equals(sourceParameterName)).findFirst().orElse(null);
-							if (sourceParameter != null) {
-								customView.getParameters().remove(sourceParameter);
-								source = sourceParameter.getValue();
-							}
-						}
-
-						if (customView.getPath() != null)
-							customView.getParameters().add(createParameter("path", customView.getPath()));
-						if (customView.getIcon() != null)
-							customView.getParameters().add(createParameter("icon", customView.getIcon()));
-						if (customView.getFormat() != null)
-							customView.getParameters().add(createParameter("format", customView.getFormat()));
-						customView.getParameters().add(createParameter("patches", customView.getPatches()));
-						if (customView.getPosition() != null)
-							customView.getParameters().add(createParameter("position", customView.getPosition()));
-						if (customView.eIsSet(PictoPackage.eINSTANCE.getCustomView_Layers())) {
-							customView.getParameters().add(createParameter("activeLayers", customView.getLayers()));
-						}
-
-						for (Parameter customViewParameter : customView.getParameters()) {
-							fs.put(new Variable(customViewParameter.getName(), getValue(customViewParameter),
-									EolAnyType.Instance));
-						}
-
-						LazyGenerationRuleContentPromise contentPromise = (LazyGenerationRuleContentPromise) generationRule
-								.execute(context, source);
-
-						Collection<Variable> variables = contentPromise.getVariables();
-
-						for (Parameter parameter : customView.getParameters()) {
-							Object value = getValue(parameter);
-							String paramName = parameter.getName();
-
-							Variable variable = variables.stream().filter(v -> v.getName().equals(paramName)).findAny()
-									.orElse(null);
-
-							if (variable != null) {
-								variable.setValue(value, context);
-							} else {
-								variables.add(new Variable(paramName, value, EolAnyType.Instance, false));
-							}
-						}
-						instances.add(contentPromise);
-					}
-				}
-
+				// loop through the content promises of rules
 				for (LazyGenerationRuleContentPromise instance : instances) {
 
-					String format = getDefaultFormat();
-					String icon = getDefaultIcon();
-					List<Patch> patches = new ArrayList<>(1);
-					Collection<String> path = Arrays.asList("");
-					String pathString = null;
-					List<Layer> layers = new ArrayList<>();
-					Variable layersVariable = null;
-					Integer position = null;
+					String pathString = Util.getPath(instance);
+					ViewTree vt = this.generateViewTree(rootViewTree, instance);
 
-					Collection<Variable> instanceVariables = instance.getVariables();
-
-					for (Variable variable : instanceVariables) {
-						Object varValue = variable.getValue();
-						switch (variable.getName()) {
-						case "format": {
-							format = varValue + "";
-							break;
-						}
-						case "path": {
-							if (!(varValue instanceof Collection)) {
-								(path = (Collection<String>) (varValue = new ArrayList<>(1)))
-										.add(Objects.toString(varValue));
-							} else if (!((Collection<?>) varValue).isEmpty()) {
-								path = ((Collection<?>) varValue).stream().map(Objects::toString)
-										.collect(Collectors.toList());
-							}
-							pathString = "/" + String.join("/", path);
-							break;
-						}
-						case "icon": {
-							icon = varValue + "";
-							break;
-						}
-						case "position": {
-							if (varValue instanceof Integer) {
-								position = (Integer) varValue;
-							} else if (varValue != null) {
-								position = Integer.parseInt(varValue.toString());
-							}
-							break;
-						}
-						case "layers": {
-							layersVariable = variable;
-							for (Object layerMapObject : (Iterable<?>) varValue) {
-								Map<Object, Object> layerMap = (Map<Object, Object>) layerMapObject;
-								Layer layer = new Layer();
-								layer.setId(layerMap.get("id") + "");
-								layer.setTitle(layerMap.get("title") + "");
-								if (layerMap.containsKey("active")) {
-									layer.setActive((boolean) layerMap.get("active"));
-								}
-								layers.add(layer);
-							}
-							break;
-						}
-						case "patches": {
-							if (varValue instanceof List) {
-								patches = (List<Patch>) varValue;
-							} else if (varValue instanceof Patch) {
-								patches.add((Patch) varValue);
-							} else if (varValue instanceof Collection) {
-								patches.addAll((Collection<? extends Patch>) varValue);
-							}
-							break;
-						}
-						}
-
-					}
-
-					// If this is a custom view there may be an activeLayers variable in the
-					// variables list
-					Variable activeLayersVariable = instanceVariables.stream()
-							.filter(v -> v.getName().equals("activeLayers")).findAny().orElse(null);
-					if (activeLayersVariable != null) {
-						Collection<?> activeLayers = (Collection<?>) activeLayersVariable.getValue();
-						for (Layer layer : layers) {
-							layer.setActive(activeLayers.contains(layer.getId()));
-						}
-					}
-
-					// Replace layers variable from list of maps to list of Layer objects
-					if (layersVariable != null) {
-						instanceVariables.remove(layersVariable);
-					}
-					instanceVariables.add(Variable.createReadOnlyVariable("layers", layers));
-
-					ViewTree vt = new ViewTree(instance, format, icon, position, patches, layers);
-					rootViewTree.add(new ArrayList<>(path), vt);
-
-//					System.out.println(String.format("%s, %s, %s", vt.getName(), format, position));
-
-//					// generate target for each view tree
-//					Object accessedObject = instance.getVariables().iterator().next().getValue();
-//					if (accessedObject instanceof EObject) {
-//						String accessedObjectUri = ((EObject) accessedObject).eResource()
-//								.getURIFragment((EObject) accessedObject);
-//						vt.setUri(accessedObjectUri);
-//					} else {
-//						vt.setUri(target.iterator().next());
-//					}
-
-					// generate the content of each view tree
+					((IncrementalLazyEgxModule) module).startRecording();
 					ViewContent vc = vt.getContent();
+					((IncrementalLazyEgxModule) module).stopRecording();
+					WebEglPictoSource.updateIncrementalResource(module, pathString);
+					System.console();
+
+					/** transform to target format (e.g., svg, html) **/
 					for (ViewContentTransformer transformer : TRANSFORMERS) {
 						if (transformer.canTransform(vc)) {
 							vc = transformer.transform(vc, pictoView);
@@ -376,114 +241,45 @@ public class WebEglPictoSource extends EglPictoSource {
 						}
 					}
 
-					// put the content into the FileViewContentCache
-					// read all property accesses
-					for (IPropertyAccess propertyAccess : ((PictoLazyEglModule) module).getPropertyAccessRecorder()
-							.getPropertyAccesses().all()) {
-						GenerationRulePropertyAccess generationRulePropertyAccess = (GenerationRulePropertyAccess) propertyAccess;
-
-						String ruleName = generationRulePropertyAccess.getRule().getName();
-						EObject contextElement = (EObject) generationRulePropertyAccess.getContextElement();
-						String contextUri = contextElement.eResource().getURIFragment(contextElement);
-						EObject modelElement = (EObject) generationRulePropertyAccess.getModelElement();
-						String elementUri = modelElement.eResource().getURIFragment(modelElement);
-						String propertyName = generationRulePropertyAccess.getPropertyName();
-						FileViewContentCache.addAccessRecord(filename, ruleName, contextUri, elementUri, propertyName,
-								pathString);
-					}
-
 					PictoResponse pictoResponse = new PictoResponse();
 					pictoResponse.setFilename(filename);
 					pictoResponse.setPath(pathString);
-					System.out.println(pathString);
-					pictoResponse.setType(vt.getContent().getFormat());
+					pictoResponse.setType(vc.getFormat());
 					pictoResponse.setContent(vc.getText());
+
 					String jsonString = new ObjectMapper().writerWithDefaultPrettyPrinter()
 							.writeValueAsString(pictoResponse);
-
 					if (!jsonString.equals(viewContentCache.getViewContentCache(pathString))) {
 						viewContentCache.putViewContentCache(pathString, jsonString);
 						modifiedViewContents.put(pathString, jsonString);
 					}
 					System.console();
 				}
-
+				System.console();
 			} else {
 				String content = module.execute() + "";
 				rootViewTree = new ViewTree();
 				rootViewTree.setPromise(new StaticContentPromise(content));
 				rootViewTree.setFormat(renderingMetadata.getFormat());
 			}
-//
+		
 			// Handle static views (i.e. where source != null)
-			for (CustomView customView : renderingMetadata.getCustomViews().stream()
-					.filter(cv -> cv.getSource() != null).collect(Collectors.toList())) {
-				String format = customView.getFormat() != null ? customView.getFormat() : getDefaultFormat();
-				String icon = customView.getIcon() != null ? customView.getIcon() : getDefaultIcon();
-
-				rootViewTree.add(customView.getPath(), new ViewTree(
-						new StaticContentPromise(
-								new File(new File(customView.eResource().getURI().toFileString()).getParentFile(),
-										customView.getSource())),
-						format, icon, customView.getPosition(), customView.getPatches(), Collections.emptyList()));
-
-				// put the content into the elementViewContentMap
-				String pathString = "/" + String.join("/", customView.getPath());
-				ViewTree vt = rootViewTree.getChildren().get(rootViewTree.getChildren().size() - 1);
-				PictoResponse pictoResponse = new PictoResponse();
-				pictoResponse.setFilename(filename);
-				pictoResponse.setType(vt.getContent().getFormat());
-				pictoResponse.setContent(vt.getContent().getText());
-				pictoResponse.setPath(pathString);
-				String jsonString = new ObjectMapper().writerWithDefaultPrettyPrinter()
-						.writeValueAsString(pictoResponse);
-
-				if (!jsonString.equals(viewContentCache.getViewContentCache(pathString))) {
-					viewContentCache.putViewContentCache(pathString, jsonString);
-					modifiedViewContents.put(pathString, jsonString);
-				}
-			}
-
+			handleStaticViews(modifiedViewContents, rootViewTree, filename, viewContentCache, renderingMetadata,
+					module);
+		
 			// Handle patches for existing views (i.e. where source == null and type/rule ==
 			// null)
-			for (CustomView customView : renderingMetadata.getCustomViews().stream()
-					.filter(cv -> cv.getSource() == null && cv.getType() == null).collect(Collectors.toList())) {
-				ArrayList<String> path = new ArrayList<>();
-				path.add(rootViewTree.getName());
-				path.addAll(customView.getPath());
+			handlePatchesForExistingViews(rootViewTree, renderingMetadata);
 
-				ViewTree existingView = rootViewTree.forPath(path);
-
-				if (existingView != null) {
-					if (customView.getIcon() != null)
-						existingView.setIcon(customView.getIcon());
-					if (customView.getFormat() != null)
-						existingView.setFormat(customView.getFormat());
-					if (customView.getPosition() != null)
-						existingView.setPosition(customView.getPosition());
-
-					existingView.getPatches().addAll(customView.getPatches());
-					if (customView.eIsSet(PictoPackage.eINSTANCE.getCustomView_Layers())) {
-						Collection<?> layers = customView.getLayers();
-						for (Layer layer : existingView.getLayers()) {
-							layer.setActive(layers.contains(layer.getId()));
-						}
-					}
-				}
-			}
-
+			// set URIs of rootViewTree
 			if (transformationUri != null) {
 				rootViewTree.getBaseUris().add(transformationUri);
 				rootViewTree.getBaseUris().add(transformationUri.resolve("./icons/"));
 			}
-
-			ViewTree tempViewTree = rootViewTree;
-			for (int i = 0; i < tempViewTree.getChildren().size(); i++) {
-
-			}
-
 			rootViewTree.getBaseUris().add(new URI(modelFile.toURI().toString()));
 
+			// generate JSON of the JsTree library (the tree panel on the client-side web
+			// browser)
 			String jsTreeJson = generateJsTreeData(filename, rootViewTree);
 			if (!jsTreeJson.equals(viewContentCache.getViewContentCache(FileViewContentCache.PICTO_TREE))) {
 				viewContentCache.putViewContentCache(FileViewContentCache.PICTO_TREE, jsTreeJson);
@@ -498,8 +294,162 @@ public class WebEglPictoSource extends EglPictoSource {
 				modifiedViewContents.put(FileViewContentCache.PICTO_TREE, jsTreeJson);
 			}
 		}
+
+		// Displaying incremental records
+		INCREMENTAL_RESOURCE.printIncrementalRecords();
+		System.out.println("Targets of Modified Properties:");
+		for (PropertyAccessRecord property : INCREMENTAL_RESOURCE.getModifiedPropertiesTargets()) {
+			System.out.println(property);
+		}
+
+		// Views that need updates
+		for (Object e : INCREMENTAL_RESOURCE.getModifiedPropertiesTargets().stream().map(r -> r.getTarget())
+				.collect(Collectors.toSet())) {
+			System.out.println(e.toString());
+		}
+
 		return modifiedViewContents;
 
+	}
+
+	/***
+	 * 
+	 * @param rootViewTree
+	 * @param renderingMetadata
+	 */
+	private void handlePatchesForExistingViews(ViewTree rootViewTree, Picto renderingMetadata) {
+		for (CustomView customView : renderingMetadata.getCustomViews().stream()
+				.filter(cv -> cv.getSource() == null && cv.getType() == null).collect(Collectors.toList())) {
+			ArrayList<String> path = new ArrayList<>();
+			path.add(rootViewTree.getName());
+			path.addAll(customView.getPath());
+
+			ViewTree existingView = rootViewTree.forPath(path);
+
+			if (existingView != null) {
+				if (customView.getIcon() != null)
+					existingView.setIcon(customView.getIcon());
+				if (customView.getFormat() != null)
+					existingView.setFormat(customView.getFormat());
+				if (customView.getPosition() != null)
+					existingView.setPosition(customView.getPosition());
+
+				existingView.getPatches().addAll(customView.getPatches());
+				if (customView.eIsSet(PictoPackage.eINSTANCE.getCustomView_Layers())) {
+					Collection<?> layers = customView.getLayers();
+					for (Layer layer : existingView.getLayers()) {
+						layer.setActive(layers.contains(layer.getId()));
+					}
+				}
+			}
+		}
+	}
+
+	private void handleStaticViews(Map<String, String> modifiedViewContents, ViewTree rootViewTree, String filename,
+			ViewContentCache viewContentCache, Picto renderingMetadata, IEolModule module)
+			throws EolRuntimeException, JsonProcessingException {
+		for (CustomView customView : renderingMetadata.getCustomViews().stream().filter(cv -> cv.getSource() != null)
+				.collect(Collectors.toList())) {
+			String format = customView.getFormat() != null ? customView.getFormat() : getDefaultFormat();
+			String icon = customView.getIcon() != null ? customView.getIcon() : getDefaultIcon();
+
+			rootViewTree.add(customView.getPath(),
+					new ViewTree(
+							new StaticContentPromise(
+									new File(new File(customView.eResource().getURI().toFileString()).getParentFile(),
+											customView.getSource())),
+							format, icon, customView.getPosition(), customView.getPatches(), Collections.emptyList()));
+
+			// put the content into the elementViewContentMap
+			String pathString = "/" + String.join("/", customView.getPath());
+			ViewTree vt = rootViewTree.getChildren().get(rootViewTree.getChildren().size() - 1);
+
+//			// record property accesses
+//			((IncrementalLazyEgxModule) module).startRecording();
+			ViewContent vc = vt.getContent();
+//			((IncrementalLazyEgxModule) module).stopRecording();
+//			WebEglPictoSource.updateIncrementalResource(module, pathString);
+
+			// set picto response
+			PictoResponse pictoResponse = new PictoResponse();
+			pictoResponse.setFilename(filename);
+			pictoResponse.setType(vc.getFormat());
+			pictoResponse.setContent(vc.getText());
+
+			pictoResponse.setPath(pathString);
+			String jsonString = new ObjectMapper().writerWithDefaultPrettyPrinter().writeValueAsString(pictoResponse);
+
+			if (!jsonString.equals(viewContentCache.getViewContentCache(pathString))) {
+				viewContentCache.putViewContentCache(pathString, jsonString);
+				modifiedViewContents.put(pathString, jsonString);
+			}
+		}
+	}
+
+	private void handleDynamicViews(Picto renderingMetadata, IEolModule module, IEolContext context, FrameStack fs,
+			List<LazyGenerationRuleContentPromise> instances) throws EolRuntimeException {
+		List<CustomView> customViews = renderingMetadata.getCustomViews().stream().filter(cv -> cv.getType() != null)
+				.collect(Collectors.toList());
+		for (CustomView customView : customViews) {
+
+			LazyGenerationRule generationRule = ((LazyEgxModule) module).getGenerationRules().stream()
+					.filter(r -> r.getName().equals(customView.getType()) && r instanceof LazyGenerationRule)
+					.map(LazyGenerationRule.class::cast).findFirst().orElse(null);
+
+			if (generationRule != null) {
+				Object source = null;
+				if (generationRule.getSourceParameter() != null) {
+					String sourceParameterName = generationRule.getSourceParameter().getName();
+					Parameter sourceParameter = customView.getParameters().stream()
+							.filter(sp -> sp.getName().equals(sourceParameterName)).findFirst().orElse(null);
+					if (sourceParameter != null) {
+						customView.getParameters().remove(sourceParameter);
+						source = sourceParameter.getValue();
+					}
+				}
+
+				if (customView.getPath() != null)
+					customView.getParameters().add(createParameter("path", customView.getPath()));
+				if (customView.getIcon() != null)
+					customView.getParameters().add(createParameter("icon", customView.getIcon()));
+				if (customView.getFormat() != null)
+					customView.getParameters().add(createParameter("format", customView.getFormat()));
+				customView.getParameters().add(createParameter("patches", customView.getPatches()));
+				if (customView.getPosition() != null)
+					customView.getParameters().add(createParameter("position", customView.getPosition()));
+				if (customView.eIsSet(PictoPackage.eINSTANCE.getCustomView_Layers())) {
+					customView.getParameters().add(createParameter("activeLayers", customView.getLayers()));
+				}
+
+				for (Parameter customViewParameter : customView.getParameters()) {
+					fs.put(new Variable(customViewParameter.getName(), getValue(customViewParameter),
+							EolAnyType.Instance));
+				}
+
+				((IncrementalLazyEgxModule) module).stopRecording();
+				LazyGenerationRuleContentPromise contentPromise = (LazyGenerationRuleContentPromise) generationRule
+						.execute(context, source);
+				((IncrementalLazyEgxModule) module).stopRecording();
+				WebEglPictoSource.updateIncrementalResource(module, "/" + String.join("/", customView.getPath()));
+
+				Collection<Variable> variables = contentPromise.getVariables();
+
+				for (Parameter parameter : customView.getParameters()) {
+					Object value = getValue(parameter);
+					String paramName = parameter.getName();
+
+					Variable variable = variables.stream().filter(v -> v.getName().equals(paramName)).findAny()
+							.orElse(null);
+
+					if (variable != null) {
+						variable.setValue(value, context);
+					} else {
+						variables.add(new Variable(paramName, value, EolAnyType.Instance, false));
+					}
+				}
+				instances.add(contentPromise);
+			}
+		}
 	}
 
 	protected String generateJsTreeData(String filename, ViewTree viewTree) throws JsonProcessingException {
@@ -527,12 +477,6 @@ public class WebEglPictoSource extends EglPictoSource {
 			copyViewTreeToJsTreeData(filename, child, jsonChild);
 		}
 		String text = viewTree.getName();
-//		String text = String.format( //
-//				"<span id='%s' onclick=\"Picto.draw('%s', '%s')\">%s</span>" //
-//				, filename + "#" + viewTree.getPathString() //
-//				, filename + "#" + viewTree.getPathString() //
-//				, "/picto?file=" + filename + "&target=" + viewTree.getPathString() + "&name=" + viewTree.getName() //
-//				, viewTree.getName());
 		jsTreeNode.setText(text);
 		jsTreeNode.setPath(viewTree.getPathString());
 	}
@@ -668,6 +612,173 @@ public class WebEglPictoSource extends EglPictoSource {
 	protected boolean supportsEditorType(IEditorPart editorPart) {
 		// TODO Auto-generated method stub
 		return false;
+	}
+
+	/***
+	 * Update the state incremental resource with the recorded protected accesses.
+	 * 
+	 * @param module
+	 * @param pathString
+	 * @throws EolRuntimeException
+	 */
+	@SuppressWarnings("unchecked")
+	public static void updateIncrementalResource(IEolModule module, String pathString) throws EolRuntimeException {
+		for (IPropertyAccess propertyAccess : ((IncrementalLazyEgxModule) module).getPropertyAccessRecorder()
+				.getPropertyAccesses().all()) {
+			GenerationRulePropertyAccess generationRulePropertyAccess = (GenerationRulePropertyAccess) propertyAccess;
+
+			EObject contextElement = (EObject) generationRulePropertyAccess.getContextElement();
+			String contextResourceUri = null;
+			String contextElementId = null;
+			if (contextElement != null) {
+				contextResourceUri = ((XMIResource) contextElement.eResource()).getURI().toString();
+				contextElementId = ((XMIResource) contextElement.eResource()).getID(contextElement);
+				if (contextElementId == null) {
+					contextElementId = contextElement.eResource().getURIFragment(contextElement);
+				}
+			} else {
+				System.console();
+			}
+
+			EObject modelElement = (EObject) generationRulePropertyAccess.getModelElement();
+			String elementResourceUri = ((XMIResource) modelElement.eResource()).getURI().toString();
+			String elementId = ((XMIResource) modelElement.eResource()).getID(modelElement);
+			if (elementId == null) {
+				elementId = modelElement.eResource().getURIFragment(modelElement);
+			}
+				
+
+			String propertyName = generationRulePropertyAccess.getPropertyName();
+			Object value = modelElement.eGet(modelElement.eClass().getEStructuralFeature(propertyName));
+
+			String path = null;
+			if (pathString == null) {
+				GenerationRule rule = generationRulePropertyAccess.getRule();
+				Object result = rule.execute(module.getContext());
+				Collection<LazyGenerationRuleContentPromise> list = (result instanceof Collection<?>)
+						? (Collection<LazyGenerationRuleContentPromise>) result
+						: Arrays.asList(
+								new LazyGenerationRuleContentPromise[] { (LazyGenerationRuleContentPromise) result });
+//				if (list.size() == 1) {
+				for (LazyGenerationRuleContentPromise e : list) {
+					path = Util.getPath((LazyGenerationRuleContentPromise) e);
+
+					Variable var = e.getVariables().iterator().next();
+					Object obj = var.getValue();
+					if (modelElement.equals(obj)) {
+						System.console();
+						PropertyAccessRecord record = new PropertyAccessRecord(module.getFile().getAbsolutePath(),
+								generationRulePropertyAccess.getRule().getName(), contextResourceUri, contextElementId,
+								elementResourceUri, elementId, propertyName, value, path);
+
+						System.out.println("added: " + record);
+						INCREMENTAL_RESOURCE.add(record);
+					}
+				}
+//				}
+			} else {
+				path = pathString;
+				String ruleName = (generationRulePropertyAccess.getRule() != null)
+						? generationRulePropertyAccess.getRule().getName()
+						: null;
+				PropertyAccessRecord record = new PropertyAccessRecord(module.getFile().getAbsolutePath(), ruleName,
+						contextResourceUri, contextElementId, elementResourceUri, elementId, propertyName, value, path);
+				System.out.println("added: " + record);
+				INCREMENTAL_RESOURCE.add(record);
+			}
+		}
+//		((IncrementalLazyEgxModule) module).getPropertyAccessRecorder().getPropertyAccesses().clear();
+		System.console();
+	}
+
+	@SuppressWarnings("unchecked")
+	public ViewTree generateViewTree(ViewTree rootViewTree, LazyGenerationRuleContentPromise instance) {
+		String format = getDefaultFormat();
+		String icon = getDefaultIcon();
+		List<Patch> patches = new ArrayList<>(1);
+		Collection<String> path = Arrays.asList("");
+		List<Layer> layers = new ArrayList<>();
+		Variable layersVariable = null;
+		Integer position = null;
+
+		Collection<Variable> instanceVariables = instance.getVariables();
+
+		for (Variable variable : instanceVariables) {
+			Object varValue = variable.getValue();
+			switch (variable.getName()) {
+			case "format": {
+				format = varValue + "";
+				break;
+			}
+			case "path": {
+				if (!(varValue instanceof Collection)) {
+					(path = (Collection<String>) (varValue = new ArrayList<>(1))).add(Objects.toString(varValue));
+				} else if (!((Collection<?>) varValue).isEmpty()) {
+					path = ((Collection<?>) varValue).stream().map(Objects::toString).collect(Collectors.toList());
+				}
+				break;
+			}
+			case "icon": {
+				icon = varValue + "";
+				break;
+			}
+			case "position": {
+				if (varValue instanceof Integer) {
+					position = (Integer) varValue;
+				} else if (varValue != null) {
+					position = Integer.parseInt(varValue.toString());
+				}
+				break;
+			}
+			case "layers": {
+				layersVariable = variable;
+				for (Object layerMapObject : (Iterable<?>) varValue) {
+					Map<Object, Object> layerMap = (Map<Object, Object>) layerMapObject;
+					Layer layer = new Layer();
+					layer.setId(layerMap.get("id") + "");
+					layer.setTitle(layerMap.get("title") + "");
+					if (layerMap.containsKey("active")) {
+						layer.setActive((boolean) layerMap.get("active"));
+					}
+					layers.add(layer);
+				}
+				break;
+			}
+			case "patches": {
+				if (varValue instanceof List) {
+					patches = (List<Patch>) varValue;
+				} else if (varValue instanceof Patch) {
+					patches.add((Patch) varValue);
+				} else if (varValue instanceof Collection) {
+					patches.addAll((Collection<? extends Patch>) varValue);
+				}
+				break;
+			}
+			}
+
+		}
+
+		// If this is a custom view there may be an activeLayers variable in the
+		// variables list
+		Variable activeLayersVariable = instanceVariables.stream().filter(v -> v.getName().equals("activeLayers"))
+				.findAny().orElse(null);
+		if (activeLayersVariable != null) {
+			Collection<?> activeLayers = (Collection<?>) activeLayersVariable.getValue();
+			for (Layer layer : layers) {
+				layer.setActive(activeLayers.contains(layer.getId()));
+			}
+		}
+
+		// Replace layers variable from list of maps to list of Layer objects
+		if (layersVariable != null) {
+			instanceVariables.remove(layersVariable);
+		}
+		instanceVariables.add(Variable.createReadOnlyVariable("layers", layers));
+
+		ViewTree vt = new ViewTree(instance, format, icon, position, patches, layers);
+		rootViewTree.add(new ArrayList<>(path), vt);
+
+		return vt;
 	}
 
 }

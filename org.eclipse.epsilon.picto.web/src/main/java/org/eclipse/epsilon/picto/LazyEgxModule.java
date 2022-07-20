@@ -199,7 +199,7 @@ public class LazyEgxModule extends EgxModule {
 
 				return content;
 			}
-
+			
 			EglTemplate template = null;
 			if (templateCache == null || (template = templateCache.get(templateUri)) == null) {
 				template = templateFactory.load(templateUri);

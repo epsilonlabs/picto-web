@@ -29,6 +29,9 @@ public class PictoController {
 	@GetMapping(value = "/picto")
 	public String getPicto(String file, String path, String name, Model model) throws Exception {
 		model.addAttribute("pictoName", file);
+//		if (file.equals("egldoc-standalone.picto")) {
+//			System.console();
+//		}
 //		if (FileViewContentCache.getViewContentCache(file) == null) {
 			File pictoFile = new File((new File(PictoApplication.WORKSPACE + file)).getAbsolutePath());
 			WebEglPictoSource source = new WebEglPictoSource();

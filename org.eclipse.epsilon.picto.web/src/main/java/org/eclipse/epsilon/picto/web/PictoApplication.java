@@ -45,6 +45,10 @@ public class PictoApplication {
 		System.out.println("PICTO - Workspace directory: " + (new File(WORKSPACE)).getAbsolutePath());
 	}
 
+	/***
+	 * Main program launcher
+	 * @param args
+	 */
 	public static void main(String[] args) {
 		PictoApplication.args = args;
 		// run the Spring application

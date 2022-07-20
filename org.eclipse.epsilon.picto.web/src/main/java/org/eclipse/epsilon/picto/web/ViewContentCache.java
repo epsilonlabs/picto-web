@@ -5,6 +5,8 @@ import java.util.Map;
 
 public class ViewContentCache {
 
+	
+	
 	private final Map<String, String> viewContentCache = new HashMap<String, String>();
 
 	public void putViewContentCache(String path, String viewContent) {

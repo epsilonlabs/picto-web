@@ -43,7 +43,9 @@ public class PictoJsonController {
 	@GetMapping(path = "/picto", produces = MediaType.APPLICATION_JSON_VALUE)
 	public String getPictoJson(String file, String path, String name, Model model) throws Exception {
 		ViewContentCache x = FileViewContentCache.getViewContentCache(file);
-		String result = x.getViewContentCache(path);
+		String result = "";
+		if (x != null)
+			result = x.getViewContentCache(path);
 		return result;
 	}
 
@@ -53,14 +55,13 @@ public class PictoJsonController {
 		WebEglPictoSource source = new WebEglPictoSource();
 		Map<String, String> modifiedObjects = source.transform(modifiedFile);
 		System.out.println("PICTO: number of modified objects = " + modifiedObjects.size());
-		
+
 		File pictoFile = modifiedFile;
-		if (modifiedFile.getAbsolutePath().endsWith(".model")
-				|| modifiedFile.getAbsolutePath().endsWith(".flexmi")
+		if (modifiedFile.getAbsolutePath().endsWith(".model") || modifiedFile.getAbsolutePath().endsWith(".flexmi")
 				|| modifiedFile.getAbsolutePath().endsWith(".xmi")) {
 			pictoFile = new File(modifiedFile.getAbsolutePath() + ".picto");
 		}
-		
+
 		MessageChannel brokerChannel = context.getBean("brokerChannel", MessageChannel.class);
 		for (Entry<String, String> entry : modifiedObjects.entrySet()) {
 			SimpMessagingTemplate messaging = new SimpMessagingTemplate(brokerChannel);
