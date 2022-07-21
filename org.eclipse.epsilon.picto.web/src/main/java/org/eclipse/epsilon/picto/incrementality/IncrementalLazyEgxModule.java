@@ -95,8 +95,6 @@ public class IncrementalLazyEgxModule extends LazyEgxModule {
 			propertyAccessRecorder.setContextElement(element);
 			propertyAccessRecorder.setRule(this);
 			Object result = super.execute(context_, element);
-//			propertyAccessRecorder.setContextElement(null);
-//			propertyAccessRecorder.setRule(null);
 			return result;
 		}
 		

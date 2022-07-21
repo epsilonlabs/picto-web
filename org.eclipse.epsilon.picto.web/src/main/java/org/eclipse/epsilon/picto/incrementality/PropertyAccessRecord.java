@@ -1,12 +1,9 @@
 package org.eclipse.epsilon.picto.incrementality;
 
-import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
-import org.eclipse.emf.common.util.ECollections;
 import org.eclipse.emf.common.util.EList;
-import org.eclipse.emf.ecore.EClassifier;
 import org.eclipse.emf.ecore.EObject;
 import org.eclipse.emf.ecore.EStructuralFeature;
 import org.eclipse.emf.ecore.resource.Resource;
@@ -14,6 +11,11 @@ import org.eclipse.emf.ecore.xmi.XMIResource;
 
 public class PropertyAccessRecord {
 
+	public enum AccessRecordStatus {
+		NEW,
+		PROCESSED
+	}
+	
 	public static final String INITIAL_VALUE = "INITIAL_VALUE ";
 	protected String modulePath;
 	protected String generationRuleName;
@@ -24,11 +26,12 @@ public class PropertyAccessRecord {
 	protected String propertyName;
 	protected String oldValue = INITIAL_VALUE;
 	protected String value = INITIAL_VALUE;
-	protected Object target;
+	protected String path;
+	protected AccessRecordStatus status = AccessRecordStatus.NEW;
 
 	public PropertyAccessRecord(String modulePath, String generationRuleName, String contextResourceUri,
 			String contextObjectId, String elementResourceUri, String elementObjectId, String propertyName,
-			Object value, Object target) {
+			Object value, String path) {
 		super();
 		this.modulePath = modulePath;
 		this.generationRuleName = generationRuleName;
@@ -38,7 +41,7 @@ public class PropertyAccessRecord {
 		this.elementObjectId = elementObjectId;
 		this.propertyName = propertyName;
 		setValue(value);
-		this.target = target;
+		this.path = path;
 	}
 
 	public String getContextResourceUri() {
@@ -154,19 +157,31 @@ public class PropertyAccessRecord {
 		this.value = value;
 	}
 
-	public Object getTarget() {
-		return target;
+	public String getPath() {
+		return path;
 	}
 
-	public void setTarget(Object target) {
-		this.target = target;
+	public void setPath(String path) {
+		this.path = path;
+	}
+	
+	public AccessRecordStatus getStatus() {
+		return status;
+	}
+
+	public void setStatus(AccessRecordStatus status) {
+		this.status = status;
+	}
+
+	public static String getInitialValue() {
+		return INITIAL_VALUE;
 	}
 
 	@Override
 	public String toString() {
-		return modulePath + ", " + generationRuleName + ", " + contextResourceUri + ", " + contextObjectId + ", "
+		return status.name().toString() + ", " + modulePath + ", " + generationRuleName + ", " + contextResourceUri + ", " + contextObjectId + ", "
 				+ elementResourceUri + ", " + elementObjectId + ", " + propertyName + ", " + oldValue + ", " + value
-				+ ", " + target;
+				+ ", " + path;
 	}
 
 }
