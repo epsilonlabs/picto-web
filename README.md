@@ -17,15 +17,28 @@ The docker image of Picto Web can be temporarily found here: [https://hub.docker
 ```
 docker pull alfayohannisyorkacuk/picto-web
 ```
+
+## [Demo](#contents)
+Clone Picto Web project from GitHub using the command below 
+```
+git clone https://github.com/epsilonlabs/picto-web
+```
+Change directory to sub-directory `workspace`.
+```
+cd picto-web/workspace
+```
 If your operating system is Windows, run the command below to run the Picto Web server. The variable `%cd%` represents your current working directory in Windows. 
 ```
 docker run --rm -i -t -v %cd%:/workspace --hostname=picto -p 8080:8080 --name=picto alfayohannisyorkacuk/picto-web
 ```
-Replace `%cd%` with `$PWD`, if you use Linux as your operating system, 
+Replace `%cd%` with `$PWD`, if Linux is your current operating system, 
 ```
 docker run --rm -i -t -v $PWD:/workspace --hostname=picto -p 8080:8080 --name=picto alfayohannisyorkacuk/picto-web
 ```
-or replace it with any directory path if you want to set the directory as the working directory of Picto Web.
+or replace it with any directory path if you want to set the directory as the working directory of Picto Web. Basically, the command maps the local host directory to the internal `workspace` directory in the Docker container so that the local host directory can be accessed by the Picto Web app in the Docker container.
 
-## [Demo](#contents)
-Browse http://localhost:8080 to load Picto Web app.
+Browse http://localhost:8080 to load Picto Web app. It will display the page that shows picto files in the mapped directory.
+
+![main page](images/main_page.png)
+
+Click the `the socialnetwork.model.picto` link. It will open another tab that shows the view tree of Picto Web as displayed below.
