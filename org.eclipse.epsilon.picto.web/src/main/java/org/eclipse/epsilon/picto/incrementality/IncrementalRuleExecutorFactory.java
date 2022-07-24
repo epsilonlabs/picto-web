@@ -9,7 +9,8 @@ import java.util.Objects;
 import java.util.stream.Collectors;
 
 import org.eclipse.emf.ecore.EObject;
-import org.eclipse.emf.ecore.xmi.XMIResource;
+import org.eclipse.emf.ecore.EStructuralFeature;
+import org.eclipse.emf.ecore.resource.Resource;
 import org.eclipse.epsilon.common.module.ModuleElement;
 import org.eclipse.epsilon.eol.IEolModule;
 import org.eclipse.epsilon.eol.dom.IExecutableModuleElementParameter;
@@ -19,8 +20,8 @@ import org.eclipse.epsilon.eol.execute.context.Variable;
 import org.eclipse.epsilon.eol.execute.introspection.recording.IPropertyAccess;
 import org.eclipse.epsilon.erl.execute.RuleExecutorFactory;
 import org.eclipse.epsilon.picto.Layer;
-import org.eclipse.epsilon.picto.ViewTree;
 import org.eclipse.epsilon.picto.LazyEgxModule.LazyGenerationRuleContentPromise;
+import org.eclipse.epsilon.picto.ViewTree;
 import org.eclipse.epsilon.picto.dom.Patch;
 import org.eclipse.epsilon.picto.incrementality.IncrementalLazyEgxModule.IncrementalLazyGenerationRule;
 
@@ -87,25 +88,25 @@ public class IncrementalRuleExecutorFactory extends RuleExecutorFactory {
 			GenerationRulePropertyAccess generationRulePropertyAccess = (GenerationRulePropertyAccess) propertyAccess;
 
 			EObject contextElement = (EObject) generationRulePropertyAccess.getContextElement();
-			String contextResourceUri = null;
+			Resource contextResource = null;
 			String contextElementId = null;
 			if (contextElement != null) {
-				contextResourceUri = ((XMIResource) contextElement.eResource()).getURI().toString();
-				contextElementId = ((XMIResource) contextElement.eResource()).getID(contextElement);
-			} else {
-				System.console();
+				contextResource = contextElement.eResource();
+				contextElementId = contextResource.getURIFragment(contextElement);
 			}
 
 			EObject modelElement = (EObject) generationRulePropertyAccess.getModelElement();
-			String elementResourceUri = ((XMIResource) modelElement.eResource()).getURI().toString();
-			String elementId = ((XMIResource) modelElement.eResource()).getID(modelElement);
+			Resource elementResource = modelElement.eResource();
+			String modelElementId = elementResource.getURIFragment(modelElement);
 
-			String propertyName = generationRulePropertyAccess.getPropertyName();
-			Object value = modelElement.eGet(modelElement.eClass().getEStructuralFeature(propertyName));
+			EStructuralFeature property = modelElement.eClass()
+					.getEStructuralFeature(generationRulePropertyAccess.getPropertyName());
+			Object value = modelElement.eGet(property);
 
 			PropertyAccessRecord record = new PropertyAccessRecord(module.getFile().getAbsolutePath(),
-					generationRulePropertyAccess.getRule().getName(), contextResourceUri, contextElementId,
-					elementResourceUri, elementId, propertyName, value, pathString);
+					generationRulePropertyAccess.getRule().getName(), contextResource.getURI().toFileString(),
+					contextElementId, elementResource.getURI().toFileString(), modelElementId, property.getName(),
+					value, pathString);
 			System.out.println("added: " + record);
 			this.incrementalResource.add(record);
 		}

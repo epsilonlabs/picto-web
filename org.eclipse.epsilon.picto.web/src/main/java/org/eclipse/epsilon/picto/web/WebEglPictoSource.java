@@ -18,6 +18,7 @@ import java.util.stream.Collectors;
 import org.eclipse.core.resources.IFile;
 import org.eclipse.emf.ecore.EObject;
 import org.eclipse.emf.ecore.EPackage;
+import org.eclipse.emf.ecore.EStructuralFeature;
 import org.eclipse.emf.ecore.EcorePackage;
 import org.eclipse.emf.ecore.resource.Resource;
 import org.eclipse.emf.ecore.resource.ResourceSet;
@@ -29,6 +30,7 @@ import org.eclipse.epsilon.common.util.StringProperties;
 import org.eclipse.epsilon.common.util.UriUtil;
 import org.eclipse.epsilon.egl.EglFileGeneratingTemplateFactory;
 import org.eclipse.epsilon.egl.EglTemplateFactoryModuleAdapter;
+import org.eclipse.epsilon.egl.EgxModule;
 import org.eclipse.epsilon.egl.dom.GenerationRule;
 import org.eclipse.epsilon.emc.emf.EmfModel;
 import org.eclipse.epsilon.emc.emf.EmfUtil;
@@ -63,7 +65,7 @@ import org.eclipse.epsilon.picto.incrementality.GenerationRulePropertyAccess;
 import org.eclipse.epsilon.picto.incrementality.IncrementalLazyEgxModule;
 import org.eclipse.epsilon.picto.incrementality.IncrementalResource;
 import org.eclipse.epsilon.picto.incrementality.PropertyAccessRecord;
-import org.eclipse.epsilon.picto.incrementality.PropertyAccessRecord.AccessRecordStatus;
+import org.eclipse.epsilon.picto.incrementality.PropertyAccessRecord.AccessRecordState;
 import org.eclipse.epsilon.picto.incrementality.PropertyAccessRecordTable;
 import org.eclipse.epsilon.picto.incrementality.Util;
 import org.eclipse.epsilon.picto.source.EglPictoSource;
@@ -83,11 +85,10 @@ public class WebEglPictoSource extends EglPictoSource {
 	protected static final List<ViewContentTransformer> TRANSFORMERS = new ArrayList<>();
 	public static final IncrementalResource INCREMENTAL_RESOURCE = new PropertyAccessRecordTable();
 	public static boolean generateAll = true; // true for first running
-	
+
 	protected File modelFile;
 	protected File pictoFile;
 	protected List<EPackage> ePackages = new ArrayList<>();
-	
 
 	public WebEglPictoSource() throws Exception {
 		TRANSFORMERS.add(new GraphvizContentTransformer());
@@ -208,10 +209,10 @@ public class WebEglPictoSource extends EglPictoSource {
 			if ("egx".equals(renderingMetadata.getFormat())) {
 
 				/** PROPERTY ACCESS RECORDS **/
-				((IncrementalLazyEgxModule) module).startRecording();
+//				((IncrementalLazyEgxModule) module).startRecording();
 				List<LazyGenerationRuleContentPromise> promises = (List<LazyGenerationRuleContentPromise>) module
 						.execute();
-				((IncrementalLazyEgxModule) module).stopRecording();
+//				((IncrementalLazyEgxModule) module).stopRecording();
 				WebEglPictoSource.updateIncrementalResource(module, null);
 
 				/**
@@ -223,15 +224,30 @@ public class WebEglPictoSource extends EglPictoSource {
 				INCREMENTAL_RESOURCE.printIncrementalRecords();
 
 				/** Filter promises that only need regeneration **/
-				List<LazyGenerationRuleContentPromise> inProcessingPromises = getToBeProcPromises(promises,
-						generateAll);
+				List<LazyGenerationRuleContentPromise> inProcessingPromises = promises;
+//				List<LazyGenerationRuleContentPromise> inProcessingPromises = getToBeProcPromises(promises,
+//						generateAll);
 
 				/** loop through the content promises of rules **/
 				System.out.println("\nGENERATING VIEWS: ");
 				Set<String> processedPaths = new HashSet<>();
+
+//				Set<String> promisesPaths = inProcessingPromises.stream().map(p -> Util.getPath(p))
+//						.collect(Collectors.toCollection(HashSet::new));
+
 				for (LazyGenerationRuleContentPromise inProcessingPromise : inProcessingPromises) {
 
 					String pathString = Util.getPath(inProcessingPromise);
+//					if (pathString.equals("/Custom/Alice and Bob")) {
+//						INCREMENTAL_RESOURCE.getIncrementalRecords().clear();
+//						System.console();
+//					}
+
+					// Check if the path should be processed to generated new view
+					if (!INCREMENTAL_RESOURCE.isViewNewOrUpdated(pathString, (EgxModule) module)) {
+						continue;
+					}
+
 					ViewTree vt = this.generateViewTree(rootViewTree, inProcessingPromise);
 
 					((IncrementalLazyEgxModule) module).startRecording();
@@ -266,8 +282,8 @@ public class WebEglPictoSource extends EglPictoSource {
 					System.out.println(pathString);
 
 				}
-//				INCREMENTAL_RESOURCE.updateStatusToProcessed(processedPaths);
 				INCREMENTAL_RESOURCE.printIncrementalRecords();
+				INCREMENTAL_RESOURCE.updateStatusToProcessed(processedPaths);
 				generateAll = false;
 				System.out.println();
 				System.console();
@@ -310,13 +326,6 @@ public class WebEglPictoSource extends EglPictoSource {
 			}
 		}
 
-//		// Displaying incremental records
-//		INCREMENTAL_RESOURCE.printIncrementalRecords();
-//		System.out.println("Targets of Modified Properties:");
-//		for (PropertyAccessRecord property : INCREMENTAL_RESOURCE.getModifiedPropertiesTargets()) {
-//			System.out.println(property);
-//		}
-
 		return modifiedViewContents;
 
 	}
@@ -344,17 +353,18 @@ public class WebEglPictoSource extends EglPictoSource {
 
 		List<LazyGenerationRuleContentPromise> records = new ArrayList<>();
 
-//		if (generateAll) {
+		if (generateAll) {
 			records = promises;
-//		} else {
-//			Set<String> paths = INCREMENTAL_RESOURCE.getToBeProcessedPaths();
-//			for (LazyGenerationRuleContentPromise promise : promises) {
-//				String path = Util.getPath(promise);
-//				if (paths.contains(path)) {
-//					records.add(promise);
-//				}
-//			}
-//		}
+		} else {
+			Set<String> paths = INCREMENTAL_RESOURCE.getToBeProcessedPaths();
+			for (LazyGenerationRuleContentPromise promise : promises) {
+				String path = Util.getPath(promise);
+				if (paths.contains(path)) {
+					records.add(promise);
+				}
+			}
+			System.console();
+		}
 		return records;
 	}
 
@@ -674,27 +684,22 @@ public class WebEglPictoSource extends EglPictoSource {
 			GenerationRulePropertyAccess generationRulePropertyAccess = (GenerationRulePropertyAccess) propertyAccess;
 
 			EObject contextElement = (EObject) generationRulePropertyAccess.getContextElement();
+			Resource contextResource = null;
 			String contextResourceUri = null;
 			String contextElementId = null;
 			if (contextElement != null) {
-				contextResourceUri = ((XMIResource) contextElement.eResource()).getURI().toString();
-				contextElementId = ((XMIResource) contextElement.eResource()).getID(contextElement);
-				if (contextElementId == null) {
-					contextElementId = contextElement.eResource().getURIFragment(contextElement);
-				}
-			} else {
-				System.console();
+				contextResourceUri = contextElement.eResource().getURI().toFileString();
+				contextElementId = contextResource.getURIFragment(contextElement);
 			}
 
 			EObject modelElement = (EObject) generationRulePropertyAccess.getModelElement();
-			String elementResourceUri = ((XMIResource) modelElement.eResource()).getURI().toString();
-			String elementId = ((XMIResource) modelElement.eResource()).getID(modelElement);
-			if (elementId == null) {
-				elementId = modelElement.eResource().getURIFragment(modelElement);
-			}
+			Resource elementResource = modelElement.eResource();
+			String elementResourceUri = modelElement.eResource().getURI().toFileString();
+			String modelElementId = elementResource.getURIFragment(modelElement);
 
-			String propertyName = generationRulePropertyAccess.getPropertyName();
-			Object value = modelElement.eGet(modelElement.eClass().getEStructuralFeature(propertyName));
+			EStructuralFeature property = modelElement.eClass()
+					.getEStructuralFeature(generationRulePropertyAccess.getPropertyName());
+			Object value = modelElement.eGet(property);
 
 			String path = null;
 			if (pathString == null) {
@@ -714,7 +719,7 @@ public class WebEglPictoSource extends EglPictoSource {
 						System.console();
 						PropertyAccessRecord record = new PropertyAccessRecord(module.getFile().getAbsolutePath(),
 								generationRulePropertyAccess.getRule().getName(), contextResourceUri, contextElementId,
-								elementResourceUri, elementId, propertyName, value, path);
+								elementResourceUri, modelElementId, property.getName(), value, pathString);
 
 //						System.out.println("added: " + record);
 						INCREMENTAL_RESOURCE.add(record);
@@ -726,8 +731,9 @@ public class WebEglPictoSource extends EglPictoSource {
 				String ruleName = (generationRulePropertyAccess.getRule() != null)
 						? generationRulePropertyAccess.getRule().getName()
 						: null;
-				PropertyAccessRecord record = new PropertyAccessRecord(module.getFile().getAbsolutePath(), ruleName,
-						contextResourceUri, contextElementId, elementResourceUri, elementId, propertyName, value, path);
+				PropertyAccessRecord record = new PropertyAccessRecord(module.getFile().getAbsolutePath(),
+						generationRulePropertyAccess.getRule().getName(), contextResourceUri, contextElementId,
+						elementResourceUri, modelElementId, property.getName(), value, pathString);
 //				System.out.println("added: " + record);
 				INCREMENTAL_RESOURCE.add(record);
 			}

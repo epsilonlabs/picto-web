@@ -11,11 +11,10 @@ import org.eclipse.emf.ecore.xmi.XMIResource;
 
 public class PropertyAccessRecord {
 
-	public enum AccessRecordStatus {
-		NEW,
-		PROCESSED
+	public enum AccessRecordState {
+		NEW, PROCESSED
 	}
-	
+
 	public static final String INITIAL_VALUE = "INITIAL_VALUE ";
 	protected String modulePath;
 	protected String generationRuleName;
@@ -27,7 +26,7 @@ public class PropertyAccessRecord {
 	protected String oldValue = INITIAL_VALUE;
 	protected String value = INITIAL_VALUE;
 	protected String path;
-	protected AccessRecordStatus status = AccessRecordStatus.NEW;
+	protected AccessRecordState state = AccessRecordState.NEW;
 
 	public PropertyAccessRecord(String modulePath, String generationRuleName, String contextResourceUri,
 			String contextObjectId, String elementResourceUri, String elementObjectId, String propertyName,
@@ -40,8 +39,8 @@ public class PropertyAccessRecord {
 		this.elementResourceUri = elementResourceUri;
 		this.elementObjectId = elementObjectId;
 		this.propertyName = propertyName;
-		setValue(value);
 		this.path = path;
+		setValue(value);
 	}
 
 	public String getContextResourceUri() {
@@ -108,7 +107,18 @@ public class PropertyAccessRecord {
 		return value;
 	}
 
+	/***
+	 * The value object will be converted to string in the internal implementation.
+	 * So every value is stored as string.
+	 * 
+	 * @param value
+	 */
 	public void setValue(Object value) {
+		String val = convertValueToString(value);
+		this.setValue(val);
+	}
+
+	public static String convertValueToString(Object value) {
 		String val = null;
 		if (value instanceof EObject) {
 			EObject eObject = (EObject) value;
@@ -147,13 +157,10 @@ public class PropertyAccessRecord {
 			val = value.toString() + ":" + value.getClass().getName();
 		}
 
-		this.setValue(val);
+		return val;
 	}
 
 	public void setValue(String value) {
-		String[] temp = new String[1];
-		temp[0] = this.value;
-		this.oldValue = temp[0];
 		this.value = value;
 	}
 
@@ -164,24 +171,24 @@ public class PropertyAccessRecord {
 	public void setPath(String path) {
 		this.path = path;
 	}
-	
-	public AccessRecordStatus getStatus() {
-		return status;
+
+	public void setOldValue(String oldValue) {
+		this.oldValue = oldValue;
 	}
 
-	public void setStatus(AccessRecordStatus status) {
-		this.status = status;
+	public AccessRecordState getState() {
+		return state;
 	}
 
-	public static String getInitialValue() {
-		return INITIAL_VALUE;
+	public void setState(AccessRecordState state) {
+		this.state = state;
 	}
 
 	@Override
 	public String toString() {
-		return status.name().toString() + ", " + modulePath + ", " + generationRuleName + ", " + contextResourceUri + ", " + contextObjectId + ", "
-				+ elementResourceUri + ", " + elementObjectId + ", " + propertyName + ", " + oldValue + ", " + value
-				+ ", " + path;
+		return state.name().toString() + ", " + modulePath + ", " + generationRuleName + ", " + contextResourceUri
+				+ ", " + contextObjectId + ", " + elementResourceUri + ", " + elementObjectId + ", " + propertyName
+				+ ", " + oldValue + ", " + value + ", " + path;
 	}
 
 }

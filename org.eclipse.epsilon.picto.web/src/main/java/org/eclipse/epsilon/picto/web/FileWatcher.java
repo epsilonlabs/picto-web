@@ -9,7 +9,6 @@ import java.io.IOException;
 import java.nio.file.FileSystems;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.nio.file.StandardWatchEventKinds;
 import java.nio.file.WatchEvent;
 import java.nio.file.WatchKey;
 import java.nio.file.WatchService;
@@ -33,8 +32,12 @@ public class FileWatcher extends Thread {
 	 */
 	private boolean isRunning = false;
 
-	public FileWatcher(PictoJsonController pictoController) {
-		this.pictoJsonController = pictoController;
+	public FileWatcher() {
+		this.setName(FileWatcher.class.getSimpleName());
+	}
+
+	public FileWatcher(PictoJsonController pictoJsonController) {
+		this.pictoJsonController = pictoJsonController;
 		this.setName(FileWatcher.class.getSimpleName());
 	}
 
@@ -44,24 +47,21 @@ public class FileWatcher extends Thread {
 
 	@MessageMapping("/gs-guide-websocket")
 	public void notifyFileChange(File modelFile) throws Exception {
-		this.pictoJsonController.sendBackFileUpdate(modelFile);
-//		template.convertAndSend("/topic/picto", temp);
-		System.console();
+		if (this.pictoJsonController != null) {
+			this.pictoJsonController.sendBackFileUpdate(modelFile);
+		} else {
+			System.out.println("No PictoJsonController attached");
+		}
 	}
 
 	@Override
 	public void run() {
 		try {
-			WatchService watcher;
-
-			watcher = FileSystems.getDefault().newWatchService();
-
+			WatchService watcher = FileSystems.getDefault().newWatchService();
 			registerDirectory(watcher, PictoApplication.WORKSPACE);
-
 			isRunning = true;
 
-//			this.notifyFileChange(PictoApplication.PICTO_FILES);
-
+			
 			while (isRunning) {
 
 				WatchKey key;
@@ -72,7 +72,9 @@ public class FileWatcher extends Thread {
 				}
 
 				for (WatchEvent<?> event : key.pollEvents()) {
-//					WatchEvent.Kind<?> kind = event.kind();
+					WatchEvent.Kind<?> kind = event.kind();
+					System.out.println(kind);
+					
 
 					@SuppressWarnings("unchecked")
 					WatchEvent<Path> ev = (WatchEvent<Path>) event;
@@ -104,7 +106,7 @@ public class FileWatcher extends Thread {
 		Path dir = Paths.get(directory).toAbsolutePath();
 		dir.register(watcher, ENTRY_CREATE, ENTRY_DELETE, ENTRY_MODIFY);
 		System.out.println("PICTO: Watch Service registered for dir: " + dir);
-		
+
 		File file = new File(directory);
 		for (File f : file.listFiles()) {
 			if (f.isDirectory()) {

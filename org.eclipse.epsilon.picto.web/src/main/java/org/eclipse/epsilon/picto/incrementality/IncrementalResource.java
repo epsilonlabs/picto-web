@@ -4,6 +4,8 @@ import java.util.Collection;
 import java.util.List;
 import java.util.Set;
 
+import org.eclipse.epsilon.egl.EgxModule;
+
 public interface IncrementalResource {
 
 	void add(PropertyAccessRecord propertyAccessRecord);
@@ -12,15 +14,17 @@ public interface IncrementalResource {
 
 	public void printIncrementalRecords();
 
-	public List<PropertyAccessRecord> getModifiedPropertiesTargets();
+	public List<PropertyAccessRecord> getGeneratedPropertyAccessRecords();
 
 	public void updateStatusToProcessed(String path);
 
-	List<String> getNewPaths();
+//	List<String> getNewPaths();
 
-	List<PropertyAccessRecord> getNewAccessRecords();
+//	List<PropertyAccessRecord> getNewAccessRecords();
 
 	void updateStatusToProcessed(Collection<String> paths);
 
 	Set<String> getToBeProcessedPaths();
+
+	boolean isViewNewOrUpdated(String path, EgxModule module);
 }
