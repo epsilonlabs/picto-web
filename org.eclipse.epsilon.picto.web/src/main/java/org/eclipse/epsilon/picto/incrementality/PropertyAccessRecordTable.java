@@ -64,19 +64,20 @@ public class PropertyAccessRecordTable implements IncrementalResource {
 	@Override
 	public boolean isViewNewOrUpdated(String checkedPath, EgxModule currentModule) {
 		boolean result = false;
+
+		// check if the path is a new view
 		Set<String> paths = propertyAccessRecords.stream().map(r -> r.getPath())
 				.collect(Collectors.toCollection(HashSet::new));
 		if (!paths.contains(checkedPath)) {
 			return true;
 		}
 
+		// check objects and properties that view of the path has
 		Collection<PropertyAccessRecord> checkedPathRecords = propertyAccessRecords.stream()
 				.filter(r -> checkedPath.equals(r.getPath())).collect(Collectors.toCollection(HashSet::new));
 
 		for (PropertyAccessRecord record : checkedPathRecords) {
-			
-//			System.out.println(record.toString());
-			
+
 			String propertyName = record.getPropertyName();
 			String previousValue = record.getValue();
 			String uriFragment = record.getElementObjectId();
@@ -88,9 +89,17 @@ public class PropertyAccessRecordTable implements IncrementalResource {
 
 			Resource currentResource = model.getResource();
 			EObject currentEObject = currentResource.getEObject(uriFragment);
+
+			// check if the object has been deleted, does not exists in the resource
+			// (deleted, updated)
+			if (currentEObject == null) {
+				return true;
+			}
+
 			EStructuralFeature currentProperty = currentEObject.eClass().getEStructuralFeature(propertyName);
 			Object currentValueObject = currentEObject.eGet(currentProperty);
 
+			// check if the view of the path contains object with a changed property
 			String currentValue = PropertyAccessRecord.convertValueToString(currentValueObject);
 			if (!Util.equals(previousValue, currentValue)) {
 				return true;

@@ -1,8 +1,6 @@
 <?xml version="1.0" encoding="ASCII"?>
-<SocialNetwork xmi:version="2.0" xmlns:xmi="http://www.omg.org/XMI" xmlns="socialnetwork" xmi:id="socialnetwork">
-  <people xmi:id="alice" name="Alice" likes="bob charlie"/>
-  <people xmi:id="bob" name="Bob" likes="alice" dislikes="charlie"/>
-  <people xmi:id="charlie" name="Charlie" likes="alice" dislikes="dawn"/>
-  <people xmi:id="dawn" name="Dawn" likes="bob"/>
-</SocialNetwork>       
- 
+<SocialNetwork xmi:version="2.0" xmlns:xmi="http://www.omg.org/XMI" xmlns="socialnetwork" xmi:id="0">
+  <people xmi:id="1" name="Alice" likes="2"/>
+  <people xmi:id="2" name="Bob" dislikes="1"/>
+  <people xmi:id="3" name="Charlie"/>
+</SocialNetwork>
