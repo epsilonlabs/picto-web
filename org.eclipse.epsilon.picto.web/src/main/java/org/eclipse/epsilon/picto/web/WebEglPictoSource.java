@@ -193,13 +193,13 @@ public class WebEglPictoSource extends EglPictoSource {
 
 				/** PROPERTY ACCESS RECORDS **/
 				// start recording for property access
-				((PictoLazyEglModule) module).startRecording();
+//				((PictoLazyEglModule) module).startRecording();
 
 				List<LazyGenerationRuleContentPromise> instances = (List<LazyGenerationRuleContentPromise>) module
 						.execute();
 
 				// stop recording for property access
-				((PictoLazyEglModule) module).stopRecording();
+//				((PictoLazyEglModule) module).stopRecording();
 				/** END **/
 
 				// Handle dynamic views (i.e. where type != null)'
