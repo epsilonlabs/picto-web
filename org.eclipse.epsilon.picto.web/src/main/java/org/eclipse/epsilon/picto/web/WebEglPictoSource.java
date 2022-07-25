@@ -125,10 +125,11 @@ public class WebEglPictoSource extends EglPictoSource {
 		String filename = modifiedFile.getAbsolutePath()
 				.replace(new File(PictoApplication.WORKSPACE).getAbsolutePath() + File.separator, "")
 				.replace("\\", "/");
-		ViewContentCache viewContentCache = FileViewContentCache.addPictoFile(filename);
 
 		try {
-			if (modifiedFile.getAbsolutePath().endsWith(".model") || modifiedFile.getAbsolutePath().endsWith(".flexmi")
+
+			if (modifiedFile.getAbsolutePath().endsWith(".model")
+					|| modifiedFile.getAbsolutePath().endsWith(".flexmi")
 					|| modifiedFile.getAbsolutePath().endsWith(".xmi")) {
 				this.modelFile = new File(modifiedFile.getAbsolutePath());
 				this.pictoFile = new File(modifiedFile.getAbsolutePath() + ".picto");
@@ -154,6 +155,7 @@ public class WebEglPictoSource extends EglPictoSource {
 		} catch (Exception ex) {
 			throw new ResourceLoadingException(ex);
 		}
+		ViewContentCache viewContentCache = FileViewContentCache.addPictoFile(this.pictoFile.getName());
 
 		Picto renderingMetadata = this.getRenderingMetadata(this.pictoFile);
 
@@ -221,7 +223,7 @@ public class WebEglPictoSource extends EglPictoSource {
 				 **/
 				handleDynamicViews(renderingMetadata, module, context, fs, promises);
 
-				INCREMENTAL_RESOURCE.printIncrementalRecords();
+//				INCREMENTAL_RESOURCE.printIncrementalRecords();
 
 				/** Filter promises that only need regeneration **/
 				List<LazyGenerationRuleContentPromise> inProcessingPromises = promises;
@@ -238,10 +240,10 @@ public class WebEglPictoSource extends EglPictoSource {
 				for (LazyGenerationRuleContentPromise inProcessingPromise : inProcessingPromises) {
 
 					String pathString = Util.getPath(inProcessingPromise);
-//					if (pathString.equals("/Custom/Alice and Bob")) {
+					if (pathString.equals("/families/Bicycle") || pathString.equals("/families/Bike")) {
 //						INCREMENTAL_RESOURCE.getIncrementalRecords().clear();
-//						System.console();
-//					}
+						System.console();
+					}
 
 					// Check if the path should be processed to generated new view
 					if (!INCREMENTAL_RESOURCE.isViewNewOrUpdated(pathString, (EgxModule) module)) {
@@ -255,6 +257,10 @@ public class WebEglPictoSource extends EglPictoSource {
 					((IncrementalLazyEgxModule) module).stopRecording();
 					WebEglPictoSource.updateIncrementalResource(module, pathString);
 					System.console();
+					if (pathString.equals("/families/Bicycle") || pathString.equals("/families/Bike")) {
+//						INCREMENTAL_RESOURCE.getIncrementalRecords().clear();
+						System.console();
+					}
 
 					/** transform to target format (e.g., svg, html) **/
 					for (ViewContentTransformer transformer : TRANSFORMERS) {
@@ -282,7 +288,7 @@ public class WebEglPictoSource extends EglPictoSource {
 					System.out.println(pathString);
 
 				}
-				INCREMENTAL_RESOURCE.printIncrementalRecords();
+//				INCREMENTAL_RESOURCE.printIncrementalRecords();
 				INCREMENTAL_RESOURCE.updateStatusToProcessed(processedPaths);
 				generateAll = false;
 				System.out.println();
@@ -688,7 +694,8 @@ public class WebEglPictoSource extends EglPictoSource {
 			String contextResourceUri = null;
 			String contextElementId = null;
 			if (contextElement != null) {
-				contextResourceUri = contextElement.eResource().getURI().toFileString();
+				contextResource = contextElement.eResource();
+				contextResourceUri = contextResource.getURI().toFileString();
 				contextElementId = contextResource.getURIFragment(contextElement);
 			}
 

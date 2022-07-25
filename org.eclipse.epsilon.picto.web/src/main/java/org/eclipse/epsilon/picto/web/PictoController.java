@@ -32,11 +32,11 @@ public class PictoController {
 //		if (file.equals("egldoc-standalone.picto")) {
 //			System.console();
 //		}
-//		if (FileViewContentCache.getViewContentCache(file) == null) {
+		if (FileViewContentCache.getViewContentCache(file) == null) {
 			File pictoFile = new File((new File(PictoApplication.WORKSPACE + file)).getAbsolutePath());
 			WebEglPictoSource source = new WebEglPictoSource();
 			source.transform(pictoFile);
-//		}
+		}
 		if (path == null) {
 			String treeResult = FileViewContentCache.getViewContentCache(file)
 					.getViewContentCache(FileViewContentCache.PICTO_TREE);

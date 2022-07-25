@@ -123,9 +123,7 @@ public class PropertyAccessRecord {
 		if (value instanceof EObject) {
 			EObject eObject = (EObject) value;
 			Resource eResource = eObject.eResource();
-			val = ((XMIResource) eResource).getID(eObject);
-			if (val == null)
-				val = eResource.getURIFragment(eObject);
+			val = eResource.getURIFragment(eObject);
 			val = val + ":" + eObject.eClass().getName();
 
 		} else if (value instanceof EList<?>) {
@@ -137,10 +135,7 @@ public class PropertyAccessRecord {
 					EStructuralFeature eFeature = eObject.eContainingFeature();
 					String typeName = eObject.eClass().getName();
 					List<String> vals = eList.stream().map(e -> {
-						String id = ((XMIResource) ((EObject) e).eResource()).getID((EObject) e);
-						if (id == null)
-							if (id == null)
-								id = ((EObject) e).eResource().getURIFragment((EObject) e);
+						String id = ((EObject) e).eResource().getURIFragment((EObject) e);
 						return id;
 					}).collect(Collectors.toList());
 					if (!eFeature.isOrdered()) {
