@@ -26,6 +26,10 @@ Clone Picto Web project from GitHub using the command below
 ```
 git clone https://github.com/epsilonlabs/picto-web
 ```
+For MODELS 2022 tooldemo. It's recommended to use the `tooldemo` branch.
+```
+git checkout -b tooldemo
+```
 Change directory to sub-directory `workspace`.
 ```
 cd picto-web/workspace
