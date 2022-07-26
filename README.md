@@ -10,6 +10,8 @@
     - [Different Views](#different-views)
     - [Another Example](#another-example)
 
+The demo video of Picto Web can be found at https://shorturl.at/ijtz1 or https://drive.google.com/drive/folders/1BCEKJhsEq50Yi7xFjx2Wpc6j-68Wtcxv?usp=sharing.
+
 ## [Introduction](#contents)
 [Picto Web](https://github.com/epsilonlabs/picto-web) is a tool for complex model exploration. With it, users can visualise large models in different views and formats and also perform drill down/up navigation throughout the models' elements. Picto Web is the web version of the [Picto](https://www.eclipse.org/epsilon/doc/picto/) for Eclipse. It aims to support all features that the plugin is capable of, except that it is a web application, which allows multiple remote users to explore the same model concurrently. 
 
