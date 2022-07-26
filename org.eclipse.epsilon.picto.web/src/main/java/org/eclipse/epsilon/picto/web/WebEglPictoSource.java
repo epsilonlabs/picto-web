@@ -108,8 +108,7 @@ public class WebEglPictoSource extends EglPictoSource {
 		String filename = modifiedFile.getAbsolutePath()
 				.replace(new File(PictoApplication.WORKSPACE).getAbsolutePath() + File.separator, "")
 				.replace("\\", "/");
-		ViewContentCache viewContentCache = FileViewContentCache.addPictoFile(filename);
-
+		
 		try {
 			if (modifiedFile.getAbsolutePath().endsWith(".model") || modifiedFile.getAbsolutePath().endsWith(".flexmi")
 					|| modifiedFile.getAbsolutePath().endsWith(".xmi")) {
@@ -137,6 +136,8 @@ public class WebEglPictoSource extends EglPictoSource {
 		} catch (Exception ex) {
 			throw new ResourceLoadingException(ex);
 		}
+		
+		ViewContentCache viewContentCache = FileViewContentCache.addPictoFile(this.pictoFile.getName());
 
 		Picto renderingMetadata = this.getRenderingMetadata(this.pictoFile);
 
@@ -403,7 +404,7 @@ public class WebEglPictoSource extends EglPictoSource {
 
 					if (!jsonString.equals(viewContentCache.getViewContentCache(pathString))) {
 						viewContentCache.putViewContentCache(pathString, jsonString);
-						modifiedViewContents.put(pathString, jsonString);
+//						modifiedViewContents.put(pathString, jsonString);
 					}
 					System.console();
 				}
@@ -513,7 +514,7 @@ public class WebEglPictoSource extends EglPictoSource {
 		PictoResponse pictoResponse = new PictoResponse();
 		pictoResponse.setFilename(filename);
 		pictoResponse.setPath(FileViewContentCache.PICTO_TREE);
-		pictoResponse.setType("json");
+		pictoResponse.setType("treeview");
 		pictoResponse.setContent(response);
 
 		return (new ObjectMapper()).writerWithDefaultPrettyPrinter().writeValueAsString(pictoResponse);

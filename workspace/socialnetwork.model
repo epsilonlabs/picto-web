@@ -4,4 +4,4 @@
   <people xmi:id="_0jl0gmdlEeqdGrZV4aDylA" name="Bob" likes="_0jl0gWdlEeqdGrZV4aDylA" dislikes="_0jl0g2dlEeqdGrZV4aDylA"/>
   <people xmi:id="_0jl0g2dlEeqdGrZV4aDylA" name="Charlie" likes="_0jl0gWdlEeqdGrZV4aDylA" dislikes="_0jl0hGdlEeqdGrZV4aDylA"/>
   <people xmi:id="_0jl0hGdlEeqdGrZV4aDylA" name="Dawn" likes="_0jl0gmdlEeqdGrZV4aDylA"/>
-</SocialNetwork>   
+</SocialNetwork>
