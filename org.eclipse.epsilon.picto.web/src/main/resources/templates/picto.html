@@ -24,7 +24,7 @@
     var pictoName = [[${pictoName}]];
     var selectedUri = [[${selectedUri}]];
     var treeResponse = JSON.parse([[${treeResponse}]]);
-    var treeContent = JSON.parse(treeResponse.content);
+    Picto.treeContent = JSON.parse(treeResponse.content);
     var viewResponse = JSON.parse([[${viewResponse}]]);
 
     window.addEventListener('popstate', function (event) {
@@ -95,8 +95,10 @@
 
       var jsTreeConfig = {
         'core': {
-          'data': treeContent,
-          'check_callback': true
+          'check_callback': true,
+          'data': function (node, cb) {
+            cb.call(this, Picto.treeContent);
+          }
         },
         "plugins": ["search", "contextmenu"],
         "contextmenu": {

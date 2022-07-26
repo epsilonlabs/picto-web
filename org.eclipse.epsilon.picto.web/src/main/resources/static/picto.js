@@ -13,6 +13,7 @@
 /*** PICTO ****/
 var Picto = new Object();
 
+Picto.treeContent = null;
 Picto.pictoFile = null;
 Picto.socket = null;
 Picto.stompClient = null;
@@ -102,14 +103,13 @@ Picto.getSelectedViewPath = function(data) {
 Picto.render = function(view) {
   var container = document.getElementById("visualization");
   container.innerHTML = '';
-  console.log(view);
   if (view.type == 'svg') {
     var text = view.content;
     var parser = new DOMParser();
     var xmlDoc = parser.parseFromString(text, "text/xml");
     var svg = xmlDoc.getElementsByTagName("svg")[0];
     container.appendChild(svg);
-    svgPanZoom(svg, {zoomEnabled: true,fit: true,center: true});
+    svgPanZoom(svg, { zoomEnabled: true, fit: true, center: true });
   } else if (view.type == 'html') {
     var text = view.content;
     if (text.trim() == "") {
@@ -128,6 +128,14 @@ Picto.render = function(view) {
     var md = marked.parse(text);
     console.log(md);
     container.innerHTML = md;
+  } else if (view.type == 'treeview') {
+    Picto.treeContent = JSON.parse(view.content);
+    console.log(Picto.treeContent);
+    var tree = $('#tree').jstree(true);
+    tree.refresh();
+    console.log("");
+  } else {
+    console.log("Please check since this view type is not handled!");
   }
 }
 
@@ -136,7 +144,7 @@ Picto.getView = function(event) {
   if (event.target.readyState == 4 && event.target.status == 200) {
     if (event.target.responseText == null || event.target.responseText == "") {
       return;
-    } 
+    }
     var view = JSON.parse(event.target.responseText);
     Picto.render(view);
   }
@@ -170,7 +178,10 @@ Picto.connectToServer = function(pictoFile) {
       //console.log(message.body);
       var view = JSON.parse(message.body);
       console.log(view);
-      if (view.path != Picto.selectedPath) {
+      if (view == null || !'type' in view) {
+        return;
+      }
+      if (view.type != 'treeview' && view.path != Picto.selectedPath) {
         return;
       }
       Picto.render(view);
