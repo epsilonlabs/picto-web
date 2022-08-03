@@ -236,7 +236,7 @@ public class WebEglPictoSource extends EglPictoSource {
 
 					String pathString = Util.getPath(inProcessingPromise);
 					System.out.print("Processing " + pathString + " ... ");
-					if (pathString.equals("/Stats") || pathString.equals("/Custom/Alice and Bob")) {
+					if (pathString.equals("/Social Network/Alice") || pathString.equals("/Custom/Alice and Bob")) {
 //						INCREMENTAL_RESOURCE.getIncrementalRecords().clear();
 						System.console();
 					}

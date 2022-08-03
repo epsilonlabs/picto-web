@@ -5,8 +5,13 @@ class SocialNetwork {
 	val Person[*] people;
 }
 
+class Item {
+	attr String name;
+}
+
 class Person {
 	attr String name;
 	ref Person[*] likes;
 	ref Person[*] dislikes;
+	val Item[*] items;
 }
