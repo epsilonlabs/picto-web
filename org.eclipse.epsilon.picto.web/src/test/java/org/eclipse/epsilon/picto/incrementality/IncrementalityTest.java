@@ -4,18 +4,20 @@ import static org.junit.Assert.assertTrue;
 
 import java.io.File;
 import java.util.Arrays;
+import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import org.eclipse.emf.common.util.EList;
 import org.eclipse.emf.common.util.URI;
 import org.eclipse.emf.ecore.EClass;
 import org.eclipse.emf.ecore.EObject;
 import org.eclipse.emf.ecore.EStructuralFeature;
-import org.eclipse.emf.ecore.EcorePackage;
 import org.eclipse.emf.ecore.util.EcoreUtil;
 import org.eclipse.emf.ecore.xmi.XMIResource;
 import org.eclipse.emf.ecore.xmi.impl.XMIResourceImpl;
 import org.eclipse.epsilon.picto.dom.PictoPackage;
+import org.eclipse.epsilon.picto.web.FileViewContentCache;
 import org.eclipse.epsilon.picto.web.PictoApplication;
 import org.eclipse.epsilon.picto.web.WebEglPictoSource;
 import org.junit.jupiter.api.AfterAll;
@@ -48,7 +50,7 @@ class IncrementalityTest {
 
 	}
 
-	void setUp(String pictoFileName, String modelFileName) throws Exception {
+	public Map<String, String> setUp(String pictoFileName, String modelFileName) throws Exception {
 		pictoFile = new File(PictoApplication.WORKSPACE + pictoFileName);
 		modelFile = new File(PictoApplication.WORKSPACE + modelFileName);
 		modelFileBackup = new File(modelFile.getAbsolutePath() + ".backup");
@@ -57,14 +59,17 @@ class IncrementalityTest {
 		Files.copy(modelFile, modelFileBackup);
 
 		eglPictoSource = new WebEglPictoSource();
-		eglPictoSource.transform(pictoFile);
+		Map<String, String> result = eglPictoSource.transform(pictoFile);
 
 		res = (new XMIResourceImpl(URI.createFileURI(modelFile.getAbsolutePath())));
 		res.load(null);
+		return result;
 	}
 
 	@AfterEach
 	void tearDown() throws Exception {
+		FileViewContentCache.clear();
+		WebEglPictoSource.INCREMENTAL_RESOURCE.clear();
 		res.unload();
 		modelFile.delete();
 		Files.copy(modelFileBackup, modelFile);
@@ -80,12 +85,34 @@ class IncrementalityTest {
 			EStructuralFeature eNameFeature = eObject.eClass().getEStructuralFeature("name");
 			eObject.eSet(eNameFeature, "Bicycle");
 			res.save(null);
-			
-			eglPictoSource = new WebEglPictoSource();
-			Map<String, String> generatedViews = eglPictoSource.transform(pictoFile);
 
+			eglPictoSource = new WebEglPictoSource();
+		} catch (Exception e) {
+			e.printStackTrace();
+		} finally {
+			Map<String, String> generatedViews = eglPictoSource.transform(pictoFile);
 			Arrays.asList( //
-					"/families/Bicycle"
+					"/families/Bicycle").stream().forEach(path -> {
+						assertTrue(generatedViews.keySet().contains(path));
+					});
+		}
+
+	}
+
+	@Test
+	void testGeneration() throws Exception {
+		try {
+			List<PropertyAccessRecord> records = eglPictoSource.INCREMENTAL_RESOURCE.getIncrementalRecords();
+			Map<String, String> generatedViews = setUp("socialnetwork.model.picto", "socialnetwork.model");
+			Set<String> keys = generatedViews.keySet();
+			Arrays.asList( //
+					"/Social Network" //
+					, "/Social Network/Alice" //
+					, "/Social Network/Bob" //
+					, "/Social Network/Charlie" //
+					, "/Stats" //
+					, "/Custom/Alice and Bob" //
+					, "/Readme" //
 			).stream().forEach(path -> {
 				assertTrue(generatedViews.keySet().contains(path));
 			});
@@ -93,19 +120,18 @@ class IncrementalityTest {
 			e.printStackTrace();
 		}
 	}
-	
+
 	@Test
 	void testUpdateProperty() throws Exception {
 		try {
 			setUp("socialnetwork.model.picto", "socialnetwork.model");
-			
+
 			EObject eObject = res.getEObject("3"); // get Charlie (id = 3)
 			EStructuralFeature eNameFeature = eObject.eClass().getEStructuralFeature("name");
 			// update the name to 'Dan'
 			eObject.eSet(eNameFeature, "Dan");
 			res.save(null);
 
-			
 			eglPictoSource = new WebEglPictoSource();
 			Map<String, String> generatedViews = eglPictoSource.transform(pictoFile);
 
@@ -120,8 +146,6 @@ class IncrementalityTest {
 		}
 	}
 
-	
-	
 	@Test
 	void testDeleteElement() throws Exception {
 		try {
@@ -186,7 +210,7 @@ class IncrementalityTest {
 
 			setUp("socialnetwork.model.picto", "socialnetwork.model");
 
-			EObject sn = res.getEObject("0"); // get Alice (id = 1)
+			EObject sn = res.getEObject("0"); // get social Network (id = 0)
 			EClass socialNetwork = sn.eClass();
 			EStructuralFeature peopleProperty = socialNetwork.getEStructuralFeature("people");
 
@@ -250,6 +274,8 @@ class IncrementalityTest {
 			eglPictoSource = new WebEglPictoSource();
 			Map<String, String> generatedViews = eglPictoSource.transform(pictoFile);
 
+//			WebEglPictoSource.INCREMENTAL_RESOURCE.printIncrementalRecords();
+			
 			Arrays.asList( //
 //					"/Social Network" //
 //					, 

@@ -209,12 +209,15 @@ public class WebEglPictoSource extends EglPictoSource {
 
 			if ("egx".equals(renderingMetadata.getFormat())) {
 
+				Set<String> toBeProcessedPaths = new HashSet<>();
+
 				/** PROPERTY ACCESS RECORDS **/
-//				((IncrementalLazyEgxModule) module).startRecording();
+				((IncrementalLazyEgxModule) module).startRecording();
 				List<LazyGenerationRuleContentPromise> promises = (List<LazyGenerationRuleContentPromise>) module
 						.execute();
-//				((IncrementalLazyEgxModule) module).stopRecording();
+				((IncrementalLazyEgxModule) module).stopRecording();
 				WebEglPictoSource.updateIncrementalResource(module, null);
+				INCREMENTAL_RESOURCE.printIncrementalRecords();
 
 				/**
 				 * the handleDynamicViews will add the generated lazy contents to instances to
@@ -231,15 +234,14 @@ public class WebEglPictoSource extends EglPictoSource {
 
 				/** loop through the content promises of rules **/
 				System.out.println("\nGENERATING VIEWS: ");
-				Set<String> processedPaths = new HashSet<>();
-
-//				Set<String> promisesPaths = inProcessingPromises.stream().map(p -> Util.getPath(p))
-//						.collect(Collectors.toCollection(HashSet::new));
+				toBeProcessedPaths
+						.addAll(INCREMENTAL_RESOURCE.getToBeProcessedPaths(inProcessingPromises, (EgxModule) module));
 
 				for (LazyGenerationRuleContentPromise inProcessingPromise : inProcessingPromises) {
 
 					String pathString = Util.getPath(inProcessingPromise);
-					if (pathString.equals("/families/Bicycle") || pathString.equals("/families/Bike")) {
+					System.out.print("Processing " + pathString + " ... ");
+					if (pathString.equals("/Stats") || pathString.equals("/Custom/Alice and Bob")) {
 //						INCREMENTAL_RESOURCE.getIncrementalRecords().clear();
 						System.console();
 					}
@@ -247,7 +249,8 @@ public class WebEglPictoSource extends EglPictoSource {
 					ViewTree vt = this.generateViewTree(rootViewTree, inProcessingPromise);
 
 					// Check if the path should be processed to generated new view
-					if (!INCREMENTAL_RESOURCE.isViewNewOrUpdated(pathString, (EgxModule) module)) {
+					if (!toBeProcessedPaths.contains(pathString)) {
+						System.out.println("SKIP");
 						continue;
 					}
 
@@ -256,7 +259,7 @@ public class WebEglPictoSource extends EglPictoSource {
 					((IncrementalLazyEgxModule) module).stopRecording();
 					WebEglPictoSource.updateIncrementalResource(module, pathString);
 					System.console();
-					if (pathString.equals("/families/Bicycle") || pathString.equals("/families/Bike")) {
+					if (pathString.equals("/Stats") || pathString.equals("/Custom/Alice and Bob")) {
 //						INCREMENTAL_RESOURCE.getIncrementalRecords().clear();
 						System.console();
 					}
@@ -283,12 +286,11 @@ public class WebEglPictoSource extends EglPictoSource {
 					viewContentCache.putViewContentCache(pathString, jsonString);
 					modifiedViewContents.put(pathString, jsonString);
 //					}
-					processedPaths.add(pathString);
-					System.out.println(pathString);
+					System.out.println("PROCESSED");
 
 				}
-//				INCREMENTAL_RESOURCE.printIncrementalRecords();
-				INCREMENTAL_RESOURCE.updateStatusToProcessed(processedPaths);
+				INCREMENTAL_RESOURCE.printIncrementalRecords();
+				INCREMENTAL_RESOURCE.updateStatusToProcessed(toBeProcessedPaths);
 				generateAll = false;
 				System.out.println();
 				System.console();
@@ -299,7 +301,8 @@ public class WebEglPictoSource extends EglPictoSource {
 				rootViewTree.setFormat(renderingMetadata.getFormat());
 			}
 
-			// Handle static views (i.e. where source != null)
+			// Handle static views (i.e. where source != null), add the custom view loaded from a file
+			// defined in the picto file
 			handleStaticViews(modifiedViewContents, rootViewTree, filename, viewContentCache, renderingMetadata,
 					module);
 
@@ -333,44 +336,6 @@ public class WebEglPictoSource extends EglPictoSource {
 
 		return modifiedViewContents;
 
-	}
-
-	/***
-	 * Get promises that will generate new views or views that need to refreshed.
-	 * 
-	 * @param promises
-	 * @return
-	 */
-	private List<LazyGenerationRuleContentPromise> getNewOrModifiedPromises(
-			List<LazyGenerationRuleContentPromise> promises) {
-		return getToBeProcPromises(promises, false);
-	}
-
-	/***
-	 * Get promises that will generate new views or views that need to refreshed.
-	 * 
-	 * @param promises
-	 * @param generateAll
-	 * @return
-	 */
-	private List<LazyGenerationRuleContentPromise> getToBeProcPromises(List<LazyGenerationRuleContentPromise> promises,
-			boolean generateAll) {
-
-		List<LazyGenerationRuleContentPromise> records = new ArrayList<>();
-
-		if (generateAll) {
-			records = promises;
-		} else {
-			Set<String> paths = INCREMENTAL_RESOURCE.getToBeProcessedPaths();
-			for (LazyGenerationRuleContentPromise promise : promises) {
-				String path = Util.getPath(promise);
-				if (paths.contains(path)) {
-					records.add(promise);
-				}
-			}
-			System.console();
-		}
-		return records;
 	}
 
 	/***
@@ -688,6 +653,9 @@ public class WebEglPictoSource extends EglPictoSource {
 				.getPropertyAccesses().all()) {
 			GenerationRulePropertyAccess generationRulePropertyAccess = (GenerationRulePropertyAccess) propertyAccess;
 
+			String ruleName = (generationRulePropertyAccess.getRule() == null) ? null
+					: generationRulePropertyAccess.getRule().getName();
+
 			EObject contextElement = (EObject) generationRulePropertyAccess.getContextElement();
 			Resource contextResource = null;
 			String contextResourceUri = null;
@@ -705,11 +673,17 @@ public class WebEglPictoSource extends EglPictoSource {
 
 			EStructuralFeature property = modelElement.eClass()
 					.getEStructuralFeature(generationRulePropertyAccess.getPropertyName());
-			Object value = modelElement.eGet(property);
+			String propertyName = (property != null) ? property.getName()
+					: generationRulePropertyAccess.getPropertyName();
+			Object value = (property != null) ? modelElement.eGet(property) : null;
 
 			String path = null;
 			if (pathString == null) {
 				GenerationRule rule = generationRulePropertyAccess.getRule();
+				if (rule.getName().equals("Persons2Table")) {
+					System.console();
+				}
+
 				Object result = rule.execute(module.getContext());
 				Collection<LazyGenerationRuleContentPromise> list = (result instanceof Collection<?>)
 						? (Collection<LazyGenerationRuleContentPromise>) result
@@ -721,25 +695,31 @@ public class WebEglPictoSource extends EglPictoSource {
 
 					Variable var = e.getVariables().iterator().next();
 					Object obj = var.getValue();
-					if (modelElement.equals(obj)) {
-						System.console();
-						PropertyAccessRecord record = new PropertyAccessRecord(module.getFile().getAbsolutePath(),
-								generationRulePropertyAccess.getRule().getName(), contextResourceUri, contextElementId,
-								elementResourceUri, modelElementId, property.getName(), value, pathString);
+					if (obj instanceof EObject) {
+						if (modelElement.equals(obj)) {
+
+							PropertyAccessRecord record = new PropertyAccessRecord(module.getFile().getAbsolutePath(),
+									ruleName, contextResourceUri, contextElementId, elementResourceUri, modelElementId,
+									propertyName, value, path);
 
 //						System.out.println("added: " + record);
+							INCREMENTAL_RESOURCE.add(record);
+						}
+					} else {
+						PropertyAccessRecord record = new PropertyAccessRecord(module.getFile().getAbsolutePath(),
+								ruleName, contextResourceUri, contextElementId, elementResourceUri, modelElementId,
+								propertyName, value, path);
+
+//					System.out.println("added: " + record);
 						INCREMENTAL_RESOURCE.add(record);
 					}
 				}
 //				}
 			} else {
 				path = pathString;
-				String ruleName = (generationRulePropertyAccess.getRule() != null)
-						? generationRulePropertyAccess.getRule().getName()
-						: null;
-				PropertyAccessRecord record = new PropertyAccessRecord(module.getFile().getAbsolutePath(),
-						generationRulePropertyAccess.getRule().getName(), contextResourceUri, contextElementId,
-						elementResourceUri, modelElementId, property.getName(), value, pathString);
+				PropertyAccessRecord record = new PropertyAccessRecord(module.getFile().getAbsolutePath(), ruleName,
+						contextResourceUri, contextElementId, elementResourceUri, modelElementId, propertyName, value,
+						pathString);
 //				System.out.println("added: " + record);
 				INCREMENTAL_RESOURCE.add(record);
 			}

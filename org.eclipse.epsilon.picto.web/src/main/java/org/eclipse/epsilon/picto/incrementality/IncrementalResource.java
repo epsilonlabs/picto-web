@@ -5,6 +5,7 @@ import java.util.List;
 import java.util.Set;
 
 import org.eclipse.epsilon.egl.EgxModule;
+import org.eclipse.epsilon.picto.LazyEgxModule.LazyGenerationRuleContentPromise;
 
 public interface IncrementalResource {
 
@@ -24,7 +25,9 @@ public interface IncrementalResource {
 
 	void updateStatusToProcessed(Collection<String> paths);
 
-	Set<String> getToBeProcessedPaths();
+	Set<String> getToBeProcessedPaths(List<LazyGenerationRuleContentPromise> inProcessingPromises, EgxModule module);
 
-	boolean isViewNewOrUpdated(String path, EgxModule module);
+	void clear();
+
+
 }

@@ -5,9 +5,11 @@ import java.util.Map;
 
 public class ViewContentCache {
 
-	
-	
 	private final Map<String, String> viewContentCache = new HashMap<String, String>();
+
+	public void clear() {
+		viewContentCache.clear();
+	}
 
 	public void putViewContentCache(String path, String viewContent) {
 		viewContentCache.put(path, viewContent);

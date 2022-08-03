@@ -72,8 +72,8 @@ public class FileWatcher extends Thread {
 				}
 
 				for (WatchEvent<?> event : key.pollEvents()) {
-					WatchEvent.Kind<?> kind = event.kind();
-					System.out.println(kind);
+//					WatchEvent.Kind<?> kind = event.kind();
+//					System.out.println(kind);
 					
 
 					@SuppressWarnings("unchecked")

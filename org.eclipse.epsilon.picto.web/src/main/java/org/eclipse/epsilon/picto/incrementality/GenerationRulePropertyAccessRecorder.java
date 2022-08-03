@@ -31,6 +31,18 @@ public class GenerationRulePropertyAccessRecorder extends PropertyAccessRecorder
 
 	@Override
 	protected PropertyAccess createPropertyAccess(Object modelElement, String propertyName) {
+//		EgxModule module = (EgxModule) rule.getParent();
+//		GenerationRule referredRule = module.getGenerationRules().stream()
+//				.filter(r -> r.getName().equals(rule.getName())).findFirst().orElse(null);
+//
+//		EObject dummy = (EObject) contextElement;
+//		EObject refferedContextElement = null;
+//		if (dummy != null) {
+//			refferedContextElement = (EObject) contextElement;
+//			Resource resource = (refferedContextElement).eResource();
+//			String fragment = resource.getURIFragment(refferedContextElement);
+//			refferedContextElement = resource.getEObject(fragment);
+//		}
 		return new GenerationRulePropertyAccess(modelElement, propertyName, rule, contextElement);
 	}
 

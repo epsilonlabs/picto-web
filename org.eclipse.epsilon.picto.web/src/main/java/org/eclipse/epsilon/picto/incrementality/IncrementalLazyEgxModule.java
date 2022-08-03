@@ -45,7 +45,7 @@ public class IncrementalLazyEgxModule extends LazyEgxModule {
 
 		this.incrementalResource = incrementalResource;
 
-//		this.getContext().setExecutorFactory(new IncrementalRuleExecutorFactory(incrementalResource));
+		this.getContext().setExecutorFactory(new IncrementalRuleExecutorFactory(incrementalResource));
 
 		// Create the property access recorder that will record
 		// all the property access events in the EGX transformation
@@ -60,7 +60,7 @@ public class IncrementalLazyEgxModule extends LazyEgxModule {
 				// Every time the factory creates a template, attach a listener to it
 				// to record property accesses to our custom recorder
 				template.getModule().getContext().getExecutorFactory()
-						.addExecutionListener(new PropertyAccessExecutionListener(propertyAccessRecorder));
+						.addExecutionListener(new IncrementalPropertyAccessExecutionListener(propertyAccessRecorder));
 				return template;
 			}
 		});
@@ -68,7 +68,7 @@ public class IncrementalLazyEgxModule extends LazyEgxModule {
 		// Add a listener to record property access events during
 		// the execution of the EGX program
 		this.getContext().getExecutorFactory()
-				.addExecutionListener(new PropertyAccessExecutionListener(propertyAccessRecorder));
+				.addExecutionListener(new IncrementalPropertyAccessExecutionListener(propertyAccessRecorder));
 	}
 
 	@Override
@@ -95,6 +95,8 @@ public class IncrementalLazyEgxModule extends LazyEgxModule {
 			propertyAccessRecorder.setContextElement(element);
 			propertyAccessRecorder.setRule(this);
 			Object result = super.execute(context_, element);
+			propertyAccessRecorder.setContextElement(null);
+			propertyAccessRecorder.setRule(null);
 			return result;
 		}
 		

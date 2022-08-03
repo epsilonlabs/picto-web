@@ -12,7 +12,7 @@ import org.eclipse.emf.ecore.xmi.XMIResource;
 public class PropertyAccessRecord {
 
 	public enum AccessRecordState {
-		NEW, PROCESSED
+		NEW, MODIFIED, PROCESSED
 	}
 
 	public static final String INITIAL_VALUE = "INITIAL_VALUE ";

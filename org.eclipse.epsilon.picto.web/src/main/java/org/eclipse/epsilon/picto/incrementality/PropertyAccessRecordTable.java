@@ -13,16 +13,24 @@ import java.util.stream.Collectors;
 import org.eclipse.emf.ecore.EObject;
 import org.eclipse.emf.ecore.EStructuralFeature;
 import org.eclipse.emf.ecore.resource.Resource;
+import org.eclipse.emf.ecore.util.EcoreUtil;
 import org.eclipse.epsilon.egl.EgxModule;
 import org.eclipse.epsilon.emc.emf.AbstractEmfModel;
 import org.eclipse.epsilon.emc.emf.EmfModel;
+import org.eclipse.epsilon.eol.execute.context.Variable;
 import org.eclipse.epsilon.eol.models.IModel;
+import org.eclipse.epsilon.picto.LazyEgxModule.LazyGenerationRuleContentPromise;
 import org.eclipse.epsilon.picto.incrementality.PropertyAccessRecord.AccessRecordState;
 
 public class PropertyAccessRecordTable implements IncrementalResource {
 
 	List<PropertyAccessRecord> propertyAccessRecords = new LinkedList<>();
 
+	@Override
+	public void clear() {
+		propertyAccessRecords.clear();
+	}
+	
 	@Override
 	public void add(PropertyAccessRecord propertyAccessRecord) {
 		List<PropertyAccessRecord> records = propertyAccessRecords.stream()
@@ -38,6 +46,7 @@ public class PropertyAccessRecordTable implements IncrementalResource {
 		if (records.size() > 0) {
 			for (PropertyAccessRecord record : records) {
 				record.setValue(propertyAccessRecord.getValue());
+				record.setState(AccessRecordState.MODIFIED);
 			}
 		} else {
 			propertyAccessRecords.add(propertyAccessRecord);
@@ -62,59 +71,95 @@ public class PropertyAccessRecordTable implements IncrementalResource {
 	}
 
 	@Override
-	public boolean isViewNewOrUpdated(String checkedPath, EgxModule currentModule) {
-		boolean result = false;
+	public Set<String> getToBeProcessedPaths(List<LazyGenerationRuleContentPromise> inProcessingPromises,
+			EgxModule module) {
+		Set<String> toBeProcessedPaths = new HashSet<String>();
 
-		// check if the path is a new view
-		Set<String> paths = propertyAccessRecords.stream().map(r -> r.getPath())
-				.collect(Collectors.toCollection(HashSet::new));
-		if (!paths.contains(checkedPath)) {
-			return true;
-		}
+		for (LazyGenerationRuleContentPromise promise : inProcessingPromises) {
+			String checkedPath = Util.getPath(promise);
 
-		// check objects and properties that view of the path has
-		Collection<PropertyAccessRecord> checkedPathRecords = propertyAccessRecords.stream()
-				.filter(r -> checkedPath.equals(r.getPath())).collect(Collectors.toCollection(HashSet::new));
+			if (checkedPath.equals("/Stats") || checkedPath.equals("/Custom/Alice and Bob")) {
+				System.console();
+			}
 
-		for (PropertyAccessRecord record : checkedPathRecords) {
-
-			String propertyName = record.getPropertyName();
-			String previousValue = record.getValue();
-			String uriFragment = record.getElementObjectId();
-			String elementResourceUri = record.getElementResourceUri();
-
-			EmfModel model = (EmfModel) currentModule.getContext().getModelRepository().getModels().stream().filter(
-					m -> ((AbstractEmfModel) m).getResource().getURI().toFileString().equals(elementResourceUri))
+//			// check if the path is a new view
+			PropertyAccessRecord pas = propertyAccessRecords.stream().filter(r -> r.getPath().equals(checkedPath))
 					.findFirst().orElse(null);
-
-			Resource currentResource = model.getResource();
-			EObject currentEObject = currentResource.getEObject(uriFragment);
-
-			// check if the object has been deleted, does not exists in the resource
-			// (deleted, updated)
-			if (currentEObject == null) {
-				return true;
+			if (pas == null) {
+				toBeProcessedPaths.add(checkedPath);
 			}
 
-			EStructuralFeature currentProperty = currentEObject.eClass().getEStructuralFeature(propertyName);
-			Object currentValueObject = currentEObject.eGet(currentProperty);
+			// check if the property access record is new
+			PropertyAccessRecord accessRecord = propertyAccessRecords.stream()
+					.filter(r -> r.getState().equals(AccessRecordState.NEW) && r.getPath().equals(checkedPath))
+					.findFirst().orElse(null);
+			if (accessRecord != null) {
+				toBeProcessedPaths.add(accessRecord.getPath());
 
-			// check if the view of the path contains object with a changed property
-			String currentValue = PropertyAccessRecord.convertValueToString(currentValueObject);
-			if (!Util.equals(previousValue, currentValue)) {
-				return true;
+//				Set<String> affectedPaths = propertyAccessRecords.stream()
+//				.filter(r -> r.getValue().contains(accessRecord.getElementObjectId())).map(r -> r.getPath())
+//				.collect(Collectors.toCollection(HashSet::new));
+//				
+//				toBeProcessedPaths.addAll(affectedPaths);
+
+				// get also the container of the object
+				String elementResourceUri = accessRecord.getElementResourceUri();
+				EmfModel model = (EmfModel) module.getContext().getModelRepository().getModels().stream().filter(
+						m -> ((AbstractEmfModel) m).getResource().getURI().toFileString().equals(elementResourceUri))
+						.findFirst().orElse(null);
+
+				Resource resource = model.getResource();
+				EObject eObject = resource.getEObject(accessRecord.getElementObjectId());
+				EObject eContainer = (eObject != null) ? eObject.eContainer() : null;
+				while (eContainer != null) {
+					String fragment = resource.getURIFragment(eContainer);
+					Set<String> temp = propertyAccessRecords.stream()
+							.filter(r -> r.getElementObjectId().equals(fragment)).map(r -> r.getPath())
+							.collect(Collectors.toCollection(HashSet::new));
+					if (temp.size() > 0) {
+						toBeProcessedPaths.addAll(temp);
+					}
+					eContainer = eContainer.eContainer();
+				}
+			}
+
+			// check objects and properties that view of the path has
+			Collection<PropertyAccessRecord> checkedPathRecords = propertyAccessRecords.stream()
+					.filter(r -> checkedPath.equals(r.getPath())).collect(Collectors.toCollection(HashSet::new));
+
+			for (PropertyAccessRecord record : checkedPathRecords) {
+
+				String propertyName = record.getPropertyName();
+				String previousValue = record.getValue();
+				String uriFragment = record.getElementObjectId();
+				String elementResourceUri = record.getElementResourceUri();
+
+				EmfModel model = (EmfModel) module.getContext().getModelRepository().getModels().stream().filter(
+						m -> ((AbstractEmfModel) m).getResource().getURI().toFileString().equals(elementResourceUri))
+						.findFirst().orElse(null);
+
+				Resource currentResource = model.getResource();
+				EObject currentEObject = currentResource.getEObject(uriFragment);
+
+				// check if the object has been deleted, does not exists in the resource
+				// (deleted, updated)
+				if (currentEObject == null) {
+					toBeProcessedPaths.add(checkedPath);
+				}
+				if (currentEObject != null) {
+					EStructuralFeature currentProperty = currentEObject.eClass().getEStructuralFeature(propertyName);
+					Object currentValueObject = (currentProperty != null) ? currentEObject.eGet(currentProperty) : null;
+
+					// check if the view of the path contains object with a changed property
+					String currentValue = PropertyAccessRecord.convertValueToString(currentValueObject);
+					if (!Util.equals(previousValue, currentValue)) {
+						toBeProcessedPaths.add(checkedPath);
+					}
+				}
+
 			}
 		}
-		return result;
-	}
-
-	@Override
-	public Set<String> getToBeProcessedPaths() {
-		Set<String> paths = propertyAccessRecords.stream().filter(
-//				r -> !Util.equals(r.oldValue, r.value)
-				r -> r.getState().equals(AccessRecordState.NEW)).map(r -> r.getPath())
-				.collect(Collectors.toCollection(HashSet::new));
-		return paths;
+		return toBeProcessedPaths;
 	}
 
 	@Override

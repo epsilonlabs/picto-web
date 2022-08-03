@@ -11,6 +11,11 @@ public class FileViewContentCache {
 	public static Map<String, ViewContentCache> getMap() {
 		return fileViewContentCache;
 	}
+	
+	public static void clear() {
+		fileViewContentCache.values().forEach(e -> e.clear());
+		fileViewContentCache.clear();
+	}
 
 	public static ViewContentCache addPictoFile(String pictoFilename) {
 		ViewContentCache map = getViewContentCache(pictoFilename);

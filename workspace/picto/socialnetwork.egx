@@ -1,9 +1,8 @@
 rule Network2Graphviz  
 	transform n : socialnetwork::SocialNetwork {
 
-	template : "socialnetwork2graphviz.egl"
-
-	parameters : Map{
+	parameters : 
+	   Map{
 		"path" = Sequence{"Social Network"},
 		"icon" = "diagram-ffffff",
 		"format" = "graphviz-circo",
@@ -14,7 +13,9 @@ rule Network2Graphviz
 		},
 		
 		"people" = n.people
+//        "people" = Person.all()
 	}
+	template : "socialnetwork2graphviz.egl"
 	
 }
 
@@ -45,15 +46,15 @@ rule Persons2Table {
 	parameters : Map {
 		"path" = Sequence{"Stats"},
 		"icon" = "table",
-		"format" = "csv"
+		"format" = "csv",
 		
+		"people" = Person.all()
 		// ,"pinsetrule" = "otherStats"
 	}
 }
 
 @lazy
 rule Persons2Graphviz {
-
 	template : "socialnetwork2graphviz.egl"
 
 	parameters : Map {
@@ -66,5 +67,4 @@ rule Persons2Graphviz {
 
 		"people" = names.isDefined() ? Person.all.select(p | names.includes(p.name)) : Sequence {}
 	}
-
 }
