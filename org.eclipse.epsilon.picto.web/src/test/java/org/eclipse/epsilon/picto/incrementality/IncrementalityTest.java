@@ -19,6 +19,7 @@ import org.eclipse.emf.ecore.xmi.impl.XMIResourceImpl;
 import org.eclipse.epsilon.picto.dom.PictoPackage;
 import org.eclipse.epsilon.picto.web.FileViewContentCache;
 import org.eclipse.epsilon.picto.web.PictoApplication;
+import org.eclipse.epsilon.picto.web.PictoWeb;
 import org.eclipse.epsilon.picto.web.WebEglPictoSource;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.AfterEach;
@@ -69,7 +70,7 @@ class IncrementalityTest {
 	@AfterEach
 	void tearDown() throws Exception {
 		FileViewContentCache.clear();
-		WebEglPictoSource.INCREMENTAL_RESOURCE.clear();
+		PictoWeb.ACCESS_RECORD_RESOURCE.clear();
 		res.unload();
 		modelFile.delete();
 		Files.copy(modelFileBackup, modelFile);
@@ -99,10 +100,12 @@ class IncrementalityTest {
 
 	}
 
+	
+
 	@Test
 	void testGeneration() throws Exception {
 		try {
-			List<PropertyAccessRecord> records = eglPictoSource.INCREMENTAL_RESOURCE.getIncrementalRecords();
+			List<GenerationRulePropertyAccess> records = PictoWeb.ACCESS_RECORD_RESOURCE.getIncrementalRecords();
 			Map<String, String> generatedViews = setUp("socialnetwork.model.picto", "socialnetwork.model");
 			Set<String> keys = generatedViews.keySet();
 			Arrays.asList( //
@@ -224,11 +227,11 @@ class IncrementalityTest {
 
 			EList<EObject> people = (EList<EObject>) sn.eGet(peopleProperty);
 			people.add(dan);
+			res.setID(dan, "4");
 
 			EList<EObject> dislikes = (EList<EObject>) alice.eGet(dislikesProperty);
 			dislikes.add(dan);
 
-			res.setID(dan, "4");
 			res.save(null);
 
 			eglPictoSource = new WebEglPictoSource();
@@ -274,15 +277,120 @@ class IncrementalityTest {
 			eglPictoSource = new WebEglPictoSource();
 			Map<String, String> generatedViews = eglPictoSource.transform(pictoFile);
 
-//			WebEglPictoSource.INCREMENTAL_RESOURCE.printIncrementalRecords();
-			
 			Arrays.asList( //
-//					"/Social Network" //
-//					, 
-					"/Social Network/Dan" //
-//					, "/Stats" //
+					"/Social Network" //
+					, "/Social Network/Dan" //
+					, "/Stats" //
 			).stream().forEach(path -> {
 				assertTrue(generatedViews.keySet().contains(path));
+			});
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+	}
+	
+	@SuppressWarnings("unchecked")
+	@Test
+	void testMultipleUpdates() throws Exception {
+		try {
+			setUp("socialnetwork.model.picto", "socialnetwork.model");
+
+			/** first update **/
+			EObject eObject = res.getEObject("3"); // get Charlie (id = 3)
+			EStructuralFeature eNameFeature = eObject.eClass().getEStructuralFeature("name");
+			// update the name to 'Dan'
+			eObject.eSet(eNameFeature, "Bobby");
+			res.save(null);
+
+			eglPictoSource = new WebEglPictoSource();
+			Map<String, String> generatedViews = eglPictoSource.transform(pictoFile);
+
+			Arrays.asList( //
+					"/Social Network" //
+					, "/Social Network/Bobby" //
+			).stream().forEach(path -> {
+				assertTrue(generatedViews.keySet().contains(path));
+			});
+
+			/** Second update **/
+			eObject = res.getEObject("2"); // get Bob (id = 2)
+			EcoreUtil.delete(eObject);
+			res.save(null);
+
+			eglPictoSource = new WebEglPictoSource();
+			Map<String, String> generatedViews2 = eglPictoSource.transform(pictoFile);
+
+			Arrays.asList( //
+					"/Social Network" //
+					, "/Social Network/Alice" //
+					, "/Stats" //
+					, "/Custom/Alice and Bob" //
+			).stream().forEach(path -> {
+				assertTrue(generatedViews2.keySet().contains(path));
+			});
+
+			/** Third update **/
+			EObject sn = res.getEObject("0"); // get social Network (id = 0)
+			EClass socialNetwork = sn.eClass();
+			EStructuralFeature peopleProperty = socialNetwork.getEStructuralFeature("people");
+
+			EObject alice = res.getEObject("1"); // get Alice (id = 1)
+			EClass person = alice.eClass();
+			EStructuralFeature nameProperty = person.getEStructuralFeature("name");
+			EStructuralFeature dislikesProperty = person.getEStructuralFeature("dislikes");
+
+			EObject dan = EcoreUtil.create(person);
+			dan.eSet(nameProperty, "Dan");
+
+			EList<EObject> people = (EList<EObject>) sn.eGet(peopleProperty);
+			people.add(dan);
+			res.setID(dan, "4");
+
+			EList<EObject> dislikes = (EList<EObject>) alice.eGet(dislikesProperty);
+			dislikes.add(dan);
+
+			res.save(null);
+
+			eglPictoSource = new WebEglPictoSource();
+			Map<String, String> generatedViews3 = eglPictoSource.transform(pictoFile);
+
+			Arrays.asList( //
+					"/Social Network" //
+					, "/Social Network/Alice" //
+					, "/Social Network/Dan" //
+					, "/Stats" //
+					, "/Custom/Alice and Bob" //
+			).stream().forEach(path -> {
+				assertTrue(generatedViews3.keySet().contains(path));
+			});
+			
+			/** 4th update **/
+			sn = res.getEObject("0"); // get Alice (id = 1)
+			socialNetwork = sn.eClass();
+			peopleProperty = socialNetwork.getEStructuralFeature("people");
+
+			alice = res.getEObject("1"); // get Alice (id = 1)
+			person = alice.eClass();
+			nameProperty = person.getEStructuralFeature("name");
+
+			EObject erin = EcoreUtil.create(person);
+			erin.eSet(nameProperty, "Erin");
+
+			people = (EList<EObject>) sn.eGet(peopleProperty);
+			people.add(erin);
+
+			res.setID(erin, "5");
+			res.save(null);
+
+			eglPictoSource = new WebEglPictoSource();
+			Map<String, String> generatedViews4 = eglPictoSource.transform(pictoFile);
+
+			Arrays.asList( //
+					"/Social Network" //
+					, "/Social Network/Erin" //
+					, "/Stats" //
+			).stream().forEach(path -> {
+				assertTrue(generatedViews4.keySet().contains(path));
 			});
 		} catch (Exception e) {
 			e.printStackTrace();

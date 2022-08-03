@@ -61,12 +61,8 @@ import org.eclipse.epsilon.picto.dom.Patch;
 import org.eclipse.epsilon.picto.dom.Picto;
 import org.eclipse.epsilon.picto.dom.PictoPackage;
 import org.eclipse.epsilon.picto.dummy.IEditorPart;
-import org.eclipse.epsilon.picto.incrementality.GenerationRulePropertyAccess;
 import org.eclipse.epsilon.picto.incrementality.IncrementalLazyEgxModule;
-import org.eclipse.epsilon.picto.incrementality.IncrementalResource;
-import org.eclipse.epsilon.picto.incrementality.PropertyAccessRecord;
-import org.eclipse.epsilon.picto.incrementality.PropertyAccessRecord.AccessRecordState;
-import org.eclipse.epsilon.picto.incrementality.PropertyAccessRecordTable;
+import org.eclipse.epsilon.picto.incrementality.GenerationRulePropertyAccess;
 import org.eclipse.epsilon.picto.incrementality.Util;
 import org.eclipse.epsilon.picto.source.EglPictoSource;
 import org.eclipse.epsilon.picto.transformers.CsvContentTransformer;
@@ -83,7 +79,6 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 public class WebEglPictoSource extends EglPictoSource {
 
 	protected static final List<ViewContentTransformer> TRANSFORMERS = new ArrayList<>();
-	public static final IncrementalResource INCREMENTAL_RESOURCE = new PropertyAccessRecordTable();
 	public static boolean generateAll = true; // true for first running
 
 	protected File modelFile;
@@ -175,7 +170,7 @@ public class WebEglPictoSource extends EglPictoSource {
 				renderingMetadata.setFormat("egx");
 
 			if ("egx".equals(renderingMetadata.getFormat())) {
-				module = new IncrementalLazyEgxModule(INCREMENTAL_RESOURCE);
+				module = new IncrementalLazyEgxModule(PictoWeb.ACCESS_RECORD_RESOURCE);
 			} else {
 				module = new EglTemplateFactoryModuleAdapter(new EglFileGeneratingTemplateFactory());
 			}
@@ -216,8 +211,8 @@ public class WebEglPictoSource extends EglPictoSource {
 				List<LazyGenerationRuleContentPromise> promises = (List<LazyGenerationRuleContentPromise>) module
 						.execute();
 				((IncrementalLazyEgxModule) module).stopRecording();
-				WebEglPictoSource.updateIncrementalResource(module, null);
-				INCREMENTAL_RESOURCE.printIncrementalRecords();
+//				WebEglPictoSource.updateIncrementalResource(module, null);
+				PictoWeb.ACCESS_RECORD_RESOURCE.printIncrementalRecords();
 
 				/**
 				 * the handleDynamicViews will add the generated lazy contents to instances to
@@ -235,7 +230,7 @@ public class WebEglPictoSource extends EglPictoSource {
 				/** loop through the content promises of rules **/
 				System.out.println("\nGENERATING VIEWS: ");
 				toBeProcessedPaths
-						.addAll(INCREMENTAL_RESOURCE.getToBeProcessedPaths(inProcessingPromises, (EgxModule) module));
+						.addAll(PictoWeb.ACCESS_RECORD_RESOURCE.getToBeProcessedPaths(inProcessingPromises, (EgxModule) module));
 
 				for (LazyGenerationRuleContentPromise inProcessingPromise : inProcessingPromises) {
 
@@ -257,7 +252,7 @@ public class WebEglPictoSource extends EglPictoSource {
 					((IncrementalLazyEgxModule) module).startRecording();
 					ViewContent vc = vt.getContent();
 					((IncrementalLazyEgxModule) module).stopRecording();
-					WebEglPictoSource.updateIncrementalResource(module, pathString);
+//					WebEglPictoSource.updateIncrementalResource(module, pathString);
 					System.console();
 					if (pathString.equals("/Stats") || pathString.equals("/Custom/Alice and Bob")) {
 //						INCREMENTAL_RESOURCE.getIncrementalRecords().clear();
@@ -289,8 +284,8 @@ public class WebEglPictoSource extends EglPictoSource {
 					System.out.println("PROCESSED");
 
 				}
-				INCREMENTAL_RESOURCE.printIncrementalRecords();
-				INCREMENTAL_RESOURCE.updateStatusToProcessed(toBeProcessedPaths);
+				PictoWeb.ACCESS_RECORD_RESOURCE.printIncrementalRecords();
+				PictoWeb.ACCESS_RECORD_RESOURCE.updateStatusToProcessed(toBeProcessedPaths);
 				generateAll = false;
 				System.out.println();
 				System.console();
@@ -456,7 +451,7 @@ public class WebEglPictoSource extends EglPictoSource {
 				LazyGenerationRuleContentPromise contentPromise = (LazyGenerationRuleContentPromise) generationRule
 						.execute(context, source);
 				((IncrementalLazyEgxModule) module).stopRecording();
-				WebEglPictoSource.updateIncrementalResource(module, "/" + String.join("/", customView.getPath()));
+//				WebEglPictoSource.updateIncrementalResource(module, "/" + String.join("/", customView.getPath()));
 
 				Collection<Variable> variables = contentPromise.getVariables();
 
@@ -640,93 +635,93 @@ public class WebEglPictoSource extends EglPictoSource {
 		return false;
 	}
 
-	/***
-	 * Update the state incremental resource with the recorded protected accesses.
-	 * 
-	 * @param module
-	 * @param pathString
-	 * @throws EolRuntimeException
-	 */
-	@SuppressWarnings("unchecked")
-	public static void updateIncrementalResource(IEolModule module, String pathString) throws EolRuntimeException {
-		for (IPropertyAccess propertyAccess : ((IncrementalLazyEgxModule) module).getPropertyAccessRecorder()
-				.getPropertyAccesses().all()) {
-			GenerationRulePropertyAccess generationRulePropertyAccess = (GenerationRulePropertyAccess) propertyAccess;
-
-			String ruleName = (generationRulePropertyAccess.getRule() == null) ? null
-					: generationRulePropertyAccess.getRule().getName();
-
-			EObject contextElement = (EObject) generationRulePropertyAccess.getContextElement();
-			Resource contextResource = null;
-			String contextResourceUri = null;
-			String contextElementId = null;
-			if (contextElement != null) {
-				contextResource = contextElement.eResource();
-				contextResourceUri = contextResource.getURI().toFileString();
-				contextElementId = contextResource.getURIFragment(contextElement);
-			}
-
-			EObject modelElement = (EObject) generationRulePropertyAccess.getModelElement();
-			Resource elementResource = modelElement.eResource();
-			String elementResourceUri = modelElement.eResource().getURI().toFileString();
-			String modelElementId = elementResource.getURIFragment(modelElement);
-
-			EStructuralFeature property = modelElement.eClass()
-					.getEStructuralFeature(generationRulePropertyAccess.getPropertyName());
-			String propertyName = (property != null) ? property.getName()
-					: generationRulePropertyAccess.getPropertyName();
-			Object value = (property != null) ? modelElement.eGet(property) : null;
-
-			String path = null;
-			if (pathString == null) {
-				GenerationRule rule = generationRulePropertyAccess.getRule();
-				if (rule.getName().equals("Persons2Table")) {
-					System.console();
-				}
-
-				Object result = rule.execute(module.getContext());
-				Collection<LazyGenerationRuleContentPromise> list = (result instanceof Collection<?>)
-						? (Collection<LazyGenerationRuleContentPromise>) result
-						: Arrays.asList(
-								new LazyGenerationRuleContentPromise[] { (LazyGenerationRuleContentPromise) result });
-//				if (list.size() == 1) {
-				for (LazyGenerationRuleContentPromise e : list) {
-					path = Util.getPath((LazyGenerationRuleContentPromise) e);
-
-					Variable var = e.getVariables().iterator().next();
-					Object obj = var.getValue();
-					if (obj instanceof EObject) {
-						if (modelElement.equals(obj)) {
-
-							PropertyAccessRecord record = new PropertyAccessRecord(module.getFile().getAbsolutePath(),
-									ruleName, contextResourceUri, contextElementId, elementResourceUri, modelElementId,
-									propertyName, value, path);
-
-//						System.out.println("added: " + record);
-							INCREMENTAL_RESOURCE.add(record);
-						}
-					} else {
-						PropertyAccessRecord record = new PropertyAccessRecord(module.getFile().getAbsolutePath(),
-								ruleName, contextResourceUri, contextElementId, elementResourceUri, modelElementId,
-								propertyName, value, path);
-
-//					System.out.println("added: " + record);
-						INCREMENTAL_RESOURCE.add(record);
-					}
-				}
+//	/***
+//	 * Update the state incremental resource with the recorded protected accesses.
+//	 * 
+//	 * @param module
+//	 * @param pathString
+//	 * @throws EolRuntimeException
+//	 */
+//	@SuppressWarnings("unchecked")
+//	public static void updateIncrementalResource(IEolModule module, String pathString) throws EolRuntimeException {
+//		for (IPropertyAccess propertyAccess : ((IncrementalLazyEgxModule) module).getPropertyAccessRecorder()
+//				.getPropertyAccesses().all()) {
+//			GenerationRulePropertyAccess generationRulePropertyAccess = (GenerationRulePropertyAccess) propertyAccess;
+//
+//			String ruleName = (generationRulePropertyAccess.getRu == null) ? null
+//					: generationRulePropertyAccess.getRule().getName();
+//
+//			EObject contextElement = (EObject) generationRulePropertyAccess.getContextElement();
+//			Resource contextResource = null;
+//			String contextResourceUri = null;
+//			String contextElementId = null;
+//			if (contextElement != null) {
+//				contextResource = contextElement.eResource();
+//				contextResourceUri = contextResource.getURI().toFileString();
+//				contextElementId = contextResource.getURIFragment(contextElement);
+//			}
+//
+//			EObject modelElement = (EObject) generationRulePropertyAccess.getModelElement();
+//			Resource elementResource = modelElement.eResource();
+//			String elementResourceUri = modelElement.eResource().getURI().toFileString();
+//			String modelElementId = elementResource.getURIFragment(modelElement);
+//
+//			EStructuralFeature property = modelElement.eClass()
+//					.getEStructuralFeature(generationRulePropertyAccess.getPropertyName());
+//			String propertyName = (property != null) ? property.getName()
+//					: generationRulePropertyAccess.getPropertyName();
+//			Object value = (property != null) ? modelElement.eGet(property) : null;
+//
+//			String path = null;
+//			if (pathString == null) {
+//				GenerationRule rule = generationRulePropertyAccess.getRule();
+//				if (rule.getName().equals("Persons2Table")) {
+//					System.console();
 //				}
-			} else {
-				path = pathString;
-				PropertyAccessRecord record = new PropertyAccessRecord(module.getFile().getAbsolutePath(), ruleName,
-						contextResourceUri, contextElementId, elementResourceUri, modelElementId, propertyName, value,
-						pathString);
-//				System.out.println("added: " + record);
-				INCREMENTAL_RESOURCE.add(record);
-			}
-		}
-//		((IncrementalLazyEgxModule) module).getPropertyAccessRecorder().getPropertyAccesses().clear();
-		System.console();
-	}
+//
+//				Object result = rule.execute(module.getContext());
+//				Collection<LazyGenerationRuleContentPromise> list = (result instanceof Collection<?>)
+//						? (Collection<LazyGenerationRuleContentPromise>) result
+//						: Arrays.asList(
+//								new LazyGenerationRuleContentPromise[] { (LazyGenerationRuleContentPromise) result });
+////				if (list.size() == 1) {
+//				for (LazyGenerationRuleContentPromise e : list) {
+//					path = Util.getPath((LazyGenerationRuleContentPromise) e);
+//
+//					Variable var = e.getVariables().iterator().next();
+//					Object obj = var.getValue();
+//					if (obj instanceof EObject) {
+//						if (modelElement.equals(obj)) {
+//
+//							GenerationRulePropertyAccess record = new GenerationRulePropertyAccess(module.getFile().getAbsolutePath(),
+//									ruleName, contextResourceUri, contextElementId, elementResourceUri, modelElementId,
+//									propertyName, value, path);
+//
+////						System.out.println("added: " + record);
+//							PictoWeb.ACCESS_RESOURCE.add(record);
+//						}
+//					} else {
+//						GenerationRulePropertyAccess record = new GenerationRulePropertyAccess(module.getFile().getAbsolutePath(),
+//								ruleName, contextResourceUri, contextElementId, elementResourceUri, modelElementId,
+//								propertyName, value, path);
+//
+////					System.out.println("added: " + record);
+//						PictoWeb.ACCESS_RESOURCE.add(record);
+//					}
+//				}
+////				}
+//			} else {
+//				path = pathString;
+//				GenerationRulePropertyAccess record = new GenerationRulePropertyAccess(module.getFile().getAbsolutePath(), ruleName,
+//						contextResourceUri, contextElementId, elementResourceUri, modelElementId, propertyName, value,
+//						pathString);
+////				System.out.println("added: " + record);
+//				PictoWeb.ACCESS_RESOURCE.add(record);
+//			}
+//		}
+////		((IncrementalLazyEgxModule) module).getPropertyAccessRecorder().getPropertyAccesses().clear();
+//		System.console();
+//	}
 
 	@SuppressWarnings("unchecked")
 	public ViewTree generateViewTree(ViewTree rootViewTree, LazyGenerationRuleContentPromise instance) {

@@ -2,13 +2,15 @@ package org.eclipse.epsilon.picto.incrementality;
 
 import java.util.Arrays;
 import java.util.Collection;
-import java.util.Iterator;
 import java.util.LinkedList;
+import java.util.Map;
 import java.util.WeakHashMap;
 
 import org.eclipse.emf.ecore.EObject;
 import org.eclipse.epsilon.common.module.ModuleElement;
 import org.eclipse.epsilon.eol.dom.AssignmentStatement;
+import org.eclipse.epsilon.eol.dom.ExecutableBlock;
+import org.eclipse.epsilon.eol.dom.MapLiteralExpression;
 import org.eclipse.epsilon.eol.dom.OperationCallExpression;
 import org.eclipse.epsilon.eol.dom.PropertyCallExpression;
 import org.eclipse.epsilon.eol.exceptions.EolRuntimeException;
@@ -26,6 +28,7 @@ public class IncrementalPropertyAccessExecutionListener extends PropertyAccessEx
 		this.recorders.addAll(Arrays.asList(recorders));
 	}
 
+	@SuppressWarnings("unchecked")
 	@Override
 	public void finishedExecuting(ModuleElement ast, Object result, IEolContext context) {
 		// When the left-hand side of a point expression has been executed, store the
@@ -46,7 +49,9 @@ public class IncrementalPropertyAccessExecutionListener extends PropertyAccessEx
 
 			if (isModelBasedProperty(modelElement, propertyName, context)) {
 				for (IPropertyAccessRecorder recorder : this.recorders) {
-					recorder.record(modelElement, propertyName);
+					if (recorder instanceof GenerationRulePropertyAccessRecorder) {
+						((GenerationRulePropertyAccessRecorder) recorder).record(modelElement, propertyName, result);
+					}
 				}
 			}
 		}
@@ -54,22 +59,40 @@ public class IncrementalPropertyAccessExecutionListener extends PropertyAccessEx
 		else if (ast instanceof OperationCallExpression) {
 			OperationCallExpression operationCallExpression = (OperationCallExpression) ast;
 
+			final Object modelElement = operationCallExpression.getTargetExpression();
 			final String propertyName = operationCallExpression.getNameExpression().getName();
 
 			if (propertyName.equals("all")) {
 				Collection<?> resultList = (Collection<?>) result;
 				if (resultList.iterator().next() instanceof EObject) {
 					for (IPropertyAccessRecorder recorder : this.recorders) {
-						Iterator<?> iterator = resultList.iterator();
-						while (iterator.hasNext()) {
-							EObject eObject = (EObject) iterator.next();
-							recorder.record(eObject, propertyName);
+						if (recorder instanceof GenerationRulePropertyAccessRecorder) {
+							((GenerationRulePropertyAccessRecorder) recorder).record(modelElement, propertyName,
+									result);
 						}
 					}
 				}
 			}
 		}
+		// path variable
+		else if (ast instanceof MapLiteralExpression<?, ?>) {
+			MapLiteralExpression<?, ?> mapLiteral = (MapLiteralExpression<?, ?>) ast;
 
+			if (mapLiteral.getMapName().equals("Map") && mapLiteral.getParent() instanceof ExecutableBlock<?>
+					&& ((ExecutableBlock<?>) mapLiteral.getParent()).getText().equals("parameters")) {
+				Map<String, ?> map = (Map<String, ?>) result;
+				if (map.containsKey("path")) {
+					Collection<String> segments = (Collection<String>) map.entrySet().stream()
+							.filter(e -> e.getKey().equals("path")).findFirst().map(e -> e.getValue()).orElse(null);
+					String path = Util.getPath(segments);
+					for (IPropertyAccessRecorder recorder : this.recorders) {
+						if (recorder instanceof GenerationRulePropertyAccessRecorder) {
+							((GenerationRulePropertyAccessRecorder) recorder).setPath(path);
+						}
+					}
+				}
+			}
+		}
 	}
 
 	@Override

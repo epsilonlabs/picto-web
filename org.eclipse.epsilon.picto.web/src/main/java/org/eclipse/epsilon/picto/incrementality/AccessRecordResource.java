@@ -7,27 +7,23 @@ import java.util.Set;
 import org.eclipse.epsilon.egl.EgxModule;
 import org.eclipse.epsilon.picto.LazyEgxModule.LazyGenerationRuleContentPromise;
 
-public interface IncrementalResource {
+public interface AccessRecordResource {
 
-	void add(PropertyAccessRecord propertyAccessRecord);
+	void add(GenerationRulePropertyAccess propertyAccessRecord);
 
-	public List<PropertyAccessRecord> getIncrementalRecords();
+	public List<GenerationRulePropertyAccess> getIncrementalRecords();
 
 	public void printIncrementalRecords();
 
-	public List<PropertyAccessRecord> getGeneratedPropertyAccessRecords();
-
 	public void updateStatusToProcessed(String path);
-
-//	List<String> getNewPaths();
-
-//	List<PropertyAccessRecord> getNewAccessRecords();
 
 	void updateStatusToProcessed(Collection<String> paths);
 
 	Set<String> getToBeProcessedPaths(List<LazyGenerationRuleContentPromise> inProcessingPromises, EgxModule module);
 
 	void clear();
+
+	void updatePath(String modulePath, String ruleName, String contextResourceUri, String contextObjectId, String path);
 
 
 }
