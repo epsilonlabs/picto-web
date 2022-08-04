@@ -64,7 +64,7 @@ public class IncrementalPropertyAccessExecutionListener extends PropertyAccessEx
 
 			if (propertyName.equals("all")) {
 				Collection<?> resultList = (Collection<?>) result;
-				if (resultList.iterator().next() instanceof EObject) {
+				if (resultList.iterator().hasNext() && resultList.iterator().next() instanceof EObject) {
 					for (IPropertyAccessRecorder recorder : this.recorders) {
 						if (recorder instanceof GenerationRulePropertyAccessRecorder) {
 							((GenerationRulePropertyAccessRecorder) recorder).record(modelElement, propertyName,

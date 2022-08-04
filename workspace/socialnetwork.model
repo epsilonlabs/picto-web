@@ -1,20 +1,2 @@
 <?xml version="1.0" encoding="ASCII"?>
-<SocialNetwork xmi:version="2.0" xmlns:xmi="http://www.omg.org/XMI" xmlns="socialnetwork" xmi:id="0">
-  <people xmi:id="1" name="Alice" likes="2" dislikes="3">
-    <items xmi:id="1_1" name="Book"/>
-    
-  </people>
-  <people xmi:id="2" name="Bob" likes="1 ">
-    
-    
-    
-    <items xmi:id="2_4" name="Soap"/>
-  </people>
-  <people xmi:id="3" name="Charlie" dislikes="1">
-    <items xmi:id="3_1" name="Flask"/>
-    
-  </people>
-  <people xmi:id="4" name="Dan" likes="2 3">
-    <items xmi:id="4_1" name="Coconut"/>
-  </people>
-</SocialNetwork>
+<SocialNetwork xmi:version="2.0" xmlns:xmi="http://www.omg.org/XMI" xmlns="socialnetwork" xmi:id="0"/>

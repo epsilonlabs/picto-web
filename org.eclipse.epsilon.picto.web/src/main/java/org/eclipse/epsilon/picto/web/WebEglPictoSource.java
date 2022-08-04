@@ -236,10 +236,10 @@ public class WebEglPictoSource extends EglPictoSource {
 
 					String pathString = Util.getPath(inProcessingPromise);
 					System.out.print("Processing " + pathString + " ... ");
-					if (pathString.equals("/Social Network/Alice") || pathString.equals("/Custom/Alice and Bob")) {
-//						INCREMENTAL_RESOURCE.getIncrementalRecords().clear();
-						System.console();
-					}
+//					if (pathString.equals("/Social Network/Alice") || pathString.equals("/Custom/Alice and Bob")) {
+////						INCREMENTAL_RESOURCE.getIncrementalRecords().clear();
+//						System.console();
+//					}
 
 					ViewTree vt = this.generateViewTree(rootViewTree, inProcessingPromise);
 
@@ -253,11 +253,11 @@ public class WebEglPictoSource extends EglPictoSource {
 					ViewContent vc = vt.getContent();
 					((IncrementalLazyEgxModule) module).stopRecording();
 //					WebEglPictoSource.updateIncrementalResource(module, pathString);
-					System.console();
-					if (pathString.equals("/Stats") || pathString.equals("/Custom/Alice and Bob")) {
-//						INCREMENTAL_RESOURCE.getIncrementalRecords().clear();
-						System.console();
-					}
+//					System.console();
+//					if (pathString.equals("/Stats") || pathString.equals("/Custom/Alice and Bob")) {
+////						INCREMENTAL_RESOURCE.getIncrementalRecords().clear();
+//						System.console();
+//					}
 
 					/** transform to target format (e.g., svg, html) **/
 					for (ViewContentTransformer transformer : TRANSFORMERS) {

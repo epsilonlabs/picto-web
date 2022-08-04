@@ -11,6 +11,7 @@ import java.util.Set;
 import org.eclipse.emf.common.util.EList;
 import org.eclipse.emf.common.util.URI;
 import org.eclipse.emf.ecore.EClass;
+import org.eclipse.emf.ecore.EClassifier;
 import org.eclipse.emf.ecore.EObject;
 import org.eclipse.emf.ecore.EStructuralFeature;
 import org.eclipse.emf.ecore.util.EcoreUtil;
@@ -99,8 +100,6 @@ class IncrementalityTest {
 		}
 
 	}
-
-	
 
 	@Test
 	void testGeneration() throws Exception {
@@ -288,7 +287,44 @@ class IncrementalityTest {
 			e.printStackTrace();
 		}
 	}
-	
+
+	@SuppressWarnings("unchecked")
+	@Test
+	void testAddNonDeterminingElement() throws Exception {
+		try {
+			setUp("socialnetwork.model.picto", "socialnetwork.model");
+
+			EObject alice = res.getEObject("1"); // get Alice (id = 1)
+			EClass person = alice.eClass();
+			EStructuralFeature itemsProperty = person.getEStructuralFeature("items");
+
+			EClass item = (EClass) person.getEPackage().getEClassifier("Item");
+			EStructuralFeature nameProperty = item.getEStructuralFeature("name");
+
+			EObject book = EcoreUtil.create(item);
+			book.eSet(nameProperty, "Book");
+
+			EList<EObject> items = (EList<EObject>) alice.eGet(itemsProperty);
+			items.add(book);
+
+			res.setID(book, "1_1");
+			res.save(null);
+
+			eglPictoSource = new WebEglPictoSource();
+			Map<String, String> generatedViews = eglPictoSource.transform(pictoFile);
+
+			Arrays.asList( //
+					"/Social Network" //
+					, "/Social Network/Alice" //
+					, "/Custom/Alice and Bob" //
+			).stream().forEach(path -> {
+				assertTrue(generatedViews.keySet().contains(path));
+			});
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+	}
+
 	@SuppressWarnings("unchecked")
 	@Test
 	void testMultipleUpdates() throws Exception {
@@ -363,7 +399,7 @@ class IncrementalityTest {
 			).stream().forEach(path -> {
 				assertTrue(generatedViews3.keySet().contains(path));
 			});
-			
+
 			/** 4th update **/
 			sn = res.getEObject("0"); // get Alice (id = 1)
 			socialNetwork = sn.eClass();

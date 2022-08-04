@@ -90,7 +90,7 @@ public class AccessRecordTableResource implements AccessRecordResource {
 			String checkedPath = Util.getPath(promise);
 			System.out.println(checkedPath);
 
-			if (checkedPath.equals("/Social Network/Erin")) {
+			if (checkedPath.equals("/Social Network/Alice")) {
 				System.console();
 			}
 

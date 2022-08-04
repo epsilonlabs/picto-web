@@ -46,9 +46,9 @@ rule Persons2Table {
 	parameters : Map {
 		"path" = Sequence{"Stats"},
 		"icon" = "table",
-		"format" = "csv",
+		"format" = "csv"
 		
-		"people" = Person.all()
+		, "people" = Person.all()
 		// ,"pinsetrule" = "otherStats"
 	}
 }
