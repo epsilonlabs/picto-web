@@ -62,7 +62,7 @@ import org.eclipse.epsilon.picto.dom.Picto;
 import org.eclipse.epsilon.picto.dom.PictoPackage;
 import org.eclipse.epsilon.picto.dummy.IEditorPart;
 import org.eclipse.epsilon.picto.incrementality.IncrementalLazyEgxModule;
-import org.eclipse.epsilon.picto.incrementality.GenerationRulePropertyAccess;
+import org.eclipse.epsilon.picto.incrementality.Access;
 import org.eclipse.epsilon.picto.incrementality.Util;
 import org.eclipse.epsilon.picto.source.EglPictoSource;
 import org.eclipse.epsilon.picto.transformers.CsvContentTransformer;
@@ -211,7 +211,6 @@ public class WebEglPictoSource extends EglPictoSource {
 				List<LazyGenerationRuleContentPromise> promises = (List<LazyGenerationRuleContentPromise>) module
 						.execute();
 				((IncrementalLazyEgxModule) module).stopRecording();
-//				WebEglPictoSource.updateIncrementalResource(module, null);
 				PictoWeb.ACCESS_RECORD_RESOURCE.printIncrementalRecords();
 
 				/**
@@ -220,28 +219,21 @@ public class WebEglPictoSource extends EglPictoSource {
 				 **/
 				handleDynamicViews(renderingMetadata, module, context, fs, promises);
 
-//				INCREMENTAL_RESOURCE.printIncrementalRecords();
-
-				/** Filter promises that only need regeneration **/
-				List<LazyGenerationRuleContentPromise> inProcessingPromises = promises;
-//				List<LazyGenerationRuleContentPromise> inProcessingPromises = getToBeProcPromises(promises,
-//						generateAll);
-
 				/** loop through the content promises of rules **/
 				System.out.println("\nGENERATING VIEWS: ");
 				toBeProcessedPaths
-						.addAll(PictoWeb.ACCESS_RECORD_RESOURCE.getToBeProcessedPaths(inProcessingPromises, (EgxModule) module));
+						.addAll(PictoWeb.ACCESS_RECORD_RESOURCE.getToBeProcessedPaths(promises, (EgxModule) module));
 
-				for (LazyGenerationRuleContentPromise inProcessingPromise : inProcessingPromises) {
+				for (LazyGenerationRuleContentPromise promise : promises) {
 
-					String pathString = Util.getPath(inProcessingPromise);
+					String pathString = Util.getPath(promise);
 					System.out.print("Processing " + pathString + " ... ");
 //					if (pathString.equals("/Social Network/Alice") || pathString.equals("/Custom/Alice and Bob")) {
 ////						INCREMENTAL_RESOURCE.getIncrementalRecords().clear();
 //						System.console();
 //					}
 
-					ViewTree vt = this.generateViewTree(rootViewTree, inProcessingPromise);
+					ViewTree vt = this.generateViewTree(rootViewTree, promise);
 
 					// Check if the path should be processed to generated new view
 					if (!toBeProcessedPaths.contains(pathString)) {

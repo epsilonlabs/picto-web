@@ -104,7 +104,7 @@ class IncrementalityTest {
 	@Test
 	void testGeneration() throws Exception {
 		try {
-			List<GenerationRulePropertyAccess> records = PictoWeb.ACCESS_RECORD_RESOURCE.getIncrementalRecords();
+			List<Access> records = PictoWeb.ACCESS_RECORD_RESOURCE.getIncrementalRecords();
 			Map<String, String> generatedViews = setUp("socialnetwork.model.picto", "socialnetwork.model");
 			Set<String> keys = generatedViews.keySet();
 			Arrays.asList( //

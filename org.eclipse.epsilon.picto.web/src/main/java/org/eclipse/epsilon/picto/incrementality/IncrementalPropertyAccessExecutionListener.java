@@ -2,6 +2,7 @@ package org.eclipse.epsilon.picto.incrementality;
 
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.Map;
 import java.util.WeakHashMap;
@@ -49,8 +50,8 @@ public class IncrementalPropertyAccessExecutionListener extends PropertyAccessEx
 
 			if (isModelBasedProperty(modelElement, propertyName, context)) {
 				for (IPropertyAccessRecorder recorder : this.recorders) {
-					if (recorder instanceof GenerationRulePropertyAccessRecorder) {
-						((GenerationRulePropertyAccessRecorder) recorder).record(modelElement, propertyName, result);
+					if (recorder instanceof AccessRecorder) {
+						((AccessRecorder) recorder).record(modelElement, propertyName, result);
 					}
 				}
 			}
@@ -66,9 +67,12 @@ public class IncrementalPropertyAccessExecutionListener extends PropertyAccessEx
 				Collection<?> resultList = (Collection<?>) result;
 				if (resultList.iterator().hasNext() && resultList.iterator().next() instanceof EObject) {
 					for (IPropertyAccessRecorder recorder : this.recorders) {
-						if (recorder instanceof GenerationRulePropertyAccessRecorder) {
-							((GenerationRulePropertyAccessRecorder) recorder).record(modelElement, propertyName,
-									result);
+						if (recorder instanceof AccessRecorder) {
+							Iterator<EObject> iterator = (Iterator<EObject>) resultList.iterator();
+							while (iterator.hasNext()) {
+								EObject member = (EObject) iterator.next();
+								((AccessRecorder) recorder).record(member, null, null);
+							}
 						}
 					}
 				}
@@ -86,8 +90,8 @@ public class IncrementalPropertyAccessExecutionListener extends PropertyAccessEx
 							.filter(e -> e.getKey().equals("path")).findFirst().map(e -> e.getValue()).orElse(null);
 					String path = Util.getPath(segments);
 					for (IPropertyAccessRecorder recorder : this.recorders) {
-						if (recorder instanceof GenerationRulePropertyAccessRecorder) {
-							((GenerationRulePropertyAccessRecorder) recorder).setPath(path);
+						if (recorder instanceof AccessRecorder) {
+							((AccessRecorder) recorder).setPath(path);
 						}
 					}
 				}

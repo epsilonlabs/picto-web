@@ -13,32 +13,35 @@ import org.eclipse.epsilon.eol.dom.NameExpression;
 import org.eclipse.epsilon.eol.execute.introspection.recording.PropertyAccessRecorder;
 import org.eclipse.epsilon.picto.web.PictoWeb;
 
-public class GenerationRulePropertyAccessRecorder extends PropertyAccessRecorder {
+public class AccessRecorder extends PropertyAccessRecorder {
 
 	private boolean recording = false;
 
-	private final List<GenerationRulePropertyAccess> currentPropertyAccesses = new ArrayList<>();
-	private AccessRecordResource accessRecordResource = PictoWeb.ACCESS_RECORD_RESOURCE;
+	private final List<Access> currentPropertyAccesses = new ArrayList<>();
+	private AccessResource accessRecordResource = PictoWeb.ACCESS_RECORD_RESOURCE;
 
 	protected URI templateUri = null;
 	protected GenerationRule rule = null;
 	protected Object contextElement = null;
 	protected String path = null;
 
-	public GenerationRulePropertyAccessRecorder() {
+	public AccessRecorder() {
 		super();
 	}
 
-	public List<GenerationRulePropertyAccess> getCurrentPropertyAccesses() {
+	public List<Access> getCurrentPropertyAccesses() {
 		return currentPropertyAccesses;
 	}
 
 	public void updateCurrentPropertyAccessesPath(String path) {
-		currentPropertyAccesses.stream().forEach(r -> r.setPath(path));
+		currentPropertyAccesses.stream().forEach(r -> {
+			r.setPath(path);
+			r.setTemplatePath(new File( templateUri).getAbsolutePath());
+		});
 	}
-	
+
 	public void saveToAccessRecordResource() {
-		for (GenerationRulePropertyAccess r : currentPropertyAccesses) {
+		for (Access r : currentPropertyAccesses) {
 //			if (r.getPath() == null) continue;
 			accessRecordResource.add(r);
 		}
@@ -78,11 +81,11 @@ public class GenerationRulePropertyAccessRecorder extends PropertyAccessRecorder
 	}
 
 	@Override
-	protected GenerationRulePropertyAccess createPropertyAccess(Object modelElement, String propertyName) {
+	protected Access createPropertyAccess(Object modelElement, String propertyName) {
 		return this.createPropertyAccess(modelElement, propertyName, null);
 	}
 
-	private GenerationRulePropertyAccess createPropertyAccess(Object modelElement, String propertyName, Object result) {
+	private Access createPropertyAccess(Object modelElement, String propertyName, Object result) {
 
 		String ruleName = (rule == null) ? null : rule.getName();
 		EgxModule module = (rule == null) ? null : (EgxModule) rule.getModule();
@@ -113,10 +116,10 @@ public class GenerationRulePropertyAccessRecorder extends PropertyAccessRecorder
 			modelElementId = ((NameExpression) modelElement).getName();
 		}
 
-		GenerationRulePropertyAccess access = null;
+		Access access = null;
 		try {
-			access = new GenerationRulePropertyAccess(modulePath, templatePath, ruleName, contextResourceUri,
-					contextElementId, elementResourceUri, modelElementId, propertyName, (Object) result, path);
+			access = new Access(modulePath, templatePath, ruleName, contextResourceUri, contextElementId,
+					elementResourceUri, modelElementId, propertyName, (Object) result, path);
 		} catch (Exception e) {
 			e.printStackTrace();
 		}

@@ -25,14 +25,14 @@ import org.eclipse.epsilon.picto.LazyEgxModule;
  */
 public class IncrementalLazyEgxModule extends LazyEgxModule {
 
-	protected AccessRecordResource incrementalResource;
-	protected GenerationRulePropertyAccessRecorder propertyAccessRecorder;
+	protected AccessResource incrementalResource;
+	protected AccessRecorder propertyAccessRecorder;
 
-	public GenerationRulePropertyAccessRecorder getPropertyAccessRecorder() {
+	public AccessRecorder getPropertyAccessRecorder() {
 		return propertyAccessRecorder;
 	}
 
-	public AccessRecordResource getIncrementalResource() {
+	public AccessResource getIncrementalResource() {
 		return incrementalResource;
 	}
 
@@ -44,7 +44,7 @@ public class IncrementalLazyEgxModule extends LazyEgxModule {
 		propertyAccessRecorder.stopRecording();
 	}
 
-	public IncrementalLazyEgxModule(AccessRecordResource incrementalResource) {
+	public IncrementalLazyEgxModule(AccessResource incrementalResource) {
 
 		this.incrementalResource = incrementalResource;
 
@@ -52,7 +52,7 @@ public class IncrementalLazyEgxModule extends LazyEgxModule {
 
 		// Create the property access recorder that will record
 		// all the property access events in the EGX transformation
-		propertyAccessRecorder = new GenerationRulePropertyAccessRecorder();
+		propertyAccessRecorder = new AccessRecorder();
 
 		// Create a custom template factory so that we can monitor property
 		// access events during template execution too
@@ -120,6 +120,7 @@ public class IncrementalLazyEgxModule extends LazyEgxModule {
 			}
 			EglTemplateFactory templateFactory = context.getTemplateFactory();
 
+			propertyAccessRecorder.setTemplateUri(templateUri);
 			this.path = (propertyAccessRecorder.getPath() == null) ? null
 					: new StringBuffer(propertyAccessRecorder.getPath()).toString();
 			
@@ -134,6 +135,7 @@ public class IncrementalLazyEgxModule extends LazyEgxModule {
 			propertyAccessRecorder.setContextElement(null);
 			propertyAccessRecorder.setRule(null);
 			propertyAccessRecorder.setPath(null);
+			propertyAccessRecorder.setTemplateUri(null);
 
 			return wrappingPromise;
 		}

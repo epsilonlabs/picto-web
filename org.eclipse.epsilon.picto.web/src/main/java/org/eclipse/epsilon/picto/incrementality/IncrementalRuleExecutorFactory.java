@@ -17,9 +17,9 @@ import org.eclipse.epsilon.erl.execute.RuleExecutorFactory;
 
 public class IncrementalRuleExecutorFactory extends RuleExecutorFactory {
 
-	private AccessRecordResource incrementalResource;
+	private AccessResource incrementalResource;
 
-	public IncrementalRuleExecutorFactory(AccessRecordResource incrementalResource) {
+	public IncrementalRuleExecutorFactory(AccessResource incrementalResource) {
 		super();
 		this.incrementalResource = incrementalResource;
 	}

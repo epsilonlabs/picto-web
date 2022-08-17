@@ -133,10 +133,10 @@
       <line y2="-13.4924" fill="none" x1="191.8416" clip-path="url(#clipPath2)" x2="613.2096" y1="-13.4924"/>
     </g>
     <g fill="rgb(255,204,153)" text-rendering="geometricPrecision" shape-rendering="geometricPrecision" transform="matrix(1,0,0,1,-26,69)" stroke="rgb(255,204,153)">
-      <rect x="334.1623" width="136.7266" height="18.7012" y="-36.1936" clip-path="url(#clipPath2)" stroke="none"/>
+      <rect x="337.8332" width="129.3848" height="18.7012" y="-36.1936" clip-path="url(#clipPath2)" stroke="none"/>
     </g>
     <g stroke-linecap="butt" transform="matrix(1,0,0,1,-26,69)" text-rendering="geometricPrecision" font-family="sans-serif" shape-rendering="geometricPrecision" font-weight="bold" stroke-miterlimit="1.45">
-      <text x="336.1623" xml:space="preserve" y="-22.1291" clip-path="url(#clipPath2)" stroke="none">PropertyAccesses (PA)</text>
+      <text x="339.8332" xml:space="preserve" y="-22.1291" clip-path="url(#clipPath2)" stroke="none">AccessResource (AR)</text>
       <text x="195.8416" xml:space="preserve" y="4.572" clip-path="url(#clipPath2)" font-weight="normal" stroke="none">M, Rule A, ..., ..., Resource R1, Object O1, Property P1, Value V1, Path A.1</text>
       <text x="195.8416" xml:space="preserve" y="19.2732" clip-path="url(#clipPath2)" font-weight="normal" stroke="none">M, Rule A, ..., ..., Resource R1, Object O1, Property P2, Value V2, Path A.1</text>
       <text x="195.8416" xml:space="preserve" y="33.9744" clip-path="url(#clipPath2)" font-weight="normal" stroke="none">M, Rule A, ..., ..., Resource R1, Object O2, Property P3, Value V3, Path A.1</text>
@@ -195,20 +195,6 @@
       <text x="379.0709" xml:space="preserve" y="457.2017" clip-path="url(#clipPath2)" font-family="sans-serif" stroke="none">Views have not been processed</text>
       <text x="431.7731" xml:space="preserve" y="471.9029" clip-path="url(#clipPath2)" font-family="sans-serif" stroke="none">at this stage</text>
     </g>
-    <g fill="rgb(255,255,153)" text-rendering="geometricPrecision" shape-rendering="geometricPrecision" transform="matrix(1,0,0,1,-26,69)" stroke="rgb(255,255,153)">
-      <circle r="15" clip-path="url(#clipPath2)" cx="537.6256" cy="156.784" stroke="none"/>
-    </g>
-    <g text-rendering="geometricPrecision" stroke-miterlimit="1.45" shape-rendering="geometricPrecision" transform="matrix(1,0,0,1,-26,69)" stroke-linecap="butt">
-      <circle fill="none" r="15" clip-path="url(#clipPath2)" cx="537.6256" cy="156.784"/>
-      <text x="530.2867" xml:space="preserve" y="161.4979" clip-path="url(#clipPath2)" font-family="sans-serif" stroke="none">P1</text>
-    </g>
-    <g fill="rgb(255,255,153)" text-rendering="geometricPrecision" shape-rendering="geometricPrecision" transform="matrix(1,0,0,1,-26,69)" stroke="rgb(255,255,153)">
-      <circle r="15" clip-path="url(#clipPath2)" cx="699.2512" cy="156.784" stroke="none"/>
-    </g>
-    <g text-rendering="geometricPrecision" stroke-miterlimit="1.45" shape-rendering="geometricPrecision" transform="matrix(1,0,0,1,-26,69)" stroke-linecap="butt">
-      <circle fill="none" r="15" clip-path="url(#clipPath2)" cx="699.2512" cy="156.784"/>
-      <text x="691.9124" xml:space="preserve" y="161.4979" clip-path="url(#clipPath2)" font-family="sans-serif" stroke="none">P2</text>
-    </g>
     <g fill="white" text-rendering="geometricPrecision" shape-rendering="geometricPrecision" transform="matrix(1,0,0,1,-26,69)" stroke="white">
       <path d="M36.3416 310.478 L72.3416 310.478 L72.3416 325.478 L87.3416 325.478 L87.3416 376.266 L36.3416 376.266 Z" stroke="none" clip-path="url(#clipPath2)"/>
       <path d="M72.3416 310.478 L72.3416 325.478 L87.3416 325.478 Z" clip-path="url(#clipPath2)" fill-rule="evenodd" stroke="none"/>
@@ -258,13 +244,6 @@
       <path fill="none" d="M103.8416 234.498 L103.8416 249.498 L118.8416 249.498 Z" clip-path="url(#clipPath2)" fill-rule="evenodd"/>
       <text x="76.6658" y="264.7553" clip-path="url(#clipPath2)" font-family="sans-serif" stroke="none" font-weight="bold" xml:space="preserve">Ecore</text>
       <text x="84.6727" y="279.4565" clip-path="url(#clipPath2)" font-family="sans-serif" stroke="none" font-weight="bold" xml:space="preserve">file</text>
-    </g>
-    <g fill="rgb(255,255,153)" text-rendering="geometricPrecision" shape-rendering="geometricPrecision" transform="matrix(1,0,0,1,-26,69)" stroke="rgb(255,255,153)">
-      <circle r="15" clip-path="url(#clipPath2)" cx="147.1708" cy="135.784" stroke="none"/>
-    </g>
-    <g text-rendering="geometricPrecision" stroke-miterlimit="1.45" shape-rendering="geometricPrecision" transform="matrix(1,0,0,1,-26,69)" stroke-linecap="butt">
-      <circle fill="none" r="15" clip-path="url(#clipPath2)" cx="147.1708" cy="135.784"/>
-      <text x="140.1689" xml:space="preserve" y="140.4979" clip-path="url(#clipPath2)" font-family="sans-serif" stroke="none">T0</text>
     </g>
     <g text-rendering="geometricPrecision" shape-rendering="geometricPrecision" transform="matrix(1,0,0,1,867.3226,202.815)">
       <g clip-path="url(#clipPath4)">
@@ -358,101 +337,74 @@
     <g stroke-linecap="butt" transform="matrix(1,0,0,1,-26,69)" text-rendering="geometricPrecision" font-family="sans-serif" shape-rendering="geometricPrecision" font-weight="bold" stroke-miterlimit="1.45">
       <text x="955.0338" xml:space="preserve" y="14.0097" clip-path="url(#clipPath2)" stroke="none">Web </text>
       <text x="950.6832" xml:space="preserve" y="28.7109" clip-path="url(#clipPath2)" stroke="none">Server</text>
+    </g>
+    <g fill="rgb(255,255,153)" text-rendering="geometricPrecision" shape-rendering="geometricPrecision" transform="matrix(1,0,0,1,-26,69)" stroke="rgb(255,255,153)">
+      <rect x="107.6708" width="79" height="30" y="120.784" clip-path="url(#clipPath2)" stroke="none"/>
+    </g>
+    <g text-rendering="geometricPrecision" stroke-miterlimit="1.45" shape-rendering="geometricPrecision" transform="matrix(1,0,0,1,-26,69)" stroke-linecap="butt">
+      <rect fill="none" x="107.6708" width="79" height="30" y="120.784" clip-path="url(#clipPath2)"/>
+      <text x="113.163" y="140.4979" clip-path="url(#clipPath2)" font-family="sans-serif" stroke="none" font-weight="bold" xml:space="preserve">FileWatcher</text>
+    </g>
+    <g fill="rgb(255,255,153)" text-rendering="geometricPrecision" shape-rendering="geometricPrecision" transform="matrix(1,0,0,1,-26,69)" stroke="rgb(255,255,153)">
+      <rect x="498.1256" width="79" height="30" y="165.2" clip-path="url(#clipPath2)" stroke="none"/>
+    </g>
+    <g text-rendering="geometricPrecision" stroke-miterlimit="1.45" shape-rendering="geometricPrecision" transform="matrix(1,0,0,1,-26,69)" stroke-linecap="butt">
+      <rect fill="none" x="498.1256" width="79" height="30" y="165.2" clip-path="url(#clipPath2)"/>
+      <text x="509.6178" y="184.9139" clip-path="url(#clipPath2)" font-family="sans-serif" stroke="none" font-weight="bold" xml:space="preserve">Optimiser</text>
       <path fill="none" d="M492.6256 411.968 L575.2096 411.968" clip-path="url(#clipPath2)"/>
-      <path d="M583.2096 411.968 L571.2096 406.968 L574.2096 411.968 L571.2096 416.968 Z" stroke="none" clip-path="url(#clipPath2)"/>
-      <text x="579.2887" xml:space="preserve" y="451.9807" clip-path="url(#clipPath2)" stroke="none">(step 9)</text>
-      <text x="574.6129" xml:space="preserve" y="466.6819" clip-path="url(#clipPath2)" stroke="none">Generate</text>
-      <text x="553.5074" xml:space="preserve" y="481.383" clip-path="url(#clipPath2)" stroke="none">Promises' Views</text>
+      <path d="M583.2096 411.968 L571.2096 406.968 L574.2096 411.968 L571.2096 416.968 Z" clip-path="url(#clipPath2)" stroke="none"/>
+      <text x="579.2887" y="451.9807" clip-path="url(#clipPath2)" font-family="sans-serif" stroke="none" font-weight="bold" xml:space="preserve">(step 9)</text>
+      <text x="574.6129" y="466.6819" clip-path="url(#clipPath2)" font-family="sans-serif" stroke="none" font-weight="bold" xml:space="preserve">Generate</text>
+      <text x="553.5074" y="481.383" clip-path="url(#clipPath2)" font-family="sans-serif" stroke="none" font-weight="bold" xml:space="preserve">Promises' Views</text>
       <path fill="none" d="M492.6256 296.084 L575.2096 296.084" clip-path="url(#clipPath2)"/>
-      <path d="M583.2096 296.084 L571.2096 291.084 L574.2096 296.084 L571.2096 301.084 Z" stroke="none" clip-path="url(#clipPath2)"/>
+      <path d="M583.2096 296.084 L571.2096 291.084 L574.2096 296.084 L571.2096 301.084 Z" clip-path="url(#clipPath2)" stroke="none"/>
       <path fill="none" d="M492.6256 240.2 L575.2096 240.2" clip-path="url(#clipPath2)"/>
-      <path d="M583.2096 240.2 L571.2096 235.2 L574.2096 240.2 L571.2096 245.2 Z" stroke="none" clip-path="url(#clipPath2)"/>
+      <path d="M583.2096 240.2 L571.2096 235.2 L574.2096 240.2 L571.2096 245.2 Z" clip-path="url(#clipPath2)" stroke="none"/>
       <path fill="none" d="M613.2096 240.2 L635.2096 240.2" clip-path="url(#clipPath2)"/>
-      <path d="M643.2096 240.2 L631.2096 235.2 L634.2096 240.2 L631.2096 245.2 Z" stroke="none" clip-path="url(#clipPath2)"/>
+      <path d="M643.2096 240.2 L631.2096 235.2 L634.2096 240.2 L631.2096 245.2 Z" clip-path="url(#clipPath2)" stroke="none"/>
       <path fill="none" d="M613.2096 296.084 L635.2096 296.084" clip-path="url(#clipPath2)"/>
-      <path d="M643.2096 296.084 L631.2096 291.084 L634.2096 296.084 L631.2096 301.084 Z" stroke="none" clip-path="url(#clipPath2)"/>
+      <path d="M643.2096 296.084 L631.2096 291.084 L634.2096 296.084 L631.2096 301.084 Z" clip-path="url(#clipPath2)" stroke="none"/>
       <path fill="none" d="M613.2096 411.968 L635.2096 411.968" clip-path="url(#clipPath2)"/>
-      <path d="M643.2096 411.968 L631.2096 406.968 L634.2096 411.968 L631.2096 416.968 Z" stroke="none" clip-path="url(#clipPath2)"/>
+      <path d="M643.2096 411.968 L631.2096 406.968 L634.2096 411.968 L631.2096 416.968 Z" clip-path="url(#clipPath2)" stroke="none"/>
       <path fill="none" stroke-dasharray="6,2" d="M598.2096 225.2 L598.2096 81.4908" clip-path="url(#clipPath2)"/>
       <path stroke-dasharray="6,2" d="M598.2096 73.4908 L593.2096 85.4908 L598.2096 82.4908 L603.2096 85.4908 Z" clip-path="url(#clipPath2)" stroke="none"/>
-      <text x="605.6063" xml:space="preserve" y="92.5508" clip-path="url(#clipPath2)" stroke="none">(step 10)</text>
-      <text x="609.6083" xml:space="preserve" y="107.252" clip-path="url(#clipPath2)" stroke="none">Record</text>
-      <text x="605.6063" xml:space="preserve" y="121.9532" clip-path="url(#clipPath2)" stroke="none">Property</text>
-      <text x="602.5887" xml:space="preserve" y="136.6544" clip-path="url(#clipPath2)" stroke="none">Accesses</text>
+      <text x="605.6063" y="92.5508" clip-path="url(#clipPath2)" font-family="sans-serif" stroke="none" font-weight="bold" xml:space="preserve">(step 10)</text>
+      <text x="609.6083" y="107.252" clip-path="url(#clipPath2)" font-family="sans-serif" stroke="none" font-weight="bold" xml:space="preserve">Record</text>
+      <text x="605.6063" y="121.9532" clip-path="url(#clipPath2)" font-family="sans-serif" stroke="none" font-weight="bold" xml:space="preserve">Property</text>
+      <text x="602.5887" y="136.6544" clip-path="url(#clipPath2)" font-family="sans-serif" stroke="none" font-weight="bold" xml:space="preserve">Accesses</text>
       <path fill="none" d="M265.528 267.392 L292.008 267.392" clip-path="url(#clipPath2)"/>
-      <path d="M300.008 267.392 L288.008 262.392 L291.008 267.392 L288.008 272.392 Z" stroke="none" clip-path="url(#clipPath2)"/>
+      <path d="M300.008 267.392 L288.008 262.392 L291.008 267.392 L288.008 272.392 Z" clip-path="url(#clipPath2)" stroke="none"/>
       <path fill="none" d="M327.5652 259.1874 L349.9 244.5943" clip-path="url(#clipPath2)"/>
-      <path d="M356.5972 240.2186 L343.8166 242.5965 L349.0629 245.1413 L349.2863 250.968 Z" stroke="none" clip-path="url(#clipPath2)"/>
+      <path d="M356.5972 240.2186 L343.8166 242.5965 L349.0629 245.1413 L349.2863 250.968 Z" clip-path="url(#clipPath2)" stroke="none"/>
       <path fill="none" d="M327.2425 276.0705 L350.1262 292.3031" clip-path="url(#clipPath2)"/>
-      <path d="M356.6512 296.9316 L349.7565 285.9106 L349.3105 291.7245 L343.9708 294.067 Z" stroke="none" clip-path="url(#clipPath2)"/>
+      <path d="M356.6512 296.9316 L349.7565 285.9106 L349.3105 291.7245 L343.9708 294.067 Z" clip-path="url(#clipPath2)" stroke="none"/>
       <path fill="none" stroke-dasharray="6,2" d="M315.008 252.392 L315.008 81.4707" clip-path="url(#clipPath2)"/>
       <path stroke-dasharray="6,2" d="M315.008 73.4707 L310.008 85.4707 L315.008 82.4707 L320.008 85.4707 Z" clip-path="url(#clipPath2)" stroke="none"/>
-      <text x="258.6711" xml:space="preserve" y="90.5508" clip-path="url(#clipPath2)" stroke="none">(step 5)</text>
-      <text x="259.3361" xml:space="preserve" y="105.252" clip-path="url(#clipPath2)" stroke="none">Record</text>
-      <text x="242.6662" xml:space="preserve" y="119.9532" clip-path="url(#clipPath2)" stroke="none">Element and </text>
-      <text x="255.3342" xml:space="preserve" y="134.6544" clip-path="url(#clipPath2)" stroke="none">Property</text>
-      <text x="252.3166" xml:space="preserve" y="149.3555" clip-path="url(#clipPath2)" stroke="none">Accesses</text>
+      <text x="169.3244" y="90.6725" clip-path="url(#clipPath2)" font-family="sans-serif" stroke="none" font-weight="bold" xml:space="preserve">(step 5) Record Element</text>
+      <text x="173.9592" y="105.3737" clip-path="url(#clipPath2)" font-family="sans-serif" stroke="none" font-weight="bold" xml:space="preserve">and Property Accesses</text>
       <path fill="none" d="M265.528 351.968 L292.008 351.968" clip-path="url(#clipPath2)"/>
-      <path d="M300.008 351.968 L288.008 346.968 L291.008 351.968 L288.008 356.968 Z" stroke="none" clip-path="url(#clipPath2)"/>
+      <path d="M300.008 351.968 L288.008 346.968 L291.008 351.968 L288.008 356.968 Z" clip-path="url(#clipPath2)" stroke="none"/>
       <path fill="none" d="M330.008 351.968 L348.6256 351.968" clip-path="url(#clipPath2)"/>
-      <path d="M356.6256 351.968 L344.6256 346.968 L347.6256 351.968 L344.6256 356.968 Z" stroke="none" clip-path="url(#clipPath2)"/>
+      <path d="M356.6256 351.968 L344.6256 346.968 L347.6256 351.968 L344.6256 356.968 Z" clip-path="url(#clipPath2)" stroke="none"/>
       <path fill="none" d="M265.528 411.968 L293.1056 411.968" clip-path="url(#clipPath2)"/>
-      <path d="M301.1056 411.968 L289.1056 406.968 L292.1056 411.968 L289.1056 416.968 Z" stroke="none" clip-path="url(#clipPath2)"/>
-      <text x="294.7669" xml:space="preserve" y="450.0598" clip-path="url(#clipPath2)" stroke="none">(step 4)</text>
-      <text x="268.4261" xml:space="preserve" y="464.7609" clip-path="url(#clipPath2)" stroke="none">Transform Rules</text>
-      <text x="281.7591" xml:space="preserve" y="479.4621" clip-path="url(#clipPath2)" stroke="none">to Promises</text>
+      <path d="M301.1056 411.968 L289.1056 406.968 L292.1056 411.968 L289.1056 416.968 Z" clip-path="url(#clipPath2)" stroke="none"/>
+      <text x="294.7669" y="450.0598" clip-path="url(#clipPath2)" font-family="sans-serif" stroke="none" font-weight="bold" xml:space="preserve">(step 4)</text>
+      <text x="268.4261" y="464.7609" clip-path="url(#clipPath2)" font-family="sans-serif" stroke="none" font-weight="bold" xml:space="preserve">Transform Rules</text>
+      <text x="281.7591" y="479.4621" clip-path="url(#clipPath2)" font-family="sans-serif" stroke="none" font-weight="bold" xml:space="preserve">to Promises</text>
       <path fill="none" d="M331.1056 411.968 L348.6256 411.968" clip-path="url(#clipPath2)"/>
-      <path d="M356.6256 411.968 L344.6256 406.968 L347.6256 411.968 L344.6256 416.968 Z" stroke="none" clip-path="url(#clipPath2)"/>
+      <path d="M356.6256 411.968 L344.6256 406.968 L347.6256 411.968 L344.6256 416.968 Z" clip-path="url(#clipPath2)" stroke="none"/>
       <path fill="none" d="M779.2096 240.2 L810.112 240.2 L809 176.5632 L809.8021 81.4905" clip-path="url(#clipPath2)"/>
-      <path d="M809.8696 73.4908 L804.7685 85.4482 L809.7936 82.4905 L814.7681 85.5325 Z" stroke="none" clip-path="url(#clipPath2)"/>
-      <text x="749.7612" xml:space="preserve" y="138.9123" clip-path="url(#clipPath2)" stroke="none">(step 11)</text>
-      <text x="743.7582" xml:space="preserve" y="153.6135" clip-path="url(#clipPath2)" stroke="none">Store View</text>
+      <path d="M809.8696 73.4908 L804.7685 85.4482 L809.7936 82.4905 L814.7681 85.5325 Z" clip-path="url(#clipPath2)" stroke="none"/>
+      <text x="749.7612" y="138.9123" clip-path="url(#clipPath2)" font-family="sans-serif" stroke="none" font-weight="bold" xml:space="preserve">(step 11)</text>
+      <text x="743.7582" y="153.6135" clip-path="url(#clipPath2)" font-family="sans-serif" stroke="none" font-weight="bold" xml:space="preserve">Store View</text>
       <path fill="none" d="M492.6256 351.968 L514.6091 351.968" clip-path="url(#clipPath2)"/>
-      <path d="M522.6091 351.968 L510.6091 346.968 L513.6091 351.968 L510.6091 356.968 Z" stroke="none" clip-path="url(#clipPath2)"/>
+      <path d="M522.6091 351.968 L510.6091 346.968 L513.6091 351.968 L510.6091 356.968 Z" clip-path="url(#clipPath2)" stroke="none"/>
     </g>
     <g stroke-linecap="round" transform="matrix(1,0,0,1,-26,69)" stroke-dashoffset="2" text-rendering="geometricPrecision" shape-rendering="geometricPrecision" stroke-dasharray="0,8" stroke-width="2" stroke-miterlimit="1.45">
       <path fill="none" d="M417.4331 426.968 L442.8181 444.8384" clip-path="url(#clipPath2)"/>
     </g>
     <g text-rendering="geometricPrecision" stroke-miterlimit="1.45" stroke-dasharray="6,2" shape-rendering="geometricPrecision" transform="matrix(1,0,0,1,-26,69)" stroke-linecap="butt">
-      <path fill="none" d="M537.6256 73.4902 L537.6256 133.784" clip-path="url(#clipPath2)"/>
-      <path d="M537.6256 141.784 L542.6256 129.784 L537.6256 132.784 L532.6256 129.784 Z" clip-path="url(#clipPath2)" stroke="none"/>
-      <text x="472.2014" y="156.4514" clip-path="url(#clipPath2)" font-family="sans-serif" stroke-dasharray="none" stroke="none" font-weight="bold" xml:space="preserve">(step 6)</text>
-      <text x="368.1974" y="171.1525" clip-path="url(#clipPath2)" font-family="sans-serif" stroke-dasharray="none" stroke="none" font-weight="bold" xml:space="preserve">Use Information in the PA</text>
-      <text x="413.5139" y="185.8537" clip-path="url(#clipPath2)" font-family="sans-serif" stroke-dasharray="none" stroke="none" font-weight="bold" xml:space="preserve">to filter Promises </text>
-      <text x="402.8557" y="200.5549" clip-path="url(#clipPath2)" font-family="sans-serif" stroke-dasharray="none" stroke="none" font-weight="bold" xml:space="preserve">need (re)generation</text>
-      <path fill="none" d="M537.6256 171.784 L537.6256 217.1637" clip-path="url(#clipPath2)"/>
-      <path d="M537.6256 225.1637 L542.6256 213.1637 L537.6256 216.1637 L532.6256 213.1637 Z" clip-path="url(#clipPath2)" stroke="none"/>
-      <path fill="none" d="M527.2148 145.9851 L462.9035 79.2757" clip-path="url(#clipPath2)"/>
-      <path d="M457.3511 73.5163 L462.0801 85.6256 L463.5976 79.9956 L469.2794 78.6852 Z" clip-path="url(#clipPath2)" stroke="none"/>
-      <text x="402.4946" y="90.3009" clip-path="url(#clipPath2)" font-family="sans-serif" stroke-dasharray="none" stroke="none" font-weight="bold" xml:space="preserve">(step 7)</text>
-      <text x="376.1479" y="105.0021" clip-path="url(#clipPath2)" font-family="sans-serif" stroke-dasharray="none" stroke="none" font-weight="bold" xml:space="preserve">Remove deleted </text>
-      <text x="377.7212" y="119.7033" clip-path="url(#clipPath2)" font-family="sans-serif" stroke-dasharray="none" stroke="none" font-weight="bold" xml:space="preserve">objects' records</text>
-      <path fill="none" d="M567 73.4885 L567 157.568 L676.2516 156.9203" clip-path="url(#clipPath2)"/>
-      <path d="M684.2515 156.8729 L672.222 151.9442 L675.2516 156.9263 L672.2813 161.944 Z" clip-path="url(#clipPath2)" stroke="none"/>
-      <text x="674.9678" y="184.2379" clip-path="url(#clipPath2)" font-family="sans-serif" stroke-dasharray="none" stroke="none" font-weight="bold" xml:space="preserve"> (step 9) </text>
-      <text x="640.2744" y="198.9391" clip-path="url(#clipPath2)" font-family="sans-serif" stroke-dasharray="none" stroke="none" font-weight="bold" xml:space="preserve">Remove unaccessed</text>
-      <text x="682.6289" y="213.6403" clip-path="url(#clipPath2)" font-family="sans-serif" stroke-dasharray="none" stroke="none" font-weight="bold" xml:space="preserve">Views</text>
-      <path fill="none" d="M699.2512 141.784 L699.2512 81.4817" clip-path="url(#clipPath2)"/>
-      <path d="M699.2512 73.4817 L694.2512 85.4817 L699.2512 82.4817 L704.2512 85.4817 Z" clip-path="url(#clipPath2)" stroke="none"/>
       <path fill="none" d="M150.3313 414.2343 L191.8505 322.892" clip-path="url(#clipPath2)"/>
-      <path fill="none" d="M147.1708 120.784 L147.1708 -68.4369 L402.5256 -68.4369 L402.5256 -48.2281" clip-path="url(#clipPath2)"/>
-      <path d="M402.5256 -40.2281 L407.5256 -52.2281 L402.5256 -49.2281 L397.5256 -52.2281 Z" clip-path="url(#clipPath2)" stroke="none"/>
-      <path fill="none" d="M147.1708 120.784 L147.1708 -68.4369 L738.1272 -68.4369 L738.1272 -48.2281" clip-path="url(#clipPath2)"/>
-      <path d="M738.1272 -40.2281 L743.1272 -52.2281 L738.1272 -49.2281 L733.1272 -52.2281 Z" clip-path="url(#clipPath2)" stroke="none"/>
-      <text x="84.8339" y="-26.4206" clip-path="url(#clipPath2)" font-family="sans-serif" stroke-dasharray="none" stroke="none" font-weight="bold" xml:space="preserve">(step 3)</text>
-      <text x="67.8212" y="-11.7194" clip-path="url(#clipPath2)" font-family="sans-serif" stroke-dasharray="none" stroke="none" font-weight="bold" xml:space="preserve">Remove PAs </text>
-      <text x="76.827" y="2.9818" clip-path="url(#clipPath2)" font-family="sans-serif" stroke-dasharray="none" stroke="none" font-weight="bold" xml:space="preserve">and Views</text>
-      <text x="76.1679" y="17.683" clip-path="url(#clipPath2)" font-family="sans-serif" stroke-dasharray="none" stroke="none" font-weight="bold" xml:space="preserve">of deleted </text>
-      <text x="94.1649" y="32.3841" clip-path="url(#clipPath2)" font-family="sans-serif" stroke-dasharray="none" stroke="none" font-weight="bold" xml:space="preserve">files</text>
-      <path fill="none" d="M161.0879 141.3798 L266 183.5632 L303.3999 247.5362" clip-path="url(#clipPath2)"/>
-      <path d="M307.4375 254.4426 L305.6976 241.5595 L302.8952 246.6729 L297.0646 246.6065 Z" clip-path="url(#clipPath2)" stroke="none"/>
-      <text x="176.083" y="178.3046" clip-path="url(#clipPath2)" font-family="sans-serif" stroke-dasharray="none" stroke="none" font-weight="bold" xml:space="preserve">(step 2)</text>
-      <text x="178.418" y="193.0058" clip-path="url(#clipPath2)" font-family="sans-serif" stroke-dasharray="none" stroke="none" font-weight="bold" xml:space="preserve">trigger</text>
-      <path fill="none" d="M132.1708 135.784 L93.9816 135.784 L93.9816 197.3073" clip-path="url(#clipPath2)"/>
-      <path d="M93.9816 205.3073 L98.9816 193.3073 L93.9816 196.3073 L88.9816 193.3073 Z" clip-path="url(#clipPath2)" stroke="none"/>
-      <text x="40.6447" y="146.0258" clip-path="url(#clipPath2)" font-family="sans-serif" stroke-dasharray="none" stroke="none" font-weight="bold" xml:space="preserve">(step 1)</text>
-      <text x="39.9884" y="160.727" clip-path="url(#clipPath2)" font-family="sans-serif" stroke-dasharray="none" stroke="none" font-weight="bold" xml:space="preserve">Monitor</text>
-      <text x="37.6388" y="175.4282" clip-path="url(#clipPath2)" font-family="sans-serif" stroke-dasharray="none" stroke="none" font-weight="bold" xml:space="preserve">changes</text>
       <path fill="none" stroke-dasharray="none" d="M774.3871 255.2 L880.8776 322.663" clip-path="url(#clipPath2)"/>
       <path stroke-dasharray="none" d="M887.6356 326.9443 L880.1744 316.2986 L880.0328 322.1278 L874.8228 324.7461 Z" clip-path="url(#clipPath2)" stroke="none"/>
       <path fill="none" stroke-dasharray="none" d="M779.2096 305.1115 L880.009 337.0404" clip-path="url(#clipPath2)"/>
@@ -468,21 +420,57 @@
       <text x="847.1258" y="262.0705" clip-path="url(#clipPath2)" font-family="sans-serif" stroke-dasharray="none" stroke="none" font-weight="bold" xml:space="preserve">Subscribe</text>
       <path fill="none" stroke-dasharray="none" d="M945.1356 319.0592 L945.1356 187.5816" clip-path="url(#clipPath2)"/>
       <path stroke-dasharray="none" d="M945.1356 179.5816 L940.1356 191.5816 L945.1356 188.5816 L950.1356 191.5816 Z" clip-path="url(#clipPath2)" stroke="none"/>
-      <text x="952.4617" y="240.9595" clip-path="url(#clipPath2)" font-family="sans-serif" stroke-dasharray="none" stroke="none" font-weight="bold" xml:space="preserve">(step 17)</text>
+      <text x="952.4617" y="240.9595" clip-path="url(#clipPath2)" font-family="sans-serif" stroke-dasharray="none" stroke="none" font-weight="bold" xml:space="preserve">(step 14)</text>
       <text x="953.1356" y="255.6607" clip-path="url(#clipPath2)" font-family="sans-serif" stroke-dasharray="none" stroke="none" font-weight="bold" xml:space="preserve">Updated</text>
       <text x="960.1258" y="270.3618" clip-path="url(#clipPath2)" font-family="sans-serif" stroke-dasharray="none" stroke="none" font-weight="bold" xml:space="preserve">Views</text>
       <path fill="none" stroke-dasharray="none" d="M927.1356 126.0322 L927.1356 52.7605" clip-path="url(#clipPath2)"/>
       <path stroke-dasharray="none" d="M927.1356 134.0322 L932.1356 122.0322 L927.1356 125.0322 L922.1356 122.0322 Z" clip-path="url(#clipPath2)" stroke="none"/>
       <path stroke-dasharray="none" d="M927.1356 44.7605 L922.1356 56.7605 L927.1356 53.7605 L932.1356 56.7605 Z" clip-path="url(#clipPath2)" stroke="none"/>
-      <text x="846.5789" y="73.0428" clip-path="url(#clipPath2)" font-family="sans-serif" stroke-dasharray="none" stroke="none" font-weight="bold" xml:space="preserve">(steps 14, 16)</text>
+      <text x="846.5789" y="73.0428" clip-path="url(#clipPath2)" font-family="sans-serif" stroke-dasharray="none" stroke="none" font-weight="bold" xml:space="preserve">(steps 15, 17)</text>
       <text x="860.9256" y="87.744" clip-path="url(#clipPath2)" font-family="sans-serif" stroke-dasharray="none" stroke="none" font-weight="bold" xml:space="preserve">Request</text>
       <text x="872.2635" y="102.4452" clip-path="url(#clipPath2)" font-family="sans-serif" stroke-dasharray="none" stroke="none" font-weight="bold" xml:space="preserve">and </text>
       <text x="855.9217" y="117.1463" clip-path="url(#clipPath2)" font-family="sans-serif" stroke-dasharray="none" stroke="none" font-weight="bold" xml:space="preserve">Response</text>
       <path fill="none" stroke-dasharray="none" d="M827.8441 16.6464 L901.5919 16.6464" clip-path="url(#clipPath2)"/>
       <path stroke-dasharray="none" d="M909.5919 16.6464 L897.5919 11.6464 L900.5919 16.6464 L897.5919 21.6464 Z" clip-path="url(#clipPath2)" stroke="none"/>
-      <text x="843.3867" y="-16.3409" clip-path="url(#clipPath2)" font-family="sans-serif" stroke-dasharray="none" stroke="none" font-weight="bold" xml:space="preserve">(step 15)</text>
+      <text x="843.3867" y="-16.3409" clip-path="url(#clipPath2)" font-family="sans-serif" stroke-dasharray="none" stroke="none" font-weight="bold" xml:space="preserve">(step 16)</text>
       <text x="837.3867" y="-1.6397" clip-path="url(#clipPath2)" font-family="sans-serif" stroke-dasharray="none" stroke="none" font-weight="bold" xml:space="preserve">Requested</text>
       <text x="851.0507" y="13.0614" clip-path="url(#clipPath2)" font-family="sans-serif" stroke-dasharray="none" stroke="none" font-weight="bold" xml:space="preserve">Views</text>
+      <path fill="none" d="M107.6708 135.784 L93.9816 135.784 L93.9816 197.3073" clip-path="url(#clipPath2)"/>
+      <path d="M93.9816 205.3073 L98.9816 193.3073 L93.9816 196.3073 L88.9816 193.3073 Z" clip-path="url(#clipPath2)" stroke="none"/>
+      <text x="40.6447" y="146.0258" clip-path="url(#clipPath2)" font-family="sans-serif" stroke-dasharray="none" stroke="none" font-weight="bold" xml:space="preserve">(step 1)</text>
+      <text x="39.9884" y="160.727" clip-path="url(#clipPath2)" font-family="sans-serif" stroke-dasharray="none" stroke="none" font-weight="bold" xml:space="preserve">Monitor</text>
+      <text x="37.6388" y="175.4282" clip-path="url(#clipPath2)" font-family="sans-serif" stroke-dasharray="none" stroke="none" font-weight="bold" xml:space="preserve">changes</text>
+      <path fill="none" d="M147.1708 120.784 L147.1708 -68.4369 L738.1272 -68.4369 L738.1272 -48.2281" clip-path="url(#clipPath2)"/>
+      <path d="M738.1272 -40.2281 L743.1272 -52.2281 L738.1272 -49.2281 L733.1272 -52.2281 Z" clip-path="url(#clipPath2)" stroke="none"/>
+      <text x="84.8339" y="-26.4206" clip-path="url(#clipPath2)" font-family="sans-serif" stroke-dasharray="none" stroke="none" font-weight="bold" xml:space="preserve">(step 3)</text>
+      <text x="67.8212" y="-11.7194" clip-path="url(#clipPath2)" font-family="sans-serif" stroke-dasharray="none" stroke="none" font-weight="bold" xml:space="preserve">Remove PAs </text>
+      <text x="76.827" y="2.9818" clip-path="url(#clipPath2)" font-family="sans-serif" stroke-dasharray="none" stroke="none" font-weight="bold" xml:space="preserve">and Views</text>
+      <text x="76.1679" y="17.683" clip-path="url(#clipPath2)" font-family="sans-serif" stroke-dasharray="none" stroke="none" font-weight="bold" xml:space="preserve">of deleted </text>
+      <text x="94.1649" y="32.3841" clip-path="url(#clipPath2)" font-family="sans-serif" stroke-dasharray="none" stroke="none" font-weight="bold" xml:space="preserve">files</text>
+      <path fill="none" d="M186.6708 135.784 L237 135.784 L303.2805 247.6065" clip-path="url(#clipPath2)"/>
+      <path d="M307.3596 254.4884 L305.5422 241.6161 L302.7707 246.7463 L296.9398 246.715 Z" clip-path="url(#clipPath2)" stroke="none"/>
+      <text x="195.0808" y="155.2989" clip-path="url(#clipPath2)" font-family="sans-serif" stroke-dasharray="none" stroke="none" font-weight="bold" xml:space="preserve">(step 2)</text>
+      <text x="197.4157" y="170.0001" clip-path="url(#clipPath2)" font-family="sans-serif" stroke-dasharray="none" stroke="none" font-weight="bold" xml:space="preserve">trigger</text>
+      <path fill="none" d="M147.1708 120.784 L147.1708 -68.4369 L402.5256 -68.4369 L402.5256 -48.2281" clip-path="url(#clipPath2)"/>
+      <path d="M402.5256 -40.2281 L407.5256 -52.2281 L402.5256 -49.2281 L397.5256 -52.2281 Z" clip-path="url(#clipPath2)" stroke="none"/>
+      <path fill="none" d="M537.6256 73.4838 L537.6256 157.2" clip-path="url(#clipPath2)"/>
+      <path d="M537.6256 165.2 L542.6256 153.2 L537.6256 156.2 L532.6256 153.2 Z" clip-path="url(#clipPath2)" stroke="none"/>
+      <text x="449.2014" y="163.8674" clip-path="url(#clipPath2)" font-family="sans-serif" stroke-dasharray="none" stroke="none" font-weight="bold" xml:space="preserve">(step 6)</text>
+      <text x="345.1974" y="178.5685" clip-path="url(#clipPath2)" font-family="sans-serif" stroke-dasharray="none" stroke="none" font-weight="bold" xml:space="preserve">Use Information in the PA</text>
+      <text x="390.5139" y="193.2697" clip-path="url(#clipPath2)" font-family="sans-serif" stroke-dasharray="none" stroke="none" font-weight="bold" xml:space="preserve">to filter Promises </text>
+      <text x="379.8557" y="207.9709" clip-path="url(#clipPath2)" font-family="sans-serif" stroke-dasharray="none" stroke="none" font-weight="bold" xml:space="preserve">need (re)generation</text>
+      <path fill="none" d="M537.6256 195.2 L537.6256 217.2049" clip-path="url(#clipPath2)"/>
+      <path d="M537.6256 225.2049 L542.6256 213.2049 L537.6256 216.2049 L532.6256 213.2049 Z" clip-path="url(#clipPath2)" stroke="none"/>
+      <path fill="none" d="M525.2352 165.2 L454.5652 79.6462" clip-path="url(#clipPath2)"/>
+      <path d="M449.4704 73.4783 L453.2578 85.9144 L455.2021 80.4172 L460.9676 79.5458 Z" clip-path="url(#clipPath2)" stroke="none"/>
+      <text x="394.2226" y="89.5063" clip-path="url(#clipPath2)" font-family="sans-serif" stroke-dasharray="none" stroke="none" font-weight="bold" xml:space="preserve">(step 7)</text>
+      <text x="367.8759" y="104.2075" clip-path="url(#clipPath2)" font-family="sans-serif" stroke-dasharray="none" stroke="none" font-weight="bold" xml:space="preserve">Remove deleted </text>
+      <text x="369.4491" y="118.9087" clip-path="url(#clipPath2)" font-family="sans-serif" stroke-dasharray="none" stroke="none" font-weight="bold" xml:space="preserve">objects' records</text>
+      <path fill="none" d="M577.1408 171.7677 L704.0812 171.7677 L704.0812 81.5089" clip-path="url(#clipPath2)"/>
+      <path d="M704.0812 73.5089 L699.0812 85.5089 L704.0812 82.5089 L709.0812 85.5089 Z" clip-path="url(#clipPath2)" stroke="none"/>
+      <text x="677.0759" y="185.8437" clip-path="url(#clipPath2)" font-family="sans-serif" stroke-dasharray="none" stroke="none" font-weight="bold" xml:space="preserve"> (step 8) </text>
+      <text x="642.3826" y="200.5449" clip-path="url(#clipPath2)" font-family="sans-serif" stroke-dasharray="none" stroke="none" font-weight="bold" xml:space="preserve">Remove unaccessed</text>
+      <text x="684.7371" y="215.2461" clip-path="url(#clipPath2)" font-family="sans-serif" stroke-dasharray="none" stroke="none" font-weight="bold" xml:space="preserve">Views</text>
     </g>
   </g>
 </svg>

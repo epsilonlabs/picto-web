@@ -21,9 +21,9 @@ import org.eclipse.epsilon.eol.execute.context.Variable;
 import org.eclipse.epsilon.eol.models.IModel;
 import org.eclipse.epsilon.picto.LazyEgxModule.LazyGenerationRuleContentPromise;
 
-public class AccessRecordTableResource implements AccessRecordResource {
+public class AccessTableResource implements AccessResource {
 
-	List<GenerationRulePropertyAccess> propertyAccessRecords = new LinkedList<>();
+	List<Access> propertyAccessRecords = new LinkedList<>();
 
 	@Override
 	public void clear() {
@@ -42,8 +42,8 @@ public class AccessRecordTableResource implements AccessRecordResource {
 	}
 
 	@Override
-	public void add(GenerationRulePropertyAccess propertyAccessRecord) {
-		List<GenerationRulePropertyAccess> records = propertyAccessRecords.stream()
+	public void add(Access propertyAccessRecord) {
+		List<Access> records = propertyAccessRecords.stream()
 				.filter(r -> Util.equals(r.getModulePath(), propertyAccessRecord.getModulePath())
 						&& Util.equals(r.getTemplatePath(), propertyAccessRecord.getTemplatePath())
 						&& Util.equals(r.getGenerationRuleName(), propertyAccessRecord.getGenerationRuleName())
@@ -55,7 +55,7 @@ public class AccessRecordTableResource implements AccessRecordResource {
 						&& Util.equals(r.getPath(), propertyAccessRecord.getPath()))
 				.collect(Collectors.toList());
 		if (records.size() > 0) {
-			for (GenerationRulePropertyAccess record : records) {
+			for (Access record : records) {
 				record.setValue(propertyAccessRecord.getValue());
 				record.setState(AccessState.MODIFIED);
 			}
@@ -65,7 +65,7 @@ public class AccessRecordTableResource implements AccessRecordResource {
 	}
 
 	@Override
-	public List<GenerationRulePropertyAccess> getIncrementalRecords() {
+	public List<Access> getIncrementalRecords() {
 		return propertyAccessRecords;
 	}
 
@@ -75,7 +75,7 @@ public class AccessRecordTableResource implements AccessRecordResource {
 		System.out.println("Trace at " + Timestamp.from(Instant.now()).toString() + ":");
 		System.out.println();
 		int lineNum = 1;
-		for (GenerationRulePropertyAccess record : propertyAccessRecords) {
+		for (Access record : propertyAccessRecords) {
 			System.out.println(lineNum++ + ". " + record.toString());
 		}
 		System.out.println();
@@ -95,14 +95,14 @@ public class AccessRecordTableResource implements AccessRecordResource {
 			}
 
 //			// check if the path is a new view
-			GenerationRulePropertyAccess pas = propertyAccessRecords.stream()
+			Access pas = propertyAccessRecords.stream()
 					.filter(r -> checkedPath.equals(r.getPath())).findFirst().orElse(null);
 			if (pas == null) {
 				toBeProcessedPaths.add(checkedPath);
 			}
 
 			// check if the property access record is new
-			GenerationRulePropertyAccess accessRecord = propertyAccessRecords.stream()
+			Access accessRecord = propertyAccessRecords.stream()
 					.filter(r -> r.getState().equals(AccessState.NEW) && checkedPath.equals(r.getPath())).findFirst()
 					.orElse(null);
 			if (accessRecord != null) {
@@ -112,36 +112,14 @@ public class AccessRecordTableResource implements AccessRecordResource {
 						.filter(r -> ifValueContains(accessRecord.getElementObjectId(), r.getValue()))
 						.map(r -> r.getPath()).collect(Collectors.toCollection(HashSet::new));				
 				toBeProcessedPaths.addAll(affectedPaths);
-
-//				// get also the container of the object
-//				String elementResourceUri = accessRecord.getElementResourceUri();
-//				EmfModel model = (EmfModel) module.getContext().getModelRepository().getModels().stream().filter(
-//						m -> ((AbstractEmfModel) m).getResource().getURI().toFileString().equals(elementResourceUri))
-//						.findFirst().orElse(null);
-//
-//				if (model != null) {
-//					Resource resource = model.getResource();
-//					EObject eObject = resource.getEObject(accessRecord.getElementObjectId());
-//					EObject eContainer = (eObject != null) ? eObject.eContainer() : null;
-//					while (eContainer != null) {
-//						String fragment = resource.getURIFragment(eContainer);
-//						Set<String> temp = propertyAccessRecords.stream()
-//								.filter(r -> r.getElementObjectId().equals(fragment)).map(r -> r.getPath())
-//								.collect(Collectors.toCollection(HashSet::new));
-//						if (temp.size() > 0) {
-//							toBeProcessedPaths.addAll(temp);
-//						}
-//						eContainer = eContainer.eContainer();
-//					}
-//				}
 			}
 
 			// check objects and properties that view of the path has
-			List<GenerationRulePropertyAccess> checkedPathRecords = propertyAccessRecords.stream()
+			List<Access> checkedPathRecords = propertyAccessRecords.stream()
 					.filter(r -> r.getPath() != null && checkedPath.equals(r.getPath()))
 					.collect(Collectors.toCollection(ArrayList::new));
 
-			for (GenerationRulePropertyAccess record : checkedPathRecords) {
+			for (Access record : checkedPathRecords) {
 
 				String propertyName = record.getPropertyName();
 				String previousValue = record.getValue();
@@ -182,7 +160,7 @@ public class AccessRecordTableResource implements AccessRecordResource {
 								: null;
 
 						// check if the view of the path contains object with a changed property
-						String currentValue = GenerationRulePropertyAccess.convertValueToString(currentValueObject);
+						String currentValue = Access.convertValueToString(currentValueObject);
 						if (!Util.equals(previousValue, currentValue)) {
 							toBeProcessedPaths.add(checkedPath);
 						}
@@ -194,6 +172,7 @@ public class AccessRecordTableResource implements AccessRecordResource {
 	}
 
 	private boolean ifValueContains(String uriFragment, String value) {
+		if (value == null) return false;
 		String[] a = value.split("#");
 		if (a[0].startsWith("[")) {
 			String b = a[0].replace("[", "");
@@ -218,13 +197,13 @@ public class AccessRecordTableResource implements AccessRecordResource {
 		});
 	}
 
-	@Override
-	public void updateStatusToProcessed(String path) {
-		for (GenerationRulePropertyAccess r : propertyAccessRecords.stream().filter(r -> path.equals(r.getPath()))
-				.collect(Collectors.toList())) {
-			r.setState(AccessState.PROCESSED);
-		}
-		System.console();
-	}
+//	@Override
+//	public void updateStatusToProcessed(String path) {
+//		for (Access r : propertyAccessRecords.stream().filter(r -> path.equals(r.getPath()))
+//				.collect(Collectors.toList())) {
+//			r.setState(AccessState.PROCESSED);
+//		}
+//		System.console();
+//	}
 
 }

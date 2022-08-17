@@ -15,7 +15,7 @@ import org.eclipse.emf.ecore.xmi.XMIResource;
 import org.eclipse.epsilon.egl.dom.GenerationRule;
 import org.eclipse.epsilon.eol.execute.introspection.recording.PropertyAccess;
 
-public class GenerationRulePropertyAccess extends PropertyAccess {
+public class Access extends PropertyAccess {
 
 	public static int counter = 0;
 	public static final String INITIAL_VALUE = "INITIAL_VALUE ";
@@ -32,7 +32,7 @@ public class GenerationRulePropertyAccess extends PropertyAccess {
 	protected String path;
 	protected AccessState state = AccessState.NEW;
 
-	public GenerationRulePropertyAccess(String modulePath, String templatePath, String generationRuleName,
+	public Access(String modulePath, String templatePath, String generationRuleName,
 			String contextResourceUri, String contextObjectId, String elementResourceUri, String elementObjectId,
 			String propertyName, Object value, String path) {
 		super(null, null);
@@ -51,7 +51,7 @@ public class GenerationRulePropertyAccess extends PropertyAccess {
 		setValue(value);
 	}
 
-	public GenerationRulePropertyAccess(Object modelElement, String propertyName2, GenerationRule rule,
+	public Access(Object modelElement, String propertyName2, GenerationRule rule,
 			Object contextElement) {
 		super(null, null);
 	}
