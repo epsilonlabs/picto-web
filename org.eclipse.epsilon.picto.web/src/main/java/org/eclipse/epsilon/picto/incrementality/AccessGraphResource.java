@@ -91,15 +91,17 @@ public class AccessGraphResource implements AccessResource {
 				addAffectedPath((InputEntity) rule, path);
 
 				// template
+				Template template = null;
 				if (access.getTemplatePath() != null) {
 					String templateName = access.getTemplatePath();
-					Template template = (Template) graph.getTemplates().get(templateName);
+					template = (Template) graph.getTemplates().get(templateName);
 					if (template == null) {
 						template = factory.createTemplate();
 						template.setState(State.NEW);
 						template.setName(access.getTemplatePath());
 						graph.getTemplates().put(templateName, template);
 					}
+					template.getModules().add(module);
 					rule.setTemplate(template);
 					addAffectedPath((InputEntity) template, path);
 				}
@@ -165,6 +167,7 @@ public class AccessGraphResource implements AccessResource {
 						rule.getElements().add(element);
 						graph.getElements().put(elementFullname, element);
 					}
+					template.getElements().add(element);
 					element.setResource(elementResource);
 					addAffectedPath((InputEntity) element, path);
 
@@ -207,35 +210,107 @@ public class AccessGraphResource implements AccessResource {
 		Set<EObject> toBeDeletedElements = new HashSet<EObject>();
 
 		for (LazyGenerationRuleContentPromise promise : inProcessingPromises) {
-
 			String checkedPath = Util.getPath(promise);
+			checkPath(module, toBeProcessedPaths, toBeDeletedKeys, toBeDeletedElements, checkedPath);
+		}
 
-			if (checkedPath.equals("/Social Network/Dan")) {
-				System.console();
-			}
-
-			Path path = (Path) graph.getPaths().get(checkedPath);
-			// check if the path is a new view
-			if (path == null) {
-				toBeProcessedPaths.add(checkedPath);
-				continue;
-			} else {
-
-				if (path.getState().equals(State.NEW)) {
-					toBeProcessedPaths.add(checkedPath);
-
-					Set<Entry<String, Entity>> affectingElements = graph.getElements().stream()
-							.filter(e -> ((InputEntity) e.getValue()).getAffects().contains(path))
-							.collect(Collectors.toSet());
-					for (Entry<String, Entity> entry : affectingElements) {
-						Element element = (Element) entry.getValue();
-						toBeProcessedPaths.addAll(
-								element.getAffects().stream().map(p -> p.getName()).collect(Collectors.toSet()));
+		new Thread() {
+			@Override
+			public void run() {
+				for (String key : toBeDeletedKeys) {
+					for (EMap<String, Entity> map : entityMaps) {
+						try {
+							map.remove((Object) key);
+						} catch (Exception e) {
+						}
 					}
-//					continue;
 				}
 
-				// check elements
+				for (EObject element : toBeDeletedElements) {
+					try {
+						EcoreUtil.delete(element, true);
+					} catch (Exception e) {
+					}
+				}
+			};
+		}.start();
+		return toBeProcessedPaths;
+	}
+
+	private void checkPath(EgxModule module, Set<String> toBeProcessedPaths, Set<String> toBeDeletedKeys,
+			Set<EObject> toBeDeletedElements, String checkedPath) {
+		if (checkedPath.equals("/Stats")) {
+			System.console();
+		}
+
+		Path path = (Path) graph.getPaths().get(checkedPath);
+		// check if the path is a new view
+		if (path == null) {
+			toBeProcessedPaths.add(checkedPath);
+			return;
+		} else {
+
+			if (path.getState().equals(State.NEW)) {
+				toBeProcessedPaths.add(checkedPath);
+				return;
+			}
+
+			// check if the new path is affected by a new object
+			for (InputEntity entity : path.getAffectedBy()) {
+
+				if (entity instanceof Element) {
+					if (entity.getState().equals(State.NEW)) {
+						toBeProcessedPaths.add(checkedPath);
+						return;
+					}
+				} else if (entity instanceof Property) {
+					Property property = (Property) entity;
+					Element element = property.getElement();
+					Resource resource = element.getResource();
+					if (resource == null) {
+						continue;
+					}
+					String resourcePath = resource.getName();
+					EmfModel model = (EmfModel) module.getContext().getModelRepository().getModels().stream().filter(
+							m -> ((AbstractEmfModel) m).getResource().getURI().toFileString().equals(resourcePath))
+							.findFirst().orElse(null);
+
+					// if the resource has been deleted
+					if (!(new File(resource.getName())).exists()) {
+						toBeProcessedPaths.add(checkedPath);
+						toBeDeletedKeys.add(resource.getName());
+						toBeDeletedElements.add(resource);
+					} else if (model != null) {
+						org.eclipse.emf.ecore.resource.Resource currentResource = model.getResource();
+						EObject currentEObject = currentResource.getEObject(element.getName());
+
+						// if the element has been deleted
+						if (currentEObject == null) {
+							toBeProcessedPaths.add(checkedPath);
+							for (Property p : element.getProperties()) {
+								toBeDeletedKeys.add(resource.getName() + "#" + element.getName() + "#" + p.getName());
+							}
+							toBeDeletedKeys.add(resource.getName() + "#" + element.getName());
+							toBeDeletedElements.add(element);
+						} else {
+							EStructuralFeature currentProperty = currentEObject.eClass()
+									.getEStructuralFeature(property.getName());
+							Object currentValueObject = (currentProperty != null) ? currentEObject.eGet(currentProperty)
+									: null;
+
+							// check if the property has been changed
+							String currentValue = Access.convertValueToString(currentValueObject);
+							if (!Util.equals(property.getPreviousValue(), currentValue)) {
+								toBeProcessedPaths.add(checkedPath);
+								return;
+							}
+
+						}
+					}
+				} 
+			}
+
+			// check elements
 //				Set<Entry<String, Entity>> affectingElements = graph.getElements().stream()
 //						.filter(e -> ((InputEntity)e.getValue()).getAffects().contains(path)
 //						).collect(Collectors.toSet()); 
@@ -273,87 +348,63 @@ public class AccessGraphResource implements AccessResource {
 //						}
 //					}
 //				}
-				// ----
+			// ----
 
-				// check properties
+			// check properties
 
-				Set<Entry<String, Entity>> affectingProperties = graph.getProperties().stream()
-						.filter(e -> ((InputEntity) e.getValue()).getAffects().contains(path))
-						.collect(Collectors.toSet());
+			Set<Entry<String, Entity>> affectingProperties = graph.getProperties().stream()
+					.filter(e -> ((InputEntity) e.getValue()).getAffects().contains(path)).collect(Collectors.toSet());
 
-				for (Entry<String, Entity> entry : affectingProperties) {
-					Property property = (Property) entry.getValue();
-					Element element = property.getElement();
-					Resource resource = element.getResource();
-					if (resource == null) {
-						continue;
-					}
-					String resourcePath = resource.getName();
-					EmfModel model = (EmfModel) module.getContext().getModelRepository().getModels().stream().filter(
-							m -> ((AbstractEmfModel) m).getResource().getURI().toFileString().equals(resourcePath))
-							.findFirst().orElse(null);
-
-					// if the resource has been deleted
-					if (!(new File(resource.getName())).exists()) {
-						toBeProcessedPaths.add(checkedPath);
-						toBeDeletedKeys.add(resource.getName());
-						toBeDeletedElements.add(resource);
-					} else if (model != null) {
-						org.eclipse.emf.ecore.resource.Resource currentResource = model.getResource();
-						EObject currentEObject = currentResource.getEObject(element.getName());
-
-						// if the element has been deleted
-						if (currentEObject == null) {
-							toBeProcessedPaths.add(checkedPath);
-							for (Property p : element.getProperties()) {
-								toBeDeletedKeys.add(resource.getName() + "#" + element.getName() + "#" + p.getName());
-							}
-							toBeDeletedKeys.add(resource.getName() + "#" + element.getName());
-							toBeDeletedElements.add(currentEObject);
-						} else {
-							EStructuralFeature currentProperty = currentEObject.eClass()
-									.getEStructuralFeature(property.getName());
-							Object currentValueObject = (currentProperty != null) ? currentEObject.eGet(currentProperty)
-									: null;
-
-							// check if the property has been changed
-							String currentValue = Access.convertValueToString(currentValueObject);
-							if (!Util.equals(property.getPreviousValue(), currentValue)) {
-
-								toBeProcessedPaths.addAll(element.getAffects().stream().map(p -> p.getName())
-										.collect(Collectors.toSet()));
-
-								toBeProcessedPaths.addAll(property.getAffects().stream().map(p -> p.getName())
-										.collect(Collectors.toSet()));
-							}
-
-						}
-					}
-				}
+			for (Entry<String, Entity> entry : affectingProperties) {
+//					Property property = (Property) entry.getValue();
+//					Element element = property.getElement();
+//					Resource resource = element.getResource();
+//					if (resource == null) {
+//						continue;
+//					}
+//					String resourcePath = resource.getName();
+//					EmfModel model = (EmfModel) module.getContext().getModelRepository().getModels().stream().filter(
+//							m -> ((AbstractEmfModel) m).getResource().getURI().toFileString().equals(resourcePath))
+//							.findFirst().orElse(null);
+//
+//					// if the resource has been deleted
+//					if (!(new File(resource.getName())).exists()) {
+//						toBeProcessedPaths.add(checkedPath);
+//						toBeDeletedKeys.add(resource.getName());
+//						toBeDeletedElements.add(resource);
+//					} else if (model != null) {
+//						org.eclipse.emf.ecore.resource.Resource currentResource = model.getResource();
+//						EObject currentEObject = currentResource.getEObject(element.getName());
+//
+//						// if the element has been deleted
+//						if (currentEObject == null) {
+//							toBeProcessedPaths.add(checkedPath);
+//							for (Property p : element.getProperties()) {
+//								toBeDeletedKeys.add(resource.getName() + "#" + element.getName() + "#" + p.getName());
+//							}
+//							toBeDeletedKeys.add(resource.getName() + "#" + element.getName());
+//							toBeDeletedElements.add(element);
+//						} else {
+//							EStructuralFeature currentProperty = currentEObject.eClass()
+//									.getEStructuralFeature(property.getName());
+//							Object currentValueObject = (currentProperty != null) ? currentEObject.eGet(currentProperty)
+//									: null;
+//
+//							// check if the property has been changed
+//							String currentValue = Access.convertValueToString(currentValueObject);
+//							if (!Util.equals(property.getPreviousValue(), currentValue)) {
+//
+//								toBeProcessedPaths.addAll(element.getAffects().stream().map(p -> p.getName())
+//										.collect(Collectors.toSet()));
+//
+//								toBeProcessedPaths.addAll(property.getAffects().stream().map(p -> p.getName())
+//										.collect(Collectors.toSet()));
+//							}
+//
+//						}
+//					}
 			}
 		}
-
-		new Thread() {
-			@Override
-			public void run() {
-				for (String key : toBeDeletedKeys) {
-					for (EMap<String, Entity> map : entityMaps) {
-						try {
-							map.remove((Object) key);
-						} catch (Exception e) {
-						}
-					}
-				}
-
-				for (EObject element : toBeDeletedElements) {
-					try {
-						EcoreUtil.delete(element, true);
-					} catch (Exception e) {
-					}
-				}
-			};
-		}.start();
-		return toBeProcessedPaths;
 	}
 
 	private void addAffectedPath(InputEntity module, final Path path) {

@@ -334,7 +334,7 @@ class IncrementalityTest {
 			/** first update **/
 			EObject eObject = res.getEObject("3"); // get Charlie (id = 3)
 			EStructuralFeature eNameFeature = eObject.eClass().getEStructuralFeature("name");
-			// update the name to 'Dan'
+			// update the name to 'Bobby'
 			eObject.eSet(eNameFeature, "Bobby");
 			res.save(null);
 

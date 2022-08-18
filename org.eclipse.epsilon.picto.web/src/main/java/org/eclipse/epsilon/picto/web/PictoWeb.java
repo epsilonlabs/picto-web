@@ -6,7 +6,7 @@ import org.eclipse.epsilon.picto.incrementality.AccessTableResource;
 
 public class PictoWeb {
 
-	public static final AccessResource ACCESS_RECORD_RESOURCE = new AccessTableResource();
-//	public static final AccessResource ACCESS_RECORD_RESOURCE = new AccessGraphResource();
+//	public static final AccessResource ACCESS_RECORD_RESOURCE = new AccessTableResource();
+	public static final AccessResource ACCESS_RECORD_RESOURCE = new AccessGraphResource();
 
 }
