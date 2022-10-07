@@ -6,6 +6,7 @@ import java.util.Collection;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -31,24 +32,18 @@ import org.eclipse.epsilon.picto.pictograph.Rule;
 import org.eclipse.epsilon.picto.pictograph.State;
 import org.eclipse.epsilon.picto.pictograph.Template;
 
-public class AccessGraphResource implements AccessResource {
+public class AccessGraphResource implements AccessRecordResource {
 
 	private PictographFactory factory = PictographFactory.eINSTANCE;
 	private PictoGraph graph = factory.createPictoGraph();
-	private List<EMap<String, Entity>> entityMaps = new ArrayList<>();
+	private TraceIndex traceIndex = new TraceIndex();
 
 	public AccessGraphResource() {
-		entityMaps.add(graph.getPaths());
-		entityMaps.add(graph.getModules());
-		entityMaps.add(graph.getRules());
-		entityMaps.add(graph.getTemplates());
-		entityMaps.add(graph.getResources());
-		entityMaps.add(graph.getElements());
-		entityMaps.add(graph.getProperties());
+
 	}
 
 	@Override
-	public void add(Access access) {
+	public void add(AccessRecord access) {
 //		System.out.println(access.toString());
 
 		// path
@@ -57,35 +52,36 @@ public class AccessGraphResource implements AccessResource {
 		}
 
 		String pathName = access.getPath();
-		Path path = (Path) graph.getPaths().get(pathName);
+		Path path = (Path) traceIndex.getPath(pathName);
+//		Path path = (Path) graph.getPaths().get(pathName);
 		if (path == null) {
 			path = factory.createPath();
 			path.setState(State.NEW);
 			path.setName(access.getPath());
-			graph.getPaths().put(pathName, path);
+			traceIndex.putPath(pathName, path);
 		}
 
 		// module
 		if (access.getModulePath() != null) {
 			String moduleName = access.getModulePath();
-			Module module = (Module) graph.getModules().get(moduleName);
+			Module module = (Module) traceIndex.getModule(moduleName);
 			if (module == null) {
 				module = factory.createModule();
 				module.setState(State.NEW);
 				module.setName(access.getModulePath());
-				graph.getModules().put(moduleName, module);
+				traceIndex.putModule(moduleName, module);
 			}
 			addAffectedPath((InputEntity) module, path);
 
 			// rule
 			if (access.getGenerationRuleName() != null) {
 				String ruleName = access.getGenerationRuleName();
-				Rule rule = (Rule) graph.getRules().get(ruleName);
+				Rule rule = (Rule) traceIndex.getRule(moduleName, ruleName);
 				if (rule == null) {
 					rule = factory.createRule();
 					rule.setState(State.NEW);
 					rule.setName(access.getGenerationRuleName());
-					graph.getRules().put(ruleName, rule);
+					traceIndex.putRule(moduleName, ruleName, rule);
 				}
 				rule.setModule(module);
 				addAffectedPath((InputEntity) rule, path);
@@ -94,12 +90,12 @@ public class AccessGraphResource implements AccessResource {
 				Template template = null;
 				if (access.getTemplatePath() != null) {
 					String templateName = access.getTemplatePath();
-					template = (Template) graph.getTemplates().get(templateName);
+					template = (Template) traceIndex.getTemplate(moduleName, ruleName, templateName);
 					if (template == null) {
 						template = factory.createTemplate();
 						template.setState(State.NEW);
 						template.setName(access.getTemplatePath());
-						graph.getTemplates().put(templateName, template);
+						traceIndex.putTemplate(moduleName, ruleName, templateName, template);
 					}
 					template.getModules().add(module);
 					rule.setTemplate(template);
@@ -113,25 +109,26 @@ public class AccessGraphResource implements AccessResource {
 					Resource contextResource = null;
 					if (access.getContextResourceUri() != null) {
 						String fullname = access.getContextResourceUri();
-						contextResource = (Resource) graph.getResources().get(fullname);
+						contextResource = (Resource) traceIndex.getResource(fullname);
 						if (contextResource == null) {
 							contextResource = factory.createResource();
 							contextResource.setState(State.NEW);
 							contextResource.setName(access.getContextResourceUri());
-							graph.getResources().put(fullname, contextResource);
+							traceIndex.putResource(fullname, contextResource);
 						}
 						addAffectedPath((InputEntity) contextResource, path);
 					}
 
 					// context element
-					String contextFullname = access.getContextResourceUri() + "#" + access.getContextObjectId();
-					Element contextElement = (Element) graph.getElements().get(contextFullname);
+					Element contextElement = (Element) traceIndex.getElement(access.getContextResourceUri(),
+							access.getContextObjectId());
 					if (contextElement == null) {
 						contextElement = factory.createElement();
 						contextElement.setState(State.NEW);
 						contextElement.setName(access.getContextObjectId());
 						rule.getContextElements().add(contextElement);
-						graph.getElements().put(contextFullname, contextElement);
+						traceIndex.putElement(access.getContextResourceUri(), access.getContextObjectId(),
+								contextElement);
 					}
 					contextElement.setResource(contextResource);
 					addAffectedPath((InputEntity) contextElement, path);
@@ -145,27 +142,26 @@ public class AccessGraphResource implements AccessResource {
 					Resource elementResource = null;
 					if (access.getElementResourceUri() != null) {
 						String fullname = access.getElementResourceUri();
-						elementResource = (Resource) graph.getResources().get(fullname);
+						elementResource = (Resource) traceIndex.getResource(fullname);
 						if (elementResource == null) {
 							elementResource = factory.createResource();
 							elementResource.setState(State.NEW);
 							elementResource.setName(access.getElementResourceUri());
-							graph.getResources().put(fullname, elementResource);
+							traceIndex.putResource(fullname, elementResource);
 						}
 						addAffectedPath((InputEntity) elementResource, path);
 					}
 
 					// element
-					String elementFullname = (access.getElementResourceUri() != null)
-							? access.getElementResourceUri() + "#" + access.getElementObjectId()
-							: access.getElementObjectId();
-					Element element = (Element) graph.getElements().get(elementFullname);
+
+					Element element = (Element) traceIndex.getElement(access.getElementResourceUri(),
+							access.getElementObjectId());
 					if (element == null) {
 						element = factory.createElement();
 						element.setState(State.NEW);
 						element.setName(access.getElementObjectId());
 						rule.getElements().add(element);
-						graph.getElements().put(elementFullname, element);
+						traceIndex.putElement(access.getElementResourceUri(), access.getElementObjectId(), element);
 					}
 					template.getElements().add(element);
 					element.setResource(elementResource);
@@ -177,16 +173,14 @@ public class AccessGraphResource implements AccessResource {
 							System.console();
 						}
 
-						String fullname = (access.getElementResourceUri() != null)
-								? access.getElementResourceUri() + "#" + access.getElementObjectId() + "#"
-										+ access.getPropertyName()
-								: access.getElementObjectId() + "#" + access.getPropertyName();
-						Property property = (Property) graph.getProperties().get(fullname);
+						Property property = (Property) traceIndex.getProperty(access.getElementResourceUri(),
+								access.getElementObjectId(), access.getPropertyName());
 						if (property == null) {
 							property = factory.createProperty();
 							property.setState(State.NEW);
 							property.setName(access.getPropertyName());
-							graph.getProperties().put(fullname, property);
+							traceIndex.putProperty(access.getElementResourceUri(),
+									access.getElementObjectId(), access.getPropertyName(), property);
 						}
 						property.setElement(element);
 						property.setValue(access.getValue());
@@ -217,8 +211,9 @@ public class AccessGraphResource implements AccessResource {
 		new Thread() {
 			@Override
 			public void run() {
+				//first, remove all the entries of the deleted elements
 				for (String key : toBeDeletedKeys) {
-					for (EMap<String, Entity> map : entityMaps) {
+					for (Map<String, ?> map : traceIndex.getAllIndices()) {
 						try {
 							map.remove((Object) key);
 						} catch (Exception e) {
@@ -243,7 +238,7 @@ public class AccessGraphResource implements AccessResource {
 			System.console();
 		}
 
-		Path path = (Path) graph.getPaths().get(checkedPath);
+		Path path = (Path) traceIndex.getPath(checkedPath);
 		// check if the path is a new view
 		if (path == null) {
 			toBeProcessedPaths.add(checkedPath);
@@ -299,7 +294,7 @@ public class AccessGraphResource implements AccessResource {
 									: null;
 
 							// check if the property has been changed
-							String currentValue = Access.convertValueToString(currentValueObject);
+							String currentValue = AccessRecord.convertValueToString(currentValueObject);
 							if (!Util.equals(property.getPreviousValue(), currentValue)) {
 								toBeProcessedPaths.add(checkedPath);
 								return;
@@ -307,7 +302,7 @@ public class AccessGraphResource implements AccessResource {
 
 						}
 					}
-				} 
+				}
 			}
 
 			// check elements
@@ -350,12 +345,11 @@ public class AccessGraphResource implements AccessResource {
 //				}
 			// ----
 
-			// check properties
+//			// check properties
+//			Set<Entry<String, Entity>> affectingProperties = traceIndex.getPropertyIndex().entrySet().stream()
+//					.filter(e -> ((InputEntity) e.getValue()).getAffects().contains(path)).collect(Collectors.toSet());
 
-			Set<Entry<String, Entity>> affectingProperties = graph.getProperties().stream()
-					.filter(e -> ((InputEntity) e.getValue()).getAffects().contains(path)).collect(Collectors.toSet());
-
-			for (Entry<String, Entity> entry : affectingProperties) {
+//			for (Entry<String, Entity> entry : affectingProperties) {
 //					Property property = (Property) entry.getValue();
 //					Element element = property.getElement();
 //					Resource resource = element.getResource();
@@ -403,7 +397,7 @@ public class AccessGraphResource implements AccessResource {
 //
 //						}
 //					}
-			}
+//			}
 		}
 	}
 
@@ -414,7 +408,7 @@ public class AccessGraphResource implements AccessResource {
 	}
 
 	@Override
-	public List<Access> getIncrementalRecords() {
+	public List<AccessRecord> getIncrementalRecords() {
 		// TODO Auto-generated method stub
 		return null;
 	}
@@ -422,17 +416,17 @@ public class AccessGraphResource implements AccessResource {
 	@Override
 	public void printIncrementalRecords() {
 		System.out.println();
-		printEntities("## Modules ##", graph.getModules());
-		printEntities("## Rules ##", graph.getRules());
-		printEntities("## Templates ##", graph.getTemplates());
-		printEntities("## Resources ##", graph.getResources());
-		printEntities("## Elements ##", graph.getElements());
-		printEntities("## Properties ##", graph.getProperties());
+		printEntities("## Modules ##", traceIndex.getModuleIndex());
+		printEntities("## Rules ##", traceIndex.getRuleIndex());
+		printEntities("## Templates ##", traceIndex.getTemplateIndex());
+		printEntities("## Resources ##", traceIndex.getResourceIndex());
+		printEntities("## Elements ##", traceIndex.getElementIndex());
+		printEntities("## Properties ##", traceIndex.getPropertyIndex());
 	}
 
-	private void printEntities(String header, EMap<String, Entity> map) {
+	private void printEntities(String header, Map<String, ?> map) {
 		System.out.println(header);
-		for (Entity temp : map.values()) {
+		for (Object temp : map.values()) {
 			InputEntity e1 = (InputEntity) temp;
 
 			List<String> keys = new ArrayList<String>();
@@ -457,7 +451,7 @@ public class AccessGraphResource implements AccessResource {
 
 	@Override
 	public void updateStatusToProcessed(Collection<String> paths) {
-		for (Entry<String, Entity> entry : graph.getPaths()) {
+		for (Entry<String, Path> entry : traceIndex.getPathIndex().entrySet()) {
 			Path p = (Path) entry.getValue();
 			p.setState(State.PROCESSED);
 			if (paths.contains(p.getName())) {
@@ -473,7 +467,7 @@ public class AccessGraphResource implements AccessResource {
 
 	@Override
 	public void clear() {
-		for (EMap<String, Entity> map : entityMaps) {
+		for (Map<String, ?> map : traceIndex.getAllIndices()) {
 			map.clear();
 			System.console();
 		}

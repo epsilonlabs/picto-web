@@ -9,6 +9,7 @@ import org.eclipse.emf.common.util.EList;
 import org.eclipse.emf.ecore.EClass;
 
 import org.eclipse.emf.ecore.util.EObjectResolvingEList;
+
 import org.eclipse.epsilon.picto.pictograph.Element;
 import org.eclipse.epsilon.picto.pictograph.PictographPackage;
 import org.eclipse.epsilon.picto.pictograph.Rule;

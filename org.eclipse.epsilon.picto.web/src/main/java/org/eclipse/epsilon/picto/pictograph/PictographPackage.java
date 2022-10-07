@@ -21,6 +21,13 @@ import org.eclipse.emf.ecore.EReference;
  * <!-- end-user-doc -->
  * @see org.eclipse.epsilon.picto.pictograph.PictographFactory
  * @model kind="package"
+ *        annotation="index name='path' by='Path.name' many='false'"
+ *        annotation="index name='module' by='Module.name' many='false'"
+ *        annotation="index name='rule' by='Module.name, rules.name' many='false'"
+ *        annotation="index name='template' by='Module.name, rules.name, templates.name' many='false'"
+ *        annotation="index name='resource' by='Resource.name' many='false'"
+ *        annotation="index name='element' by='Resource.name, elements.name' many='false'"
+ *        annotation="index name='property' by='Resource.name, elements.name, properties.name' many='false'"
  * @generated
  */
 public interface PictographPackage extends EPackage {
@@ -57,43 +64,6 @@ public interface PictographPackage extends EPackage {
 	PictographPackage eINSTANCE = org.eclipse.epsilon.picto.pictograph.impl.PictographPackageImpl.init();
 
 	/**
-	 * The meta object id for the '{@link org.eclipse.epsilon.picto.pictograph.impl.EntityMapImpl <em>Entity Map</em>}' class.
-	 * <!-- begin-user-doc -->
-	 * <!-- end-user-doc -->
-	 * @see org.eclipse.epsilon.picto.pictograph.impl.EntityMapImpl
-	 * @see org.eclipse.epsilon.picto.pictograph.impl.PictographPackageImpl#getEntityMap()
-	 * @generated
-	 */
-	int ENTITY_MAP = 0;
-
-	/**
-	 * The feature id for the '<em><b>Key</b></em>' attribute.
-	 * <!-- begin-user-doc -->
-	 * <!-- end-user-doc -->
-	 * @generated
-	 * @ordered
-	 */
-	int ENTITY_MAP__KEY = 0;
-
-	/**
-	 * The feature id for the '<em><b>Value</b></em>' reference.
-	 * <!-- begin-user-doc -->
-	 * <!-- end-user-doc -->
-	 * @generated
-	 * @ordered
-	 */
-	int ENTITY_MAP__VALUE = 1;
-
-	/**
-	 * The number of structural features of the '<em>Entity Map</em>' class.
-	 * <!-- begin-user-doc -->
-	 * <!-- end-user-doc -->
-	 * @generated
-	 * @ordered
-	 */
-	int ENTITY_MAP_FEATURE_COUNT = 2;
-
-	/**
 	 * The meta object id for the '{@link org.eclipse.epsilon.picto.pictograph.impl.PictoGraphImpl <em>Picto Graph</em>}' class.
 	 * <!-- begin-user-doc -->
 	 * <!-- end-user-doc -->
@@ -101,70 +71,7 @@ public interface PictographPackage extends EPackage {
 	 * @see org.eclipse.epsilon.picto.pictograph.impl.PictographPackageImpl#getPictoGraph()
 	 * @generated
 	 */
-	int PICTO_GRAPH = 1;
-
-	/**
-	 * The feature id for the '<em><b>Paths</b></em>' map.
-	 * <!-- begin-user-doc -->
-	 * <!-- end-user-doc -->
-	 * @generated
-	 * @ordered
-	 */
-	int PICTO_GRAPH__PATHS = 0;
-
-	/**
-	 * The feature id for the '<em><b>Modules</b></em>' map.
-	 * <!-- begin-user-doc -->
-	 * <!-- end-user-doc -->
-	 * @generated
-	 * @ordered
-	 */
-	int PICTO_GRAPH__MODULES = 1;
-
-	/**
-	 * The feature id for the '<em><b>Rules</b></em>' map.
-	 * <!-- begin-user-doc -->
-	 * <!-- end-user-doc -->
-	 * @generated
-	 * @ordered
-	 */
-	int PICTO_GRAPH__RULES = 2;
-
-	/**
-	 * The feature id for the '<em><b>Templates</b></em>' map.
-	 * <!-- begin-user-doc -->
-	 * <!-- end-user-doc -->
-	 * @generated
-	 * @ordered
-	 */
-	int PICTO_GRAPH__TEMPLATES = 3;
-
-	/**
-	 * The feature id for the '<em><b>Resources</b></em>' map.
-	 * <!-- begin-user-doc -->
-	 * <!-- end-user-doc -->
-	 * @generated
-	 * @ordered
-	 */
-	int PICTO_GRAPH__RESOURCES = 4;
-
-	/**
-	 * The feature id for the '<em><b>Elements</b></em>' map.
-	 * <!-- begin-user-doc -->
-	 * <!-- end-user-doc -->
-	 * @generated
-	 * @ordered
-	 */
-	int PICTO_GRAPH__ELEMENTS = 5;
-
-	/**
-	 * The feature id for the '<em><b>Properties</b></em>' map.
-	 * <!-- begin-user-doc -->
-	 * <!-- end-user-doc -->
-	 * @generated
-	 * @ordered
-	 */
-	int PICTO_GRAPH__PROPERTIES = 6;
+	int PICTO_GRAPH = 0;
 
 	/**
 	 * The number of structural features of the '<em>Picto Graph</em>' class.
@@ -173,7 +80,7 @@ public interface PictographPackage extends EPackage {
 	 * @generated
 	 * @ordered
 	 */
-	int PICTO_GRAPH_FEATURE_COUNT = 7;
+	int PICTO_GRAPH_FEATURE_COUNT = 0;
 
 	/**
 	 * The meta object id for the '{@link org.eclipse.epsilon.picto.pictograph.impl.EntityImpl <em>Entity</em>}' class.
@@ -183,7 +90,7 @@ public interface PictographPackage extends EPackage {
 	 * @see org.eclipse.epsilon.picto.pictograph.impl.PictographPackageImpl#getEntity()
 	 * @generated
 	 */
-	int ENTITY = 2;
+	int ENTITY = 1;
 
 	/**
 	 * The feature id for the '<em><b>Name</b></em>' attribute.
@@ -220,7 +127,7 @@ public interface PictographPackage extends EPackage {
 	 * @see org.eclipse.epsilon.picto.pictograph.impl.PictographPackageImpl#getInputEntity()
 	 * @generated
 	 */
-	int INPUT_ENTITY = 3;
+	int INPUT_ENTITY = 2;
 
 	/**
 	 * The feature id for the '<em><b>Name</b></em>' attribute.
@@ -266,7 +173,7 @@ public interface PictographPackage extends EPackage {
 	 * @see org.eclipse.epsilon.picto.pictograph.impl.PictographPackageImpl#getPath()
 	 * @generated
 	 */
-	int PATH = 4;
+	int PATH = 3;
 
 	/**
 	 * The feature id for the '<em><b>Name</b></em>' attribute.
@@ -312,7 +219,7 @@ public interface PictographPackage extends EPackage {
 	 * @see org.eclipse.epsilon.picto.pictograph.impl.PictographPackageImpl#getModule()
 	 * @generated
 	 */
-	int MODULE = 5;
+	int MODULE = 4;
 
 	/**
 	 * The feature id for the '<em><b>Name</b></em>' attribute.
@@ -367,7 +274,7 @@ public interface PictographPackage extends EPackage {
 	 * @see org.eclipse.epsilon.picto.pictograph.impl.PictographPackageImpl#getResource()
 	 * @generated
 	 */
-	int RESOURCE = 6;
+	int RESOURCE = 5;
 
 	/**
 	 * The feature id for the '<em><b>Name</b></em>' attribute.
@@ -422,7 +329,7 @@ public interface PictographPackage extends EPackage {
 	 * @see org.eclipse.epsilon.picto.pictograph.impl.PictographPackageImpl#getProperty()
 	 * @generated
 	 */
-	int PROPERTY = 7;
+	int PROPERTY = 6;
 
 	/**
 	 * The feature id for the '<em><b>Name</b></em>' attribute.
@@ -495,7 +402,7 @@ public interface PictographPackage extends EPackage {
 	 * @see org.eclipse.epsilon.picto.pictograph.impl.PictographPackageImpl#getElement()
 	 * @generated
 	 */
-	int ELEMENT = 8;
+	int ELEMENT = 7;
 
 	/**
 	 * The feature id for the '<em><b>Name</b></em>' attribute.
@@ -559,7 +466,7 @@ public interface PictographPackage extends EPackage {
 	 * @see org.eclipse.epsilon.picto.pictograph.impl.PictographPackageImpl#getRule()
 	 * @generated
 	 */
-	int RULE = 9;
+	int RULE = 8;
 
 	/**
 	 * The feature id for the '<em><b>Name</b></em>' attribute.
@@ -641,7 +548,7 @@ public interface PictographPackage extends EPackage {
 	 * @see org.eclipse.epsilon.picto.pictograph.impl.PictographPackageImpl#getTemplate()
 	 * @generated
 	 */
-	int TEMPLATE = 10;
+	int TEMPLATE = 9;
 
 	/**
 	 * The feature id for the '<em><b>Name</b></em>' attribute.
@@ -706,7 +613,6 @@ public interface PictographPackage extends EPackage {
 	 */
 	int TEMPLATE_FEATURE_COUNT = INPUT_ENTITY_FEATURE_COUNT + 3;
 
-
 	/**
 	 * The meta object id for the '{@link org.eclipse.epsilon.picto.pictograph.State <em>State</em>}' enum.
 	 * <!-- begin-user-doc -->
@@ -715,42 +621,8 @@ public interface PictographPackage extends EPackage {
 	 * @see org.eclipse.epsilon.picto.pictograph.impl.PictographPackageImpl#getState()
 	 * @generated
 	 */
-	int STATE = 11;
+	int STATE = 10;
 
-
-	/**
-	 * Returns the meta object for class '{@link java.util.Map.Entry <em>Entity Map</em>}'.
-	 * <!-- begin-user-doc -->
-	 * <!-- end-user-doc -->
-	 * @return the meta object for class '<em>Entity Map</em>'.
-	 * @see java.util.Map.Entry
-	 * @model keyDataType="org.eclipse.emf.ecore.EString"
-	 *        valueType="pictograph.Entity"
-	 * @generated
-	 */
-	EClass getEntityMap();
-
-	/**
-	 * Returns the meta object for the attribute '{@link java.util.Map.Entry <em>Key</em>}'.
-	 * <!-- begin-user-doc -->
-	 * <!-- end-user-doc -->
-	 * @return the meta object for the attribute '<em>Key</em>'.
-	 * @see java.util.Map.Entry
-	 * @see #getEntityMap()
-	 * @generated
-	 */
-	EAttribute getEntityMap_Key();
-
-	/**
-	 * Returns the meta object for the reference '{@link java.util.Map.Entry <em>Value</em>}'.
-	 * <!-- begin-user-doc -->
-	 * <!-- end-user-doc -->
-	 * @return the meta object for the reference '<em>Value</em>'.
-	 * @see java.util.Map.Entry
-	 * @see #getEntityMap()
-	 * @generated
-	 */
-	EReference getEntityMap_Value();
 
 	/**
 	 * Returns the meta object for class '{@link org.eclipse.epsilon.picto.pictograph.PictoGraph <em>Picto Graph</em>}'.
@@ -761,83 +633,6 @@ public interface PictographPackage extends EPackage {
 	 * @generated
 	 */
 	EClass getPictoGraph();
-
-	/**
-	 * Returns the meta object for the map '{@link org.eclipse.epsilon.picto.pictograph.PictoGraph#getPaths <em>Paths</em>}'.
-	 * <!-- begin-user-doc -->
-	 * <!-- end-user-doc -->
-	 * @return the meta object for the map '<em>Paths</em>'.
-	 * @see org.eclipse.epsilon.picto.pictograph.PictoGraph#getPaths()
-	 * @see #getPictoGraph()
-	 * @generated
-	 */
-	EReference getPictoGraph_Paths();
-
-	/**
-	 * Returns the meta object for the map '{@link org.eclipse.epsilon.picto.pictograph.PictoGraph#getModules <em>Modules</em>}'.
-	 * <!-- begin-user-doc -->
-	 * <!-- end-user-doc -->
-	 * @return the meta object for the map '<em>Modules</em>'.
-	 * @see org.eclipse.epsilon.picto.pictograph.PictoGraph#getModules()
-	 * @see #getPictoGraph()
-	 * @generated
-	 */
-	EReference getPictoGraph_Modules();
-
-	/**
-	 * Returns the meta object for the map '{@link org.eclipse.epsilon.picto.pictograph.PictoGraph#getRules <em>Rules</em>}'.
-	 * <!-- begin-user-doc -->
-	 * <!-- end-user-doc -->
-	 * @return the meta object for the map '<em>Rules</em>'.
-	 * @see org.eclipse.epsilon.picto.pictograph.PictoGraph#getRules()
-	 * @see #getPictoGraph()
-	 * @generated
-	 */
-	EReference getPictoGraph_Rules();
-
-	/**
-	 * Returns the meta object for the map '{@link org.eclipse.epsilon.picto.pictograph.PictoGraph#getTemplates <em>Templates</em>}'.
-	 * <!-- begin-user-doc -->
-	 * <!-- end-user-doc -->
-	 * @return the meta object for the map '<em>Templates</em>'.
-	 * @see org.eclipse.epsilon.picto.pictograph.PictoGraph#getTemplates()
-	 * @see #getPictoGraph()
-	 * @generated
-	 */
-	EReference getPictoGraph_Templates();
-
-	/**
-	 * Returns the meta object for the map '{@link org.eclipse.epsilon.picto.pictograph.PictoGraph#getResources <em>Resources</em>}'.
-	 * <!-- begin-user-doc -->
-	 * <!-- end-user-doc -->
-	 * @return the meta object for the map '<em>Resources</em>'.
-	 * @see org.eclipse.epsilon.picto.pictograph.PictoGraph#getResources()
-	 * @see #getPictoGraph()
-	 * @generated
-	 */
-	EReference getPictoGraph_Resources();
-
-	/**
-	 * Returns the meta object for the map '{@link org.eclipse.epsilon.picto.pictograph.PictoGraph#getElements <em>Elements</em>}'.
-	 * <!-- begin-user-doc -->
-	 * <!-- end-user-doc -->
-	 * @return the meta object for the map '<em>Elements</em>'.
-	 * @see org.eclipse.epsilon.picto.pictograph.PictoGraph#getElements()
-	 * @see #getPictoGraph()
-	 * @generated
-	 */
-	EReference getPictoGraph_Elements();
-
-	/**
-	 * Returns the meta object for the map '{@link org.eclipse.epsilon.picto.pictograph.PictoGraph#getProperties <em>Properties</em>}'.
-	 * <!-- begin-user-doc -->
-	 * <!-- end-user-doc -->
-	 * @return the meta object for the map '<em>Properties</em>'.
-	 * @see org.eclipse.epsilon.picto.pictograph.PictoGraph#getProperties()
-	 * @see #getPictoGraph()
-	 * @generated
-	 */
-	EReference getPictoGraph_Properties();
 
 	/**
 	 * Returns the meta object for class '{@link org.eclipse.epsilon.picto.pictograph.Entity <em>Entity</em>}'.
@@ -1160,32 +955,6 @@ public interface PictographPackage extends EPackage {
 	 */
 	interface Literals {
 		/**
-		 * The meta object literal for the '{@link org.eclipse.epsilon.picto.pictograph.impl.EntityMapImpl <em>Entity Map</em>}' class.
-		 * <!-- begin-user-doc -->
-		 * <!-- end-user-doc -->
-		 * @see org.eclipse.epsilon.picto.pictograph.impl.EntityMapImpl
-		 * @see org.eclipse.epsilon.picto.pictograph.impl.PictographPackageImpl#getEntityMap()
-		 * @generated
-		 */
-		EClass ENTITY_MAP = eINSTANCE.getEntityMap();
-
-		/**
-		 * The meta object literal for the '<em><b>Key</b></em>' attribute feature.
-		 * <!-- begin-user-doc -->
-		 * <!-- end-user-doc -->
-		 * @generated
-		 */
-		EAttribute ENTITY_MAP__KEY = eINSTANCE.getEntityMap_Key();
-
-		/**
-		 * The meta object literal for the '<em><b>Value</b></em>' reference feature.
-		 * <!-- begin-user-doc -->
-		 * <!-- end-user-doc -->
-		 * @generated
-		 */
-		EReference ENTITY_MAP__VALUE = eINSTANCE.getEntityMap_Value();
-
-		/**
 		 * The meta object literal for the '{@link org.eclipse.epsilon.picto.pictograph.impl.PictoGraphImpl <em>Picto Graph</em>}' class.
 		 * <!-- begin-user-doc -->
 		 * <!-- end-user-doc -->
@@ -1194,62 +963,6 @@ public interface PictographPackage extends EPackage {
 		 * @generated
 		 */
 		EClass PICTO_GRAPH = eINSTANCE.getPictoGraph();
-
-		/**
-		 * The meta object literal for the '<em><b>Paths</b></em>' map feature.
-		 * <!-- begin-user-doc -->
-		 * <!-- end-user-doc -->
-		 * @generated
-		 */
-		EReference PICTO_GRAPH__PATHS = eINSTANCE.getPictoGraph_Paths();
-
-		/**
-		 * The meta object literal for the '<em><b>Modules</b></em>' map feature.
-		 * <!-- begin-user-doc -->
-		 * <!-- end-user-doc -->
-		 * @generated
-		 */
-		EReference PICTO_GRAPH__MODULES = eINSTANCE.getPictoGraph_Modules();
-
-		/**
-		 * The meta object literal for the '<em><b>Rules</b></em>' map feature.
-		 * <!-- begin-user-doc -->
-		 * <!-- end-user-doc -->
-		 * @generated
-		 */
-		EReference PICTO_GRAPH__RULES = eINSTANCE.getPictoGraph_Rules();
-
-		/**
-		 * The meta object literal for the '<em><b>Templates</b></em>' map feature.
-		 * <!-- begin-user-doc -->
-		 * <!-- end-user-doc -->
-		 * @generated
-		 */
-		EReference PICTO_GRAPH__TEMPLATES = eINSTANCE.getPictoGraph_Templates();
-
-		/**
-		 * The meta object literal for the '<em><b>Resources</b></em>' map feature.
-		 * <!-- begin-user-doc -->
-		 * <!-- end-user-doc -->
-		 * @generated
-		 */
-		EReference PICTO_GRAPH__RESOURCES = eINSTANCE.getPictoGraph_Resources();
-
-		/**
-		 * The meta object literal for the '<em><b>Elements</b></em>' map feature.
-		 * <!-- begin-user-doc -->
-		 * <!-- end-user-doc -->
-		 * @generated
-		 */
-		EReference PICTO_GRAPH__ELEMENTS = eINSTANCE.getPictoGraph_Elements();
-
-		/**
-		 * The meta object literal for the '<em><b>Properties</b></em>' map feature.
-		 * <!-- begin-user-doc -->
-		 * <!-- end-user-doc -->
-		 * @generated
-		 */
-		EReference PICTO_GRAPH__PROPERTIES = eINSTANCE.getPictoGraph_Properties();
 
 		/**
 		 * The meta object literal for the '{@link org.eclipse.epsilon.picto.pictograph.impl.EntityImpl <em>Entity</em>}' class.

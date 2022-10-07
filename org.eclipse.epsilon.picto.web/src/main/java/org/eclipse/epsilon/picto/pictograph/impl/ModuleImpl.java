@@ -13,6 +13,7 @@ import org.eclipse.emf.ecore.InternalEObject;
 
 import org.eclipse.emf.ecore.util.EObjectContainmentWithInverseEList;
 import org.eclipse.emf.ecore.util.InternalEList;
+
 import org.eclipse.epsilon.picto.pictograph.PictographPackage;
 import org.eclipse.epsilon.picto.pictograph.Rule;
 

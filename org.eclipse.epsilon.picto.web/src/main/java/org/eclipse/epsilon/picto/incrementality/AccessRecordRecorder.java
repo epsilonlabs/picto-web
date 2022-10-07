@@ -13,23 +13,23 @@ import org.eclipse.epsilon.eol.dom.NameExpression;
 import org.eclipse.epsilon.eol.execute.introspection.recording.PropertyAccessRecorder;
 import org.eclipse.epsilon.picto.web.PictoWeb;
 
-public class AccessRecorder extends PropertyAccessRecorder {
+public class AccessRecordRecorder extends PropertyAccessRecorder {
 
 	private boolean recording = false;
 
-	private final List<Access> currentPropertyAccesses = new ArrayList<>();
-	private AccessResource accessRecordResource = PictoWeb.ACCESS_RECORD_RESOURCE;
+	private final List<AccessRecord> currentPropertyAccesses = new ArrayList<>();
+	private AccessRecordResource accessRecordResource = PictoWeb.ACCESS_RECORD_RESOURCE;
 
 	protected URI templateUri = null;
 	protected GenerationRule rule = null;
 	protected Object contextElement = null;
 	protected String path = null;
 
-	public AccessRecorder() {
+	public AccessRecordRecorder() {
 		super();
 	}
 
-	public List<Access> getCurrentPropertyAccesses() {
+	public List<AccessRecord> getCurrentPropertyAccesses() {
 		return currentPropertyAccesses;
 	}
 
@@ -41,7 +41,7 @@ public class AccessRecorder extends PropertyAccessRecorder {
 	}
 
 	public void saveToAccessRecordResource() {
-		for (Access r : currentPropertyAccesses) {
+		for (AccessRecord r : currentPropertyAccesses) {
 //			if (r.getPath() == null) continue;
 			accessRecordResource.add(r);
 		}
@@ -81,11 +81,11 @@ public class AccessRecorder extends PropertyAccessRecorder {
 	}
 
 	@Override
-	protected Access createPropertyAccess(Object modelElement, String propertyName) {
+	protected AccessRecord createPropertyAccess(Object modelElement, String propertyName) {
 		return this.createPropertyAccess(modelElement, propertyName, null);
 	}
 
-	private Access createPropertyAccess(Object modelElement, String propertyName, Object result) {
+	private AccessRecord createPropertyAccess(Object modelElement, String propertyName, Object result) {
 
 		String ruleName = (rule == null) ? null : rule.getName();
 		EgxModule module = (rule == null) ? null : (EgxModule) rule.getModule();
@@ -116,9 +116,9 @@ public class AccessRecorder extends PropertyAccessRecorder {
 			modelElementId = ((NameExpression) modelElement).getName();
 		}
 
-		Access access = null;
+		AccessRecord access = null;
 		try {
-			access = new Access(modulePath, templatePath, ruleName, contextResourceUri, contextElementId,
+			access = new AccessRecord(modulePath, templatePath, ruleName, contextResourceUri, contextElementId,
 					elementResourceUri, modelElementId, propertyName, (Object) result, path);
 		} catch (Exception e) {
 			e.printStackTrace();

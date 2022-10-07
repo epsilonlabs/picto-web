@@ -62,7 +62,7 @@ import org.eclipse.epsilon.picto.dom.Picto;
 import org.eclipse.epsilon.picto.dom.PictoPackage;
 import org.eclipse.epsilon.picto.dummy.IEditorPart;
 import org.eclipse.epsilon.picto.incrementality.IncrementalLazyEgxModule;
-import org.eclipse.epsilon.picto.incrementality.Access;
+import org.eclipse.epsilon.picto.incrementality.AccessRecord;
 import org.eclipse.epsilon.picto.incrementality.Util;
 import org.eclipse.epsilon.picto.source.EglPictoSource;
 import org.eclipse.epsilon.picto.transformers.CsvContentTransformer;

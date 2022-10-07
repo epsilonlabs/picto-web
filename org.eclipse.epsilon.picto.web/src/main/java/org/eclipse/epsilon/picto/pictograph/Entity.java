@@ -2,8 +2,6 @@
  */
 package org.eclipse.epsilon.picto.pictograph;
 
-import org.eclipse.emf.common.util.EList;
-
 import org.eclipse.emf.ecore.EObject;
 
 /**

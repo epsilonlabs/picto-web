@@ -2,12 +2,11 @@
  */
 package org.eclipse.epsilon.picto.pictograph.util;
 
-import java.util.Map;
-
 import org.eclipse.emf.ecore.EObject;
 import org.eclipse.emf.ecore.EPackage;
 
 import org.eclipse.emf.ecore.util.Switch;
+
 import org.eclipse.epsilon.picto.pictograph.Element;
 import org.eclipse.epsilon.picto.pictograph.Entity;
 import org.eclipse.epsilon.picto.pictograph.InputEntity;
@@ -76,12 +75,6 @@ public class PictographSwitch<T> extends Switch<T> {
 	@Override
 	protected T doSwitch(int classifierID, EObject theEObject) {
 		switch (classifierID) {
-			case PictographPackage.ENTITY_MAP: {
-				@SuppressWarnings("unchecked") Map.Entry<String, Entity> entityMap = (Map.Entry<String, Entity>)theEObject;
-				T result = caseEntityMap(entityMap);
-				if (result == null) result = defaultCase(theEObject);
-				return result;
-			}
 			case PictographPackage.PICTO_GRAPH: {
 				PictoGraph pictoGraph = (PictoGraph)theEObject;
 				T result = casePictoGraph(pictoGraph);
@@ -158,21 +151,6 @@ public class PictographSwitch<T> extends Switch<T> {
 			}
 			default: return defaultCase(theEObject);
 		}
-	}
-
-	/**
-	 * Returns the result of interpreting the object as an instance of '<em>Entity Map</em>'.
-	 * <!-- begin-user-doc -->
-	 * This implementation returns null;
-	 * returning a non-null result will terminate the switch.
-	 * <!-- end-user-doc -->
-	 * @param object the target of the switch.
-	 * @return the result of interpreting the object as an instance of '<em>Entity Map</em>'.
-	 * @see #doSwitch(org.eclipse.emf.ecore.EObject) doSwitch(EObject)
-	 * @generated
-	 */
-	public T caseEntityMap(Map.Entry<String, Entity> object) {
-		return null;
 	}
 
 	/**

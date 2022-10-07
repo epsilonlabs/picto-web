@@ -17,6 +17,7 @@ import org.eclipse.emf.ecore.impl.ENotificationImpl;
 import org.eclipse.emf.ecore.util.EObjectContainmentWithInverseEList;
 import org.eclipse.emf.ecore.util.EcoreUtil;
 import org.eclipse.emf.ecore.util.InternalEList;
+
 import org.eclipse.epsilon.picto.pictograph.Element;
 import org.eclipse.epsilon.picto.pictograph.PictographPackage;
 import org.eclipse.epsilon.picto.pictograph.Property;

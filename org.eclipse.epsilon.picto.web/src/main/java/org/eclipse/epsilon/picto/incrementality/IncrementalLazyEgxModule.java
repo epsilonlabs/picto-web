@@ -25,14 +25,14 @@ import org.eclipse.epsilon.picto.LazyEgxModule;
  */
 public class IncrementalLazyEgxModule extends LazyEgxModule {
 
-	protected AccessResource incrementalResource;
-	protected AccessRecorder propertyAccessRecorder;
+	protected AccessRecordResource incrementalResource;
+	protected AccessRecordRecorder propertyAccessRecorder;
 
-	public AccessRecorder getPropertyAccessRecorder() {
+	public AccessRecordRecorder getPropertyAccessRecorder() {
 		return propertyAccessRecorder;
 	}
 
-	public AccessResource getIncrementalResource() {
+	public AccessRecordResource getIncrementalResource() {
 		return incrementalResource;
 	}
 
@@ -44,7 +44,7 @@ public class IncrementalLazyEgxModule extends LazyEgxModule {
 		propertyAccessRecorder.stopRecording();
 	}
 
-	public IncrementalLazyEgxModule(AccessResource incrementalResource) {
+	public IncrementalLazyEgxModule(AccessRecordResource incrementalResource) {
 
 		this.incrementalResource = incrementalResource;
 
@@ -52,7 +52,7 @@ public class IncrementalLazyEgxModule extends LazyEgxModule {
 
 		// Create the property access recorder that will record
 		// all the property access events in the EGX transformation
-		propertyAccessRecorder = new AccessRecorder();
+		propertyAccessRecorder = new AccessRecordRecorder();
 
 		// Create a custom template factory so that we can monitor property
 		// access events during template execution too

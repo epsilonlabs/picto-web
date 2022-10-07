@@ -1,0 +1,94 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ecore:EPackage xmi:version="2.0" xmlns:xmi="http://www.omg.org/XMI" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xmlns:ecore="http://www.eclipse.org/emf/2002/Ecore" name="pictograph" nsURI="pictograph" nsPrefix="">
+  <eAnnotations source="index">
+    <details key="name" value="path"/>
+    <details key="by" value="Path.name"/>
+    <details key="many" value="false"/>
+  </eAnnotations>
+  <eAnnotations source="index">
+    <details key="name" value="module"/>
+    <details key="by" value="Module.name"/>
+    <details key="many" value="false"/>
+  </eAnnotations>
+  <eAnnotations source="index">
+    <details key="name" value="rule"/>
+    <details key="by" value="Module.name, rules.name"/>
+    <details key="many" value="false"/>
+  </eAnnotations>
+  <eAnnotations source="index">
+    <details key="name" value="template"/>
+    <details key="by" value="Module.name, rules.name, templates.name"/>
+    <details key="many" value="false"/>
+  </eAnnotations>
+  <eAnnotations source="index">
+    <details key="name" value="resource"/>
+    <details key="by" value="Resource.name"/>
+    <details key="many" value="false"/>
+  </eAnnotations>
+  <eAnnotations source="index">
+    <details key="name" value="element"/>
+    <details key="by" value="Resource.name, elements.name"/>
+    <details key="many" value="false"/>
+  </eAnnotations>
+  <eAnnotations source="index">
+    <details key="name" value="property"/>
+    <details key="by" value="Resource.name, elements.name, properties.name"/>
+    <details key="many" value="false"/>
+  </eAnnotations>
+  <eClassifiers xsi:type="ecore:EEnum" name="State">
+    <eLiterals name="NEW"/>
+    <eLiterals name="UPDATED" value="1"/>
+    <eLiterals name="PROCESSED" value="2"/>
+  </eClassifiers>
+  <eClassifiers xsi:type="ecore:EClass" name="PictoGraph"/>
+  <eClassifiers xsi:type="ecore:EClass" name="Entity" abstract="true">
+    <eStructuralFeatures xsi:type="ecore:EAttribute" name="name" eType="ecore:EDataType http://www.eclipse.org/emf/2002/Ecore#//EString"/>
+    <eStructuralFeatures xsi:type="ecore:EAttribute" name="state" eType="#//State"/>
+  </eClassifiers>
+  <eClassifiers xsi:type="ecore:EClass" name="InputEntity" abstract="true" eSuperTypes="#//Entity">
+    <eStructuralFeatures xsi:type="ecore:EReference" name="affects" upperBound="-1"
+        eType="#//Path" eOpposite="#//Path/affectedBy"/>
+  </eClassifiers>
+  <eClassifiers xsi:type="ecore:EClass" name="Path" eSuperTypes="#//Entity">
+    <eStructuralFeatures xsi:type="ecore:EReference" name="affectedBy" upperBound="-1"
+        eType="#//InputEntity" eOpposite="#//InputEntity/affects"/>
+  </eClassifiers>
+  <eClassifiers xsi:type="ecore:EClass" name="Module" eSuperTypes="#//InputEntity">
+    <eStructuralFeatures xsi:type="ecore:EReference" name="rules" upperBound="-1"
+        eType="#//Rule" containment="true" eOpposite="#//Rule/module"/>
+  </eClassifiers>
+  <eClassifiers xsi:type="ecore:EClass" name="Resource" eSuperTypes="#//InputEntity">
+    <eStructuralFeatures xsi:type="ecore:EReference" name="elements" upperBound="-1"
+        eType="#//Element" containment="true" eOpposite="#//Element/resource"/>
+  </eClassifiers>
+  <eClassifiers xsi:type="ecore:EClass" name="Property" eSuperTypes="#//InputEntity">
+    <eStructuralFeatures xsi:type="ecore:EReference" name="element" eType="#//Element"
+        eOpposite="#//Element/properties"/>
+    <eStructuralFeatures xsi:type="ecore:EAttribute" name="previousValue" eType="ecore:EDataType http://www.eclipse.org/emf/2002/Ecore#//EString"/>
+    <eStructuralFeatures xsi:type="ecore:EAttribute" name="value" eType="ecore:EDataType http://www.eclipse.org/emf/2002/Ecore#//EString"/>
+  </eClassifiers>
+  <eClassifiers xsi:type="ecore:EClass" name="Element" eSuperTypes="#//InputEntity">
+    <eStructuralFeatures xsi:type="ecore:EReference" name="resource" eType="#//Resource"
+        eOpposite="#//Resource/elements"/>
+    <eStructuralFeatures xsi:type="ecore:EReference" name="properties" upperBound="-1"
+        eType="#//Property" containment="true" eOpposite="#//Property/element"/>
+  </eClassifiers>
+  <eClassifiers xsi:type="ecore:EClass" name="Rule" eSuperTypes="#//InputEntity">
+    <eStructuralFeatures xsi:type="ecore:EReference" name="module" eType="#//Module"
+        eOpposite="#//Module/rules"/>
+    <eStructuralFeatures xsi:type="ecore:EReference" name="template" eType="#//Template"/>
+    <eStructuralFeatures xsi:type="ecore:EReference" name="contextElements" upperBound="-1"
+        eType="#//Element"/>
+    <eStructuralFeatures xsi:type="ecore:EReference" name="elements" upperBound="-1"
+        eType="#//Element"/>
+  </eClassifiers>
+  <eClassifiers xsi:type="ecore:EClass" name="Template" eSuperTypes="#//InputEntity">
+    <eStructuralFeatures xsi:type="ecore:EReference" name="modules" upperBound="-1"
+        eType="#//Module"/>
+    <eStructuralFeatures xsi:type="ecore:EReference" name="rules" upperBound="-1"
+        eType="#//Rule"/>
+    <eStructuralFeatures xsi:type="ecore:EReference" name="elements" upperBound="-1"
+        eType="#//Element"/>
+  </eClassifiers>
+</ecore:EPackage>

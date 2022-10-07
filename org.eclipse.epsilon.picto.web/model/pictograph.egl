@@ -1,0 +1,88 @@
+package [%=targetPackage%]; 
+
+[% for(eClass in EClass.all()) { %]
+import org.eclipse.epsilon.picto.[%=package.nsURI%].[%=eClass.name%];
+[% } %]
+
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.List;
+
+class TraceIndex {
+
+[%var allIndecies : Sequence; %]
+[% for(index in package.getAllIndexes()) { 
+    var name = index.details.get("name");
+    allIndecies.add(name + "Index");
+%]
+    protected Map<String, [%=name.firstToUpperCase()%]> [%=name%]Index = new HashMap<String, [%=name.firstToUpperCase()%]>();
+[% } %]
+    protected List<Map<String, ?>> allIndices = new ArrayList<>(Arrays.asList([%=allIndecies.concat(", ")%]));
+    
+    public List<Map<String, ?>> getAllIndices() {
+        return allIndices;
+    }
+[% for(index in package.getAllIndexes()) {     
+     var name = index.details.get("name");  
+     var objParam = name.firstToUpperCase() + " " + name.toLowerCase();
+     
+     var by = index.details.get("by").split(",").collect(e | e.trim());
+     
+     var isMany = true;
+     if (index.details.get("many") == "false") {
+        isMany = false;
+     }
+     
+     var params : Sequence;
+     var strParams : Sequence;
+     var first = true;
+     var keys : Sequence;
+     for (element in by) {
+        if (first) {
+	      var temp = element.split("\\.").at(0);
+	      params.add(temp + " " + temp.toLowerCase());
+	      strParams.add("String " + temp.toLowerCase() + "Name");
+	      first = false;
+	      keys.add(temp.toLowerCase() + "Name"); 
+	    } else {
+	      var temp = element.split("\\.");
+          params.add("String" + " " + temp.at(0).toLowerCase() + temp.at(1).firstToUpperCase());
+          strParams.add("String" + " " + temp.at(0).toLowerCase() + temp.at(1).firstToUpperCase());
+          keys.add(temp.at(0).toLowerCase() + temp.at(1).firstToUpperCase());
+	    }	    
+	 }
+	 params.concat(", ").println();
+%]
+    public Map<String, [%=name.firstToUpperCase()%]> get[%=name.firstToUpperCase()%]Index() {
+        return  [%=name%]Index;
+    }
+    
+    public [%=name.firstToUpperCase()%] get[%=name.firstToUpperCase()%]([%=strParams.concat(", ")%]) {
+        String key = [%=keys.concat(" + \"#\" + ")%];
+        return [%=name%]Index.get(key);
+    }
+    
+    public [%=name.firstToUpperCase()%] put[%=name.firstToUpperCase()%]([%=strParams.concat(", ")%], [%=objParam%]) {
+        String key = [%=keys.concat(" + \"#\" + ")%];
+        return [%=name%]Index.put(key, [%=objParam.split(" ").at(1)%]);
+    }
+    
+    /*  
+    public [%=name.firstToUpperCase()%] get[%=name.firstToUpperCase()%]([%=params.concat(", ")%]) {
+        return null;
+    }
+    
+    public [%=name.firstToUpperCase()%] put[%=name.firstToUpperCase()%]([%=params.concat(", ")%]) {
+        return null;
+    }*/
+[% } %]
+}
+
+[%
+operation EPackage getAllIndexes() {
+    var indexes = EAnnotation.all().select(annotation | annotation.source = "index");
+    return indexes;
+}
+%]

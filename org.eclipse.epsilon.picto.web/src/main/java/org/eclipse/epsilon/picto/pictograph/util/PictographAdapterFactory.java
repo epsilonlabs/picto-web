@@ -2,14 +2,13 @@
  */
 package org.eclipse.epsilon.picto.pictograph.util;
 
-import java.util.Map;
-
 import org.eclipse.emf.common.notify.Adapter;
 import org.eclipse.emf.common.notify.Notifier;
 
 import org.eclipse.emf.common.notify.impl.AdapterFactoryImpl;
 
 import org.eclipse.emf.ecore.EObject;
+
 import org.eclipse.epsilon.picto.pictograph.Element;
 import org.eclipse.epsilon.picto.pictograph.Entity;
 import org.eclipse.epsilon.picto.pictograph.InputEntity;
@@ -78,10 +77,6 @@ public class PictographAdapterFactory extends AdapterFactoryImpl {
 	protected PictographSwitch<Adapter> modelSwitch =
 		new PictographSwitch<Adapter>() {
 			@Override
-			public Adapter caseEntityMap(Map.Entry<String, Entity> object) {
-				return createEntityMapAdapter();
-			}
-			@Override
 			public Adapter casePictoGraph(PictoGraph object) {
 				return createPictoGraphAdapter();
 			}
@@ -140,20 +135,6 @@ public class PictographAdapterFactory extends AdapterFactoryImpl {
 		return modelSwitch.doSwitch((EObject)target);
 	}
 
-
-	/**
-	 * Creates a new adapter for an object of class '{@link java.util.Map.Entry <em>Entity Map</em>}'.
-	 * <!-- begin-user-doc -->
-	 * This default implementation returns null so that we can easily ignore cases;
-	 * it's useful to ignore a case when inheritance will catch all the cases anyway.
-	 * <!-- end-user-doc -->
-	 * @return the new adapter.
-	 * @see java.util.Map.Entry
-	 * @generated
-	 */
-	public Adapter createEntityMapAdapter() {
-		return null;
-	}
 
 	/**
 	 * Creates a new adapter for an object of class '{@link org.eclipse.epsilon.picto.pictograph.PictoGraph <em>Picto Graph</em>}'.

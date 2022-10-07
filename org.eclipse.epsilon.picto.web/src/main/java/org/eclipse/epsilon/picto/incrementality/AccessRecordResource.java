@@ -7,11 +7,11 @@ import java.util.Set;
 import org.eclipse.epsilon.egl.EgxModule;
 import org.eclipse.epsilon.picto.LazyEgxModule.LazyGenerationRuleContentPromise;
 
-public interface AccessResource {
+public interface AccessRecordResource {
 
-	void add(Access propertyAccessRecord);
+	void add(AccessRecord propertyAccessRecord);
 
-	public List<Access> getIncrementalRecords();
+	public List<AccessRecord> getIncrementalRecords();
 
 	public void printIncrementalRecords();
 

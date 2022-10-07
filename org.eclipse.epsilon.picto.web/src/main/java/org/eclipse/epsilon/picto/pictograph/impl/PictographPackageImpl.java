@@ -2,8 +2,6 @@
  */
 package org.eclipse.epsilon.picto.pictograph.impl;
 
-import java.util.Map;
-
 import org.eclipse.emf.ecore.EAttribute;
 import org.eclipse.emf.ecore.EClass;
 import org.eclipse.emf.ecore.EEnum;
@@ -11,6 +9,7 @@ import org.eclipse.emf.ecore.EPackage;
 import org.eclipse.emf.ecore.EReference;
 
 import org.eclipse.emf.ecore.impl.EPackageImpl;
+
 import org.eclipse.epsilon.picto.pictograph.Element;
 import org.eclipse.epsilon.picto.pictograph.Entity;
 import org.eclipse.epsilon.picto.pictograph.InputEntity;
@@ -31,13 +30,6 @@ import org.eclipse.epsilon.picto.pictograph.Template;
  * @generated
  */
 public class PictographPackageImpl extends EPackageImpl implements PictographPackage {
-	/**
-	 * <!-- begin-user-doc -->
-	 * <!-- end-user-doc -->
-	 * @generated
-	 */
-	private EClass entityMapEClass = null;
-
 	/**
 	 * <!-- begin-user-doc -->
 	 * <!-- end-user-doc -->
@@ -182,108 +174,8 @@ public class PictographPackageImpl extends EPackageImpl implements PictographPac
 	 * @generated
 	 */
 	@Override
-	public EClass getEntityMap() {
-		return entityMapEClass;
-	}
-
-	/**
-	 * <!-- begin-user-doc -->
-	 * <!-- end-user-doc -->
-	 * @generated
-	 */
-	@Override
-	public EAttribute getEntityMap_Key() {
-		return (EAttribute)entityMapEClass.getEStructuralFeatures().get(0);
-	}
-
-	/**
-	 * <!-- begin-user-doc -->
-	 * <!-- end-user-doc -->
-	 * @generated
-	 */
-	@Override
-	public EReference getEntityMap_Value() {
-		return (EReference)entityMapEClass.getEStructuralFeatures().get(1);
-	}
-
-	/**
-	 * <!-- begin-user-doc -->
-	 * <!-- end-user-doc -->
-	 * @generated
-	 */
-	@Override
 	public EClass getPictoGraph() {
 		return pictoGraphEClass;
-	}
-
-	/**
-	 * <!-- begin-user-doc -->
-	 * <!-- end-user-doc -->
-	 * @generated
-	 */
-	@Override
-	public EReference getPictoGraph_Paths() {
-		return (EReference)pictoGraphEClass.getEStructuralFeatures().get(0);
-	}
-
-	/**
-	 * <!-- begin-user-doc -->
-	 * <!-- end-user-doc -->
-	 * @generated
-	 */
-	@Override
-	public EReference getPictoGraph_Modules() {
-		return (EReference)pictoGraphEClass.getEStructuralFeatures().get(1);
-	}
-
-	/**
-	 * <!-- begin-user-doc -->
-	 * <!-- end-user-doc -->
-	 * @generated
-	 */
-	@Override
-	public EReference getPictoGraph_Rules() {
-		return (EReference)pictoGraphEClass.getEStructuralFeatures().get(2);
-	}
-
-	/**
-	 * <!-- begin-user-doc -->
-	 * <!-- end-user-doc -->
-	 * @generated
-	 */
-	@Override
-	public EReference getPictoGraph_Templates() {
-		return (EReference)pictoGraphEClass.getEStructuralFeatures().get(3);
-	}
-
-	/**
-	 * <!-- begin-user-doc -->
-	 * <!-- end-user-doc -->
-	 * @generated
-	 */
-	@Override
-	public EReference getPictoGraph_Resources() {
-		return (EReference)pictoGraphEClass.getEStructuralFeatures().get(4);
-	}
-
-	/**
-	 * <!-- begin-user-doc -->
-	 * <!-- end-user-doc -->
-	 * @generated
-	 */
-	@Override
-	public EReference getPictoGraph_Elements() {
-		return (EReference)pictoGraphEClass.getEStructuralFeatures().get(5);
-	}
-
-	/**
-	 * <!-- begin-user-doc -->
-	 * <!-- end-user-doc -->
-	 * @generated
-	 */
-	@Override
-	public EReference getPictoGraph_Properties() {
-		return (EReference)pictoGraphEClass.getEStructuralFeatures().get(6);
 	}
 
 	/**
@@ -595,18 +487,7 @@ public class PictographPackageImpl extends EPackageImpl implements PictographPac
 		isCreated = true;
 
 		// Create classes and their features
-		entityMapEClass = createEClass(ENTITY_MAP);
-		createEAttribute(entityMapEClass, ENTITY_MAP__KEY);
-		createEReference(entityMapEClass, ENTITY_MAP__VALUE);
-
 		pictoGraphEClass = createEClass(PICTO_GRAPH);
-		createEReference(pictoGraphEClass, PICTO_GRAPH__PATHS);
-		createEReference(pictoGraphEClass, PICTO_GRAPH__MODULES);
-		createEReference(pictoGraphEClass, PICTO_GRAPH__RULES);
-		createEReference(pictoGraphEClass, PICTO_GRAPH__TEMPLATES);
-		createEReference(pictoGraphEClass, PICTO_GRAPH__RESOURCES);
-		createEReference(pictoGraphEClass, PICTO_GRAPH__ELEMENTS);
-		createEReference(pictoGraphEClass, PICTO_GRAPH__PROPERTIES);
 
 		entityEClass = createEClass(ENTITY);
 		createEAttribute(entityEClass, ENTITY__NAME);
@@ -686,18 +567,7 @@ public class PictographPackageImpl extends EPackageImpl implements PictographPac
 		templateEClass.getESuperTypes().add(this.getInputEntity());
 
 		// Initialize classes and features; add operations and parameters
-		initEClass(entityMapEClass, Map.Entry.class, "EntityMap", !IS_ABSTRACT, !IS_INTERFACE, !IS_GENERATED_INSTANCE_CLASS);
-		initEAttribute(getEntityMap_Key(), ecorePackage.getEString(), "key", null, 0, 1, Map.Entry.class, !IS_TRANSIENT, !IS_VOLATILE, IS_CHANGEABLE, !IS_UNSETTABLE, !IS_ID, IS_UNIQUE, !IS_DERIVED, IS_ORDERED);
-		initEReference(getEntityMap_Value(), this.getEntity(), null, "value", null, 0, 1, Map.Entry.class, !IS_TRANSIENT, !IS_VOLATILE, IS_CHANGEABLE, !IS_COMPOSITE, IS_RESOLVE_PROXIES, !IS_UNSETTABLE, IS_UNIQUE, !IS_DERIVED, IS_ORDERED);
-
 		initEClass(pictoGraphEClass, PictoGraph.class, "PictoGraph", !IS_ABSTRACT, !IS_INTERFACE, IS_GENERATED_INSTANCE_CLASS);
-		initEReference(getPictoGraph_Paths(), this.getEntityMap(), null, "paths", null, 0, -1, PictoGraph.class, !IS_TRANSIENT, !IS_VOLATILE, IS_CHANGEABLE, IS_COMPOSITE, !IS_RESOLVE_PROXIES, !IS_UNSETTABLE, IS_UNIQUE, !IS_DERIVED, IS_ORDERED);
-		initEReference(getPictoGraph_Modules(), this.getEntityMap(), null, "modules", null, 0, -1, PictoGraph.class, !IS_TRANSIENT, !IS_VOLATILE, IS_CHANGEABLE, IS_COMPOSITE, !IS_RESOLVE_PROXIES, !IS_UNSETTABLE, IS_UNIQUE, !IS_DERIVED, IS_ORDERED);
-		initEReference(getPictoGraph_Rules(), this.getEntityMap(), null, "rules", null, 0, -1, PictoGraph.class, !IS_TRANSIENT, !IS_VOLATILE, IS_CHANGEABLE, IS_COMPOSITE, !IS_RESOLVE_PROXIES, !IS_UNSETTABLE, IS_UNIQUE, !IS_DERIVED, IS_ORDERED);
-		initEReference(getPictoGraph_Templates(), this.getEntityMap(), null, "templates", null, 0, -1, PictoGraph.class, !IS_TRANSIENT, !IS_VOLATILE, IS_CHANGEABLE, IS_COMPOSITE, !IS_RESOLVE_PROXIES, !IS_UNSETTABLE, IS_UNIQUE, !IS_DERIVED, IS_ORDERED);
-		initEReference(getPictoGraph_Resources(), this.getEntityMap(), null, "resources", null, 0, -1, PictoGraph.class, !IS_TRANSIENT, !IS_VOLATILE, IS_CHANGEABLE, IS_COMPOSITE, !IS_RESOLVE_PROXIES, !IS_UNSETTABLE, IS_UNIQUE, !IS_DERIVED, IS_ORDERED);
-		initEReference(getPictoGraph_Elements(), this.getEntityMap(), null, "elements", null, 0, -1, PictoGraph.class, !IS_TRANSIENT, !IS_VOLATILE, IS_CHANGEABLE, IS_COMPOSITE, !IS_RESOLVE_PROXIES, !IS_UNSETTABLE, IS_UNIQUE, !IS_DERIVED, IS_ORDERED);
-		initEReference(getPictoGraph_Properties(), this.getEntityMap(), null, "properties", null, 0, -1, PictoGraph.class, !IS_TRANSIENT, !IS_VOLATILE, IS_CHANGEABLE, IS_COMPOSITE, !IS_RESOLVE_PROXIES, !IS_UNSETTABLE, IS_UNIQUE, !IS_DERIVED, IS_ORDERED);
 
 		initEClass(entityEClass, Entity.class, "Entity", IS_ABSTRACT, !IS_INTERFACE, IS_GENERATED_INSTANCE_CLASS);
 		initEAttribute(getEntity_Name(), ecorePackage.getEString(), "name", null, 0, 1, Entity.class, !IS_TRANSIENT, !IS_VOLATILE, IS_CHANGEABLE, !IS_UNSETTABLE, !IS_ID, IS_UNIQUE, !IS_DERIVED, IS_ORDERED);
@@ -743,6 +613,76 @@ public class PictographPackageImpl extends EPackageImpl implements PictographPac
 
 		// Create resource
 		createResource(eNS_URI);
+
+		// Create annotations
+		// index
+		createIndexAnnotations();
+	}
+
+	/**
+	 * Initializes the annotations for <b>index</b>.
+	 * <!-- begin-user-doc -->
+	 * <!-- end-user-doc -->
+	 * @generated
+	 */
+	protected void createIndexAnnotations() {
+		String source = "index";
+		addAnnotation
+		  (this,
+		   source,
+		   new String[] {
+			   "name", "path",
+			   "by", "Path.name",
+			   "many", "false"
+		   });
+		addAnnotation
+		  (this,
+		   source,
+		   new String[] {
+			   "name", "module",
+			   "by", "Module.name",
+			   "many", "false"
+		   });
+		addAnnotation
+		  (this,
+		   source,
+		   new String[] {
+			   "name", "rule",
+			   "by", "Module.name, rules.name",
+			   "many", "false"
+		   });
+		addAnnotation
+		  (this,
+		   source,
+		   new String[] {
+			   "name", "template",
+			   "by", "Module.name, rules.name, templates.name",
+			   "many", "false"
+		   });
+		addAnnotation
+		  (this,
+		   source,
+		   new String[] {
+			   "name", "resource",
+			   "by", "Resource.name",
+			   "many", "false"
+		   });
+		addAnnotation
+		  (this,
+		   source,
+		   new String[] {
+			   "name", "element",
+			   "by", "Resource.name, elements.name",
+			   "many", "false"
+		   });
+		addAnnotation
+		  (this,
+		   source,
+		   new String[] {
+			   "name", "property",
+			   "by", "Resource.name, elements.name, properties.name",
+			   "many", "false"
+		   });
 	}
 
 } //PictographPackageImpl

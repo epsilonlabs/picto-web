@@ -21,9 +21,9 @@ import org.eclipse.epsilon.eol.execute.context.Variable;
 import org.eclipse.epsilon.eol.models.IModel;
 import org.eclipse.epsilon.picto.LazyEgxModule.LazyGenerationRuleContentPromise;
 
-public class AccessTableResource implements AccessResource {
+public class AccessTableResource implements AccessRecordResource {
 
-	List<Access> propertyAccessRecords = new LinkedList<>();
+	List<AccessRecord> propertyAccessRecords = new LinkedList<>();
 
 	@Override
 	public void clear() {
@@ -42,8 +42,8 @@ public class AccessTableResource implements AccessResource {
 	}
 
 	@Override
-	public void add(Access propertyAccessRecord) {
-		List<Access> records = propertyAccessRecords.stream()
+	public void add(AccessRecord propertyAccessRecord) {
+		List<AccessRecord> records = propertyAccessRecords.stream()
 				.filter(r -> Util.equals(r.getModulePath(), propertyAccessRecord.getModulePath())
 						&& Util.equals(r.getTemplatePath(), propertyAccessRecord.getTemplatePath())
 						&& Util.equals(r.getGenerationRuleName(), propertyAccessRecord.getGenerationRuleName())
@@ -55,9 +55,9 @@ public class AccessTableResource implements AccessResource {
 						&& Util.equals(r.getPath(), propertyAccessRecord.getPath()))
 				.collect(Collectors.toList());
 		if (records.size() > 0) {
-			for (Access record : records) {
+			for (AccessRecord record : records) {
 				record.setValue(propertyAccessRecord.getValue());
-				record.setState(AccessState.MODIFIED);
+				record.setState(AccessRecordState.MODIFIED);
 			}
 		} else {
 			propertyAccessRecords.add(propertyAccessRecord);
@@ -65,7 +65,7 @@ public class AccessTableResource implements AccessResource {
 	}
 
 	@Override
-	public List<Access> getIncrementalRecords() {
+	public List<AccessRecord> getIncrementalRecords() {
 		return propertyAccessRecords;
 	}
 
@@ -75,7 +75,7 @@ public class AccessTableResource implements AccessResource {
 		System.out.println("Trace at " + Timestamp.from(Instant.now()).toString() + ":");
 		System.out.println();
 		int lineNum = 1;
-		for (Access record : propertyAccessRecords) {
+		for (AccessRecord record : propertyAccessRecords) {
 			System.out.println(lineNum++ + ". " + record.toString());
 		}
 		System.out.println();
@@ -95,15 +95,15 @@ public class AccessTableResource implements AccessResource {
 			}
 
 //			// check if the path is a new view
-			Access pas = propertyAccessRecords.stream()
+			AccessRecord pas = propertyAccessRecords.stream()
 					.filter(r -> checkedPath.equals(r.getPath())).findFirst().orElse(null);
 			if (pas == null) {
 				toBeProcessedPaths.add(checkedPath);
 			}
 
 			// check if the property access record is new
-			Access accessRecord = propertyAccessRecords.stream()
-					.filter(r -> r.getState().equals(AccessState.NEW) && checkedPath.equals(r.getPath())).findFirst()
+			AccessRecord accessRecord = propertyAccessRecords.stream()
+					.filter(r -> r.getState().equals(AccessRecordState.NEW) && checkedPath.equals(r.getPath())).findFirst()
 					.orElse(null);
 			if (accessRecord != null) {
 				toBeProcessedPaths.add(accessRecord.getPath());
@@ -115,11 +115,11 @@ public class AccessTableResource implements AccessResource {
 			}
 
 			// check objects and properties that view of the path has
-			List<Access> checkedPathRecords = propertyAccessRecords.stream()
+			List<AccessRecord> checkedPathRecords = propertyAccessRecords.stream()
 					.filter(r -> r.getPath() != null && checkedPath.equals(r.getPath()))
 					.collect(Collectors.toCollection(ArrayList::new));
 
-			for (Access record : checkedPathRecords) {
+			for (AccessRecord record : checkedPathRecords) {
 
 				String propertyName = record.getPropertyName();
 				String previousValue = record.getValue();
@@ -160,7 +160,7 @@ public class AccessTableResource implements AccessResource {
 								: null;
 
 						// check if the view of the path contains object with a changed property
-						String currentValue = Access.convertValueToString(currentValueObject);
+						String currentValue = AccessRecord.convertValueToString(currentValueObject);
 						if (!Util.equals(previousValue, currentValue)) {
 							toBeProcessedPaths.add(checkedPath);
 						}
@@ -193,7 +193,7 @@ public class AccessTableResource implements AccessResource {
 	@Override
 	public void updateStatusToProcessed(Collection<String> paths) {
 		propertyAccessRecords.stream().filter(r -> paths.contains(r.getPath())).forEach(r -> {
-			r.setState(AccessState.PROCESSED);
+			r.setState(AccessRecordState.PROCESSED);
 		});
 	}
 

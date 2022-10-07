@@ -2,8 +2,6 @@
  */
 package org.eclipse.epsilon.picto.pictograph.impl;
 
-import java.util.Map;
-
 import org.eclipse.emf.ecore.EClass;
 import org.eclipse.emf.ecore.EDataType;
 import org.eclipse.emf.ecore.EObject;
@@ -12,8 +10,8 @@ import org.eclipse.emf.ecore.EPackage;
 import org.eclipse.emf.ecore.impl.EFactoryImpl;
 
 import org.eclipse.emf.ecore.plugin.EcorePlugin;
+
 import org.eclipse.epsilon.picto.pictograph.Element;
-import org.eclipse.epsilon.picto.pictograph.Entity;
 import org.eclipse.epsilon.picto.pictograph.Path;
 import org.eclipse.epsilon.picto.pictograph.PictoGraph;
 import org.eclipse.epsilon.picto.pictograph.PictographFactory;
@@ -68,7 +66,6 @@ public class PictographFactoryImpl extends EFactoryImpl implements PictographFac
 	@Override
 	public EObject create(EClass eClass) {
 		switch (eClass.getClassifierID()) {
-			case PictographPackage.ENTITY_MAP: return (EObject)createEntityMap();
 			case PictographPackage.PICTO_GRAPH: return createPictoGraph();
 			case PictographPackage.PATH: return createPath();
 			case PictographPackage.MODULE: return createModule();
@@ -110,16 +107,6 @@ public class PictographFactoryImpl extends EFactoryImpl implements PictographFac
 			default:
 				throw new IllegalArgumentException("The datatype '" + eDataType.getName() + "' is not a valid classifier");
 		}
-	}
-
-	/**
-	 * <!-- begin-user-doc -->
-	 * <!-- end-user-doc -->
-	 * @generated
-	 */
-	public Map.Entry<String, Entity> createEntityMap() {
-		EntityMapImpl entityMap = new EntityMapImpl();
-		return entityMap;
 	}
 
 	/**

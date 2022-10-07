@@ -1,5 +1,5 @@
 package org.eclipse.epsilon.picto.incrementality;
 
-public enum AccessState {
+public enum AccessRecordState {
 	NEW, MODIFIED, PROCESSED
 }
