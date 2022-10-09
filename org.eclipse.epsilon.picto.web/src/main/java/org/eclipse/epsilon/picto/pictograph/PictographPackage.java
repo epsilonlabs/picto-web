@@ -24,7 +24,7 @@ import org.eclipse.emf.ecore.EReference;
  *        annotation="index name='path' by='Path.name' many='false'"
  *        annotation="index name='module' by='Module.name' many='false'"
  *        annotation="index name='rule' by='Module.name, rules.name' many='false'"
- *        annotation="index name='template' by='Module.name, rules.name, templates.name' many='false'"
+ *        annotation="index name='template' by='Module.name, rules.name, template.name' many='false'"
  *        annotation="index name='resource' by='Resource.name' many='false'"
  *        annotation="index name='element' by='Resource.name, elements.name' many='false'"
  *        annotation="index name='property' by='Resource.name, elements.name, properties.name' many='false'"

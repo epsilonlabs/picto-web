@@ -656,7 +656,7 @@ public class PictographPackageImpl extends EPackageImpl implements PictographPac
 		   source,
 		   new String[] {
 			   "name", "template",
-			   "by", "Module.name, rules.name, templates.name",
+			   "by", "Module.name, rules.name, template.name",
 			   "many", "false"
 		   });
 		addAnnotation

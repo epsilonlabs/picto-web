@@ -1,7 +1,7 @@
 @index(name="path", by="Path.name", many="false")
 @index(name="module", by="Module.name", many="false")
 @index(name="rule", by="Module.name, rules.name", many="false")
-@index(name="template", by="Module.name, rules.name, templates.name", many="false")
+@index(name="template", by="Module.name, rules.name, template.name", many="false")
 @index(name="resource", by="Resource.name", many="false")
 @index(name="element", by="Resource.name, elements.name", many="false")
 @index(name="property", by="Resource.name, elements.name, properties.name", many="false")

@@ -101,22 +101,22 @@ class TraceIndex {
         return  templateIndex;
     }
     
-    public Template getTemplate(String moduleName, String rulesName, String templatesName) {
-        String key = moduleName + "#" + rulesName + "#" + templatesName;
+    public Template getTemplate(String moduleName, String rulesName, String templateName) {
+        String key = moduleName + "#" + rulesName + "#" + templateName;
         return templateIndex.get(key);
     }
     
-    public Template putTemplate(String moduleName, String rulesName, String templatesName, Template template) {
-        String key = moduleName + "#" + rulesName + "#" + templatesName;
+    public Template putTemplate(String moduleName, String rulesName, String templateName, Template template) {
+        String key = moduleName + "#" + rulesName + "#" + templateName;
         return templateIndex.put(key, template);
     }
     
     /*  
-    public Template getTemplate(Module module, String rulesName, String templatesName) {
+    public Template getTemplate(Module module, String rulesName, String templateName) {
         return null;
     }
     
-    public Template putTemplate(Module module, String rulesName, String templatesName) {
+    public Template putTemplate(Module module, String rulesName, String templateName) {
         return null;
     }*/
     public Map<String, Resource> getResourceIndex() {

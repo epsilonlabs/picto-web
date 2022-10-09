@@ -13,11 +13,25 @@ import java.util.List;
 class TraceIndex {
 
 [%var allIndecies : Sequence; %]
-[% for(index in package.getAllIndexes()) { 
-    var name = index.details.get("name");
-    allIndecies.add(name + "Index");
+[% for(index in package.getAllIndexes()) {
+     var name = index.details.get("name"); 
+     var by = index.details.get("by").split(",").collect(e | e.trim());
+     var type;
+     var first = true;
+     for (element in by) {
+	    if (first) {
+	        var temp = element.split("\\.").at(0);
+	        type = EClass.all().select(c | c.name == temp).at(0);
+	        first = false;
+	    } else {
+	        var temp = element.split("\\.").at(0);
+	        var feature = type.eAllStructuralFeatures.select(e | e.name == temp).at(0);
+	        type = feature.eType;
+	    }
+    }
+    allIndecies.add(name.firstToLowerCase() + "Index");
 %]
-    protected Map<String, [%=name.firstToUpperCase()%]> [%=name%]Index = new HashMap<String, [%=name.firstToUpperCase()%]>();
+    protected Map<String, [%=type.name%]> [%=name%]Index = new HashMap<String, [%=type.name%]>();
 [% } %]
     protected List<Map<String, ?>> allIndices = new ArrayList<>(Arrays.asList([%=allIndecies.concat(", ")%]));
     
@@ -26,7 +40,6 @@ class TraceIndex {
     }
 [% for(index in package.getAllIndexes()) {     
      var name = index.details.get("name");  
-     var objParam = name.firstToUpperCase() + " " + name.toLowerCase();
      
      var by = index.details.get("by").split(",").collect(e | e.trim());
      
@@ -39,42 +52,57 @@ class TraceIndex {
      var strParams : Sequence;
      var first = true;
      var keys : Sequence;
+     var type;
+     var objParam;
      for (element in by) {
         if (first) {
-	      var temp = element.split("\\.").at(0);
-	      params.add(temp + " " + temp.toLowerCase());
-	      strParams.add("String " + temp.toLowerCase() + "Name");
+	      var tempType = element.split("\\.").at(0);
+	      params.add(tempType + " " + tempType.toLowerCase());
+	      strParams.add("String " + tempType.toLowerCase() + "Name");
 	      first = false;
-	      keys.add(temp.toLowerCase() + "Name"); 
+	      keys.add(tempType.toLowerCase() + "Name");
+	      type = EClass.all().select(c | c.name == tempType).at(0);
+	      objParam = type.name + " " + type.name.firstToLowerCase();
 	    } else {
 	      var temp = element.split("\\.");
           params.add("String" + " " + temp.at(0).toLowerCase() + temp.at(1).firstToUpperCase());
           strParams.add("String" + " " + temp.at(0).toLowerCase() + temp.at(1).firstToUpperCase());
           keys.add(temp.at(0).toLowerCase() + temp.at(1).firstToUpperCase());
+          //type.name.print();
+          //" -> ".print();
+          //temp.at(0).print();
+          //", ".print();
+          var feature = type.eAllStructuralFeatures.select(e | e.name == temp.at(0)).at(0);
+          //feature.name.print();
+          //":".print();
+          //feature.eType.name.println();
+          type = feature.eType;
+          objParam = feature.eType.name + " " + feature.eType.name.firstToLowerCase();
 	    }	    
 	 }
+	 //type.println();
 	 params.concat(", ").println();
 %]
     public Map<String, [%=name.firstToUpperCase()%]> get[%=name.firstToUpperCase()%]Index() {
         return  [%=name%]Index;
     }
     
-    public [%=name.firstToUpperCase()%] get[%=name.firstToUpperCase()%]([%=strParams.concat(", ")%]) {
+    public [%=type.name%] get[%=name.firstToUpperCase()%]([%=strParams.concat(", ")%]) {
         String key = [%=keys.concat(" + \"#\" + ")%];
         return [%=name%]Index.get(key);
     }
     
-    public [%=name.firstToUpperCase()%] put[%=name.firstToUpperCase()%]([%=strParams.concat(", ")%], [%=objParam%]) {
+    public [%=type.name%] put[%=name.firstToUpperCase()%]([%=strParams.concat(", ")%], [%=objParam%]) {
         String key = [%=keys.concat(" + \"#\" + ")%];
         return [%=name%]Index.put(key, [%=objParam.split(" ").at(1)%]);
     }
     
     /*  
-    public [%=name.firstToUpperCase()%] get[%=name.firstToUpperCase()%]([%=params.concat(", ")%]) {
+    public [%=type.name%] get[%=name.firstToUpperCase()%]([%=params.concat(", ")%]) {
         return null;
     }
     
-    public [%=name.firstToUpperCase()%] put[%=name.firstToUpperCase()%]([%=params.concat(", ")%]) {
+    public [%=type.name%] put[%=name.firstToUpperCase()%]([%=params.concat(", ")%]) {
         return null;
     }*/
 [% } %]
