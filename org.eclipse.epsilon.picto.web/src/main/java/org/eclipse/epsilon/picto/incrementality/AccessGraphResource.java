@@ -169,9 +169,9 @@ public class AccessGraphResource implements AccessRecordResource {
 
 					// property
 					if (access.getPropertyName() != null) {
-						if (access.getValue().equals("Dan#java.lang.String")) {
-							System.console();
-						}
+//						if (access.getValue().equals("Dan#java.lang.String")) {
+//							System.console();
+//						}
 
 						Property property = (Property) traceIndex.getProperty(access.getElementResourceUri(),
 								access.getElementObjectId(), access.getPropertyName());

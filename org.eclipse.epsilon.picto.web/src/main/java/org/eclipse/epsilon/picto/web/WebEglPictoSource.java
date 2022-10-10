@@ -16,14 +16,11 @@ import java.util.Set;
 import java.util.stream.Collectors;
 
 import org.eclipse.core.resources.IFile;
-import org.eclipse.emf.ecore.EObject;
 import org.eclipse.emf.ecore.EPackage;
-import org.eclipse.emf.ecore.EStructuralFeature;
 import org.eclipse.emf.ecore.EcorePackage;
 import org.eclipse.emf.ecore.resource.Resource;
 import org.eclipse.emf.ecore.resource.ResourceSet;
 import org.eclipse.emf.ecore.resource.impl.ResourceSetImpl;
-import org.eclipse.emf.ecore.xmi.XMIResource;
 import org.eclipse.emf.ecore.xmi.impl.EcoreResourceFactoryImpl;
 import org.eclipse.emf.ecore.xmi.impl.XMIResourceFactoryImpl;
 import org.eclipse.epsilon.common.util.StringProperties;
@@ -31,7 +28,6 @@ import org.eclipse.epsilon.common.util.UriUtil;
 import org.eclipse.epsilon.egl.EglFileGeneratingTemplateFactory;
 import org.eclipse.epsilon.egl.EglTemplateFactoryModuleAdapter;
 import org.eclipse.epsilon.egl.EgxModule;
-import org.eclipse.epsilon.egl.dom.GenerationRule;
 import org.eclipse.epsilon.emc.emf.EmfModel;
 import org.eclipse.epsilon.emc.emf.EmfUtil;
 import org.eclipse.epsilon.emc.emf.InMemoryEmfModel;
@@ -40,7 +36,6 @@ import org.eclipse.epsilon.eol.exceptions.EolRuntimeException;
 import org.eclipse.epsilon.eol.execute.context.FrameStack;
 import org.eclipse.epsilon.eol.execute.context.IEolContext;
 import org.eclipse.epsilon.eol.execute.context.Variable;
-import org.eclipse.epsilon.eol.execute.introspection.recording.IPropertyAccess;
 import org.eclipse.epsilon.eol.models.IModel;
 import org.eclipse.epsilon.eol.models.IRelativePathResolver;
 import org.eclipse.epsilon.eol.types.EolAnyType;
@@ -50,7 +45,6 @@ import org.eclipse.epsilon.picto.LazyEgxModule;
 import org.eclipse.epsilon.picto.LazyEgxModule.LazyGenerationRule;
 import org.eclipse.epsilon.picto.LazyEgxModule.LazyGenerationRuleContentPromise;
 import org.eclipse.epsilon.picto.PictoView;
-import org.eclipse.epsilon.picto.ResourceLoadingException;
 import org.eclipse.epsilon.picto.StaticContentPromise;
 import org.eclipse.epsilon.picto.ViewContent;
 import org.eclipse.epsilon.picto.ViewTree;
@@ -61,8 +55,8 @@ import org.eclipse.epsilon.picto.dom.Patch;
 import org.eclipse.epsilon.picto.dom.Picto;
 import org.eclipse.epsilon.picto.dom.PictoPackage;
 import org.eclipse.epsilon.picto.dummy.IEditorPart;
+import org.eclipse.epsilon.picto.incrementality.AccessRecordResource;
 import org.eclipse.epsilon.picto.incrementality.IncrementalLazyEgxModule;
-import org.eclipse.epsilon.picto.incrementality.AccessRecord;
 import org.eclipse.epsilon.picto.incrementality.Util;
 import org.eclipse.epsilon.picto.source.EglPictoSource;
 import org.eclipse.epsilon.picto.transformers.CsvContentTransformer;
@@ -149,7 +143,9 @@ public class WebEglPictoSource extends EglPictoSource {
 		} catch (Exception ex) {
 			ex.printStackTrace();
 		}
+		
 		ViewContentCache viewContentCache = FileViewContentCache.addPictoFile(this.pictoFile.getName());
+		AccessRecordResource accessRecordResource = FileViewContentCache.createAccessRecordResource(this.pictoFile.getName());
 
 		Picto renderingMetadata = this.getRenderingMetadata(this.pictoFile);
 
@@ -169,8 +165,11 @@ public class WebEglPictoSource extends EglPictoSource {
 			if (renderingMetadata.getFormat() == null)
 				renderingMetadata.setFormat("egx");
 
+			
+			
+			
 			if ("egx".equals(renderingMetadata.getFormat())) {
-				module = new IncrementalLazyEgxModule(PictoWeb.ACCESS_RECORD_RESOURCE);
+				module = new IncrementalLazyEgxModule(accessRecordResource);
 			} else {
 				module = new EglTemplateFactoryModuleAdapter(new EglFileGeneratingTemplateFactory());
 			}
@@ -211,7 +210,7 @@ public class WebEglPictoSource extends EglPictoSource {
 				List<LazyGenerationRuleContentPromise> promises = (List<LazyGenerationRuleContentPromise>) module
 						.execute();
 				((IncrementalLazyEgxModule) module).stopRecording();
-				PictoWeb.ACCESS_RECORD_RESOURCE.printIncrementalRecords();
+				accessRecordResource.printIncrementalRecords();
 
 				/**
 				 * the handleDynamicViews will add the generated lazy contents to instances to
@@ -222,7 +221,7 @@ public class WebEglPictoSource extends EglPictoSource {
 				/** loop through the content promises of rules **/
 				System.out.println("\nGENERATING VIEWS: ");
 				toBeProcessedPaths
-						.addAll(PictoWeb.ACCESS_RECORD_RESOURCE.getToBeProcessedPaths(promises, (EgxModule) module));
+						.addAll(accessRecordResource.getToBeProcessedPaths(promises, (EgxModule) module));
 
 				for (LazyGenerationRuleContentPromise promise : promises) {
 
@@ -276,8 +275,8 @@ public class WebEglPictoSource extends EglPictoSource {
 					System.out.println("PROCESSED");
 
 				}
-				PictoWeb.ACCESS_RECORD_RESOURCE.printIncrementalRecords();
-				PictoWeb.ACCESS_RECORD_RESOURCE.updateStatusToProcessed(toBeProcessedPaths);
+				accessRecordResource.printIncrementalRecords();
+				accessRecordResource.updateStatusToProcessed(toBeProcessedPaths);
 				generateAll = false;
 				System.out.println();
 				System.console();

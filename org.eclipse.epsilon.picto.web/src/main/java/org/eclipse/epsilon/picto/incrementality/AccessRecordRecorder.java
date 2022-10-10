@@ -11,6 +11,7 @@ import org.eclipse.epsilon.egl.EgxModule;
 import org.eclipse.epsilon.egl.dom.GenerationRule;
 import org.eclipse.epsilon.eol.dom.NameExpression;
 import org.eclipse.epsilon.eol.execute.introspection.recording.PropertyAccessRecorder;
+import org.eclipse.epsilon.picto.web.FileViewContentCache;
 import org.eclipse.epsilon.picto.web.PictoWeb;
 
 public class AccessRecordRecorder extends PropertyAccessRecorder {
@@ -18,15 +19,16 @@ public class AccessRecordRecorder extends PropertyAccessRecorder {
 	private boolean recording = false;
 
 	private final List<AccessRecord> currentPropertyAccesses = new ArrayList<>();
-	private AccessRecordResource accessRecordResource = PictoWeb.ACCESS_RECORD_RESOURCE;
+	private AccessRecordResource accessRecordResource = null; 
 
 	protected URI templateUri = null;
 	protected GenerationRule rule = null;
 	protected Object contextElement = null;
 	protected String path = null;
 
-	public AccessRecordRecorder() {
+	public AccessRecordRecorder(AccessRecordResource accessRecordResource) {
 		super();
+		this.accessRecordResource = accessRecordResource;
 	}
 
 	public List<AccessRecord> getCurrentPropertyAccesses() {
