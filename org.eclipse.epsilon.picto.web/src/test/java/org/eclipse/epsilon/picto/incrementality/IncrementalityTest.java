@@ -35,8 +35,11 @@ class IncrementalityTest {
 	private static File pictoFile;
 	private static File modelFile;
 	private static File modelFileBackup;
+	private String modifiedFilePath;
 	private WebEglPictoSource eglPictoSource;
 	private XMIResource res;
+
+	private AccessRecordResource accessRecordResource = null;
 
 	@BeforeAll
 	static void setUpBeforeClass() throws Exception {
@@ -56,12 +59,16 @@ class IncrementalityTest {
 		pictoFile = new File(PictoApplication.WORKSPACE + pictoFileName);
 		modelFile = new File(PictoApplication.WORKSPACE + modelFileName);
 		modelFileBackup = new File(modelFile.getAbsolutePath() + ".backup");
+		modifiedFilePath = pictoFile.getAbsolutePath()
+				.replace(new File(PictoApplication.WORKSPACE).getAbsolutePath() + File.separator, "").replace("\\", "/");
+
+		accessRecordResource = FileViewContentCache.createAccessRecordResource(pictoFileName);
 
 		// backup model file
 		Files.copy(modelFile, modelFileBackup);
 
 		eglPictoSource = new WebEglPictoSource();
-		Map<String, String> result = eglPictoSource.transform(pictoFile);
+		Map<String, String> result = eglPictoSource.transform(modifiedFilePath);
 
 		res = (new XMIResourceImpl(URI.createFileURI(modelFile.getAbsolutePath())));
 		res.load(null);
@@ -71,7 +78,7 @@ class IncrementalityTest {
 	@AfterEach
 	void tearDown() throws Exception {
 		FileViewContentCache.clear();
-		PictoWeb.ACCESS_RECORD_RESOURCE.clear();
+		accessRecordResource.clear();
 		res.unload();
 		modelFile.delete();
 		Files.copy(modelFileBackup, modelFile);
@@ -81,7 +88,7 @@ class IncrementalityTest {
 	@Test
 	void testUpdateEglDoc() throws Exception {
 		try {
-			setUp("egldoc-standalone.picto", "egldoc/Families.ecore");
+			setUp("egldoc/egldoc-standalone.picto", "egldoc/egldoc/Families.ecore");
 
 			EObject eObject = res.getEObject("//Bike");
 			EStructuralFeature eNameFeature = eObject.eClass().getEStructuralFeature("name");
@@ -92,7 +99,7 @@ class IncrementalityTest {
 		} catch (Exception e) {
 			e.printStackTrace();
 		} finally {
-			Map<String, String> generatedViews = eglPictoSource.transform(pictoFile);
+			Map<String, String> generatedViews = eglPictoSource.transform(modifiedFilePath);
 			Arrays.asList( //
 					"/families/Bicycle").stream().forEach(path -> {
 						assertTrue(generatedViews.keySet().contains(path));
@@ -104,8 +111,8 @@ class IncrementalityTest {
 	@Test
 	void testGeneration() throws Exception {
 		try {
-			List<AccessRecord> records = PictoWeb.ACCESS_RECORD_RESOURCE.getIncrementalRecords();
-			Map<String, String> generatedViews = setUp("socialnetwork.model.picto", "socialnetwork.model");
+			Map<String, String> generatedViews = setUp("socialnetwork/socialnetwork.model.picto",
+					"socialnetwork/socialnetwork.model");
 			Set<String> keys = generatedViews.keySet();
 			Arrays.asList( //
 					"/Social Network" //
@@ -126,7 +133,7 @@ class IncrementalityTest {
 	@Test
 	void testUpdateProperty() throws Exception {
 		try {
-			setUp("socialnetwork.model.picto", "socialnetwork.model");
+			setUp("socialnetwork/socialnetwork.model.picto", "socialnetwork/socialnetwork.model");
 
 			EObject eObject = res.getEObject("3"); // get Charlie (id = 3)
 			EStructuralFeature eNameFeature = eObject.eClass().getEStructuralFeature("name");
@@ -135,7 +142,7 @@ class IncrementalityTest {
 			res.save(null);
 
 			eglPictoSource = new WebEglPictoSource();
-			Map<String, String> generatedViews = eglPictoSource.transform(pictoFile);
+			Map<String, String> generatedViews = eglPictoSource.transform(modifiedFilePath);
 
 			Arrays.asList( //
 					"/Social Network" //
@@ -151,14 +158,14 @@ class IncrementalityTest {
 	@Test
 	void testDeleteElement() throws Exception {
 		try {
-			setUp("socialnetwork.model.picto", "socialnetwork.model");
+			setUp("socialnetwork/socialnetwork.model.picto", "socialnetwork/socialnetwork.model");
 
 			EObject eObject = res.getEObject("2"); // get Bob (id = 2)
 			EcoreUtil.delete(eObject);
 			res.save(null);
 
 			eglPictoSource = new WebEglPictoSource();
-			Map<String, String> generatedViews = eglPictoSource.transform(pictoFile);
+			Map<String, String> generatedViews = eglPictoSource.transform(modifiedFilePath);
 
 			Arrays.asList( //
 					"/Social Network" //
@@ -177,7 +184,7 @@ class IncrementalityTest {
 	@Test
 	void testRemoveReference() throws Exception {
 		try {
-			setUp("socialnetwork.model.picto", "socialnetwork.model");
+			setUp("socialnetwork/socialnetwork.model.picto", "socialnetwork/socialnetwork.model");
 
 			EObject alice = res.getEObject("1"); // get Alice (id = 1)
 			EClass person = alice.eClass();
@@ -190,7 +197,7 @@ class IncrementalityTest {
 			res.save(null);
 
 			eglPictoSource = new WebEglPictoSource();
-			Map<String, String> generatedViews = eglPictoSource.transform(pictoFile);
+			Map<String, String> generatedViews = eglPictoSource.transform(modifiedFilePath);
 
 			Arrays.asList( //
 					"/Social Network" //
@@ -210,7 +217,7 @@ class IncrementalityTest {
 	void testAddReference() throws Exception {
 		try {
 
-			setUp("socialnetwork.model.picto", "socialnetwork.model");
+			setUp("socialnetwork/socialnetwork.model.picto", "socialnetwork/socialnetwork.model");
 
 			EObject sn = res.getEObject("0"); // get social Network (id = 0)
 			EClass socialNetwork = sn.eClass();
@@ -234,7 +241,7 @@ class IncrementalityTest {
 			res.save(null);
 
 			eglPictoSource = new WebEglPictoSource();
-			Map<String, String> generatedViews = eglPictoSource.transform(pictoFile);
+			Map<String, String> generatedViews = eglPictoSource.transform(modifiedFilePath);
 
 			Arrays.asList( //
 					"/Social Network" //
@@ -254,7 +261,7 @@ class IncrementalityTest {
 	@Test
 	void testAddElement() throws Exception {
 		try {
-			setUp("socialnetwork.model.picto", "socialnetwork.model");
+			setUp("socialnetwork/socialnetwork.model.picto", "socialnetwork/socialnetwork.model");
 
 			EObject sn = res.getEObject("0"); // get Alice (id = 1)
 			EClass socialNetwork = sn.eClass();
@@ -274,7 +281,7 @@ class IncrementalityTest {
 			res.save(null);
 
 			eglPictoSource = new WebEglPictoSource();
-			Map<String, String> generatedViews = eglPictoSource.transform(pictoFile);
+			Map<String, String> generatedViews = eglPictoSource.transform(modifiedFilePath);
 
 			Arrays.asList( //
 					"/Social Network" //
@@ -292,7 +299,7 @@ class IncrementalityTest {
 	@Test
 	void testAddNonDeterminingElement() throws Exception {
 		try {
-			setUp("socialnetwork.model.picto", "socialnetwork.model");
+			setUp("socialnetwork/socialnetwork.model.picto", "socialnetwork/socialnetwork.model");
 
 			EObject alice = res.getEObject("1"); // get Alice (id = 1)
 			EClass person = alice.eClass();
@@ -311,7 +318,7 @@ class IncrementalityTest {
 			res.save(null);
 
 			eglPictoSource = new WebEglPictoSource();
-			Map<String, String> generatedViews = eglPictoSource.transform(pictoFile);
+			Map<String, String> generatedViews = eglPictoSource.transform(modifiedFilePath);
 
 			Arrays.asList( //
 					"/Social Network" //
@@ -329,7 +336,7 @@ class IncrementalityTest {
 	@Test
 	void testMultipleUpdates() throws Exception {
 		try {
-			setUp("socialnetwork.model.picto", "socialnetwork.model");
+			setUp("socialnetwork/socialnetwork.model.picto", "socialnetwork/socialnetwork.model");
 
 			/** first update **/
 			EObject eObject = res.getEObject("3"); // get Charlie (id = 3)
@@ -339,7 +346,7 @@ class IncrementalityTest {
 			res.save(null);
 
 			eglPictoSource = new WebEglPictoSource();
-			Map<String, String> generatedViews = eglPictoSource.transform(pictoFile);
+			Map<String, String> generatedViews = eglPictoSource.transform(modifiedFilePath);
 
 			Arrays.asList( //
 					"/Social Network" //
@@ -354,7 +361,7 @@ class IncrementalityTest {
 			res.save(null);
 
 			eglPictoSource = new WebEglPictoSource();
-			Map<String, String> generatedViews2 = eglPictoSource.transform(pictoFile);
+			Map<String, String> generatedViews2 = eglPictoSource.transform(modifiedFilePath);
 
 			Arrays.asList( //
 					"/Social Network" //
@@ -388,7 +395,7 @@ class IncrementalityTest {
 			res.save(null);
 
 			eglPictoSource = new WebEglPictoSource();
-			Map<String, String> generatedViews3 = eglPictoSource.transform(pictoFile);
+			Map<String, String> generatedViews3 = eglPictoSource.transform(modifiedFilePath);
 
 			Arrays.asList( //
 					"/Social Network" //
@@ -419,7 +426,7 @@ class IncrementalityTest {
 			res.save(null);
 
 			eglPictoSource = new WebEglPictoSource();
-			Map<String, String> generatedViews4 = eglPictoSource.transform(pictoFile);
+			Map<String, String> generatedViews4 = eglPictoSource.transform(modifiedFilePath);
 
 			Arrays.asList( //
 					"/Social Network" //

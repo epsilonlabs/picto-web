@@ -105,15 +105,16 @@ public class WebEglPictoSource extends EglPictoSource {
 	}
 
 	@SuppressWarnings("unchecked")
-	public Map<String, String> transform(File modifiedFile) throws Exception {
+	public Map<String, String> transform(String modifiedFilePath) throws Exception {
 		Map<String, String> modifiedViewContents = new HashMap<>();
 		Resource resource = null;
 		PictoView pictoView = new PictoView();
 		ViewTree rootViewTree = new ViewTree();
 
-		String filename = modifiedFile.getAbsolutePath()
-				.replace(new File(PictoApplication.WORKSPACE).getAbsolutePath() + File.separator, "")
-				.replace("\\", "/");
+		File modifiedFile = new File((new File(PictoApplication.WORKSPACE + modifiedFilePath)).getAbsolutePath());
+
+		String[] filenameSegments = modifiedFilePath.split("/");
+		String filename = filenameSegments[filenameSegments.length - 1];
 
 		try {
 
@@ -143,9 +144,10 @@ public class WebEglPictoSource extends EglPictoSource {
 		} catch (Exception ex) {
 			ex.printStackTrace();
 		}
-		
-		ViewContentCache viewContentCache = FileViewContentCache.addPictoFile(this.pictoFile.getName());
-		AccessRecordResource accessRecordResource = FileViewContentCache.createAccessRecordResource(this.pictoFile.getName());
+
+		ViewContentCache viewContentCache = FileViewContentCache.addPictoFile(modifiedFilePath);
+		AccessRecordResource accessRecordResource = FileViewContentCache
+				.createAccessRecordResource(modifiedFilePath);
 
 		Picto renderingMetadata = this.getRenderingMetadata(this.pictoFile);
 
@@ -165,9 +167,6 @@ public class WebEglPictoSource extends EglPictoSource {
 			if (renderingMetadata.getFormat() == null)
 				renderingMetadata.setFormat("egx");
 
-			
-			
-			
 			if ("egx".equals(renderingMetadata.getFormat())) {
 				module = new IncrementalLazyEgxModule(accessRecordResource);
 			} else {
@@ -220,8 +219,7 @@ public class WebEglPictoSource extends EglPictoSource {
 
 				/** loop through the content promises of rules **/
 				System.out.println("\nGENERATING VIEWS: ");
-				toBeProcessedPaths
-						.addAll(accessRecordResource.getToBeProcessedPaths(promises, (EgxModule) module));
+				toBeProcessedPaths.addAll(accessRecordResource.getToBeProcessedPaths(promises, (EgxModule) module));
 
 				for (LazyGenerationRuleContentPromise promise : promises) {
 
@@ -287,7 +285,8 @@ public class WebEglPictoSource extends EglPictoSource {
 				rootViewTree.setFormat(renderingMetadata.getFormat());
 			}
 
-			// Handle static views (i.e. where source != null), add the custom view loaded from a file
+			// Handle static views (i.e. where source != null), add the custom view loaded
+			// from a file
 			// defined in the picto file
 			handleStaticViews(modifiedViewContents, rootViewTree, filename, viewContentCache, renderingMetadata,
 					module);

@@ -2,19 +2,114 @@
 <html xmlns:th="http://www.thymeleaf.org">
 
 <head>
-  <title>Picto Files</title>
+  <title>Picto Web Workspace</title>
   <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+  <link type="text/css" rel="stylesheet" href="/webjars/bootstrap/css/bootstrap.min.css">
+  <link type="text/css" rel="stylesheet" href="css/goldenlayout-base.css" />
+  <link type="text/css" rel="stylesheet" href="css/goldenlayout-dark-theme.css" />
+  <link type="text/css" rel="stylesheet" href="main.css">
+  <link type="text/css" rel="stylesheet" href="dist/themes/default/style.css">
+  <script type="text/javascript" src="/webjars/jquery/jquery.min.js"></script>
+  <script type="text/javascript" src="/webjars/sockjs-client/sockjs.min.js"></script>
+  <script type="text/javascript" src="/webjars/stomp-websocket/stomp.min.js"></script>
+  <script type="text/javascript" src="js/goldenlayout.js"></script>
+  <script type="text/javascript" src="js/marked.min.js"></script>
+  <script type="text/javascript" src="js/svg-pan-zoom.js"></script>
+  <script type="text/javascript" src="dist/jstree.js"></script>
+  <script type="text/javascript" src="/picto.js"></script>
 </head>
 
 <body>
-  <h1>Picto Files</h1>
+  <div class="parent">
+    <div class="child">
+      <h1>Picto Web Workspace</h1>
+      <input type="text" id="searchTree" name="searchTree"></input>
+      <div id="tree"></div>
+    </div>
+  </div>
+
+  <script th:inline="javascript">
+    var pictofiles = [[${pictofiles}]];
+    console.log(pictofiles);
+    var workspace = Picto.listToJsTreeData(pictofiles);
+
+    /*var workspace = [
+      {
+        "text": "egldoc", "children": [
+          {"text": "egldoc-standalone.picto"},
+        ],
+      },
+      {
+        "text": "socialnetwork", "children": [
+          {"text": "socialnetwork.model.picto"},
+          {"text": "socialnetwork-standalone.picto"}
+        ],
+      }
+    ];*/
+
+    /** JsTree **/
+    var jsTreeConfig = {
+      'core': {
+        'check_callback': true,
+        'data': workspace
+      },
+      "plugins": ["search", "contextmenu"],
+      "contextmenu": {
+        items: {
+          "open": {
+            "separator_before": true,
+            "separator_after": true,
+            "label": "Open Tab ...",
+            "title": "Open in a new tab",
+            "action": function () {alert("Open in a new tab");}
+          }
+          //
+        }
+        //
+      }
+      //
+    };
+
+    $('#tree').jstree(jsTreeConfig);
+
+    $('#tree').on("select_node.jstree", function (event, data) {
+      if (data.selected.length) {
+        var path = Picto.getSelectedViewPath(data);
+        if (path.endsWith(".picto")) {
+          console.log(path);
+          var url = 'picto?file=' + path;
+          console.log(url);
+          window.open(url, '_blank');
+        }
+      }
+    });
+
+    var to = false;
+    $('#searchTree').keyup(function () {
+      if (to) {clearTimeout(to);}
+      to = setTimeout(function () {
+        var v = $('#searchTree').val();
+        console.log(v);
+        $('#tree').jstree(true).search(v, false, true);
+      }, 250);
+    });
+
+    $('#tree').on("show_contextmenu.jstree", function (event, data) {
+      console.log(event);
+      console.log(data);
+    });
+
+
+
+  </script>
+  <!-- <h1>Picto Files</h1>
   <ol>
     <span th:each="pictofile: ${pictofiles}">
       <li>
         <a th:text="${pictofile}" target="_blank" th:href="'picto?file=' + ${pictofile}"></a>
       </li>
       </span>
-  </ol>
+  </ol>-->
 </body>
 
 </html>

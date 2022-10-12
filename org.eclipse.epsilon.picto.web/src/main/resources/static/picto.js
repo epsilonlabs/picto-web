@@ -32,6 +32,31 @@ Picto.convertToPictoRequest = function(pictoFile, type, message) {
   );
 }
 
+Picto.listToJsTreeData = function(list) {
+  var tree = [];
+  var t = tree;
+  for (key1 in list) {
+    console.log(list[key1]);
+    var segments = list[key1].split("\/");
+    for (key2 in segments) {
+      var node = null;
+      var i = t.findIndex(e => e.text === segments[key2]);
+      if (i > -1) {
+        node = t[i];
+      } else {
+        t.push({});
+        node = t[t.length - 1];
+        node["text"] = segments[key2];
+        node["children"] = [];
+      }
+      t = node["children"];
+    }
+    t = tree;
+  }
+  console.log(tree);
+  return tree;
+}
+
 Picto.executeCode = function() {
   console.log("Get TreeView ...");
   //this.stompClient.send("/app/treeview", {}, this.convertToPictoRequest(this.pictoFile, "TreeView", editor.getValue()));

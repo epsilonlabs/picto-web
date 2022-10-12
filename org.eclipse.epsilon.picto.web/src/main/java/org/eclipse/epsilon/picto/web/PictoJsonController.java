@@ -4,6 +4,7 @@ import java.io.File;
 import java.util.Map;
 import java.util.Map.Entry;
 
+import org.eclipse.epsilon.picto.dom.Picto;
 import org.eclipse.epsilon.picto.dom.PictoPackage;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationContext;
@@ -52,13 +53,16 @@ public class PictoJsonController {
 	@MessageMapping("/picto-web")
 	@SendTo("/topic/picto")
 	public void sendBackFileUpdate(File modifiedFile) throws Exception {
+		
+		String modifiedFilePath = modifiedFile.getAbsolutePath().replace(PictoApplication.WORKSPACE + File.separator, "");
+		
 		WebEglPictoSource source = new WebEglPictoSource();
-		Map<String, String> modifiedObjects = source.transform(modifiedFile);
+		Map<String, String> modifiedObjects = source.transform(modifiedFilePath);
 		System.out.println("PICTO: number of modified objects = " + modifiedObjects.size());
 
 		File pictoFile = modifiedFile;
 		if (modifiedFile.getAbsolutePath().endsWith(".model") || modifiedFile.getAbsolutePath().endsWith(".flexmi")
-				|| modifiedFile.getAbsolutePath().endsWith(".xmi")) {
+				|| modifiedFile.getAbsolutePath().endsWith(".xmi") || modifiedFile.getAbsolutePath().endsWith(".emf")) {
 			pictoFile = new File(modifiedFile.getAbsolutePath() + ".picto");
 		}
 

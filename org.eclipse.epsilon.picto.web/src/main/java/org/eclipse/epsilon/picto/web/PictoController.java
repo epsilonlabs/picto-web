@@ -3,6 +3,7 @@ package org.eclipse.epsilon.picto.web;
 import java.io.File;
 import java.io.IOException;
 import java.util.List;
+import java.util.stream.Collectors;
 
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
@@ -21,7 +22,9 @@ public class PictoController {
 
 	@GetMapping(value = "/")
 	public String getPictoFiles(String information, Model model) throws IOException {
-		List<String> pictoFiles = ProjectTreeToJson.getPictoFiles(PictoApplication.WORKSPACE);
+		List<String> pictoFiles = ProjectTreeToJson.getPictoFiles(PictoApplication.WORKSPACE).stream()
+				.map(s -> s.replace("\\", "/")).collect(Collectors.toList());
+//		model.addAttribute("pictofiles", "[" + String.join(", ", pictoFiles) + "]");
 		model.addAttribute("pictofiles", pictoFiles);
 		return "pictofiles";
 	}
@@ -32,10 +35,10 @@ public class PictoController {
 //		if (file.equals("egldoc-standalone.picto")) {
 //			System.console();
 //		}
+		
 		if (FileViewContentCache.getViewContentCache(file) == null) {
-			File pictoFile = new File((new File(PictoApplication.WORKSPACE + file)).getAbsolutePath());
 			WebEglPictoSource source = new WebEglPictoSource();
-			source.transform(pictoFile);
+			source.transform(file);
 		}
 		if (path == null) {
 			String treeResult = FileViewContentCache.getViewContentCache(file)
