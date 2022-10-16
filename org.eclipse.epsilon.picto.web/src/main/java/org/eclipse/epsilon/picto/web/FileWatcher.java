@@ -12,6 +12,7 @@ import java.nio.file.Paths;
 import java.nio.file.WatchEvent;
 import java.nio.file.WatchKey;
 import java.nio.file.WatchService;
+import java.util.HashMap;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.messaging.handler.annotation.MessageMapping;
@@ -57,16 +58,22 @@ public class FileWatcher extends Thread {
 	@Override
 	public void run() {
 		try {
+			HashMap<WatchKey, Path> keys = new HashMap<WatchKey, Path>();
 			WatchService watcher = FileSystems.getDefault().newWatchService();
-			registerDirectory(watcher, PictoApplication.WORKSPACE);
+			registerDirectory(watcher, PictoApplication.WORKSPACE, keys);
 			isRunning = true;
 
-			
 			while (isRunning) {
 
 				WatchKey key;
+				Path path;
 				try {
 					key = watcher.take();
+					path = keys.get(key);
+					if (path == null) {
+						System.err.println("WatchKey not recognized!!");
+						continue;
+					}
 				} catch (InterruptedException ex) {
 					return;
 				}
@@ -74,18 +81,19 @@ public class FileWatcher extends Thread {
 				for (WatchEvent<?> event : key.pollEvents()) {
 //					WatchEvent.Kind<?> kind = event.kind();
 //					System.out.println(kind);
-					
 
 					@SuppressWarnings("unchecked")
 					WatchEvent<Path> ev = (WatchEvent<Path>) event;
 					Path filePath = ev.context();
+					Path parent = ev.context().getParent();
 
 					if (filePath.toString().endsWith(".picto") || filePath.toString().endsWith(".egx")
 							|| filePath.toString().endsWith(".egl") || filePath.toString().endsWith(".flexmi")
-							|| filePath.toString().endsWith(".model") || filePath.toString().endsWith(".xmi")) {
+							|| filePath.toString().endsWith(".model") || filePath.toString().endsWith(".emf")
+							|| filePath.toString().endsWith(".xmi")) {
 						System.out.println("Picto: " + filePath + " has changed!!!");
 
-						File modelFile = new File(PictoApplication.WORKSPACE + filePath.toString());
+						File modelFile = new File(path.toString() + File.separator + filePath.toString());
 						this.notifyFileChange(modelFile);
 					}
 				}
@@ -102,15 +110,17 @@ public class FileWatcher extends Thread {
 		}
 	}
 
-	private void registerDirectory(WatchService watcher, String directory) throws IOException {
+	private void registerDirectory(WatchService watcher, String directory, HashMap<WatchKey, Path> keys)
+			throws IOException {
 		Path dir = Paths.get(directory).toAbsolutePath();
-		dir.register(watcher, ENTRY_CREATE, ENTRY_DELETE, ENTRY_MODIFY);
+		WatchKey key = dir.register(watcher, ENTRY_CREATE, ENTRY_DELETE, ENTRY_MODIFY);
+		keys.put(key, dir);
 		System.out.println("PICTO: Watch Service registered for dir: " + dir);
 
 		File file = new File(directory);
 		for (File f : file.listFiles()) {
 			if (f.isDirectory()) {
-				registerDirectory(watcher, f.getAbsolutePath());
+				registerDirectory(watcher, f.getAbsolutePath(), keys);
 			}
 		}
 	}

@@ -59,21 +59,13 @@ import org.eclipse.epsilon.picto.incrementality.AccessRecordResource;
 import org.eclipse.epsilon.picto.incrementality.IncrementalLazyEgxModule;
 import org.eclipse.epsilon.picto.incrementality.Util;
 import org.eclipse.epsilon.picto.source.EglPictoSource;
-import org.eclipse.epsilon.picto.transformers.CsvContentTransformer;
-import org.eclipse.epsilon.picto.transformers.GraphvizContentTransformer;
-import org.eclipse.epsilon.picto.transformers.HtmlContentTransformer;
-import org.eclipse.epsilon.picto.transformers.MarkdownContentTransformer;
-import org.eclipse.epsilon.picto.transformers.PlantUmlContentTransformer;
-import org.eclipse.epsilon.picto.transformers.SvgContentTransformer;
-import org.eclipse.epsilon.picto.transformers.TextContentTransformer;
-import org.eclipse.epsilon.picto.transformers.ViewContentTransformer;
+import org.eclipse.emf.emfatic.core.EmfaticResourceFactory;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 public class WebEglPictoSource extends EglPictoSource {
 
-	
 	public static boolean generateAll = true; // true for first running
 
 	protected File modelFile;
@@ -81,7 +73,7 @@ public class WebEglPictoSource extends EglPictoSource {
 	protected List<EPackage> ePackages = new ArrayList<>();
 
 	public WebEglPictoSource() throws Exception {
-		
+
 	}
 
 	public File getModelFile() {
@@ -113,12 +105,13 @@ public class WebEglPictoSource extends EglPictoSource {
 		String filename = filenameSegments[filenameSegments.length - 1];
 
 		try {
-
+			/*** Need to do a better approach in handling these types of files ***/
 			if (modifiedFile.getAbsolutePath().endsWith(".model") || modifiedFile.getAbsolutePath().endsWith(".flexmi")
 					|| modifiedFile.getAbsolutePath().endsWith(".xmi")) {
 				this.modelFile = new File(modifiedFile.getAbsolutePath());
 				this.pictoFile = new File(modifiedFile.getAbsolutePath() + ".picto");
-				loadMetamodel(this.pictoFile.getName().replace(".model.picto", ""));
+				loadMetamodel(this.pictoFile.getName().replace(".model", "").replace(".flexmi", "").replace(".xmi", "")
+						.replace(".emf", "").replace(".picto", ""));
 				resource = getResource(this.modelFile);
 			} else if (modifiedFile.getAbsolutePath().endsWith(".egx")) {
 				String modelFileName = modifiedFile.getName().replace(".egx", ".model");
@@ -128,10 +121,15 @@ public class WebEglPictoSource extends EglPictoSource {
 						modifiedFile.getParentFile().getAbsolutePath() + File.separator + modelFileName + ".picto");
 				loadMetamodel(this.pictoFile.getName().replace(".model.picto", ""));
 				resource = getResource(this.modelFile);
-			} else if (modifiedFile.getAbsolutePath().endsWith(".model.picto")) {
+			} else if (modifiedFile.getAbsolutePath().endsWith(".emf.picto")
+					|| modifiedFile.getAbsolutePath().endsWith(".model.picto")) {
 				this.pictoFile = modifiedFile;
-				this.modelFile = new File(modifiedFile.getAbsolutePath().replace(".model.picto", ".model"));
-				loadMetamodel(this.pictoFile.getName().replace(".model.picto", ""));
+				if (modifiedFile.getAbsolutePath().endsWith(".model.picto"))
+					this.modelFile = new File(modifiedFile.getAbsolutePath().replace(".model.picto", ".model"));
+				if (modifiedFile.getAbsolutePath().endsWith(".emf.picto"))
+					this.modelFile = new File(modifiedFile.getAbsolutePath().replace(".emf.picto", ".emf"));
+
+				loadMetamodel(this.pictoFile.getName().replace(".model", "").replace(".emf", "").replace(".picto", ""));
 				resource = getResource(this.modelFile);
 			} else if (modifiedFile.getAbsolutePath().endsWith("-standalone.picto")) {
 				this.pictoFile = modifiedFile;
@@ -142,8 +140,7 @@ public class WebEglPictoSource extends EglPictoSource {
 		}
 
 		ViewContentCache viewContentCache = FileViewContentCache.addPictoFile(modifiedFilePath);
-		AccessRecordResource accessRecordResource = FileViewContentCache
-				.createAccessRecordResource(modifiedFilePath);
+		AccessRecordResource accessRecordResource = FileViewContentCache.createAccessRecordResource(modifiedFilePath);
 
 		Picto renderingMetadata = this.getRenderingMetadata(this.pictoFile);
 
@@ -246,10 +243,10 @@ public class WebEglPictoSource extends EglPictoSource {
 //					}
 
 					/** transform to target format (e.g., svg, html) **/
-					
+
 //					vc = vc.getNext(pictoView);
 //					vt.setContent(vc);
-					
+
 //					for (ViewContentTransformer transformer : ViewContent.getViewContentTransformers()) {
 //						if (transformer.canTransform(vc)) {
 //							vc = transformer.transform(vc, pictoView);
@@ -289,8 +286,8 @@ public class WebEglPictoSource extends EglPictoSource {
 			// Handle static views (i.e. where source != null), add the custom view loaded
 			// from a file
 			// defined in the picto file
-			handleStaticViews(modifiedViewContents, rootViewTree, filename, viewContentCache, renderingMetadata,
-					module, pictoView);
+			handleStaticViews(modifiedViewContents, rootViewTree, filename, viewContentCache, renderingMetadata, module,
+					pictoView);
 
 			// Handle patches for existing views (i.e. where source == null and type/rule ==
 			// null)
@@ -375,19 +372,17 @@ public class WebEglPictoSource extends EglPictoSource {
 			// put the content into the elementViewContentMap
 			String pathString = "/" + String.join("/", customView.getPath());
 			ViewTree vt = rootViewTree.getChildren().get(rootViewTree.getChildren().size() - 1);
-			
+
 //			// record property accesses
 //			((IncrementalLazyEgxModule) module).startRecording();
 //			ViewContent vc = vt.getContent();
-			
-			
-			
+
 			/** transform to target format (e.g., svg, html) **/
 			pictoView.renderView(vt);
 			ViewContent vc = vt.getContent().getFinal(pictoView);
 //			vc = vc.getNext(pictoView);
 //			vt.setContent(vc);
-			
+
 //			((IncrementalLazyEgxModule) module).stopRecording();
 //			WebEglPictoSource.updateIncrementalResource(module, pathString);
 
@@ -573,13 +568,14 @@ public class WebEglPictoSource extends EglPictoSource {
 	public Resource getResource(File modelFile) {
 		ResourceSet resourceSet = new ResourceSetImpl();
 
-		if (modelFile.getName().endsWith(".ecore")) {
+		if (modelFile.getName().endsWith(".ecore") || modelFile.getName().endsWith(".emf")) {
 			resourceSet.getPackageRegistry().put(EcorePackage.eNS_URI, EcorePackage.eINSTANCE);
 		}
 
 		resourceSet.getResourceFactoryRegistry().getExtensionToFactoryMap().put("xmi", new XMIResourceFactoryImpl());
 		resourceSet.getResourceFactoryRegistry().getExtensionToFactoryMap().put("ecore",
 				new EcoreResourceFactoryImpl());
+		resourceSet.getResourceFactoryRegistry().getExtensionToFactoryMap().put("emf", new EmfaticResourceFactory());
 		resourceSet.getResourceFactoryRegistry().getExtensionToFactoryMap().put("model", new XMIResourceFactoryImpl());
 		resourceSet.getResourceFactoryRegistry().getExtensionToFactoryMap().put("*", new FlexmiResourceFactory());
 		Resource resource = resourceSet

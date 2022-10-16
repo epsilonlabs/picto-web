@@ -211,7 +211,7 @@ Picto.connectToServer = function (pictoFile) {
   this.stompClient.connect({}, function (frame) {
     //setConnected(true);
     console.log('PICTO - Connected to server: ' + frame);
-    Picto.stompClient.subscribe('/topic/picto/' + Picto.pictoFile, function (message) {
+    Picto.stompClient.subscribe('/topic/picto' + Picto.pictoFile, function (message) {
       console.log("PICTO - Receiving messages ... ");
       //console.log(message);
       //console.log(message.body);

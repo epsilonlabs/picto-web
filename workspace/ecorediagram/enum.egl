@@ -1,0 +1,9 @@
+@startuml
+
+enum [%=classifier.name%] {
+    [%for (literal in classifier.eLiterals){%]
+    [%=literal%]
+    [%}%]
+}
+
+@enduml

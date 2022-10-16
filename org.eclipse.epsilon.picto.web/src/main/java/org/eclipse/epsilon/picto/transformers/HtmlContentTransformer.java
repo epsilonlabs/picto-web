@@ -88,11 +88,11 @@ public class HtmlContentTransformer implements ViewContentTransformer {
 				NodeList nodeList = getElements(document, htmlElementTransformer.getXPath());
 				int length = nodeList.getLength();
 				for (int i = 0; i < length; i++) {
-					Element x = (Element) nodeList.item(i);
-					System.out.println(x.toString());
-					if (x.getTagName().equals("code")) {
-						System.console();
-					}
+//					Element x = (Element) nodeList.item(i);
+//					System.out.println(x.toString());
+//					if (x.getTagName().equals("code")) {
+//						System.console();
+//					}
 					htmlElementTransformer.transform((Element) nodeList.item(i));
 				}
 			}

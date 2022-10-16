@@ -53,9 +53,10 @@ public class PictoJsonController {
 	@MessageMapping("/picto-web")
 	@SendTo("/topic/picto")
 	public void sendBackFileUpdate(File modifiedFile) throws Exception {
-		
-		String modifiedFilePath = modifiedFile.getAbsolutePath().replace(PictoApplication.WORKSPACE + File.separator, "");
-		
+
+		String modifiedFilePath = modifiedFile.getAbsolutePath()
+				.replace(new File(PictoApplication.WORKSPACE).getAbsolutePath(), "").replace("\\", "/");
+
 		WebEglPictoSource source = new WebEglPictoSource();
 		Map<String, String> modifiedObjects = source.transform(modifiedFilePath);
 		System.out.println("PICTO: number of modified objects = " + modifiedObjects.size());
@@ -63,14 +64,16 @@ public class PictoJsonController {
 		File pictoFile = modifiedFile;
 		if (modifiedFile.getAbsolutePath().endsWith(".model") || modifiedFile.getAbsolutePath().endsWith(".flexmi")
 				|| modifiedFile.getAbsolutePath().endsWith(".xmi") || modifiedFile.getAbsolutePath().endsWith(".emf")) {
-			pictoFile = new File(modifiedFile.getAbsolutePath() + ".picto");
+//			pictoFile = new File(modifiedFile.getAbsolutePath() + ".picto");
+			modifiedFilePath += ".picto";
 		}
 
 		MessageChannel brokerChannel = context.getBean("brokerChannel", MessageChannel.class);
 		for (Entry<String, String> entry : modifiedObjects.entrySet()) {
 			SimpMessagingTemplate messaging = new SimpMessagingTemplate(brokerChannel);
 //		messaging.setMessageConverter(new MappingJackson2MessageConverter());
-			messaging.convertAndSend("/topic/picto/" + pictoFile.getName(), entry.getValue().getBytes());
+			String topicName = "/topic/picto" + modifiedFilePath;
+			messaging.convertAndSend(topicName, entry.getValue().getBytes());
 		}
 
 //		return modifiedObjects;

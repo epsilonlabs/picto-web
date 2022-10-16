@@ -1,0 +1,61 @@
+@namespace(uri="families", prefix="families")
+package families;
+
+abstract class NamedElement {
+	attr String name;
+}
+
+class Family extends NamedElement {
+	attr String[*] address;
+	ref Pet[*] pets;
+	attr int numberOfChildren;
+	val Person[*] members;
+	attr String ~id;
+	attr boolean nuclear;
+	attr float averageAge;
+	readonly derived ref Doggy[+] dogs;
+	ref District#families district;
+	attr int[*] lotteryNumbers;
+	attr double averageAgePrecise;
+}
+
+class Pet extends NamedElement {
+	attr boolean male;
+}
+
+class Person extends NamedElement {
+	ref Person[*] friends;
+	ref Person[0..2] parents;
+	ref Person[0..4] allParents;
+}
+
+class Doggy extends Pet {
+	attr boolean loud;
+	attr DogBreed[1] breed;
+	ref District#dogs district;
+}
+
+enum DogBreed {
+	poodle = 1;
+	labrador = 2;
+}
+
+class District {
+	val Family[+]#district families;
+	val Doggy[+]#district dogs;
+}
+
+class Model {
+	val NamedElement[*] contents;
+	val NamedElement[*] contents2;
+}
+
+class Bike {
+	val Person rider;
+	ref Family owner;
+}
+
+class Band {
+	ref Person[3..*] members;
+}
+
