@@ -86,12 +86,6 @@
       <version>3.1.1-1</version>
     </dependency>
 
-    <dependency>
-      <groupId>org.springframework.boot</groupId>
-      <artifactId>spring-boot-starter-test</artifactId>
-      <scope>test</scope>
-    </dependency>
-
     <!-- https://mvnrepository.com/artifact/org.eclipse.epsilon/org.eclipse.epsilon.flexmi -->
     <dependency>
       <groupId>org.eclipse.epsilon</groupId>
@@ -175,7 +169,12 @@
       <artifactId>commonmark-ext-image-attributes</artifactId>
       <version>0.19.0</version>
     </dependency>
-
+    <!-- https://mvnrepository.com/artifact/net.sourceforge.plantuml/plantuml -->
+    <!-- <dependency>
+      <groupId>net.sourceforge.plantuml</groupId>
+      <artifactId>plantuml</artifactId>
+      <version>8059</version>
+    </dependency> -->
 
     <!-- FROM LOCAL REPOSITORY -->
     <!--<dependency>
@@ -199,6 +198,17 @@
       <version>2.5.0</version>
     </dependency>-->
     <!-- FROM LOCAL REPOSITORY -->
+
+    <!-- local plantuml -->
+    <dependency>
+      <groupId>net.sourceforge.plantuml</groupId>
+      <artifactId>plantuml</artifactId>
+      <version>2018.8</version>
+      <scope>system</scope>
+      <systemPath>
+        D:/PROJECTS/picto-web/org.eclipse.epsilon.picto.web/jars/plantuml-2018.8.jar
+    </systemPath>
+    </dependency>
 
   </dependencies>
   <build>
@@ -230,6 +240,26 @@
           <!-- PICTO WEB -->
 
         </configuration>
+      </plugin>
+      <plugin>
+        <groupId>com.github.jeluard</groupId>
+        <artifactId>plantuml-maven-plugin</artifactId>
+        <version>1.2</version>
+        <configuration>
+          <sourceFiles>
+            <directory>${basedir}</directory>
+            <includes>
+              <include>src/main/plantuml/**/*.txt</include>
+            </includes>
+          </sourceFiles>
+        </configuration>
+        <dependencies>
+          <dependency>
+            <groupId>net.sourceforge.plantuml</groupId>
+            <artifactId>plantuml</artifactId>
+            <version>8059</version>
+          </dependency>
+        </dependencies>
       </plugin>
     </plugins>
   </build>

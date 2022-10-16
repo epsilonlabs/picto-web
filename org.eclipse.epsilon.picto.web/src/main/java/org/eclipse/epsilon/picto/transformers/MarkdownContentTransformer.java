@@ -37,6 +37,15 @@ public class MarkdownContentTransformer implements ViewContentTransformer {
 			pictoView.getViewRenderer().getHtml(markdownToHtml(content.getText())),
 			content
 		);
+//		ViewContent vc = new ViewContent("html",
+//			pictoView.getViewRenderer().getHtml(markdownToHtml(content.getText())),
+//			content
+//		);
+//		
+//		ViewContent x = (new HtmlContentTransformer()).transform(vc, pictoView);
+//		
+//		return x; 
+				
 	}
 	
 	@Override

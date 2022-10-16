@@ -22,6 +22,7 @@ import javax.xml.transform.dom.DOMSource;
 import javax.xml.transform.stream.StreamResult;
 
 import org.w3c.dom.Document;
+import org.w3c.dom.Element;
 import org.w3c.dom.Text;
 import org.xml.sax.InputSource;
 
@@ -35,8 +36,9 @@ public class XmlHelper {
 			DocumentBuilderFactory documentBuilderFactory = DocumentBuilderFactory.newInstance();
 			documentBuilderFactory.setFeature("http://apache.org/xml/features/nonvalidating/load-external-dtd", false);
 			documentBuilder = documentBuilderFactory.newDocumentBuilder();
-			
+		
 			transformer = TransformerFactory.newInstance().newTransformer();
+			transformer.setOutputProperty(OutputKeys.METHOD, "xml");
 			transformer.setOutputProperty(OutputKeys.OMIT_XML_DECLARATION, "yes");
 			transformer.setOutputProperty(OutputKeys.INDENT, "yes");
 		}
@@ -46,7 +48,8 @@ public class XmlHelper {
 	public String getXml(Document document) {
 		try (StringWriter writer = new StringWriter()) {
 			StreamResult result = new StreamResult(writer);
-			transformer.transform(new DOMSource(document.getDocumentElement()), result);
+			DOMSource temp = new DOMSource(document.getDocumentElement());
+			transformer.transform(temp, result);
 			return writer.toString();
 		}
 		catch (Exception ex) {

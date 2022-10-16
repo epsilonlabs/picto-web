@@ -9,35 +9,55 @@
 **********************************************************************/
 package org.eclipse.epsilon.picto;
 
+import java.util.Iterator;
+
 import org.eclipse.epsilon.picto.dummy.ViewPart;
-import org.eclipse.jface.viewers.TreeViewer;
 import org.eclipse.swt.widgets.Composite;
 
 public class PictoView extends ViewPart {
-	
+
 	public static final String ID = "org.eclipse.epsilon.picto.PictoView";
 
 	protected ViewRenderer viewRenderer = new ViewRenderer(null);
-	protected TreeViewer treeViewer;
-	
+	protected ViewTree rootViewTree = new ViewTree();
+
 	public ViewRenderer getViewRenderer() {
 		return viewRenderer;
 	}
-	
+
 	public ViewTree getViewTree() {
-		return (ViewTree) treeViewer.getInput();
+		return (ViewTree) rootViewTree;
 	}
-	
+
 	@Override
 	public void createPartControl(Composite arg0) {
 		// TODO Auto-generated method stub
-		
+
+	}
+
+	public void renderView(ViewTree view) throws Exception {
+
+		// Check if one of the source contents of the view is active
+		ViewContent content = null;
+		for (Iterator<ViewContent> contentIterator = view.getContents(this).iterator(); contentIterator.hasNext()
+				&& content == null;) {
+			ViewContent next = contentIterator.next();
+			if (next.isActive()) {
+				content = next.getSourceContent(this);
+			}
+		}
+
+		// ... if not, show the final rendered result
+		if (content == null)
+			content = view.getContent().getFinal(this);
+//		viewRenderer.display(content.getText());
+
 	}
 
 	@Override
 	public void setFocus() {
 		// TODO Auto-generated method stub
-		
+
 	}
-	
+
 }

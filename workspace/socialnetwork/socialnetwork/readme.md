@@ -16,4 +16,4 @@ Alice -> Bob : Hello
 
 ## Static image
 
-![Epsilon logo](socialnetwork/epsilon.png)
+![Epsilon logo](socialnetwork/socialnetwork/epsilon.png)

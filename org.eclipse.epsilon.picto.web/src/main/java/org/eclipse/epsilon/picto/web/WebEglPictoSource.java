@@ -63,6 +63,7 @@ import org.eclipse.epsilon.picto.transformers.CsvContentTransformer;
 import org.eclipse.epsilon.picto.transformers.GraphvizContentTransformer;
 import org.eclipse.epsilon.picto.transformers.HtmlContentTransformer;
 import org.eclipse.epsilon.picto.transformers.MarkdownContentTransformer;
+import org.eclipse.epsilon.picto.transformers.PlantUmlContentTransformer;
 import org.eclipse.epsilon.picto.transformers.SvgContentTransformer;
 import org.eclipse.epsilon.picto.transformers.TextContentTransformer;
 import org.eclipse.epsilon.picto.transformers.ViewContentTransformer;
@@ -72,7 +73,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 
 public class WebEglPictoSource extends EglPictoSource {
 
-	protected static final List<ViewContentTransformer> TRANSFORMERS = new ArrayList<>();
+	
 	public static boolean generateAll = true; // true for first running
 
 	protected File modelFile;
@@ -80,12 +81,7 @@ public class WebEglPictoSource extends EglPictoSource {
 	protected List<EPackage> ePackages = new ArrayList<>();
 
 	public WebEglPictoSource() throws Exception {
-		TRANSFORMERS.add(new GraphvizContentTransformer());
-		TRANSFORMERS.add(new SvgContentTransformer());
-		TRANSFORMERS.add(new TextContentTransformer());
-		TRANSFORMERS.add(new CsvContentTransformer());
-		TRANSFORMERS.add(new HtmlContentTransformer());
-		TRANSFORMERS.add(new MarkdownContentTransformer());
+		
 	}
 
 	public File getModelFile() {
@@ -109,7 +105,7 @@ public class WebEglPictoSource extends EglPictoSource {
 		Map<String, String> modifiedViewContents = new HashMap<>();
 		Resource resource = null;
 		PictoView pictoView = new PictoView();
-		ViewTree rootViewTree = new ViewTree();
+		ViewTree rootViewTree = pictoView.getViewTree();
 
 		File modifiedFile = new File((new File(PictoApplication.WORKSPACE + modifiedFilePath)).getAbsolutePath());
 
@@ -239,7 +235,8 @@ public class WebEglPictoSource extends EglPictoSource {
 					}
 
 					((IncrementalLazyEgxModule) module).startRecording();
-					ViewContent vc = vt.getContent();
+					pictoView.renderView(vt);
+					ViewContent vc = vt.getContent().getFinal(pictoView);
 					((IncrementalLazyEgxModule) module).stopRecording();
 //					WebEglPictoSource.updateIncrementalResource(module, pathString);
 //					System.console();
@@ -249,13 +246,17 @@ public class WebEglPictoSource extends EglPictoSource {
 //					}
 
 					/** transform to target format (e.g., svg, html) **/
-					for (ViewContentTransformer transformer : TRANSFORMERS) {
-						if (transformer.canTransform(vc)) {
-							vc = transformer.transform(vc, pictoView);
-							vt.setContent(vc);
-							break;
-						}
-					}
+					
+//					vc = vc.getNext(pictoView);
+//					vt.setContent(vc);
+					
+//					for (ViewContentTransformer transformer : ViewContent.getViewContentTransformers()) {
+//						if (transformer.canTransform(vc)) {
+//							vc = transformer.transform(vc, pictoView);
+////							vt.setContent(vc);
+//							break;
+//						}
+//					}
 
 					PictoResponse pictoResponse = new PictoResponse();
 					pictoResponse.setFilename(filename);
@@ -289,7 +290,7 @@ public class WebEglPictoSource extends EglPictoSource {
 			// from a file
 			// defined in the picto file
 			handleStaticViews(modifiedViewContents, rootViewTree, filename, viewContentCache, renderingMetadata,
-					module);
+					module, pictoView);
 
 			// Handle patches for existing views (i.e. where source == null and type/rule ==
 			// null)
@@ -357,8 +358,8 @@ public class WebEglPictoSource extends EglPictoSource {
 	}
 
 	private void handleStaticViews(Map<String, String> modifiedViewContents, ViewTree rootViewTree, String filename,
-			ViewContentCache viewContentCache, Picto renderingMetadata, IEolModule module)
-			throws EolRuntimeException, JsonProcessingException {
+			ViewContentCache viewContentCache, Picto renderingMetadata, IEolModule module, PictoView pictoView)
+			throws Exception {
 		for (CustomView customView : renderingMetadata.getCustomViews().stream().filter(cv -> cv.getSource() != null)
 				.collect(Collectors.toList())) {
 			String format = customView.getFormat() != null ? customView.getFormat() : getDefaultFormat();
@@ -374,10 +375,19 @@ public class WebEglPictoSource extends EglPictoSource {
 			// put the content into the elementViewContentMap
 			String pathString = "/" + String.join("/", customView.getPath());
 			ViewTree vt = rootViewTree.getChildren().get(rootViewTree.getChildren().size() - 1);
-
+			
 //			// record property accesses
 //			((IncrementalLazyEgxModule) module).startRecording();
-			ViewContent vc = vt.getContent();
+//			ViewContent vc = vt.getContent();
+			
+			
+			
+			/** transform to target format (e.g., svg, html) **/
+			pictoView.renderView(vt);
+			ViewContent vc = vt.getContent().getFinal(pictoView);
+//			vc = vc.getNext(pictoView);
+//			vt.setContent(vc);
+			
 //			((IncrementalLazyEgxModule) module).stopRecording();
 //			WebEglPictoSource.updateIncrementalResource(module, pathString);
 

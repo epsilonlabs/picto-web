@@ -1,6 +1,6 @@
 rule Diagram transform package : EPackage {
     parameters : Map { 
-        "path" = List{package.name},
+        "path" = List{"diagram"},
         "format" = "graphviz-dot",
         "icon" = "diagram-ff0000",
        

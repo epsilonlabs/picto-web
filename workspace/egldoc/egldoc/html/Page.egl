@@ -39,7 +39,9 @@
         <link title="default" rel="stylesheet" type="text/css" media="screen, projection" href="egldoc/css/screen.css"></link>
         <script type="text/javascript" src="egldoc/scripts/controls.js"></script>
     </head>
-    <body>         	
+    <body>    
+        <link title="default" rel="stylesheet" type="text/css" media="screen, projection" href="egldoc/css/screen.css"></link>
+        <script type="text/javascript" src="egldoc/scripts/controls.js"></script>     	
 		<div id="content">
 			[% if (classifier.isDefined()) {
 				if (classifier.isKindOf(EDataType)) {
@@ -54,7 +56,7 @@
 				}
 			 } else {
 				if (not package.isDefined()) { %]
-					<img src="img/[%=metaModelName%].png"
+					<img src="egldoc/img/[%=metaModelName%].png"
 					   alt="Overview of the [%=metaModelName%] metamodel"/>
 [%
 				}
