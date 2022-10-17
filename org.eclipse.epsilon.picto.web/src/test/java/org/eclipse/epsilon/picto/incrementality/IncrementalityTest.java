@@ -77,35 +77,12 @@ class IncrementalityTest {
 
 	@AfterEach
 	void tearDown() throws Exception {
-		FileViewContentCache.clear();
 		accessRecordResource.clear();
+		FileViewContentCache.clear();
 		res.unload();
 		modelFile.delete();
 		Files.copy(modelFileBackup, modelFile);
 		modelFileBackup.delete();
-	}
-
-	@Test
-	void testUpdateEglDoc() throws Exception {
-		try {
-			setUp("egldoc/egldoc-standalone.picto", "egldoc/egldoc/Families.ecore");
-
-			EObject eObject = res.getEObject("//Bike");
-			EStructuralFeature eNameFeature = eObject.eClass().getEStructuralFeature("name");
-			eObject.eSet(eNameFeature, "Bicycle");
-			res.save(null);
-
-			eglPictoSource = new WebEglPictoSource();
-		} catch (Exception e) {
-			e.printStackTrace();
-		} finally {
-			Map<String, String> generatedViews = eglPictoSource.transform(modifiedFilePath);
-			Arrays.asList( //
-					"/families/Bicycle").stream().forEach(path -> {
-						assertTrue(generatedViews.keySet().contains(path));
-					});
-		}
-
 	}
 
 	@Test
@@ -129,6 +106,31 @@ class IncrementalityTest {
 			e.printStackTrace();
 		}
 	}
+	
+	@Test
+	void testUpdateEglDoc() throws Exception {
+		try {
+			setUp("egldoc/egldoc-standalone.picto", "egldoc/egldoc/Families.ecore");
+
+			EObject eObject = res.getEObject("//Bike");
+			EStructuralFeature eNameFeature = eObject.eClass().getEStructuralFeature("name");
+			eObject.eSet(eNameFeature, "Bicycle");
+			res.save(null);
+
+			eglPictoSource = new WebEglPictoSource();
+		} catch (Exception e) {
+			e.printStackTrace();
+		} finally {
+			Map<String, String> generatedViews = eglPictoSource.transform(modifiedFilePath);
+			Arrays.asList( //
+					"/families/Bicycle").stream().forEach(path -> {
+						assertTrue(generatedViews.keySet().contains(path));
+					});
+		}
+
+	}
+
+	
 
 	@Test
 	void testUpdateProperty() throws Exception {

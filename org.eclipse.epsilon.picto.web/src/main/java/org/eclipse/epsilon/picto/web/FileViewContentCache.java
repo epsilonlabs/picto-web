@@ -19,6 +19,10 @@ public class FileViewContentCache {
 	public static void clear() {
 		fileViewContentCache.values().forEach(e -> e.clear());
 		fileViewContentCache.clear();
+		for (AccessRecordResource accessRecordResource : fileAccessRecordResources.values()) {
+			accessRecordResource.clear();
+		}
+		fileAccessRecordResources.clear();
 	}
 
 	public static ViewContentCache addPictoFile(String pictoFilename) {
@@ -30,7 +34,7 @@ public class FileViewContentCache {
 		return map;
 
 	}
-	
+
 	public static AccessRecordResource createAccessRecordResource(String pictoFilename) {
 		AccessRecordResource accessResource = fileAccessRecordResources.get(pictoFilename);
 		if (accessResource == null) {

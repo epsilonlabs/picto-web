@@ -95,19 +95,17 @@ public class WebEglPictoSource extends EglPictoSource {
 	@SuppressWarnings("unchecked")
 	public Map<String, String> transform(String modifiedFilePath) throws Exception {
 		Map<String, String> modifiedViewContents = new HashMap<>();
-		Resource resource = null;
-		PictoView pictoView = new PictoView();
-		ViewTree rootViewTree = pictoView.getViewTree();
-
-		File modifiedFile = new File((new File(PictoApplication.WORKSPACE + modifiedFilePath)).getAbsolutePath());
-
-		String[] filenameSegments = modifiedFilePath.split("/");
-		String filename = filenameSegments[filenameSegments.length - 1];
-
 		try {
+			Resource resource = null;
+			PictoView pictoView = new PictoView();
+			ViewTree rootViewTree = pictoView.getViewTree();
+
+			File modifiedFile = new File((new File(PictoApplication.WORKSPACE + modifiedFilePath)).getAbsolutePath());
+
 			/*** Need to do a better approach in handling these types of files ***/
 			if (modifiedFile.getAbsolutePath().endsWith(".model") || modifiedFile.getAbsolutePath().endsWith(".flexmi")
-					|| modifiedFile.getAbsolutePath().endsWith(".xmi")) {
+					|| modifiedFile.getAbsolutePath().endsWith(".xmi")
+					|| modifiedFile.getAbsolutePath().endsWith(".emf")) {
 				this.modelFile = new File(modifiedFile.getAbsolutePath());
 				this.pictoFile = new File(modifiedFile.getAbsolutePath() + ".picto");
 				loadMetamodel(this.pictoFile.getName().replace(".model", "").replace(".flexmi", "").replace(".xmi", "")
@@ -135,106 +133,106 @@ public class WebEglPictoSource extends EglPictoSource {
 				this.pictoFile = modifiedFile;
 				this.modelFile = modifiedFile;
 			}
-		} catch (Exception ex) {
-			ex.printStackTrace();
-		}
 
-		ViewContentCache viewContentCache = FileViewContentCache.addPictoFile(modifiedFilePath);
-		AccessRecordResource accessRecordResource = FileViewContentCache.createAccessRecordResource(modifiedFilePath);
+			String pictoFilePath = this.pictoFile.getAbsolutePath()
+					.replace(new File(PictoApplication.WORKSPACE).getAbsolutePath(), "").replace("\\", "/");
 
-		Picto renderingMetadata = this.getRenderingMetadata(this.pictoFile);
+			ViewContentCache viewContentCache = FileViewContentCache.addPictoFile(pictoFilePath);
+			AccessRecordResource accessRecordResource = FileViewContentCache.createAccessRecordResource(pictoFilePath);
 
-		if (renderingMetadata != null) {
-			IEolModule module;
-			IModel model = null;
+			Picto renderingMetadata = this.getRenderingMetadata(this.pictoFile);
 
-			if (resource != null) {
-				// synchronization prevents races when using multiple Picto views
-				synchronized (resource) {
-					model = new InMemoryEmfModel("M", resource);
-					((InMemoryEmfModel) model).setExpand(true);
+			if (renderingMetadata != null) {
+				IEolModule module;
+				IModel model = null;
+
+				if (resource != null) {
+					// synchronization prevents races when using multiple Picto views
+					synchronized (resource) {
+						model = new InMemoryEmfModel("M", resource);
+						((InMemoryEmfModel) model).setExpand(true);
+					}
 				}
-			}
-			// }
+				// }
 
-			if (renderingMetadata.getFormat() == null)
-				renderingMetadata.setFormat("egx");
+				if (renderingMetadata.getFormat() == null)
+					renderingMetadata.setFormat("egx");
 
-			if ("egx".equals(renderingMetadata.getFormat())) {
-				module = new IncrementalLazyEgxModule(accessRecordResource);
-			} else {
-				module = new EglTemplateFactoryModuleAdapter(new EglFileGeneratingTemplateFactory());
-			}
+				if ("egx".equals(renderingMetadata.getFormat())) {
+					module = new IncrementalLazyEgxModule(accessRecordResource);
+				} else {
+					module = new EglTemplateFactoryModuleAdapter(new EglFileGeneratingTemplateFactory());
+				}
 
-			IEolContext context = module.getContext();
+				IEolContext context = module.getContext();
 
-			FrameStack fs = context.getFrameStack();
-			for (Parameter customParameter : renderingMetadata.getParameters()) {
-				fs.put(new Variable(customParameter.getName(), getValue(customParameter), EolAnyType.Instance));
-			}
+				FrameStack fs = context.getFrameStack();
+				for (Parameter customParameter : renderingMetadata.getParameters()) {
+					fs.put(new Variable(customParameter.getName(), getValue(customParameter), EolAnyType.Instance));
+				}
 
-			URI transformationUri = null;
+				URI transformationUri = null;
 
-			if (renderingMetadata.getTransformation() != null) {
-				transformationUri = UriUtil.resolve(renderingMetadata.getTransformation(), modelFile.toURI());
-				module.parse(transformationUri);
-			} else {
-				module.parse("");
-			}
+				if (renderingMetadata.getTransformation() != null) {
+					transformationUri = UriUtil.resolve(renderingMetadata.getTransformation(), modelFile.toURI());
+					module.parse(transformationUri);
+				} else {
+					module.parse("");
+				}
 
-			if (model != null)
-				context.getModelRepository().addModel(model);
-
-			for (Model pictoModel : renderingMetadata.getModels()) {
-				model = loadModel(pictoModel, modelFile);
 				if (model != null)
-					models.add(model);
-			}
+					context.getModelRepository().addModel(model);
 
-			context.getModelRepository().addModels(models);
+				for (Model pictoModel : renderingMetadata.getModels()) {
+					model = loadModel(pictoModel, modelFile);
+					if (model != null)
+						models.add(model);
+				}
 
-			if ("egx".equals(renderingMetadata.getFormat())) {
+				context.getModelRepository().addModels(models);
 
-				Set<String> toBeProcessedPaths = new HashSet<>();
+				if ("egx".equals(renderingMetadata.getFormat())) {
 
-				/** PROPERTY ACCESS RECORDS **/
-				((IncrementalLazyEgxModule) module).startRecording();
-				List<LazyGenerationRuleContentPromise> promises = (List<LazyGenerationRuleContentPromise>) module
-						.execute();
-				((IncrementalLazyEgxModule) module).stopRecording();
-				accessRecordResource.printIncrementalRecords();
+					Set<String> toBeProcessedPaths = new HashSet<>();
 
-				/**
-				 * the handleDynamicViews will add the generated lazy contents to instances to
-				 * handled later in the next loop
-				 **/
-				handleDynamicViews(renderingMetadata, module, context, fs, promises);
+					/** PROPERTY ACCESS RECORDS **/
+					((IncrementalLazyEgxModule) module).startRecording();
+					List<LazyGenerationRuleContentPromise> promises = (List<LazyGenerationRuleContentPromise>) module
+							.execute();
+					((IncrementalLazyEgxModule) module).stopRecording();
+					accessRecordResource.printIncrementalRecords();
 
-				/** loop through the content promises of rules **/
-				System.out.println("\nGENERATING VIEWS: ");
-				toBeProcessedPaths.addAll(accessRecordResource.getToBeProcessedPaths(promises, (EgxModule) module));
+					/**
+					 * the handleDynamicViews will add the generated lazy contents to instances to
+					 * handled later in the next loop
+					 **/
+					handleDynamicViews(renderingMetadata, module, context, fs, promises);
 
-				for (LazyGenerationRuleContentPromise promise : promises) {
+					/** loop through the content promises of rules **/
+					System.out.println("\nGENERATING VIEWS: ");
+					toBeProcessedPaths.addAll(accessRecordResource.getToBeProcessedPaths(promises, (EgxModule) module));
 
-					String pathString = Util.getPath(promise);
-					System.out.print("Processing " + pathString + " ... ");
+					for (LazyGenerationRuleContentPromise promise : promises) {
+
+						String pathString = Util.getPath(promise);
+						System.out.print("Processing " + pathString + " ... ");
 //					if (pathString.equals("/Social Network/Alice") || pathString.equals("/Custom/Alice and Bob")) {
 ////						INCREMENTAL_RESOURCE.getIncrementalRecords().clear();
 //						System.console();
 //					}
 
-					ViewTree vt = this.generateViewTree(rootViewTree, promise);
+						ViewTree vt = this.generateViewTree(rootViewTree, promise);
 
-					// Check if the path should be processed to generated new view
-					if (!toBeProcessedPaths.contains(pathString)) {
-						System.out.println("SKIP");
-						continue;
-					}
+						// Check if the path should be processed to generated new view
+						if (!toBeProcessedPaths.contains(pathString)) {
+							System.out.println("SKIP");
+							continue;
+						}
 
-					((IncrementalLazyEgxModule) module).startRecording();
-					pictoView.renderView(vt);
-					ViewContent vc = vt.getContent().getFinal(pictoView);
-					((IncrementalLazyEgxModule) module).stopRecording();
+						((IncrementalLazyEgxModule) module).startRecording();
+						pictoView.renderView(vt);
+						ViewContent vc = vt.getContent().getFinal(pictoView);
+						((IncrementalLazyEgxModule) module).stopRecording();
 //					WebEglPictoSource.updateIncrementalResource(module, pathString);
 //					System.console();
 //					if (pathString.equals("/Stats") || pathString.equals("/Custom/Alice and Bob")) {
@@ -242,7 +240,7 @@ public class WebEglPictoSource extends EglPictoSource {
 //						System.console();
 //					}
 
-					/** transform to target format (e.g., svg, html) **/
+						/** transform to target format (e.g., svg, html) **/
 
 //					vc = vc.getNext(pictoView);
 //					vt.setContent(vc);
@@ -255,68 +253,71 @@ public class WebEglPictoSource extends EglPictoSource {
 //						}
 //					}
 
-					PictoResponse pictoResponse = new PictoResponse();
-					pictoResponse.setFilename(filename);
-					pictoResponse.setPath(pathString);
-					pictoResponse.setType(vc.getFormat());
-					pictoResponse.setContent(vc.getText());
+						PictoResponse pictoResponse = new PictoResponse();
+						pictoResponse.setFilename(pictoFilePath);
+						pictoResponse.setPath(pathString);
+						pictoResponse.setType(vc.getFormat());
+						pictoResponse.setContent(vc.getText());
 
-					String jsonString = new ObjectMapper().writerWithDefaultPrettyPrinter()
-							.writeValueAsString(pictoResponse);
-					/** put the generated Picto response's json string to cache **/
+						String jsonString = new ObjectMapper().writerWithDefaultPrettyPrinter()
+								.writeValueAsString(pictoResponse);
+						/** put the generated Picto response's json string to cache **/
 //					if (!jsonString.equals(viewContentCache.getViewContentCache(pathString))) {
-					viewContentCache.putViewContentCache(pathString, jsonString);
-					modifiedViewContents.put(pathString, jsonString);
+						viewContentCache.putViewContentCache(pathString, jsonString);
+						modifiedViewContents.put(pathString, jsonString);
 //					}
-					System.out.println("PROCESSED");
+						System.out.println("PROCESSED");
 
+					}
+					accessRecordResource.printIncrementalRecords();
+					accessRecordResource.updateStatusToProcessed(toBeProcessedPaths);
+					generateAll = false;
+					System.out.println();
+					System.console();
+				} else {
+					String content = module.execute() + "";
+					rootViewTree = new ViewTree();
+					rootViewTree.setPromise(new StaticContentPromise(content));
+					rootViewTree.setFormat(renderingMetadata.getFormat());
 				}
-				accessRecordResource.printIncrementalRecords();
-				accessRecordResource.updateStatusToProcessed(toBeProcessedPaths);
-				generateAll = false;
-				System.out.println();
-				System.console();
+
+				// Handle static views (i.e. where source != null), add the custom view loaded
+				// from a file
+				// defined in the picto file
+				handleStaticViews(modifiedViewContents, rootViewTree, pictoFilePath, viewContentCache,
+						renderingMetadata, module, pictoView);
+
+				// Handle patches for existing views (i.e. where source == null and type/rule ==
+				// null)
+				handlePatchesForExistingViews(rootViewTree, renderingMetadata);
+
+				// set URIs of rootViewTree
+				if (transformationUri != null) {
+					rootViewTree.getBaseUris().add(transformationUri);
+					rootViewTree.getBaseUris().add(transformationUri.resolve("./icons/"));
+				}
+				rootViewTree.getBaseUris().add(new URI(modelFile.toURI().toString()));
+
+				// generate JSON of the JsTree library (the tree panel on the client-side web
+				// browser)
+				String jsTreeJson = generateJsTreeData(pictoFilePath, rootViewTree);
+				if (!jsTreeJson.equals(viewContentCache.getViewContentCache(FileViewContentCache.PICTO_TREE))) {
+					viewContentCache.putViewContentCache(FileViewContentCache.PICTO_TREE, jsTreeJson);
+					modifiedViewContents.put(FileViewContentCache.PICTO_TREE, jsTreeJson);
+				}
+
 			} else {
-				String content = module.execute() + "";
-				rootViewTree = new ViewTree();
-				rootViewTree.setPromise(new StaticContentPromise(content));
-				rootViewTree.setFormat(renderingMetadata.getFormat());
+				rootViewTree = createEmptyViewTree();
+				String jsTreeJson = generateJsTreeData(pictoFilePath, rootViewTree);
+				if (!jsTreeJson.equals(viewContentCache.getViewContentCache(FileViewContentCache.PICTO_TREE))) {
+					viewContentCache.putViewContentCache(FileViewContentCache.PICTO_TREE, jsTreeJson);
+					modifiedViewContents.put(FileViewContentCache.PICTO_TREE, jsTreeJson);
+				}
 			}
 
-			// Handle static views (i.e. where source != null), add the custom view loaded
-			// from a file
-			// defined in the picto file
-			handleStaticViews(modifiedViewContents, rootViewTree, filename, viewContentCache, renderingMetadata, module,
-					pictoView);
-
-			// Handle patches for existing views (i.e. where source == null and type/rule ==
-			// null)
-			handlePatchesForExistingViews(rootViewTree, renderingMetadata);
-
-			// set URIs of rootViewTree
-			if (transformationUri != null) {
-				rootViewTree.getBaseUris().add(transformationUri);
-				rootViewTree.getBaseUris().add(transformationUri.resolve("./icons/"));
-			}
-			rootViewTree.getBaseUris().add(new URI(modelFile.toURI().toString()));
-
-			// generate JSON of the JsTree library (the tree panel on the client-side web
-			// browser)
-			String jsTreeJson = generateJsTreeData(filename, rootViewTree);
-			if (!jsTreeJson.equals(viewContentCache.getViewContentCache(FileViewContentCache.PICTO_TREE))) {
-				viewContentCache.putViewContentCache(FileViewContentCache.PICTO_TREE, jsTreeJson);
-				modifiedViewContents.put(FileViewContentCache.PICTO_TREE, jsTreeJson);
-			}
-
-		} else {
-			rootViewTree = createEmptyViewTree();
-			String jsTreeJson = generateJsTreeData(filename, rootViewTree);
-			if (!jsTreeJson.equals(viewContentCache.getViewContentCache(FileViewContentCache.PICTO_TREE))) {
-				viewContentCache.putViewContentCache(FileViewContentCache.PICTO_TREE, jsTreeJson);
-				modifiedViewContents.put(FileViewContentCache.PICTO_TREE, jsTreeJson);
-			}
+		} catch (Exception ex) {
+			ex.printStackTrace();
 		}
-
 		return modifiedViewContents;
 
 	}
