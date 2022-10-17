@@ -9,6 +9,10 @@ import org.eclipse.epsilon.picto.LazyEgxModule.LazyGenerationRuleContentPromise;
 
 public class Util {
 
+	public static String getPath(Collection<String> path) {
+		return "/" + String.join("/", path);
+	}
+
 	@SuppressWarnings("unchecked")
 	public static String getPath(LazyGenerationRuleContentPromise content) {
 		Variable pathVar = content.getVariables().stream().filter(v -> v.getName().equals("path")).findFirst()

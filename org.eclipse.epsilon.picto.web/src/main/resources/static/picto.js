@@ -22,7 +22,7 @@ Picto.selectedPathOld = null;
 Picto.selectedPath = null;
 Picto.viewContents = new Map();
 
-Picto.convertToPictoRequest = function(pictoFile, type, message) {
+Picto.convertToPictoRequest = function (pictoFile, type, message) {
   return JSON.stringify(
     {
       "pictoFile": pictoFile,
@@ -32,44 +32,69 @@ Picto.convertToPictoRequest = function(pictoFile, type, message) {
   );
 }
 
-Picto.executeCode = function() {
+Picto.listToJsTreeData = function (list) {
+  var tree = [];
+  var t = tree;
+  for (key1 in list) {
+    console.log(list[key1]);
+    var segments = list[key1].split("\/");
+    for (key2 in segments) {
+      var node = null;
+      var i = t.findIndex(e => e.text === segments[key2]);
+      if (i > -1) {
+        node = t[i];
+      } else {
+        t.push({});
+        node = t[t.length - 1];
+        node["text"] = segments[key2];
+        node["children"] = [];
+      }
+      t = node["children"];
+    }
+    t = tree;
+  }
+  console.log(tree);
+  return tree;
+}
+
+Picto.executeCode = function () {
   console.log("Get TreeView ...");
   //this.stompClient.send("/app/treeview", {}, this.convertToPictoRequest(this.pictoFile, "TreeView", editor.getValue()));
   this.stompClient.send("/app/treeview", {}, this.convertToPictoRequest(this.pictoFile, "TreeView", ""));
   console.log("Code sent.");
 }
 
-Picto.projectTree = function() {
+Picto.projectTree = function () {
   console.log("Get Project Tree ...");
   this.stompClient.send("/app/projecttree", {}, this.convertToPictoRequest(this.pictoFile, "ProjectTree", ""));
   console.log("Code sent.");
 }
 
-Picto.getTreeView = function() {
+Picto.getTreeView = function () {
   console.log("Get Treeview ...");
   this.stompClient.send("/app/treeview", {}, this.convertToPictoRequest(this.pictoFile, "TreeView", ""));
   console.log("Code sent.");
 }
 
-Picto.openFile = function(filename) {
+Picto.openFile = function (filename) {
   console.log("Open File ...");
   this.stompClient.send("/app/treeview", {}, this.convertToPictoRequest(this.pictoFile, "TreeView", filename));
   //this.stompClient.send("/app/openfile", {}, this.convertToPictoRequest(this.pictoFile, "OpenFile", filename));
   console.log("Code sent.");
 }
 
-Picto.displayResult = function(message) {
+Picto.displayResult = function (message) {
   $("#greetings").append("<tr><td>" + message + "</td></tr>");
 }
 
-Picto.createTree = function(treeView) {
+Picto.createTree = function (treeView) {
   var tree = [];
   path = '';
   tree = Picto.recursiveTree(tree, treeView, path);
   return tree;
 }
 
-Picto.recursiveTree = function(tree, treeView, path) {
+Picto.recursiveTree = function (tree, treeView, path) {
   for (key in treeView.children) {
     var child = treeView.children[key];
     var object = {};
@@ -86,7 +111,7 @@ Picto.recursiveTree = function(tree, treeView, path) {
   return tree;
 }
 
-Picto.getSelectedViewPath = function(data) {
+Picto.getSelectedViewPath = function (data) {
   var path = '';
   var node = data.instance.get_node(data.selected[0]);
   path = path + node.text;
@@ -100,7 +125,7 @@ Picto.getSelectedViewPath = function(data) {
   return path;
 }
 
-Picto.render = function(view) {
+Picto.render = function (view) {
   var container = document.getElementById("visualization");
   container.innerHTML = '';
   if (view.type == 'svg') {
@@ -114,9 +139,23 @@ Picto.render = function(view) {
     var text = view.content;
     if (text.trim() == "") {
       text = "<body></body>";
+      container.innerHTML = text;
+    } else {
+      console.log(text);
+      // container.innerHTML = text;
+      var parser = new DOMParser();
+      var xmlDoc = parser.parseFromString(text, "text/xml");
+      var body = xmlDoc.getElementsByTagName("body")[0];
+      container.innerHTML = body.innerHTML;
+      console.log(container.innerHTML);
+      var svgs = container.getElementsByTagName("svg");
+      for (var i = 0; i < svgs.length; i++) {
+        var svg = svgs[i];
+        svg.setAttribute("style", null);
+        svgPanZoom(svg, { zoomEnabled: true, fit: false, center: true });
+      }
     }
-    console.log(text);
-    container.innerHTML = text;
+    // container.innerHTML = xmlDoc.innerHTML;
     //var parser = new DOMParser();
     //var xmlDoc = parser.parseFromString(text, "text/xml");
     //fragment = xmlDoc.innerHTML;
@@ -139,7 +178,7 @@ Picto.render = function(view) {
   }
 }
 
-Picto.getView = function(event) {
+Picto.getView = function (event) {
   console.log("PICTO: receiving when an element is clicked");
   if (event.target.readyState == 4 && event.target.status == 200) {
     if (event.target.responseText == null || event.target.responseText == "") {
@@ -150,7 +189,7 @@ Picto.getView = function(event) {
   }
 }
 
-Picto.draw = function(label, url) {
+Picto.draw = function (label, url) {
   console.log('PICTO: element clicked - ' + label + ", " + url);
 
   Picto.selectedPath = label.split('#')[1];
@@ -165,14 +204,14 @@ Picto.draw = function(label, url) {
   return false;
 }
 
-Picto.connectToServer = function(pictoFile) {
+Picto.connectToServer = function (pictoFile) {
   this.pictoFile = pictoFile;
   this.socket = new SockJS('/picto-web');
   this.stompClient = Stomp.over(this.socket);
-  this.stompClient.connect({}, function(frame) {
+  this.stompClient.connect({}, function (frame) {
     //setConnected(true);
     console.log('PICTO - Connected to server: ' + frame);
-    Picto.stompClient.subscribe('/topic/picto/' + Picto.pictoFile, function(message) {
+    Picto.stompClient.subscribe('/topic/picto' + Picto.pictoFile, function (message) {
       console.log("PICTO - Receiving messages ... ");
       //console.log(message);
       //console.log(message.body);

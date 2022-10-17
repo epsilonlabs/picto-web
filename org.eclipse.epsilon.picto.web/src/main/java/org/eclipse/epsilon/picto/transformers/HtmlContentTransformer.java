@@ -76,6 +76,8 @@ public class HtmlContentTransformer implements ViewContentTransformer {
 		
 		try {
 			Document document = xmlHelper.parse(text);
+			String temp = xmlHelper.getXml(document);
+			
 			addZoom(document);
 			
 			for (HtmlElementTransformer htmlElementTransformer : htmlElementTransformers) {
@@ -86,6 +88,11 @@ public class HtmlContentTransformer implements ViewContentTransformer {
 				NodeList nodeList = getElements(document, htmlElementTransformer.getXPath());
 				int length = nodeList.getLength();
 				for (int i = 0; i < length; i++) {
+//					Element x = (Element) nodeList.item(i);
+//					System.out.println(x.toString());
+//					if (x.getTagName().equals("code")) {
+//						System.console();
+//					}
 					htmlElementTransformer.transform((Element) nodeList.item(i));
 				}
 			}
@@ -93,6 +100,7 @@ public class HtmlContentTransformer implements ViewContentTransformer {
 			return new FinalViewContent("html", "<!DOCTYPE html>"+xmlHelper.getXml(document), content);
 		}
 		catch (Exception ex) {
+			ex.printStackTrace();
 			return null;
 		}
 	}

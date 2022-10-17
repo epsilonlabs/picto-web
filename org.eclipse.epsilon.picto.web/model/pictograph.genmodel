@@ -1,0 +1,52 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<genmodel:GenModel xmi:version="2.0" xmlns:xmi="http://www.omg.org/XMI" xmlns:ecore="http://www.eclipse.org/emf/2002/Ecore"
+    xmlns:genmodel="http://www.eclipse.org/emf/2002/GenModel" copyrightText="" modelDirectory="/org.eclipse.epsilon.picto.web/src/main/java"
+    modelPluginID="org.eclipse.epsilon.picto.web" modelName="Pictograph" importerID="org.eclipse.emf.importer.ecore"
+    complianceLevel="6.0" copyrightFields="false">
+  <foreignModel>pictograph.ecore</foreignModel>
+  <genPackages prefix="Pictograph" basePackage="org.eclipse.epsilon.picto" disposableProviderFactory="true"
+      ecorePackage="pictograph.ecore#/">
+    <genEnums typeSafeEnumCompatible="false" ecoreEnum="pictograph.ecore#//State">
+      <genEnumLiterals ecoreEnumLiteral="pictograph.ecore#//State/NEW"/>
+      <genEnumLiterals ecoreEnumLiteral="pictograph.ecore#//State/UPDATED"/>
+      <genEnumLiterals ecoreEnumLiteral="pictograph.ecore#//State/PROCESSED"/>
+    </genEnums>
+    <genClasses ecoreClass="pictograph.ecore#//PictoGraph"/>
+    <genClasses image="false" ecoreClass="pictograph.ecore#//Entity">
+      <genFeatures createChild="false" ecoreFeature="ecore:EAttribute pictograph.ecore#//Entity/name"/>
+      <genFeatures createChild="false" ecoreFeature="ecore:EAttribute pictograph.ecore#//Entity/state"/>
+    </genClasses>
+    <genClasses image="false" ecoreClass="pictograph.ecore#//InputEntity">
+      <genFeatures notify="false" createChild="false" propertySortChoices="true" ecoreFeature="ecore:EReference pictograph.ecore#//InputEntity/affects"/>
+    </genClasses>
+    <genClasses ecoreClass="pictograph.ecore#//Path">
+      <genFeatures notify="false" createChild="false" propertySortChoices="true" ecoreFeature="ecore:EReference pictograph.ecore#//Path/affectedBy"/>
+    </genClasses>
+    <genClasses ecoreClass="pictograph.ecore#//Module">
+      <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference pictograph.ecore#//Module/rules"/>
+    </genClasses>
+    <genClasses ecoreClass="pictograph.ecore#//Resource">
+      <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference pictograph.ecore#//Resource/elements"/>
+    </genClasses>
+    <genClasses ecoreClass="pictograph.ecore#//Property">
+      <genFeatures property="None" notify="false" createChild="false" ecoreFeature="ecore:EReference pictograph.ecore#//Property/element"/>
+      <genFeatures createChild="false" ecoreFeature="ecore:EAttribute pictograph.ecore#//Property/previousValue"/>
+      <genFeatures createChild="false" ecoreFeature="ecore:EAttribute pictograph.ecore#//Property/value"/>
+    </genClasses>
+    <genClasses ecoreClass="pictograph.ecore#//Element">
+      <genFeatures property="None" notify="false" createChild="false" ecoreFeature="ecore:EReference pictograph.ecore#//Element/resource"/>
+      <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference pictograph.ecore#//Element/properties"/>
+    </genClasses>
+    <genClasses ecoreClass="pictograph.ecore#//Rule">
+      <genFeatures property="None" notify="false" createChild="false" ecoreFeature="ecore:EReference pictograph.ecore#//Rule/module"/>
+      <genFeatures notify="false" createChild="false" propertySortChoices="true" ecoreFeature="ecore:EReference pictograph.ecore#//Rule/template"/>
+      <genFeatures notify="false" createChild="false" propertySortChoices="true" ecoreFeature="ecore:EReference pictograph.ecore#//Rule/contextElements"/>
+      <genFeatures notify="false" createChild="false" propertySortChoices="true" ecoreFeature="ecore:EReference pictograph.ecore#//Rule/elements"/>
+    </genClasses>
+    <genClasses ecoreClass="pictograph.ecore#//Template">
+      <genFeatures notify="false" createChild="false" propertySortChoices="true" ecoreFeature="ecore:EReference pictograph.ecore#//Template/modules"/>
+      <genFeatures notify="false" createChild="false" propertySortChoices="true" ecoreFeature="ecore:EReference pictograph.ecore#//Template/rules"/>
+      <genFeatures notify="false" createChild="false" propertySortChoices="true" ecoreFeature="ecore:EReference pictograph.ecore#//Template/elements"/>
+    </genClasses>
+  </genPackages>
+</genmodel:GenModel>

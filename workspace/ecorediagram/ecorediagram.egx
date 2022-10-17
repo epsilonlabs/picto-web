@@ -1,0 +1,32 @@
+rule EPackage2PlantUML 
+	transform package : EPackage {
+	template : "package.egl"
+	parameters : Map{
+		"path" = Sequence{package.name},
+		"format" = "puml",
+		"package" = package
+	}
+	target: "puml/ecorediagram.puml"
+}
+
+rule EClass2PlantUML 
+    transform class : EClass {
+    template : "class.egl"
+    parameters : Map{
+        "path" = Sequence{class.ePackage.name, class.name},
+        "format" = "puml",
+        "classifier" = class 
+    }
+    target: "puml/" + class.ePackage.name + "." + class.name + ".puml"
+}
+
+rule EEnum2PlantUML 
+    transform enum : EEnum {
+    template : "enum.egl"
+    parameters : Map{
+        "path" = Sequence{enum.ePackage.name, enum.name},
+        "format" = "puml",
+        "classifier" = enum 
+    }
+    target: "puml/" + enum.ePackage.name + "." + enum.name + ".puml"
+}

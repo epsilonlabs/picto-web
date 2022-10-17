@@ -16,14 +16,11 @@ import java.util.Set;
 import java.util.stream.Collectors;
 
 import org.eclipse.core.resources.IFile;
-import org.eclipse.emf.ecore.EObject;
 import org.eclipse.emf.ecore.EPackage;
-import org.eclipse.emf.ecore.EStructuralFeature;
 import org.eclipse.emf.ecore.EcorePackage;
 import org.eclipse.emf.ecore.resource.Resource;
 import org.eclipse.emf.ecore.resource.ResourceSet;
 import org.eclipse.emf.ecore.resource.impl.ResourceSetImpl;
-import org.eclipse.emf.ecore.xmi.XMIResource;
 import org.eclipse.emf.ecore.xmi.impl.EcoreResourceFactoryImpl;
 import org.eclipse.emf.ecore.xmi.impl.XMIResourceFactoryImpl;
 import org.eclipse.epsilon.common.util.StringProperties;
@@ -31,7 +28,6 @@ import org.eclipse.epsilon.common.util.UriUtil;
 import org.eclipse.epsilon.egl.EglFileGeneratingTemplateFactory;
 import org.eclipse.epsilon.egl.EglTemplateFactoryModuleAdapter;
 import org.eclipse.epsilon.egl.EgxModule;
-import org.eclipse.epsilon.egl.dom.GenerationRule;
 import org.eclipse.epsilon.emc.emf.EmfModel;
 import org.eclipse.epsilon.emc.emf.EmfUtil;
 import org.eclipse.epsilon.emc.emf.InMemoryEmfModel;
@@ -40,7 +36,6 @@ import org.eclipse.epsilon.eol.exceptions.EolRuntimeException;
 import org.eclipse.epsilon.eol.execute.context.FrameStack;
 import org.eclipse.epsilon.eol.execute.context.IEolContext;
 import org.eclipse.epsilon.eol.execute.context.Variable;
-import org.eclipse.epsilon.eol.execute.introspection.recording.IPropertyAccess;
 import org.eclipse.epsilon.eol.models.IModel;
 import org.eclipse.epsilon.eol.models.IRelativePathResolver;
 import org.eclipse.epsilon.eol.types.EolAnyType;
@@ -50,7 +45,6 @@ import org.eclipse.epsilon.picto.LazyEgxModule;
 import org.eclipse.epsilon.picto.LazyEgxModule.LazyGenerationRule;
 import org.eclipse.epsilon.picto.LazyEgxModule.LazyGenerationRuleContentPromise;
 import org.eclipse.epsilon.picto.PictoView;
-import org.eclipse.epsilon.picto.ResourceLoadingException;
 import org.eclipse.epsilon.picto.StaticContentPromise;
 import org.eclipse.epsilon.picto.ViewContent;
 import org.eclipse.epsilon.picto.ViewTree;
@@ -61,29 +55,17 @@ import org.eclipse.epsilon.picto.dom.Patch;
 import org.eclipse.epsilon.picto.dom.Picto;
 import org.eclipse.epsilon.picto.dom.PictoPackage;
 import org.eclipse.epsilon.picto.dummy.IEditorPart;
-import org.eclipse.epsilon.picto.incrementality.GenerationRulePropertyAccess;
+import org.eclipse.epsilon.picto.incrementality.AccessRecordResource;
 import org.eclipse.epsilon.picto.incrementality.IncrementalLazyEgxModule;
-import org.eclipse.epsilon.picto.incrementality.IncrementalResource;
-import org.eclipse.epsilon.picto.incrementality.PropertyAccessRecord;
-import org.eclipse.epsilon.picto.incrementality.PropertyAccessRecord.AccessRecordState;
-import org.eclipse.epsilon.picto.incrementality.PropertyAccessRecordTable;
 import org.eclipse.epsilon.picto.incrementality.Util;
 import org.eclipse.epsilon.picto.source.EglPictoSource;
-import org.eclipse.epsilon.picto.transformers.CsvContentTransformer;
-import org.eclipse.epsilon.picto.transformers.GraphvizContentTransformer;
-import org.eclipse.epsilon.picto.transformers.HtmlContentTransformer;
-import org.eclipse.epsilon.picto.transformers.MarkdownContentTransformer;
-import org.eclipse.epsilon.picto.transformers.SvgContentTransformer;
-import org.eclipse.epsilon.picto.transformers.TextContentTransformer;
-import org.eclipse.epsilon.picto.transformers.ViewContentTransformer;
+import org.eclipse.emf.emfatic.core.EmfaticResourceFactory;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 public class WebEglPictoSource extends EglPictoSource {
 
-	protected static final List<ViewContentTransformer> TRANSFORMERS = new ArrayList<>();
-	public static final IncrementalResource INCREMENTAL_RESOURCE = new PropertyAccessRecordTable();
 	public static boolean generateAll = true; // true for first running
 
 	protected File modelFile;
@@ -91,12 +73,7 @@ public class WebEglPictoSource extends EglPictoSource {
 	protected List<EPackage> ePackages = new ArrayList<>();
 
 	public WebEglPictoSource() throws Exception {
-		TRANSFORMERS.add(new GraphvizContentTransformer());
-		TRANSFORMERS.add(new SvgContentTransformer());
-		TRANSFORMERS.add(new TextContentTransformer());
-		TRANSFORMERS.add(new CsvContentTransformer());
-		TRANSFORMERS.add(new HtmlContentTransformer());
-		TRANSFORMERS.add(new MarkdownContentTransformer());
+
 	}
 
 	public File getModelFile() {
@@ -116,23 +93,23 @@ public class WebEglPictoSource extends EglPictoSource {
 	}
 
 	@SuppressWarnings("unchecked")
-	public Map<String, String> transform(File modifiedFile) throws Exception {
+	public Map<String, String> transform(String modifiedFilePath) throws Exception {
 		Map<String, String> modifiedViewContents = new HashMap<>();
-		Resource resource = null;
-		PictoView pictoView = new PictoView();
-		ViewTree rootViewTree = new ViewTree();
-
-		String filename = modifiedFile.getAbsolutePath()
-				.replace(new File(PictoApplication.WORKSPACE).getAbsolutePath() + File.separator, "")
-				.replace("\\", "/");
-
 		try {
+			Resource resource = null;
+			PictoView pictoView = new PictoView();
+			ViewTree rootViewTree = pictoView.getViewTree();
 
+			File modifiedFile = new File((new File(PictoApplication.WORKSPACE + modifiedFilePath)).getAbsolutePath());
+
+			/*** Need to do a better approach in handling these types of files ***/
 			if (modifiedFile.getAbsolutePath().endsWith(".model") || modifiedFile.getAbsolutePath().endsWith(".flexmi")
-					|| modifiedFile.getAbsolutePath().endsWith(".xmi")) {
+					|| modifiedFile.getAbsolutePath().endsWith(".xmi")
+					|| modifiedFile.getAbsolutePath().endsWith(".emf")) {
 				this.modelFile = new File(modifiedFile.getAbsolutePath());
 				this.pictoFile = new File(modifiedFile.getAbsolutePath() + ".picto");
-				loadMetamodel(this.pictoFile.getName().replace(".model.picto", ""));
+				loadMetamodel(this.pictoFile.getName().replace(".model", "").replace(".flexmi", "").replace(".xmi", "")
+						.replace(".emf", "").replace(".picto", ""));
 				resource = getResource(this.modelFile);
 			} else if (modifiedFile.getAbsolutePath().endsWith(".egx")) {
 				String modelFileName = modifiedFile.getName().replace(".egx", ".model");
@@ -142,235 +119,207 @@ public class WebEglPictoSource extends EglPictoSource {
 						modifiedFile.getParentFile().getAbsolutePath() + File.separator + modelFileName + ".picto");
 				loadMetamodel(this.pictoFile.getName().replace(".model.picto", ""));
 				resource = getResource(this.modelFile);
-			} else if (modifiedFile.getAbsolutePath().endsWith(".model.picto")) {
+			} else if (modifiedFile.getAbsolutePath().endsWith(".emf.picto")
+					|| modifiedFile.getAbsolutePath().endsWith(".model.picto")) {
 				this.pictoFile = modifiedFile;
-				this.modelFile = new File(modifiedFile.getAbsolutePath().replace(".model.picto", ".model"));
-				loadMetamodel(this.pictoFile.getName().replace(".model.picto", ""));
+				if (modifiedFile.getAbsolutePath().endsWith(".model.picto"))
+					this.modelFile = new File(modifiedFile.getAbsolutePath().replace(".model.picto", ".model"));
+				if (modifiedFile.getAbsolutePath().endsWith(".emf.picto"))
+					this.modelFile = new File(modifiedFile.getAbsolutePath().replace(".emf.picto", ".emf"));
+
+				loadMetamodel(this.pictoFile.getName().replace(".model", "").replace(".emf", "").replace(".picto", ""));
 				resource = getResource(this.modelFile);
 			} else if (modifiedFile.getAbsolutePath().endsWith("-standalone.picto")) {
 				this.pictoFile = modifiedFile;
 				this.modelFile = modifiedFile;
 			}
+
+			String pictoFilePath = this.pictoFile.getAbsolutePath()
+					.replace(new File(PictoApplication.WORKSPACE).getAbsolutePath(), "").replace("\\", "/");
+
+			ViewContentCache viewContentCache = FileViewContentCache.addPictoFile(pictoFilePath);
+			AccessRecordResource accessRecordResource = FileViewContentCache.createAccessRecordResource(pictoFilePath);
+
+			Picto renderingMetadata = this.getRenderingMetadata(this.pictoFile);
+
+			if (renderingMetadata != null) {
+				IEolModule module;
+				IModel model = null;
+
+				if (resource != null) {
+					// synchronization prevents races when using multiple Picto views
+					synchronized (resource) {
+						model = new InMemoryEmfModel("M", resource);
+						((InMemoryEmfModel) model).setExpand(true);
+					}
+				}
+				// }
+
+				if (renderingMetadata.getFormat() == null)
+					renderingMetadata.setFormat("egx");
+
+				if ("egx".equals(renderingMetadata.getFormat())) {
+					module = new IncrementalLazyEgxModule(accessRecordResource);
+				} else {
+					module = new EglTemplateFactoryModuleAdapter(new EglFileGeneratingTemplateFactory());
+				}
+
+				IEolContext context = module.getContext();
+
+				FrameStack fs = context.getFrameStack();
+				for (Parameter customParameter : renderingMetadata.getParameters()) {
+					fs.put(new Variable(customParameter.getName(), getValue(customParameter), EolAnyType.Instance));
+				}
+
+				URI transformationUri = null;
+
+				if (renderingMetadata.getTransformation() != null) {
+					transformationUri = UriUtil.resolve(renderingMetadata.getTransformation(), modelFile.toURI());
+					module.parse(transformationUri);
+				} else {
+					module.parse("");
+				}
+
+				if (model != null)
+					context.getModelRepository().addModel(model);
+
+				for (Model pictoModel : renderingMetadata.getModels()) {
+					model = loadModel(pictoModel, modelFile);
+					if (model != null)
+						models.add(model);
+				}
+
+				context.getModelRepository().addModels(models);
+
+				if ("egx".equals(renderingMetadata.getFormat())) {
+
+					Set<String> toBeProcessedPaths = new HashSet<>();
+
+					/** PROPERTY ACCESS RECORDS **/
+					((IncrementalLazyEgxModule) module).startRecording();
+					List<LazyGenerationRuleContentPromise> promises = (List<LazyGenerationRuleContentPromise>) module
+							.execute();
+					((IncrementalLazyEgxModule) module).stopRecording();
+					accessRecordResource.printIncrementalRecords();
+
+					/**
+					 * the handleDynamicViews will add the generated lazy contents to instances to
+					 * handled later in the next loop
+					 **/
+					handleDynamicViews(renderingMetadata, module, context, fs, promises);
+
+					/** loop through the content promises of rules **/
+					System.out.println("\nGENERATING VIEWS: ");
+					toBeProcessedPaths.addAll(accessRecordResource.getToBeProcessedPaths(promises, (EgxModule) module));
+
+					for (LazyGenerationRuleContentPromise promise : promises) {
+
+						String pathString = Util.getPath(promise);
+						System.out.print("Processing " + pathString + " ... ");
+//					if (pathString.equals("/Social Network/Alice") || pathString.equals("/Custom/Alice and Bob")) {
+////						INCREMENTAL_RESOURCE.getIncrementalRecords().clear();
+//						System.console();
+//					}
+
+						ViewTree vt = this.generateViewTree(rootViewTree, promise);
+
+						// Check if the path should be processed to generated new view
+						if (!toBeProcessedPaths.contains(pathString)) {
+							System.out.println("SKIP");
+							continue;
+						}
+
+						((IncrementalLazyEgxModule) module).startRecording();
+						pictoView.renderView(vt);
+						ViewContent vc = vt.getContent().getFinal(pictoView);
+						((IncrementalLazyEgxModule) module).stopRecording();
+//					WebEglPictoSource.updateIncrementalResource(module, pathString);
+//					System.console();
+//					if (pathString.equals("/Stats") || pathString.equals("/Custom/Alice and Bob")) {
+////						INCREMENTAL_RESOURCE.getIncrementalRecords().clear();
+//						System.console();
+//					}
+
+						/** transform to target format (e.g., svg, html) **/
+
+//					vc = vc.getNext(pictoView);
+//					vt.setContent(vc);
+
+//					for (ViewContentTransformer transformer : ViewContent.getViewContentTransformers()) {
+//						if (transformer.canTransform(vc)) {
+//							vc = transformer.transform(vc, pictoView);
+////							vt.setContent(vc);
+//							break;
+//						}
+//					}
+
+						PictoResponse pictoResponse = new PictoResponse();
+						pictoResponse.setFilename(pictoFilePath);
+						pictoResponse.setPath(pathString);
+						pictoResponse.setType(vc.getFormat());
+						pictoResponse.setContent(vc.getText());
+
+						String jsonString = new ObjectMapper().writerWithDefaultPrettyPrinter()
+								.writeValueAsString(pictoResponse);
+						/** put the generated Picto response's json string to cache **/
+//					if (!jsonString.equals(viewContentCache.getViewContentCache(pathString))) {
+						viewContentCache.putViewContentCache(pathString, jsonString);
+						modifiedViewContents.put(pathString, jsonString);
+//					}
+						System.out.println("PROCESSED");
+
+					}
+					accessRecordResource.printIncrementalRecords();
+					accessRecordResource.updateStatusToProcessed(toBeProcessedPaths);
+					generateAll = false;
+					System.out.println();
+					System.console();
+				} else {
+					String content = module.execute() + "";
+					rootViewTree = new ViewTree();
+					rootViewTree.setPromise(new StaticContentPromise(content));
+					rootViewTree.setFormat(renderingMetadata.getFormat());
+				}
+
+				// Handle static views (i.e. where source != null), add the custom view loaded
+				// from a file
+				// defined in the picto file
+				handleStaticViews(modifiedViewContents, rootViewTree, pictoFilePath, viewContentCache,
+						renderingMetadata, module, pictoView);
+
+				// Handle patches for existing views (i.e. where source == null and type/rule ==
+				// null)
+				handlePatchesForExistingViews(rootViewTree, renderingMetadata);
+
+				// set URIs of rootViewTree
+				if (transformationUri != null) {
+					rootViewTree.getBaseUris().add(transformationUri);
+					rootViewTree.getBaseUris().add(transformationUri.resolve("./icons/"));
+				}
+				rootViewTree.getBaseUris().add(new URI(modelFile.toURI().toString()));
+
+				// generate JSON of the JsTree library (the tree panel on the client-side web
+				// browser)
+				String jsTreeJson = generateJsTreeData(pictoFilePath, rootViewTree);
+				if (!jsTreeJson.equals(viewContentCache.getViewContentCache(FileViewContentCache.PICTO_TREE))) {
+					viewContentCache.putViewContentCache(FileViewContentCache.PICTO_TREE, jsTreeJson);
+					modifiedViewContents.put(FileViewContentCache.PICTO_TREE, jsTreeJson);
+				}
+
+			} else {
+				rootViewTree = createEmptyViewTree();
+				String jsTreeJson = generateJsTreeData(pictoFilePath, rootViewTree);
+				if (!jsTreeJson.equals(viewContentCache.getViewContentCache(FileViewContentCache.PICTO_TREE))) {
+					viewContentCache.putViewContentCache(FileViewContentCache.PICTO_TREE, jsTreeJson);
+					modifiedViewContents.put(FileViewContentCache.PICTO_TREE, jsTreeJson);
+				}
+			}
+
 		} catch (Exception ex) {
 			ex.printStackTrace();
 		}
-		ViewContentCache viewContentCache = FileViewContentCache.addPictoFile(this.pictoFile.getName());
-
-		Picto renderingMetadata = this.getRenderingMetadata(this.pictoFile);
-
-		if (renderingMetadata != null) {
-			IEolModule module;
-			IModel model = null;
-
-			if (resource != null) {
-				// synchronization prevents races when using multiple Picto views
-				synchronized (resource) {
-					model = new InMemoryEmfModel("M", resource);
-					((InMemoryEmfModel) model).setExpand(true);
-				}
-			}
-			// }
-
-			if (renderingMetadata.getFormat() == null)
-				renderingMetadata.setFormat("egx");
-
-			if ("egx".equals(renderingMetadata.getFormat())) {
-				module = new IncrementalLazyEgxModule(INCREMENTAL_RESOURCE);
-			} else {
-				module = new EglTemplateFactoryModuleAdapter(new EglFileGeneratingTemplateFactory());
-			}
-
-			IEolContext context = module.getContext();
-
-			FrameStack fs = context.getFrameStack();
-			for (Parameter customParameter : renderingMetadata.getParameters()) {
-				fs.put(new Variable(customParameter.getName(), getValue(customParameter), EolAnyType.Instance));
-			}
-
-			URI transformationUri = null;
-
-			if (renderingMetadata.getTransformation() != null) {
-				transformationUri = UriUtil.resolve(renderingMetadata.getTransformation(), modelFile.toURI());
-				module.parse(transformationUri);
-			} else {
-				module.parse("");
-			}
-
-			if (model != null)
-				context.getModelRepository().addModel(model);
-
-			for (Model pictoModel : renderingMetadata.getModels()) {
-				model = loadModel(pictoModel, modelFile);
-				if (model != null)
-					models.add(model);
-			}
-
-			context.getModelRepository().addModels(models);
-
-			if ("egx".equals(renderingMetadata.getFormat())) {
-
-				/** PROPERTY ACCESS RECORDS **/
-//				((IncrementalLazyEgxModule) module).startRecording();
-				List<LazyGenerationRuleContentPromise> promises = (List<LazyGenerationRuleContentPromise>) module
-						.execute();
-//				((IncrementalLazyEgxModule) module).stopRecording();
-				WebEglPictoSource.updateIncrementalResource(module, null);
-
-				/**
-				 * the handleDynamicViews will add the generated lazy contents to instances to
-				 * handled later in the next loop
-				 **/
-				handleDynamicViews(renderingMetadata, module, context, fs, promises);
-
-//				INCREMENTAL_RESOURCE.printIncrementalRecords();
-
-				/** Filter promises that only need regeneration **/
-				List<LazyGenerationRuleContentPromise> inProcessingPromises = promises;
-//				List<LazyGenerationRuleContentPromise> inProcessingPromises = getToBeProcPromises(promises,
-//						generateAll);
-
-				/** loop through the content promises of rules **/
-				System.out.println("\nGENERATING VIEWS: ");
-				Set<String> processedPaths = new HashSet<>();
-
-//				Set<String> promisesPaths = inProcessingPromises.stream().map(p -> Util.getPath(p))
-//						.collect(Collectors.toCollection(HashSet::new));
-
-				for (LazyGenerationRuleContentPromise inProcessingPromise : inProcessingPromises) {
-
-					String pathString = Util.getPath(inProcessingPromise);
-					if (pathString.equals("/families/Bicycle") || pathString.equals("/families/Bike")) {
-//						INCREMENTAL_RESOURCE.getIncrementalRecords().clear();
-						System.console();
-					}
-
-					ViewTree vt = this.generateViewTree(rootViewTree, inProcessingPromise);
-
-					// Check if the path should be processed to generated new view
-					if (!INCREMENTAL_RESOURCE.isViewNewOrUpdated(pathString, (EgxModule) module)) {
-						continue;
-					}
-
-					((IncrementalLazyEgxModule) module).startRecording();
-					ViewContent vc = vt.getContent();
-					((IncrementalLazyEgxModule) module).stopRecording();
-					WebEglPictoSource.updateIncrementalResource(module, pathString);
-					System.console();
-					if (pathString.equals("/families/Bicycle") || pathString.equals("/families/Bike")) {
-//						INCREMENTAL_RESOURCE.getIncrementalRecords().clear();
-						System.console();
-					}
-
-					/** transform to target format (e.g., svg, html) **/
-					for (ViewContentTransformer transformer : TRANSFORMERS) {
-						if (transformer.canTransform(vc)) {
-							vc = transformer.transform(vc, pictoView);
-							vt.setContent(vc);
-							break;
-						}
-					}
-
-					PictoResponse pictoResponse = new PictoResponse();
-					pictoResponse.setFilename(filename);
-					pictoResponse.setPath(pathString);
-					pictoResponse.setType(vc.getFormat());
-					pictoResponse.setContent(vc.getText());
-
-					String jsonString = new ObjectMapper().writerWithDefaultPrettyPrinter()
-							.writeValueAsString(pictoResponse);
-					/** put the generated Picto response's json string to cache **/
-//					if (!jsonString.equals(viewContentCache.getViewContentCache(pathString))) {
-					viewContentCache.putViewContentCache(pathString, jsonString);
-					modifiedViewContents.put(pathString, jsonString);
-//					}
-					processedPaths.add(pathString);
-					System.out.println(pathString);
-
-				}
-//				INCREMENTAL_RESOURCE.printIncrementalRecords();
-				INCREMENTAL_RESOURCE.updateStatusToProcessed(processedPaths);
-				generateAll = false;
-				System.out.println();
-				System.console();
-			} else {
-				String content = module.execute() + "";
-				rootViewTree = new ViewTree();
-				rootViewTree.setPromise(new StaticContentPromise(content));
-				rootViewTree.setFormat(renderingMetadata.getFormat());
-			}
-
-			// Handle static views (i.e. where source != null)
-			handleStaticViews(modifiedViewContents, rootViewTree, filename, viewContentCache, renderingMetadata,
-					module);
-
-			// Handle patches for existing views (i.e. where source == null and type/rule ==
-			// null)
-			handlePatchesForExistingViews(rootViewTree, renderingMetadata);
-
-			// set URIs of rootViewTree
-			if (transformationUri != null) {
-				rootViewTree.getBaseUris().add(transformationUri);
-				rootViewTree.getBaseUris().add(transformationUri.resolve("./icons/"));
-			}
-			rootViewTree.getBaseUris().add(new URI(modelFile.toURI().toString()));
-
-			// generate JSON of the JsTree library (the tree panel on the client-side web
-			// browser)
-			String jsTreeJson = generateJsTreeData(filename, rootViewTree);
-			if (!jsTreeJson.equals(viewContentCache.getViewContentCache(FileViewContentCache.PICTO_TREE))) {
-				viewContentCache.putViewContentCache(FileViewContentCache.PICTO_TREE, jsTreeJson);
-				modifiedViewContents.put(FileViewContentCache.PICTO_TREE, jsTreeJson);
-			}
-
-		} else {
-			rootViewTree = createEmptyViewTree();
-			String jsTreeJson = generateJsTreeData(filename, rootViewTree);
-			if (!jsTreeJson.equals(viewContentCache.getViewContentCache(FileViewContentCache.PICTO_TREE))) {
-				viewContentCache.putViewContentCache(FileViewContentCache.PICTO_TREE, jsTreeJson);
-				modifiedViewContents.put(FileViewContentCache.PICTO_TREE, jsTreeJson);
-			}
-		}
-
 		return modifiedViewContents;
 
-	}
-
-	/***
-	 * Get promises that will generate new views or views that need to refreshed.
-	 * 
-	 * @param promises
-	 * @return
-	 */
-	private List<LazyGenerationRuleContentPromise> getNewOrModifiedPromises(
-			List<LazyGenerationRuleContentPromise> promises) {
-		return getToBeProcPromises(promises, false);
-	}
-
-	/***
-	 * Get promises that will generate new views or views that need to refreshed.
-	 * 
-	 * @param promises
-	 * @param generateAll
-	 * @return
-	 */
-	private List<LazyGenerationRuleContentPromise> getToBeProcPromises(List<LazyGenerationRuleContentPromise> promises,
-			boolean generateAll) {
-
-		List<LazyGenerationRuleContentPromise> records = new ArrayList<>();
-
-		if (generateAll) {
-			records = promises;
-		} else {
-			Set<String> paths = INCREMENTAL_RESOURCE.getToBeProcessedPaths();
-			for (LazyGenerationRuleContentPromise promise : promises) {
-				String path = Util.getPath(promise);
-				if (paths.contains(path)) {
-					records.add(promise);
-				}
-			}
-			System.console();
-		}
-		return records;
 	}
 
 	/***
@@ -407,8 +356,8 @@ public class WebEglPictoSource extends EglPictoSource {
 	}
 
 	private void handleStaticViews(Map<String, String> modifiedViewContents, ViewTree rootViewTree, String filename,
-			ViewContentCache viewContentCache, Picto renderingMetadata, IEolModule module)
-			throws EolRuntimeException, JsonProcessingException {
+			ViewContentCache viewContentCache, Picto renderingMetadata, IEolModule module, PictoView pictoView)
+			throws Exception {
 		for (CustomView customView : renderingMetadata.getCustomViews().stream().filter(cv -> cv.getSource() != null)
 				.collect(Collectors.toList())) {
 			String format = customView.getFormat() != null ? customView.getFormat() : getDefaultFormat();
@@ -427,7 +376,14 @@ public class WebEglPictoSource extends EglPictoSource {
 
 //			// record property accesses
 //			((IncrementalLazyEgxModule) module).startRecording();
-			ViewContent vc = vt.getContent();
+//			ViewContent vc = vt.getContent();
+
+			/** transform to target format (e.g., svg, html) **/
+			pictoView.renderView(vt);
+			ViewContent vc = vt.getContent().getFinal(pictoView);
+//			vc = vc.getNext(pictoView);
+//			vt.setContent(vc);
+
 //			((IncrementalLazyEgxModule) module).stopRecording();
 //			WebEglPictoSource.updateIncrementalResource(module, pathString);
 
@@ -491,7 +447,7 @@ public class WebEglPictoSource extends EglPictoSource {
 				LazyGenerationRuleContentPromise contentPromise = (LazyGenerationRuleContentPromise) generationRule
 						.execute(context, source);
 				((IncrementalLazyEgxModule) module).stopRecording();
-				WebEglPictoSource.updateIncrementalResource(module, "/" + String.join("/", customView.getPath()));
+//				WebEglPictoSource.updateIncrementalResource(module, "/" + String.join("/", customView.getPath()));
 
 				Collection<Variable> variables = contentPromise.getVariables();
 
@@ -613,13 +569,14 @@ public class WebEglPictoSource extends EglPictoSource {
 	public Resource getResource(File modelFile) {
 		ResourceSet resourceSet = new ResourceSetImpl();
 
-		if (modelFile.getName().endsWith(".ecore")) {
+		if (modelFile.getName().endsWith(".ecore") || modelFile.getName().endsWith(".emf")) {
 			resourceSet.getPackageRegistry().put(EcorePackage.eNS_URI, EcorePackage.eINSTANCE);
 		}
 
 		resourceSet.getResourceFactoryRegistry().getExtensionToFactoryMap().put("xmi", new XMIResourceFactoryImpl());
 		resourceSet.getResourceFactoryRegistry().getExtensionToFactoryMap().put("ecore",
 				new EcoreResourceFactoryImpl());
+		resourceSet.getResourceFactoryRegistry().getExtensionToFactoryMap().put("emf", new EmfaticResourceFactory());
 		resourceSet.getResourceFactoryRegistry().getExtensionToFactoryMap().put("model", new XMIResourceFactoryImpl());
 		resourceSet.getResourceFactoryRegistry().getExtensionToFactoryMap().put("*", new FlexmiResourceFactory());
 		Resource resource = resourceSet
@@ -675,78 +632,93 @@ public class WebEglPictoSource extends EglPictoSource {
 		return false;
 	}
 
-	/***
-	 * Update the state incremental resource with the recorded protected accesses.
-	 * 
-	 * @param module
-	 * @param pathString
-	 * @throws EolRuntimeException
-	 */
-	@SuppressWarnings("unchecked")
-	public static void updateIncrementalResource(IEolModule module, String pathString) throws EolRuntimeException {
-		for (IPropertyAccess propertyAccess : ((IncrementalLazyEgxModule) module).getPropertyAccessRecorder()
-				.getPropertyAccesses().all()) {
-			GenerationRulePropertyAccess generationRulePropertyAccess = (GenerationRulePropertyAccess) propertyAccess;
-
-			EObject contextElement = (EObject) generationRulePropertyAccess.getContextElement();
-			Resource contextResource = null;
-			String contextResourceUri = null;
-			String contextElementId = null;
-			if (contextElement != null) {
-				contextResource = contextElement.eResource();
-				contextResourceUri = contextResource.getURI().toFileString();
-				contextElementId = contextResource.getURIFragment(contextElement);
-			}
-
-			EObject modelElement = (EObject) generationRulePropertyAccess.getModelElement();
-			Resource elementResource = modelElement.eResource();
-			String elementResourceUri = modelElement.eResource().getURI().toFileString();
-			String modelElementId = elementResource.getURIFragment(modelElement);
-
-			EStructuralFeature property = modelElement.eClass()
-					.getEStructuralFeature(generationRulePropertyAccess.getPropertyName());
-			Object value = modelElement.eGet(property);
-
-			String path = null;
-			if (pathString == null) {
-				GenerationRule rule = generationRulePropertyAccess.getRule();
-				Object result = rule.execute(module.getContext());
-				Collection<LazyGenerationRuleContentPromise> list = (result instanceof Collection<?>)
-						? (Collection<LazyGenerationRuleContentPromise>) result
-						: Arrays.asList(
-								new LazyGenerationRuleContentPromise[] { (LazyGenerationRuleContentPromise) result });
-//				if (list.size() == 1) {
-				for (LazyGenerationRuleContentPromise e : list) {
-					path = Util.getPath((LazyGenerationRuleContentPromise) e);
-
-					Variable var = e.getVariables().iterator().next();
-					Object obj = var.getValue();
-					if (modelElement.equals(obj)) {
-						System.console();
-						PropertyAccessRecord record = new PropertyAccessRecord(module.getFile().getAbsolutePath(),
-								generationRulePropertyAccess.getRule().getName(), contextResourceUri, contextElementId,
-								elementResourceUri, modelElementId, property.getName(), value, pathString);
-
-//						System.out.println("added: " + record);
-						INCREMENTAL_RESOURCE.add(record);
-					}
-				}
+//	/***
+//	 * Update the state incremental resource with the recorded protected accesses.
+//	 * 
+//	 * @param module
+//	 * @param pathString
+//	 * @throws EolRuntimeException
+//	 */
+//	@SuppressWarnings("unchecked")
+//	public static void updateIncrementalResource(IEolModule module, String pathString) throws EolRuntimeException {
+//		for (IPropertyAccess propertyAccess : ((IncrementalLazyEgxModule) module).getPropertyAccessRecorder()
+//				.getPropertyAccesses().all()) {
+//			GenerationRulePropertyAccess generationRulePropertyAccess = (GenerationRulePropertyAccess) propertyAccess;
+//
+//			String ruleName = (generationRulePropertyAccess.getRu == null) ? null
+//					: generationRulePropertyAccess.getRule().getName();
+//
+//			EObject contextElement = (EObject) generationRulePropertyAccess.getContextElement();
+//			Resource contextResource = null;
+//			String contextResourceUri = null;
+//			String contextElementId = null;
+//			if (contextElement != null) {
+//				contextResource = contextElement.eResource();
+//				contextResourceUri = contextResource.getURI().toFileString();
+//				contextElementId = contextResource.getURIFragment(contextElement);
+//			}
+//
+//			EObject modelElement = (EObject) generationRulePropertyAccess.getModelElement();
+//			Resource elementResource = modelElement.eResource();
+//			String elementResourceUri = modelElement.eResource().getURI().toFileString();
+//			String modelElementId = elementResource.getURIFragment(modelElement);
+//
+//			EStructuralFeature property = modelElement.eClass()
+//					.getEStructuralFeature(generationRulePropertyAccess.getPropertyName());
+//			String propertyName = (property != null) ? property.getName()
+//					: generationRulePropertyAccess.getPropertyName();
+//			Object value = (property != null) ? modelElement.eGet(property) : null;
+//
+//			String path = null;
+//			if (pathString == null) {
+//				GenerationRule rule = generationRulePropertyAccess.getRule();
+//				if (rule.getName().equals("Persons2Table")) {
+//					System.console();
 //				}
-			} else {
-				path = pathString;
-				String ruleName = (generationRulePropertyAccess.getRule() != null)
-						? generationRulePropertyAccess.getRule().getName()
-						: null;
-				PropertyAccessRecord record = new PropertyAccessRecord(module.getFile().getAbsolutePath(),
-						generationRulePropertyAccess.getRule().getName(), contextResourceUri, contextElementId,
-						elementResourceUri, modelElementId, property.getName(), value, pathString);
-//				System.out.println("added: " + record);
-				INCREMENTAL_RESOURCE.add(record);
-			}
-		}
-//		((IncrementalLazyEgxModule) module).getPropertyAccessRecorder().getPropertyAccesses().clear();
-		System.console();
-	}
+//
+//				Object result = rule.execute(module.getContext());
+//				Collection<LazyGenerationRuleContentPromise> list = (result instanceof Collection<?>)
+//						? (Collection<LazyGenerationRuleContentPromise>) result
+//						: Arrays.asList(
+//								new LazyGenerationRuleContentPromise[] { (LazyGenerationRuleContentPromise) result });
+////				if (list.size() == 1) {
+//				for (LazyGenerationRuleContentPromise e : list) {
+//					path = Util.getPath((LazyGenerationRuleContentPromise) e);
+//
+//					Variable var = e.getVariables().iterator().next();
+//					Object obj = var.getValue();
+//					if (obj instanceof EObject) {
+//						if (modelElement.equals(obj)) {
+//
+//							GenerationRulePropertyAccess record = new GenerationRulePropertyAccess(module.getFile().getAbsolutePath(),
+//									ruleName, contextResourceUri, contextElementId, elementResourceUri, modelElementId,
+//									propertyName, value, path);
+//
+////						System.out.println("added: " + record);
+//							PictoWeb.ACCESS_RESOURCE.add(record);
+//						}
+//					} else {
+//						GenerationRulePropertyAccess record = new GenerationRulePropertyAccess(module.getFile().getAbsolutePath(),
+//								ruleName, contextResourceUri, contextElementId, elementResourceUri, modelElementId,
+//								propertyName, value, path);
+//
+////					System.out.println("added: " + record);
+//						PictoWeb.ACCESS_RESOURCE.add(record);
+//					}
+//				}
+////				}
+//			} else {
+//				path = pathString;
+//				GenerationRulePropertyAccess record = new GenerationRulePropertyAccess(module.getFile().getAbsolutePath(), ruleName,
+//						contextResourceUri, contextElementId, elementResourceUri, modelElementId, propertyName, value,
+//						pathString);
+////				System.out.println("added: " + record);
+//				PictoWeb.ACCESS_RESOURCE.add(record);
+//			}
+//		}
+////		((IncrementalLazyEgxModule) module).getPropertyAccessRecorder().getPropertyAccesses().clear();
+//		System.console();
+//	}
 
 	@SuppressWarnings("unchecked")
 	public ViewTree generateViewTree(ViewTree rootViewTree, LazyGenerationRuleContentPromise instance) {

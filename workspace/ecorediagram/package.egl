@@ -1,0 +1,41 @@
+@startuml
+
+[%for (classifier in package.eClassifiers){%]
+[%  if (classifier.type.name == "EClass") {%]
+[%= (classifier.abstract)? "abstract " : "" %]class [%=classifier.name%] {
+    [%for (attribute in classifier.eAttributes){%]
+    [%=attribute.name%] : [%=attribute.eType.name + ((attribute.many)?"[]":"")%]
+    [%}%]
+}
+[%for (reference in classifier.eReferences){%]
+[%=reference.getEdge()%]
+[%}%]
+
+[%for (superType in classifier.eSuperTypes){%]
+[%=getEdge(classifier, superType)%]
+[%}%]
+
+[% } else if (classifier.type.name == "EEnum") {%]
+enum [%=classifier.name%] {
+    [%for (literal in classifier.eLiterals){%]
+    [%=literal%]
+    [%}%]
+}
+[%  }%]
+    
+[%}%]
+
+@enduml
+[% 
+operation EReference getEdge() {
+    var diagram = self.eContainer().eContainer();
+    var label = " \" " + self.name + (self.many ? "*" : "") + "\" ";
+    return  self.eContainer().name + " --> " + self.eType.name + " : " + label;
+}
+
+operation getEdge(class: EClassifier, superClass: EClassifier) {
+    var diagram = class.eContainer();
+    return  class.name + " --|> " + superClass.name;
+}
+
+%]

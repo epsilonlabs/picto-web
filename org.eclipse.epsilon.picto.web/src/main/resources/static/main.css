@@ -1,9 +1,21 @@
-h2 {
+.parent {
+height: 100%;
+width: 100%;
+position: relative;
+}
+.child {
+position: absolute;
+top: 50%;
+left: 50%;
+transform: translate(-50%, 0);
+}
+
+/* h2 {
 	font: 14px Arial, sans-serif;
 	color: #fff;
 	padding: 10px;
 	text-align: center;
-}
+} */
 
 .editor {
 	position: absolute;

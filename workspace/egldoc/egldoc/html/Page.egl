@@ -1,0 +1,67 @@
+[%  
+    var headerTemplate : Template = TemplateFactory.load("html/Header.egl");
+    var footerTemplate : Template = TemplateFactory.load("html/Footer.egl");
+
+    var packagesTemplate    : Template = 
+        TemplateFactory.load("html/Packages.egl");  
+    var classifiersTemplate : Template = 
+        TemplateFactory.load("html/Classifiers.egl");
+    var classTemplate       : Template = 
+        TemplateFactory.load("html/Class.egl");
+    var dataTypeTemplate    : Template = 
+        TemplateFactory.load("html/DataType.egl");
+    
+    var title : String = metaModelName + " Meta-Model";
+    
+    if (classifier.isDefined()) {
+        title = package.name + "." + classifier.name + " - " + title;   
+    
+    } else {
+        if (package.isDefined()) {
+            title = package.name + " Package - " + title;
+        }
+    }
+    
+    headerTemplate.populate("title", title);
+    
+    classifiersTemplate.populate("package", package);
+    
+    classTemplate.populate("class", classifier);
+%]
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN"
+         "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
+    <head>
+        <title>families.Band - families Meta-Model</title>
+        <meta http-equiv="content-type" content="text/html;charset=utf-8" />
+        <meta http-equiv="Content-Style-Type" content="text/css" />
+        <link title="default" rel="stylesheet" type="text/css" media="screen, projection" href="egldoc/css/screen.css"></link>
+        <script type="text/javascript" src="egldoc/scripts/controls.js"></script>
+    </head>
+    <body>    
+        <link title="default" rel="stylesheet" type="text/css" media="screen, projection" href="egldoc/css/screen.css"></link>
+        <script type="text/javascript" src="egldoc/scripts/controls.js"></script>     	
+		<div id="content">
+			[% if (classifier.isDefined()) {
+				if (classifier.isKindOf(EDataType)) {
+					var dataType : EDataType = classifier;
+					dataTypeTemplate.populate("dataType", dataType);
+					out.print(dataTypeTemplate.process());
+				
+				} else {
+					var class : EClass = classifier;
+					classTemplate.populate("class", class);
+					out.print(classTemplate.process());
+				}
+			 } else {
+				if (not package.isDefined()) { %]
+					<img src="egldoc/img/[%=metaModelName%].png"
+					   alt="Overview of the [%=metaModelName%] metamodel"/>
+[%
+				}
+			}
+%]
+		</div>
+    </body>
+</html>

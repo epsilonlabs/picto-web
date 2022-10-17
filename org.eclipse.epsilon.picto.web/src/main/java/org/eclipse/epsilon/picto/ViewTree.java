@@ -195,6 +195,7 @@ public class ViewTree {
 					cachedContent = new ViewContent(format, promise.getContent(), file, getLayers(), getPatches(),
 							getBaseUris());
 				} catch (Exception e) {
+					e.printStackTrace();
 					cachedContent = new ViewContent("exception", e.getMessage(), null, getLayers(), getPatches(),
 							getBaseUris());
 				}

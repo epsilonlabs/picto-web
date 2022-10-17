@@ -147,13 +147,13 @@
         console.log(data);
       });
 
-      // Render the default view, the most top, first view 
-      Picto.render(viewResponse);
+      // Render the default view, the most top, first view
+      if (viewResponse != null) {
+        Picto.render(viewResponse);
+      }
     });
 
     myLayout.init();
-
-
 
     Picto.connectToServer(pictoName);
   </script>

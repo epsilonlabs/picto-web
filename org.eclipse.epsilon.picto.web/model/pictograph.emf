@@ -1,0 +1,66 @@
+@index(name="path", by="Path.name", many="false")
+@index(name="module", by="Module.name", many="false")
+@index(name="rule", by="Module.name, rules.name", many="false")
+@index(name="template", by="Module.name, rules.name, template.name", many="false")
+@index(name="resource", by="Resource.name", many="false")
+@index(name="element", by="Resource.name, elements.name", many="false")
+@index(name="property", by="Resource.name, elements.name, properties.name", many="false")
+
+@namespace(uri="pictograph", prefix="")
+
+package pictograph;
+
+enum State {
+	NEW = 0;
+	UPDATED = 1;
+	PROCESSED = 2;
+}
+
+class PictoGraph {
+}
+
+abstract class Entity {
+	attr String name;
+	attr State state;
+}
+
+abstract class InputEntity extends Entity {
+	ref Path[*]#affectedBy affects;
+}
+
+class Path extends Entity {
+	ref InputEntity[*]#affects affectedBy;
+}
+
+class Module extends InputEntity {
+	val Rule[*]#module rules;
+}
+
+class Resource extends InputEntity {
+	val Element[*]#resource elements;
+}
+
+class Property extends InputEntity {
+	ref Element#properties element;
+	attr String previousValue;
+	attr String value;
+}
+
+class Element extends InputEntity {
+	ref Resource#elements resource;
+	val Property[*]#element properties;
+}
+
+class Rule extends InputEntity {
+	ref Module#rules module;
+	ref Template template;
+	ref Element[*] contextElements;
+	ref Element[*] elements;
+}
+
+class Template extends InputEntity {
+	ref Module[*] modules;
+	ref Rule[*] rules;
+	ref Element[*] elements;
+}
+

@@ -1,0 +1,10 @@
+rule Graph2Java
+	transform package : EPackage {
+	parameters : 
+	 Map {
+	   "targetPackage" = "org.eclipse.epsilon.picto.incrementality",
+	   "package" = package
+	 }
+	template : "pictograph.egl"
+	target: "../src/main/java/org/eclipse/epsilon/picto/incrementality/TraceIndex.java"
+}

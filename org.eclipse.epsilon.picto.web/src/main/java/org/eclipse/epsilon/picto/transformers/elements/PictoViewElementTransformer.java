@@ -18,39 +18,34 @@ import org.eclipse.epsilon.picto.ViewTree;
 import org.w3c.dom.Element;
 
 public class PictoViewElementTransformer extends ReplacingElementTransformer {
-	
+
 	@Override
 	public String getXPath() {
 		return "//*[local-name() = 'picto-view']";
 	}
-	
+
 	@Override
 	public void transform(Element element) {
-		String path = element.getAttribute("target");
+		String path = element.getAttribute("path");
 		if (path != null) {
-			ViewTree viewTree = picto.getViewTree().forPath(
-				Arrays.stream(("," + path).split(","))
-					.map(String::trim)
-					.collect(Collectors.toList())
-			);
+			List<String> x = Arrays.stream(("," + path).split(",")).map(String::trim).collect(Collectors.toList());
+			ViewTree temp = picto.getViewTree();
+			ViewTree viewTree = temp.forPath(x);
 			if (viewTree != null) {
 
 				List<ViewContent> contents = viewTree.getContents(picto);
 
-				ViewContent svgContent = contents.stream()
-					.filter(c -> c.getFormat().equals("svg"))
-					.findAny().orElse(null);
-				
+				ViewContent svgContent = contents.stream().filter(c -> c.getFormat().equals("svg")).findAny()
+						.orElse(null);
+
 				if (svgContent != null) {
 					replace(element, svgContent);
-				}
-				else {
+				} else {
 					replace(element, contents.get(contents.size() - 1), false);
 				}
 			}
 		}
-		
+
 	}
-	
-	
+
 }

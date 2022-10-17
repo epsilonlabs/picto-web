@@ -1,14 +1,19 @@
 package org.eclipse.epsilon.picto.incrementality;
 
+import java.net.URI;
+import java.util.Collection;
+
 import org.eclipse.epsilon.common.module.ModuleElement;
 import org.eclipse.epsilon.common.parse.AST;
 import org.eclipse.epsilon.egl.EglFileGeneratingTemplateFactory;
 import org.eclipse.epsilon.egl.EglTemplate;
+import org.eclipse.epsilon.egl.EglTemplateFactory;
 import org.eclipse.epsilon.egl.dom.GenerationRule;
+import org.eclipse.epsilon.egl.execute.context.IEgxContext;
 import org.eclipse.epsilon.egl.spec.EglTemplateSpecification;
 import org.eclipse.epsilon.eol.exceptions.EolRuntimeException;
 import org.eclipse.epsilon.eol.execute.context.IEolContext;
-import org.eclipse.epsilon.eol.execute.introspection.recording.PropertyAccessExecutionListener;
+import org.eclipse.epsilon.eol.execute.context.Variable;
 import org.eclipse.epsilon.picto.LazyEgxModule;
 
 /***
@@ -20,18 +25,16 @@ import org.eclipse.epsilon.picto.LazyEgxModule;
  */
 public class IncrementalLazyEgxModule extends LazyEgxModule {
 
-	protected IncrementalResource incrementalResource;
-	protected GenerationRulePropertyAccessRecorder propertyAccessRecorder;
+	protected AccessRecordResource accessRecordResource;
+	protected AccessRecordRecorder propertyAccessRecorder;
 
-	public GenerationRulePropertyAccessRecorder getPropertyAccessRecorder() {
+	public AccessRecordRecorder getPropertyAccessRecorder() {
 		return propertyAccessRecorder;
 	}
 
-	
-	public IncrementalResource getIncrementalResource() {
-		return incrementalResource;
+	public AccessRecordResource getIncrementalResource() {
+		return accessRecordResource;
 	}
-
 
 	public void startRecording() {
 		propertyAccessRecorder.startRecording();
@@ -41,15 +44,15 @@ public class IncrementalLazyEgxModule extends LazyEgxModule {
 		propertyAccessRecorder.stopRecording();
 	}
 
-	public IncrementalLazyEgxModule(IncrementalResource incrementalResource) {
+	public IncrementalLazyEgxModule(AccessRecordResource accessRecordResource) {
 
-		this.incrementalResource = incrementalResource;
+		this.accessRecordResource = accessRecordResource;
 
-//		this.getContext().setExecutorFactory(new IncrementalRuleExecutorFactory(incrementalResource));
+		this.getContext().setExecutorFactory(new IncrementalRuleExecutorFactory(accessRecordResource));
 
 		// Create the property access recorder that will record
 		// all the property access events in the EGX transformation
-		propertyAccessRecorder = new GenerationRulePropertyAccessRecorder();
+		propertyAccessRecorder = new AccessRecordRecorder(accessRecordResource);
 
 		// Create a custom template factory so that we can monitor property
 		// access events during template execution too
@@ -59,8 +62,9 @@ public class IncrementalLazyEgxModule extends LazyEgxModule {
 				EglTemplate template = super.createTemplate(spec);
 				// Every time the factory creates a template, attach a listener to it
 				// to record property accesses to our custom recorder
+//				template.getModule().getContext().setExecutorFactory(new IncrementalTemplateExecutorFactory());
 				template.getModule().getContext().getExecutorFactory()
-						.addExecutionListener(new PropertyAccessExecutionListener(propertyAccessRecorder));
+						.addExecutionListener(new IncrementalPropertyAccessExecutionListener(propertyAccessRecorder));
 				return template;
 			}
 		});
@@ -68,7 +72,7 @@ public class IncrementalLazyEgxModule extends LazyEgxModule {
 		// Add a listener to record property access events during
 		// the execution of the EGX program
 		this.getContext().getExecutorFactory()
-				.addExecutionListener(new PropertyAccessExecutionListener(propertyAccessRecorder));
+				.addExecutionListener(new IncrementalPropertyAccessExecutionListener(propertyAccessRecorder));
 	}
 
 	@Override
@@ -87,17 +91,110 @@ public class IncrementalLazyEgxModule extends LazyEgxModule {
 	}
 
 	public class IncrementalLazyGenerationRule extends LazyGenerationRule {
+		String path = null;
+
+		public String getPath() {
+			return path;
+		}
+
+		public void setPath(String path) {
+			this.path = path;
+		}
 
 		@Override
 		public Object execute(IEolContext context_, Object element) throws EolRuntimeException {
 			// Before executing a generation rule against an contextElement
 			// update the rule and contextElement fields of the property change recorder
+
 			propertyAccessRecorder.setContextElement(element);
 			propertyAccessRecorder.setRule(this);
-			Object result = super.execute(context_, element);
-			return result;
+			// execute parent
+			Object wrappedPromise = super.execute(context_, element);
+			// after executing parent
+
+			IEgxContext context = (IEgxContext) context_;
+			URI templateUri = null;
+			String templateName = (templateBlock == null) ? null : templateBlock.execute(context, false);
+			if (templateName != null) {
+				templateUri = context.getTemplateFactory().resolveTemplate(templateName);
+			}
+			EglTemplateFactory templateFactory = context.getTemplateFactory();
+
+			propertyAccessRecorder.setTemplateUri(templateUri);
+			this.path = (propertyAccessRecorder.getPath() == null) ? null
+					: new StringBuffer(propertyAccessRecorder.getPath()).toString();
+			
+			propertyAccessRecorder.updateCurrentPropertyAccessesPath(this.path);
+			propertyAccessRecorder.saveToAccessRecordResource();
+//			PictoWeb.ACCESS_RECORD_RESOURCE.printIncrementalRecords();
+			
+			IncrementalLazyGenerationRuleContentPromise wrappingPromise = new IncrementalLazyGenerationRuleContentPromise(
+					(LazyGenerationRuleContentPromise) wrappedPromise, element, this, this.path, templateFactory,
+					templateUri);
+
+			propertyAccessRecorder.setContextElement(null);
+			propertyAccessRecorder.setRule(null);
+			propertyAccessRecorder.setPath(null);
+			propertyAccessRecorder.setTemplateUri(null);
+
+			return wrappingPromise;
 		}
-		
-		
+	}
+
+	public class IncrementalLazyGenerationRuleContentPromise extends LazyGenerationRuleContentPromise {
+
+		LazyGenerationRuleContentPromise wrappedPromise = null;
+		String path = null;
+		GenerationRule generationRule = null;
+		Object contextObject = null;
+
+		public IncrementalLazyGenerationRuleContentPromise(LazyGenerationRuleContentPromise wrappedPromise,
+				Object contextObject, GenerationRule generationRule, String path, EglTemplateFactory templateFactory,
+				URI templateUri) {
+			this.wrappedPromise = wrappedPromise;
+			this.generationRule = generationRule;
+			this.path = path;
+			this.contextObject = contextObject;
+			this.templateFactory = templateFactory;
+			this.templateUri = templateUri;
+		}
+
+		public LazyGenerationRuleContentPromise getWrappedPromise() {
+			return wrappedPromise;
+		}
+
+		public String getPath() {
+			return path;
+		}
+
+		public GenerationRule getGenerationRule() {
+			return generationRule;
+		}
+
+		public Object getContextObject() {
+			return contextObject;
+		}
+
+		@Override
+		public String getContent() throws Exception {
+			IncrementalLazyEgxModule.this.getPropertyAccessRecorder().setTemplateUri(templateUri);
+			IncrementalLazyEgxModule.this.getPropertyAccessRecorder().setContextElement(contextObject);
+			IncrementalLazyEgxModule.this.getPropertyAccessRecorder().setRule(generationRule);
+			IncrementalLazyEgxModule.this.getPropertyAccessRecorder().setPath(path);
+			String content = wrappedPromise.getContent();
+			propertyAccessRecorder.updateCurrentPropertyAccessesPath(path);
+			propertyAccessRecorder.saveToAccessRecordResource();
+			IncrementalLazyEgxModule.this.getPropertyAccessRecorder().setTemplateUri(null);
+			IncrementalLazyEgxModule.this.getPropertyAccessRecorder().setContextElement(null);
+			IncrementalLazyEgxModule.this.getPropertyAccessRecorder().setRule(null);
+			IncrementalLazyEgxModule.this.getPropertyAccessRecorder().setPath(null);
+			return content;
+		}
+
+		@Override
+		public Collection<Variable> getVariables() {
+			return wrappedPromise.getVariables();
+		}
+
 	}
 }
