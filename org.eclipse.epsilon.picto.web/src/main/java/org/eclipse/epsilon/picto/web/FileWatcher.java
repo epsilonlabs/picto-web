@@ -5,7 +5,6 @@ import static java.nio.file.StandardWatchEventKinds.ENTRY_DELETE;
 import static java.nio.file.StandardWatchEventKinds.ENTRY_MODIFY;
 
 import java.io.File;
-import java.io.IOException;
 import java.nio.file.FileSystems;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -61,6 +60,8 @@ public class FileWatcher extends Thread {
 			HashMap<WatchKey, Path> keys = new HashMap<WatchKey, Path>();
 			WatchService watcher = FileSystems.getDefault().newWatchService();
 			registerDirectory(watcher, PictoApplication.WORKSPACE, keys);
+			PictoProject.scanDirectory(PictoApplication.WORKSPACE);
+
 			isRunning = true;
 
 			while (isRunning) {
@@ -85,7 +86,6 @@ public class FileWatcher extends Thread {
 					@SuppressWarnings("unchecked")
 					WatchEvent<Path> ev = (WatchEvent<Path>) event;
 					Path filePath = ev.context();
-					Path parent = ev.context().getParent();
 
 					if (filePath.toString().endsWith(".picto") || filePath.toString().endsWith(".egx")
 							|| filePath.toString().endsWith(".egl") || filePath.toString().endsWith(".flexmi")
@@ -111,7 +111,7 @@ public class FileWatcher extends Thread {
 	}
 
 	private void registerDirectory(WatchService watcher, String directory, HashMap<WatchKey, Path> keys)
-			throws IOException {
+			throws Exception {
 		Path dir = Paths.get(directory).toAbsolutePath();
 		WatchKey key = dir.register(watcher, ENTRY_CREATE, ENTRY_DELETE, ENTRY_MODIFY);
 		keys.put(key, dir);
