@@ -181,7 +181,8 @@
 		<!-- <dependency> <groupId>net.sourceforge.plantuml</groupId> <artifactId>plantuml</artifactId> 
 			<version>8059</version> </dependency> -->
 
-		<!-- FROM LOCAL REPOSITORY -->
+
+		<!-- START: FROM LOCAL REPOSITORY -->
 		<!--<dependency> <groupId>org.eclipse.epsilon</groupId> <artifactId>org.eclipse.epsilon.common.dt</artifactId> 
 			<version>2.5.0</version> </dependency> <dependency> <groupId>org.eclipse.epsilon</groupId> 
 			<artifactId>org.eclipse.epsilon.eol.dt</artifactId> <version>2.5.0</version> 
@@ -190,19 +191,25 @@
 			<version>3.123.0</version> </dependency> -->
 		<!--<dependency> <groupId>org.eclipse.epsilon</groupId> <artifactId>org.eclipse.epsilon.picto</artifactId> 
 			<version>2.5.0</version> </dependency> -->
-		<!-- FROM LOCAL REPOSITORY -->
+		<!-- local plantuml 
+		### INSTALLING LOCAL PLANTUML 
+		Since I couldn't find the right PlantUML file on the maven central, I have to install the library manually on my local repo
+		so that I could build as Picto Web jar file that includes the libary.
+		To install execute the following command.
+		
+		Change the -Dfile path according to the local path of the jar file on your machine.
+		
+    mvn install:install-file -Dfile=D:/PROJECTS/picto-web/org.eclipse.epsilon.picto.web/jars/plantuml-2018.8.jar -DgroupId=net.sourceforge.plantuml  -DartifactId=plantuml -Dversion=2018.8 -Dpackaging=jar -DgeneratePom=true
+		-->
+    <dependency>
+      <groupId>net.sourceforge.plantuml</groupId>
+      <artifactId>plantuml</artifactId>
+      <version>2018.8</version>
+    </dependency>
+    
+		<!-- END: FROM LOCAL REPOSITORY -->
 
-		<!-- local plantuml -->
-		<dependency>
-			<groupId>net.sourceforge.plantuml</groupId>
-			<artifactId>plantuml</artifactId>
-			<version>2018.8</version>
-			<scope>system</scope>
-			<systemPath>
-				D:/PROJECTS/picto-web/org.eclipse.epsilon.picto.web/jars/plantuml-2018.8.jar
-			</systemPath>
-		</dependency>
-
+		
 	</dependencies>
 	<build>
 		<plugins>
