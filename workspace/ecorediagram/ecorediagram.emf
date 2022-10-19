@@ -56,5 +56,6 @@ class Bike {
 }
 
 class Band {
-    ref Person[3..*] members;
+	ref Person[3..*] members;
 }
+

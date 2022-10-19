@@ -120,14 +120,18 @@ public class WebEglPictoSource extends EglPictoSource {
 				loadMetamodel(this.pictoFile.getName().replace(".model.picto", ""));
 				resource = getResource(this.modelFile);
 			} else if (modifiedFile.getAbsolutePath().endsWith(".emf.picto")
-					|| modifiedFile.getAbsolutePath().endsWith(".model.picto")) {
+					|| modifiedFile.getAbsolutePath().endsWith(".model.picto")
+					|| modifiedFile.getAbsolutePath().endsWith(".flexmi.picto")) {
 				this.pictoFile = modifiedFile;
 				if (modifiedFile.getAbsolutePath().endsWith(".model.picto"))
 					this.modelFile = new File(modifiedFile.getAbsolutePath().replace(".model.picto", ".model"));
 				if (modifiedFile.getAbsolutePath().endsWith(".emf.picto"))
 					this.modelFile = new File(modifiedFile.getAbsolutePath().replace(".emf.picto", ".emf"));
+				if (modifiedFile.getAbsolutePath().endsWith(".flexmi.picto"))
+					this.modelFile = new File(modifiedFile.getAbsolutePath().replace(".flexmi.picto", ".flexmi"));
 
-				loadMetamodel(this.pictoFile.getName().replace(".model", "").replace(".emf", "").replace(".picto", ""));
+				loadMetamodel(this.pictoFile.getName().replace(".model", "").replace(".emf", "").replace(".flexmi", "")
+						.replace(".picto", ""));
 				resource = getResource(this.modelFile);
 			} else if (modifiedFile.getAbsolutePath().endsWith("-standalone.picto")) {
 				this.pictoFile = modifiedFile;
@@ -184,9 +188,19 @@ public class WebEglPictoSource extends EglPictoSource {
 					context.getModelRepository().addModel(model);
 
 				for (Model pictoModel : renderingMetadata.getModels()) {
-					model = loadModel(pictoModel, modelFile);
+					File refModelFile = modelFile;
+					String name = "M";
+					for (Parameter param : pictoModel.getParameters()) {
+						if (param.getName().equals("name")) {
+							name = (String) param.getValue();
+						} else if (param.getName().equals("modelFile")) {
+							refModelFile = new File(pictoFile.getParent() + File.separator + param.getFile());
+						}
+					}
+					model = loadModel(pictoModel, refModelFile);
 					if (model != null)
-						models.add(model);
+						model.setName(name);
+					models.add(model);
 				}
 
 				context.getModelRepository().addModels(models);
@@ -528,15 +542,16 @@ public class WebEglPictoSource extends EglPictoSource {
 					.getValue();
 			loadMetamodel(metamodelName);
 		}
-		IRelativePathResolver relativePathResolver = relativePath -> new File(baseFile.getParentFile(), relativePath)
-				.getAbsolutePath();
-		String filePath = null;
-		for (Parameter parameter : model.getParameters()) {
-			if (parameter.getFile() != null) {
-				filePath = relativePathResolver.resolve(parameter.getFile());
-			}
-		}
-		IModel model2 = new InMemoryEmfModel("M", getResource(new File(filePath)));
+//		IRelativePathResolver relativePathResolver = relativePath -> new File(baseFile.getParentFile(), relativePath)
+//				.getAbsolutePath();
+//		String filePath = null;
+//		for (Parameter parameter : model.getParameters()) {
+//			if (parameter.getFile() != null) {
+//				filePath = relativePathResolver.resolve(parameter.getFile());
+//			}
+//		}
+//		IModel model2 = new InMemoryEmfModel("M", getResource(new File(filePath)));
+		IModel model2 = new InMemoryEmfModel("M", getResource(baseFile));
 		((InMemoryEmfModel) model2).setExpand(true);
 		return model2;
 
@@ -569,8 +584,11 @@ public class WebEglPictoSource extends EglPictoSource {
 	public Resource getResource(File modelFile) {
 		ResourceSet resourceSet = new ResourceSetImpl();
 
-		if (modelFile.getName().endsWith(".ecore") || modelFile.getName().endsWith(".emf")) {
-			resourceSet.getPackageRegistry().put(EcorePackage.eNS_URI, EcorePackage.eINSTANCE);
+		if (modelFile.getName().endsWith(".ecore") || modelFile.getName().endsWith(".emf")
+				|| modelFile.getName().endsWith(".flexmi")) {
+//			if (!resourceSet.getPackageRegistry().containsKey(EcorePackage.eNS_URI)) {
+				resourceSet.getPackageRegistry().put(EcorePackage.eNS_URI, EcorePackage.eINSTANCE);
+//			}
 		}
 
 		resourceSet.getResourceFactoryRegistry().getExtensionToFactoryMap().put("xmi", new XMIResourceFactoryImpl());

@@ -1,0 +1,32 @@
+<?nsuri ecd?>
+<_>
+    <diagram name="EPackage">
+        <include name="EPackage"/>
+        <include name="EClassifier"/>
+        <include name="EClass"/>
+        <include name="EDataType"/>
+        <constraint above="EPackage" below="EClassifier"/>
+        <constraint above="EClassifier" below="EClass"/>
+        <constraint above="EClassifier" below="EDataType"/>
+        <constraint left="EClass" Right="EDataType"/>
+    </diagram>
+    
+    <diagram name="EStructuralFeature">
+        <preamble>
+        skinparam monochrome true
+        skinparam handwritten true
+        </preamble>
+        <postamble>
+        note left of EReference: For objects
+        note right of EAttribute: For primitive/traditional datatypes
+        </postamble>
+        <include name="EPackage"/>
+        <include name="EClass"/>
+        <include name="EStructuralFeature"/>
+        <include name="EAttribute"/>
+        <include name="EReference"/>
+        <constraint above="EClass" below="EStructuralFeature"/>
+        <constraint above="EStructuralFeature" below="EAttribute"/>
+        <constraint above="EStructuralFeature" below="EReference"/>
+    </diagram>
+</_>

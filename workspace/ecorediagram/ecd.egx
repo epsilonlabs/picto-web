@@ -1,0 +1,9 @@
+rule Diagram2PlantUML 
+	transform diagram : ECD!Diagram {
+	template : "ecd.egl"
+	parameters : Map{
+		"path" = Sequence{diagram.name},
+		"format" = "puml"
+	}
+	target: "puml/ecd.puml"
+}

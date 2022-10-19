@@ -1,6 +1,6 @@
 @startuml
 
-[%= (classifier.abstract)? "abstract " : "" %]class [%=classifier.name%] {
+[%= (classifier.abstract)? "abstract " : "" %][%= (classifier.interface)? "interface" : "class" %] [%=classifier.name%] {
     [%for (attribute in classifier.eAttributes){%]
     [%=attribute.name%] : [%=attribute.eType.name + ((attribute.many)?"[]":"")%]
     [%}%]

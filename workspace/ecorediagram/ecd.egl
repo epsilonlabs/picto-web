@@ -1,0 +1,165 @@
+@startuml
+
+[%diagram.populate();%]
+[%=diagram.preamble%]
+[%for (class in diagram.types.select(t|t.isTypeOf(Class))){%]
+[%= (class.abstract)? "abstract " : "" %][%= (class.interface)? "interface" : "class" %] [%=class.name%] {
+	[%for (attribute in class.attributes){%]
+	[%=attribute.name%] : [%=attribute.type%]
+	[%}%]
+	[%for (method in class.methods) { %]
+	[%=method.getLabel()%]
+	[%}%]
+}
+
+[%for (reference in class.references){%]
+[%=reference.getEdge()%]
+[%}%]
+
+[%for (superType in class.superTypes){%]
+[%=getEdge(class, superType)%]
+[%}%]
+
+[%}%]
+[%=diagram.postamble%]
+@enduml
+
+[%
+operation ECD!Diagram populate() {   
+	// Resolve type declaration from includes and create types
+	for (include in self.includes) {
+		var typeDeclaration = ECORE!EClassifier.all.select(td|td.name = include.name).first();
+		if (typeDeclaration.isDefined()) {
+			var class = new ECD!Class;
+			class.abstract = typeDeclaration.abstract;
+			class.interface =typeDeclaration.interface; 
+			class.name = typeDeclaration.name;
+			self.types.add(class);
+			class.~typeDeclaration = typeDeclaration;
+		}
+	}
+	
+	// Populate supertypes
+	for (class in self.types.select(t|t.isTypeOf(ECD!Class) and t.~typeDeclaration.isDefined())) {
+	   if (class.~typeDeclaration.eSuperTypes.size > 0){
+	       var superTypes : Sequence;
+	       for (type in self.types) {
+	           for (superType in class.~typeDeclaration.eSuperTypes) {
+		           if (type.isTypeOf(ECD!Class) and type.name.equals(superType.name)){
+		              superTypes.add(type);
+		           }
+	           }
+	       }
+	       class.superTypes.addAll(superTypes);
+	       //class.superTypes.addAll(self.types.select(c:ECD!Class|c.name = class.~typeDeclaration.eSuperType.name));
+	   }
+	}
+
+	// Populate class attributes, references and methods
+	for (class in self.types.select(t|t.isTypeOf(ECD!Class) and t.~typeDeclaration.isDefined())) {
+		for (field in class.~typeDeclaration.eStructuralFeatures) {
+			if (not field.eType.isVisible(diagram) or field.isTypeOf(EAttribute)) {
+				var attribute = new ECD!Attribute;
+				attribute.name = field.getName();
+				attribute.type = field.getType().name;
+				attribute.many = field.isCollection();
+				class.attributes.add(attribute);
+			}
+			else {
+				var reference = new ECD!Reference;
+				reference.name = field.getName();
+				reference.type = diagram.types.selectOne(c|c.name = field.getType().name );
+				reference.many = field.isCollection();
+				class.references.add(reference);
+			}
+		}
+	}
+	
+	
+}
+
+/**
+ * Produces a generalization edge, taking into account contstraints
+ */ 
+operation getEdge(class:ECD!Class, superClass:ECD!Class) {
+	var diagram = class.eContainer();
+	
+	if (diagram.constraints.exists(c|c.above = class.name and c.below = superClass.name)) {
+		return class.name + " --|> " + superClass.name;
+	}
+	else if (diagram.constraints.exists(c|c.left = class.name and c.right = superClass.name)) {
+		return class.name + " -|> " + superClass.name;
+	}
+	else if (diagram.constraints.exists(c|c.left = superClass.name and c.right = class.name)) {
+		return superClass.name + " <|- " + class.name;
+	}
+	else {
+		return superClass.name + " <|-- " + class.name;
+	}
+}
+
+/*
+ * Prdoduces a reference edge, taking into account constraints
+ */
+operation ECD!Reference getEdge() {
+	var diagram = self.eContainer().eContainer();
+	var label = " \" " + self.name + (self.many ? "*" : "") + "\" ";
+	
+	if (diagram.constraints.exists(c|c.above = self.eContainer().name and c.below = self.type.name)) {
+		return self.eContainer().name + " -down-> " + self.type.name + " : " + label;
+	}
+	else if (diagram.constraints.exists(c|c.below = self.eContainer().name and c.above = self.type.name)) {
+		return self.eContainer().name + " -up-> " + self.type.name + " : " + label;
+	}
+	else if (diagram.constraints.exists(c|c.right = self.eContainer().name and c.left = self.type.name)) {
+		return self.eContainer().name + " -left-> " + self.type.name + " : " + label;
+	}
+	else {
+		return self.eContainer().name + " -right-> " + self.type.name + " : " + label;
+	}
+}
+
+operation ECORE!EStructuralFeature getName() {
+    return self.name;
+	//return self.fragments.at(0)/*VariableDeclarationFragment*/.name.identifier;
+}
+
+operation ECORE!ParameterizedType getLabel() {
+	return self.type.name + "<" + self.typeArguments.collect(ta|ta.getLabel()).concat(", ") + ">";
+}
+
+operation ECORE!WildcardType getLabel() {
+	return self.toString();
+}
+
+operation ECORE!SimpleType getLabel() {
+	return self.name.identifier;
+}
+
+operation ECORE!PrimitiveType getLabel() {
+	return self.toString();
+}
+
+operation ECORE!EStructuralFeature getType() {
+	return self.eType;
+}
+
+operation ECORE!EStructuralFeature isCollection() {
+	return self.many;
+}
+
+operation ECORE!EDataType isVisible(diagram : ECD!Diagram) {
+    return diagram.types.name.includes(self.name);
+}
+
+operation ECORE!EClass isVisible(diagram : ECD!Diagram) {
+	return diagram.types.name.includes(self.name);
+}
+
+operation ECD!Method getLabel() {
+	var label = self.name + "(" + self.parameters.collect(p|p.name + ":" + p.type).concat(", ") + ")";
+	if (self.type.isDefined() and self.type != "void") label += " : " + self.type;
+	return label;
+}
+
+%]
