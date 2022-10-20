@@ -5,5 +5,5 @@ rule Diagram2PlantUML
 		"path" = Sequence{diagram.name},
 		"format" = "puml"
 	}
-	target: "puml/ecd.puml"
+	target: "puml/ecd-" + diagram.name + ".puml"
 }
