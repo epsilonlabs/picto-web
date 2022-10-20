@@ -57,7 +57,7 @@ operation ECD!Diagram populate() {
 
 	// Populate class attributes, references and methods
 	for (class in self.types.select(t|t.isTypeOf(ECD!Class) and t.~typeDeclaration.isDefined())) {
-		for (field in class.~typeDeclaration.eStructuralFeatures) {
+		for (field in class.~typeDeclaration.eStructuralFeatures.select(sf|not sf.derived)) {
 			if (not field.eType.isVisible(diagram) or field.isTypeOf(EAttribute)) {
 				var attribute = new ECD!Attribute;
 				attribute.name = field.getName();
@@ -73,7 +73,7 @@ operation ECD!Diagram populate() {
 				class.references.add(reference);
 			}
 		}
-	}
+	}  
 	
 	
 }
