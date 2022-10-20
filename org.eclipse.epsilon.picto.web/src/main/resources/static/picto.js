@@ -21,6 +21,9 @@ Picto.treeView = null;
 Picto.selectedPathOld = null;
 Picto.selectedPath = null;
 Picto.viewContents = new Map();
+Picto.tempSelectedNode = null; // temporary holder when refreshing jstree
+Picto.tempSelectedPath = null; // temporary holder when refreshing jstree
+
 
 Picto.convertToPictoRequest = function (pictoFile, type, message) {
   return JSON.stringify(
@@ -171,6 +174,8 @@ Picto.render = function (view) {
     Picto.treeContent = JSON.parse(view.content);
     console.log(Picto.treeContent);
     var tree = $('#tree').jstree(true);
+    Picto.tempSelectedNode = tree.get_selected(true)[0];
+    Picto.tempSelectedPath = "/" + tree.get_path(Picto.tempSelectedNode, '/');
     tree.refresh();
     console.log("");
   } else {
