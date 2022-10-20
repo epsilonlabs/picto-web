@@ -102,15 +102,15 @@ Follow the following steps to build the Picto Web Docker container on your local
    ```
    docker image build . -t picto-web
    ```
-5. Change directory to sub-directory `picto-web/workspace`.
+5. Change to the parent directory.
     ```
-    cd ../workspace
+    cd ..
     ```
 6. If your operating system is Windows, run the command below to run the   Picto Web server. The variable `%cd%` represents your current working directory in Windows. 
    ```
-   docker run --rm -i -t -v %cd%:/workspace --hostname=picto -p 8080:8080 --name=picto alfayohannisyorkacuk/picto-web
+   docker run --rm -i -t -v %cd%:/workspace --hostname=picto -p 8080:8080 --name=picto picto-web
    ```
 7. Replace `%cd%` with `$PWD` if Linux is your current operating system, 
    ```
-   docker run --rm -i -t -v $PWD:/workspace --hostname=picto -p 8080:8080 --name=picto alfayohannisyorkacuk/picto-web
+   docker run --rm -i -t -v $PWD:/workspace --hostname=picto -p 8080:8080 --name=picto picto-web
    ```
