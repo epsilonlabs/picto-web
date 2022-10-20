@@ -9,6 +9,7 @@
     - [Automatic Client Update](#automatic-client-update)
     - [Different Views](#different-views)
     - [Another Example](#another-example)
+  - [Build the Docker Container](#build-the-docker-container)
 
 The demo video of Picto Web can be found at https://shorturl.at/ijtz1 or https://drive.google.com/drive/folders/1BCEKJhsEq50Yi7xFjx2Wpc6j-68Wtcxv?usp=sharing.
 
@@ -81,3 +82,35 @@ Also, explore the view tree by clicking any of the nodes. For example, the below
 Besides the `social network` example, Picto Web also has been able to visualise `Ecore` metamodel in the documentation-like format in HTML.
 
 ![main page](images/ecore.png)
+
+## [Build the Docker Container](#contents)
+Follow the following steps to build the Picto Web Docker container on your local machine:
+1. Clone the source code from GitHub:
+   ```
+   git clone https://github.com/epsilonlabs/picto-web
+   ```
+2. Change directory to `picto-web/org.eclipse.epsilon.picto.web`.
+   ```
+   cd picto-web/org.eclipse.epsilon.picto.web
+   ```
+3. Run the following command to build the `picto.jar` file.
+   ```
+   mvn clean
+   mvn install
+   ```
+4. Execute the following command to build the container on your local machine. This command runs the `Dockerfile` file in the directory.
+   ```
+   docker image build . -t picto-web
+   ```
+5. Change directory to sub-directory `picto-web/workspace`.
+    ```
+    cd ../workspace
+    ```
+6. If your operating system is Windows, run the command below to run the   Picto Web server. The variable `%cd%` represents your current working directory in Windows. 
+   ```
+   docker run --rm -i -t -v %cd%:/workspace --hostname=picto -p 8080:8080 --name=picto alfayohannisyorkacuk/picto-web
+   ```
+7. Replace `%cd%` with `$PWD` if Linux is your current operating system, 
+   ```
+   docker run --rm -i -t -v $PWD:/workspace --hostname=picto -p 8080:8080 --name=picto alfayohannisyorkacuk/picto-web
+   ```
