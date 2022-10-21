@@ -1,0 +1,28 @@
+.lm_title {
+	font-size: 14px;
+}
+
+.lm_tab {
+  height: 30px !important;
+  line-height:30px;
+}
+
+.lm_tab.lm_active {
+	background-color: white;
+}
+
+.lm_close_tab {
+  height: 25px !important;
+}
+
+.lm_controls {
+  top:13px;
+}
+
+.lm_content {
+	background-color: white;
+}
+
+body {
+	font-family: Arial;
+}

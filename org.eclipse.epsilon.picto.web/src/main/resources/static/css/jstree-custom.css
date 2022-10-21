@@ -1,0 +1,15 @@
+.jstree-hovered {
+	background-color: white !important;
+	box-shadow: none !important;
+}
+
+.jstree-clicked {
+	background-color: white !important;
+	font-weight: bold;
+	box-shadow: none !important;
+}
+
+.lm_goldenlayout {
+	background: none;
+	background-color: #e1e1e1;
+}

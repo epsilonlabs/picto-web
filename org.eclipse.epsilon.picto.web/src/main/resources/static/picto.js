@@ -129,7 +129,7 @@ Picto.getSelectedViewPath = function (data) {
 }
 
 Picto.render = function (view) {
-  var container = document.getElementById("visualization");
+  var container = document.getElementById("visualisation");
   container.innerHTML = '';
   if (view.type == 'svg') {
     var text = view.content;
