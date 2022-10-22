@@ -1,26 +1,26 @@
 <?nsuri ecd?>
 <_>
-    <diagram name="EPackage">
+    <diagram name="Packages and Type">
         <include name="EPackage"/>
         <include name="EClassifier"/>
         <include name="EClass"/>
         <include name="EDataType"/>
+        <constraint above="EClass" below="EStructuralFeature"/>
         <constraint above="EPackage" below="EClassifier"/>
         <constraint above="EClassifier" below="EClass"/>
         <constraint above="EClassifier" below="EDataType"/>
         <constraint left="EClass" Right="EDataType"/>
     </diagram>
     
-    <diagram name="EStructuralFeature">
-        <preamble>
+    <diagram name="Structural Features">
+        <!--preamble>
         skinparam monochrome true
         skinparam handwritten true
         </preamble>
         <postamble>
         note left of EReference: For objects
         note right of EAttribute: For primitive/traditional datatypes
-        </postamble>
-        <include name="EPackage"/>
+        </postamble-->
         <include name="EClass"/>
         <include name="EStructuralFeature"/>
         <include name="EAttribute"/>
@@ -28,5 +28,20 @@
         <constraint above="EClass" below="EStructuralFeature"/>
         <constraint above="EStructuralFeature" below="EAttribute"/>
         <constraint above="EStructuralFeature" below="EReference"/>
+    </diagram>
+
+    <diagram name="Enumerations">
+        <include name="EClassifier"/>
+        <include name="EEnum"/>
+        <include name="EEnumLiteral"/>
+        <include name="EDataType"/>
+    </diagram>
+
+    <diagram name="Operations">
+        <include name="EClass"/>
+        <include name="EOperation"/>
+        <include name="EParameter"/>
+        <include name="EClassifier"/>
+        <constraint above="EOperation" below="EParameter"/>
     </diagram>
 </_>
