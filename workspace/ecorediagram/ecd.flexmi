@@ -22,7 +22,7 @@
         <include name="EGenericType"/>
         <include name="ETypeParameter"/>
     </diagram>
-    <diagram name="Packages and Type">
+    <diagram name="Packages and Types">
         <include name="EPackage"/>
         <include name="EClassifier"/>
         <include name="EClass"/>
