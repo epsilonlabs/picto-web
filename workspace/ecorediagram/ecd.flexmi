@@ -1,5 +1,27 @@
 <?nsuri ecd?>
 <_>
+    <diagram name="All">
+        <include name="EAttribute"/>
+        <include name="EAnnotation"/>
+        <include name="EClass"/>
+        <include name="EClassifier"/>
+        <include name="EDataType"/>
+        <include name="EEnum"/>
+        <include name="EEnumLiteral"/>
+        <include name="EFactory"/>
+        <include name="EModelElement"/>
+        <include name="ENamedElement"/>
+        <include name="EObject"/>
+        <include name="EOperation"/>
+        <include name="EPackage"/>
+        <include name="EParameter"/>
+        <include name="EReference"/>
+        <include name="EStructuralFeature"/>
+        <include name="ETypedElement"/>
+        <include name="EStringToStringMapEntry"/>
+        <include name="EGenericType"/>
+        <include name="ETypeParameter"/>
+    </diagram>
     <diagram name="Packages and Type">
         <include name="EPackage"/>
         <include name="EClassifier"/>
