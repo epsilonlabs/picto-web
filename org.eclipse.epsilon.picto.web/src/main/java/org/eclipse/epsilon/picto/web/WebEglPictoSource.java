@@ -502,14 +502,17 @@ public class WebEglPictoSource extends EglPictoSource {
 	}
 
 	protected void copyViewTreeToJsTreeData(String filename, ViewTree viewTree, JsTreeNode jsTreeNode) {
-		for (ViewTree child : viewTree.getChildren()) {
+		for (ViewTree viewTreeChild : viewTree.getChildren()) {
 			JsTreeNode jsonChild = new JsTreeNode();
 			jsTreeNode.getChildren().add(jsonChild);
-			copyViewTreeToJsTreeData(filename, child, jsonChild);
+			copyViewTreeToJsTreeData(filename, viewTreeChild, jsonChild);
 		}
 		String text = viewTree.getName();
 		jsTreeNode.setText(text);
 		jsTreeNode.setPath(viewTree.getPathString());
+		if (viewTree.getIcon() != null) {
+			jsTreeNode.setIcon(viewTree.getIcon());
+		}
 	}
 
 	protected JsonViewTree generateJsonViewTree(ViewTree viewTree) {
@@ -530,7 +533,8 @@ public class WebEglPictoSource extends EglPictoSource {
 		jvc.setLabel(viewTree.getContent().getLabel());
 		jsonViewTree.setContent(jvc);
 		jsonViewTree.setName(viewTree.getName());
-		jsonViewTree.setIcon(viewTree.getIcon());
+		if (viewTree.getIcon() != null)
+			jsonViewTree.setIcon(viewTree.getIcon());
 		jsonViewTree.setPosition(viewTree.getPosition());
 		jsonViewTree.setUri(viewTree.getPathString());
 	}
@@ -587,7 +591,7 @@ public class WebEglPictoSource extends EglPictoSource {
 		if (modelFile.getName().endsWith(".ecore") || modelFile.getName().endsWith(".emf")
 				|| modelFile.getName().endsWith(".flexmi")) {
 //			if (!resourceSet.getPackageRegistry().containsKey(EcorePackage.eNS_URI)) {
-				resourceSet.getPackageRegistry().put(EcorePackage.eNS_URI, EcorePackage.eINSTANCE);
+			resourceSet.getPackageRegistry().put(EcorePackage.eNS_URI, EcorePackage.eINSTANCE);
 //			}
 		}
 

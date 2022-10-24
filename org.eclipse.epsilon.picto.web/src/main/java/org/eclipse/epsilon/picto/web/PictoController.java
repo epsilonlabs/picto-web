@@ -24,7 +24,6 @@ public class PictoController {
 	public String getPictoFiles(String information, Model model) throws IOException {
 		List<String> pictoFiles = ProjectTreeToJson.getPictoFiles(PictoApplication.WORKSPACE).stream()
 				.map(s -> s.replace("\\", "/")).collect(Collectors.toList());
-//		model.addAttribute("pictofiles", "[" + String.join(", ", pictoFiles) + "]");
 		model.addAttribute("pictofiles", pictoFiles);
 		return "pictofiles";
 	}
@@ -32,9 +31,6 @@ public class PictoController {
 	@GetMapping(value = "/picto")
 	public String getPicto(String file, String path, String name, Model model) throws Exception {
 		model.addAttribute("pictoName", file);
-//		if (file.equals("egldoc-standalone.picto")) {
-//			System.console();
-//		}
 		
 		if (FileViewContentCache.getViewContentCache(file) == null) {
 			WebEglPictoSource source = new WebEglPictoSource();

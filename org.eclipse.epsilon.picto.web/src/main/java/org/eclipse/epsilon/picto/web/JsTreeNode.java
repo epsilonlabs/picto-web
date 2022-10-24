@@ -17,7 +17,8 @@ public class JsTreeNode {
 	protected List<JsTreeNode> children = new ArrayList<>();
 	protected String text;
 	protected String path;
-	protected String icon = "jstree-folder";
+//	protected String icon = "jstree-folder";
+	protected String icon = "icons/diagram.gif";
 	protected JsTreeState state = new JsTreeState();
 
 	public List<JsTreeNode> getChildren() {

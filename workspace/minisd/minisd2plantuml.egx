@@ -1,40 +1,40 @@
 rule Scenario2PlantUml 
-	transform s : Scenario {
+    transform s : Scenario {
 
-	template : "minisd2plantuml.egl"
+    template : "minisd2plantuml.egl"
 
-	parameters : Map {
-		"mainBlock" = null,
-		"format" = "plantuml",
-		"path" = List{s.title},
-		"icon" = "sequence"
-	}
+    parameters : Map {
+        "mainBlock" = null,
+        "format" = "plantuml",
+        "path" = List{s.title},
+        "icon" = "minisd/icons/sequence.gif"
+    }
 
 }
 
 rule Block2PlantUml 
-	transform b : Block {
+    transform b : Block {
 
-	guard : b.eContainer.isTypeOf(Alt)
+    guard : b.eContainer.isTypeOf(Alt)
 
-	template : "minisd2plantuml.egl"
+    template : "minisd2plantuml.egl"
 
-	parameters : Map {
-		"mainBlock" = b,
-		"format" = "plantuml",
-		"path" = b.closure(p|p.eContainer).invert().including(b).title,
-		"icon" = "block"
-	}
+    parameters : Map {
+        "mainBlock" = b,
+        "format" = "plantuml",
+        "path" = b.closure(p|p.eContainer).invert().including(b).title,
+        "icon" = "minisd/icons/block.gif"
+    }
 
 }
 
 rule Alt2PlantUml 
-	transform a : Alt {
+    transform a : Alt {
 
-	parameters : Map {
-		"format" = "text",
-		"path" =  a.closure(p|p.eContainer).invert().including(a).title,
-		"icon" = "alt"
-	}
+    parameters : Map {
+        "format" = "text",
+        "path" =  a.closure(p|p.eContainer).invert().including(a).title,
+        "icon" = "minisd/icons/alt.gif"
+    }
 
 }

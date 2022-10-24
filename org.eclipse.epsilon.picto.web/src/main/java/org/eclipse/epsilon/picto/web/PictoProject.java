@@ -107,6 +107,9 @@ public class PictoProject {
 				pictoProject.getFiles().add(egxFile);
 
 				for (GenerationRule rule : egxModule.getGenerationRules()) {
+					if (rule.getTemplateBlock() == null) {
+						continue;
+					}
 					String templateName = rule.getTemplateBlock().execute(egxModule.getContext());
 
 					if (templateName != null) {

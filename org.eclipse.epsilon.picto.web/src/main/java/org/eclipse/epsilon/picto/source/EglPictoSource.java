@@ -416,7 +416,7 @@ public abstract class EglPictoSource implements PictoSource {
 	}
 	
 	protected String getDefaultIcon() {
-		return "diagram-cccccc";
+		return "icons/diagram.gif";
 	}
 	
 	@Override

@@ -24,7 +24,7 @@ public class ViewTree {
 	protected ContentPromise promise;
 	protected String name = "";
 	protected String format = "html";
-	protected String icon = "folder";
+	protected String icon = "icons/diagram.gif";
 	protected List<Patch> patches = new ArrayList<>();
 	protected ViewTree parent;
 	protected Point scrollPosition = new Point(0, 0);

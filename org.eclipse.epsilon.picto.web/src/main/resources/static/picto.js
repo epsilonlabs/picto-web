@@ -52,7 +52,13 @@ Picto.listToJsTreeData = function (list) {
         node["text"] = segments[key2];
         node["children"] = [];
       }
+      if (key2 == segments.length - 1) {
+        node["icon"] = "icons/document.gif";
+      } else {
+        node["icon"] = "icons/folder.gif";
+      }
       t = node["children"];
+
     }
     t = tree;
   }
