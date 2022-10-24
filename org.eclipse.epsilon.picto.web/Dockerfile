@@ -11,10 +11,6 @@
 # docker run --rm -i -t -v $PWD:/workspace --hostname=picto -p 8080:8080 --name=picto picto-web
 # docker run --rm -i -t -v $PWD:/workspace --hostname=picto -p 8080:8080 --name=picto alfayohannisyorkacuk/picto-web
 
-### INSTALLING LOCAL PLANTUML 
-# mvn install:install-file -Dfile=D:/PROJECTS/picto-web/org.eclipse.epsilon.picto.web/jars/plantuml-2018.8.jar -DgroupId=net.sourceforge.plantuml  -DartifactId=plantuml -Dversion=2018.8 -Dpackaging=jar -DgeneratePom=true
-
-#FROM openjdk:18-ea-11-jdk-alpine3.15
 FROM openjdk:11-jre-slim-bullseye
 #WORKDIR /program/picto
 #COPY picto .

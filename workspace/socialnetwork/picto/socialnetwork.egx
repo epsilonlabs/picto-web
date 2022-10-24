@@ -4,9 +4,7 @@ rule Network2Graphviz
 	parameters : 
 	   Map{
 		"path" = Sequence{"Social Network"},
-		"icon" = "diagram-ffffff",
 		"format" = "graphviz-circo",
-		
 		"layers" = Sequence {
 			Map {"id"="likes", "title"="Likes", "active"=true},
 			Map {"id"="dislikes", "title"="Dislikes", "active"=true}
@@ -26,9 +24,7 @@ rule Person2Graphviz
 
 	parameters : Map{
 		"path" = Sequence{"Social Network", p.name},
-		"icon" = "diagram-c0c0c0",
 		"format" = "graphviz-dot",
-		
 		"layers" = Sequence {
 			Map {"id"="likes", "title"="Likes", "active"=true},
 			Map {"id"="dislikes", "title"="Dislikes", "active"=true}
@@ -45,9 +41,8 @@ rule Persons2Table {
 
 	parameters : Map {
 		"path" = Sequence{"Stats"},
-		"icon" = "table",
+		"icon" = "icons/table.gif",
 		"format" = "csv"
-		
 		, "people" = Person.all()
 		// ,"pinsetrule" = "otherStats"
 	}
@@ -59,7 +54,6 @@ rule Persons2Graphviz {
 
 	parameters : Map {
 		"format" = "graphviz-dot",
-
 		"layers" = Sequence {
 			Map {"id"="likes", "title"="Likes", "active"=true},
 			Map {"id"="dislikes", "title"="Dislikes", "active"=true}

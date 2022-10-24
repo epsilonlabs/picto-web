@@ -3,7 +3,7 @@
 var formatter = new Native("java.text.SimpleDateFormat")("dd/MM/yyyy HH:mm:ss");
 var date = new Native("java.util.Date");
 %]
-[*note "Generated at [%=formatter.format(date)%]" as N1*]
+note "Generated at [%=formatter.format(date)%]" as N1
 [%diagram.populate();%]
 [%=diagram.preamble%]
 [%for (class in diagram.types.select(t|t.isTypeOf(Class))){%]
@@ -24,7 +24,11 @@ var date = new Native("java.util.Date");
 [%=getEdge(class, superType)%]
 [%}%]
 
+[%class.superTypes.clear();%]
+
 [%}%]
+
+[%diagram.types.clear();%]
 [%=diagram.postamble%]
 @enduml
 
