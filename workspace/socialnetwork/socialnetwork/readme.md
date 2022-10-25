@@ -2,7 +2,7 @@
 
 This is a simple way to represent network connections. 
 
-## Alice's network <a href="javascript:showView(['Social Network', 'Alice'])">(Go to Alice)</a>
+## Alice's network
 
 <picto-view path="Social Network, Alice"/>
 

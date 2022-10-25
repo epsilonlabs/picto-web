@@ -6,7 +6,7 @@ digraph G {
 	[%if (people.size()==1) { /* if generating individual views */
 		var tooltip = "Go to " + p.name + " in the editor";
 		var elementLabel = "<table border=\"0\"><tr>"
-				+ "<td href=\"javascript:top.showElement('" + p.id + "','" + p.eResource.uri + "')\""
+				+ "<td"
 				+ " tooltip=\"" + tooltip + "\">"
 				+ p.name
 				+ "</td></tr></table>";
@@ -50,7 +50,7 @@ operation addPersonWithViewEvent(p) {
 	var elementPath = "['Social Network', '" + p.name + "' ]";
 	var tooltip = "Go to " + p.name;
 	var elementLabel = "<table border=\"0\"><tr>"
-			+ "<td href=\"javascript:top.showView(" + elementPath + ")\""
+			+ "<td "
 			+ " tooltip=\"" + tooltip+  "\">" 
 			+ p.name 
 			+ "</td></tr></table>";
