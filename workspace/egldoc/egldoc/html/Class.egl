@@ -309,11 +309,13 @@
 	}
 	
 	operation EPackage filename() : String {
-		return self.name + "-package-index.html";
+	        // Temporary patch for MODELS 2022 demo
+		return "/picto?file=/egldoc/egldoc-standalone.picto&amp;path=/" + self.name + "&amp;name=" + self.name;
 	}
 
 	operation EClassifier filename() : String {
-		return self.ePackage.name + "-" + self.name + ".html";
+	        // Temporary patch for MODELS 2022 demo
+		return "/picto?file=/egldoc/egldoc-standalone.picto&amp;path=/" + self.ePackage.name + "/" + self.name + "&amp;name=" + self.name;
 	}
 
 	operation Any asClassifierFileName(package : String) : String {
