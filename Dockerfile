@@ -11,17 +11,19 @@
 # docker run --rm -i -t -v $PWD:/workspace --hostname=picto -p 8080:8080 --name=picto picto-web
 # docker run --rm -i -t -v $PWD:/workspace --hostname=picto -p 8080:8080 --name=picto alfayohannisyorkacuk/picto-web
 
-FROM openjdk:11-jre-slim-bullseye
-#WORKDIR /program/picto
-#COPY picto .
+FROM maven:3-openjdk-11 AS build
+
+COPY . /sources
+RUN cd /sources/org.eclipse.epsilon.picto.web && mvn clean install
+
+FROM openjdk:11-jre-slim-bullseye AS dist
+
 WORKDIR /program
-#COPY socialnetwork.ecore .
-#COPY socialnetwork.emf .
-#COPY socialnetwork.flexmi .
-COPY picto.jar .
-#WORKDIR /workspace
-RUN apt-get update -y && \
-  apt-get install -y graphviz nocache && \
-  apt-get -y autoremove
+COPY --from=build /sources/org.eclipse.epsilon.picto.web/picto.jar /program/picto.jar
+RUN apt-get update && apt-get install -y \
+  graphviz \
+  nocache \
+  && rm -rf /var/lib/apt/lists/*
+
 ENTRYPOINT ["java", "-jar", "/program/picto.jar"]
 
