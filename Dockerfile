@@ -19,11 +19,13 @@ RUN cd /sources/org.eclipse.epsilon.picto.web && mvn clean install
 FROM openjdk:11-jre-slim-bullseye AS dist
 
 WORKDIR /program
-COPY --from=build /sources/org.eclipse.epsilon.picto.web/picto.jar /program/picto.jar
+
 RUN apt-get update && apt-get install -y \
   graphviz \
   nocache \
   && rm -rf /var/lib/apt/lists/*
+
+COPY --from=build /sources/org.eclipse.epsilon.picto.web/picto.jar /program/picto.jar
 
 ENTRYPOINT ["java", "-jar", "/program/picto.jar"]
 
