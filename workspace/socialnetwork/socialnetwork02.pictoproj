@@ -1,0 +1,5 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project picto="socialnetwork.flexmi.picto">
+	<model path="socialnetwork.flemi" />
+	<metamodel path="socialnetwork.ecore" />
+</project>

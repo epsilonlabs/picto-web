@@ -92,6 +92,7 @@ public class WebEglPictoSource extends EglPictoSource {
 		this.pictoFile = pictoFile;
 	}
 
+	
 	@SuppressWarnings("unchecked")
 	public Map<String, String> transform(String modifiedFilePath) throws Exception {
 		Map<String, String> modifiedViewContents = new HashMap<>();

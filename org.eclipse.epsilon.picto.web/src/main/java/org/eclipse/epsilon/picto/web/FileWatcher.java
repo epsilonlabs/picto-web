@@ -46,9 +46,9 @@ public class FileWatcher extends Thread {
 	}
 
 	@MessageMapping("/gs-guide-websocket")
-	public void notifyFileChange(File modelFile) throws Exception {
+	public void notifyFileChange(File modifiedFile) throws Exception {
 		if (this.pictoJsonController != null) {
-			this.pictoJsonController.sendBackFileUpdate(modelFile);
+			this.pictoJsonController.sendChangesToBroker(modifiedFile);
 		} else {
 			System.out.println("No PictoJsonController attached");
 		}
@@ -93,8 +93,8 @@ public class FileWatcher extends Thread {
 							|| filePath.toString().endsWith(".xmi")) {
 						System.out.println("Picto: " + filePath + " has changed!!!");
 
-						File modelFile = new File(path.toString() + File.separator + filePath.toString());
-						this.notifyFileChange(modelFile);
+						File modifiedFile = new File(path.toString() + File.separator + filePath.toString());
+						this.notifyFileChange(modifiedFile);
 					}
 				}
 

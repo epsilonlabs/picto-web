@@ -1,6 +1,8 @@
 package org.eclipse.epsilon.picto.web;
 
 import java.io.File;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 
@@ -28,55 +30,66 @@ import org.springframework.web.bind.annotation.RestController;
 @RequestMapping("/pictojson")
 public class PictoJsonController {
 
-	@Autowired
-	private ApplicationContext context;
+  @Autowired
+  private ApplicationContext context;
 
-	@Autowired
-	public SimpMessagingTemplate template;
+  @Autowired
+  public SimpMessagingTemplate template;
 
-	public final FileWatcher FILE_WATCHER = new FileWatcher(this);
+  public final FileWatcher FILE_WATCHER = new FileWatcher(this);
 
-	public PictoJsonController() {
-		PictoPackage.eINSTANCE.eClass();
-		FILE_WATCHER.start();
-	}
+  public PictoJsonController() {
+    PictoPackage.eINSTANCE.eClass();
+    FILE_WATCHER.start();
+  }
 
-	@GetMapping(path = "/picto", produces = MediaType.APPLICATION_JSON_VALUE)
-	public String getPictoJson(String file, String path, String name, Model model) throws Exception {
-		ViewContentCache x = FileViewContentCache.getViewContentCache(file);
-		String result = "";
-		if (x != null)
-			result = x.getViewContentCache(path);
-		return result;
-	}
+  @GetMapping(path = "/picto", produces = MediaType.APPLICATION_JSON_VALUE)
+  public String getPictoJson(String file, String path, String name, Model model) throws Exception {
+    ViewContentCache x = FileViewContentCache.getViewContentCache(file);
+    String result = "";
+    if (x != null)
+      result = x.getViewContentCache(path);
+    return result;
+  }
 
-	@MessageMapping("/picto-web")
-	@SendTo("/topic/picto")
-	public void sendBackFileUpdate(File modifiedFile) throws Exception {
+  @MessageMapping("/picto-web")
+  @SendTo("/topic/picto")
+  public void sendChangesToBroker(File modifiedFile) throws Exception {
 
-		String modifiedFilePath = modifiedFile.getAbsolutePath()
-				.replace(new File(PictoApplication.WORKSPACE).getAbsolutePath(), "").replace("\\", "/");
+    List<Object[]> list = new ArrayList<>();  
+    for (PictoProject project : PictoProject.getPictoProjects()) {
+      if (project.getFiles().contains(modifiedFile)) {
+        list.add(new Object[]{modifiedFile, project});
+      }
+    }
+    if (list.size() == 0) {
+      return;
+    }
+    
+    String modifiedFilePath = modifiedFile.getAbsolutePath()
+        .replace(new File(PictoApplication.WORKSPACE).getAbsolutePath(), "").replace("\\", "/");
 
-		WebEglPictoSource source = new WebEglPictoSource();
-		Map<String, String> modifiedObjects = source.transform(modifiedFilePath);
-		System.out.println("PICTO: number of modified objects = " + modifiedObjects.size());
+    WebEglPictoSource source = new WebEglPictoSource();
+    //Map<String, String> modifiedObjects = source.transform(modifiedFilePath);
+    Map<String, String> modifiedObjects = source.transform(modifiedFilePath);
+    System.out.println("PICTO: number of modified objects = " + modifiedObjects.size());
 
-		File pictoFile = modifiedFile;
-		if (modifiedFile.getAbsolutePath().endsWith(".model") || modifiedFile.getAbsolutePath().endsWith(".flexmi")
-				|| modifiedFile.getAbsolutePath().endsWith(".xmi") || modifiedFile.getAbsolutePath().endsWith(".emf")) {
+    File pictoFile = modifiedFile;
+    if (modifiedFile.getAbsolutePath().endsWith(".model") || modifiedFile.getAbsolutePath().endsWith(".flexmi")
+        || modifiedFile.getAbsolutePath().endsWith(".xmi") || modifiedFile.getAbsolutePath().endsWith(".emf")) {
 //			pictoFile = new File(modifiedFile.getAbsolutePath() + ".picto");
-			modifiedFilePath += ".picto";
-		}
+      modifiedFilePath += ".picto";
+    }
 
-		MessageChannel brokerChannel = context.getBean("brokerChannel", MessageChannel.class);
-		for (Entry<String, String> entry : modifiedObjects.entrySet()) {
-			SimpMessagingTemplate messaging = new SimpMessagingTemplate(brokerChannel);
+    MessageChannel brokerChannel = context.getBean("brokerChannel", MessageChannel.class);
+    for (Entry<String, String> entry : modifiedObjects.entrySet()) {
+      SimpMessagingTemplate messaging = new SimpMessagingTemplate(brokerChannel);
 //		messaging.setMessageConverter(new MappingJackson2MessageConverter());
-			String topicName = "/topic/picto" + modifiedFilePath;
-			messaging.convertAndSend(topicName, entry.getValue().getBytes());
-		}
+      String topicName = "/topic/picto" + modifiedFilePath;
+      messaging.convertAndSend(topicName, entry.getValue().getBytes());
+    }
 
 //		return modifiedObjects;
-	}
+  }
 
 }
