@@ -149,6 +149,10 @@
 
       $('#tree').on("select_node.jstree", function (event, data) {
         if (data.selected.length) {
+          if (Picto.disableJsTreeOnSelectEvent){
+            console.log("skip " + data.node.text);
+            return;
+          }
           var path = Picto.getSelectedViewPath(data);
           Picto.selectedPath = path;
           console.log(path);
@@ -163,20 +167,7 @@
           return;
         }
         console.log(Picto.tempSelectedNode);
-        var tree = $('#tree').jstree();
-        tree.deselect_all(true);
-        // var temp = Picto.tempSelectedNode;
-        var root = tree.get_node('#');
-        for (key in root.children_d) {
-          var id = root.children_d[key];
-          var node = tree.get_node(id);
-          var fullPath = "/" + tree.get_path(node, '/');
-          if (fullPath == Picto.tempSelectedPath) {
-            tree.select_node(node, true, true);
-            console.log(id + ": " + fullPath);
-            break;
-          }
-        }
+        Picto.selectJsTreeNode(Picto.tempSelectedPath);
       });
 
       var to = false;

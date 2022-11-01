@@ -14,6 +14,7 @@ rule Network2Graphviz
 //        "people" = Person.all()
 	}
 	template : "socialnetwork2graphviz.egl"
+	target : "../output/Social Network.dot"
 	
 }
 
@@ -32,6 +33,7 @@ rule Person2Graphviz
 		
 		"people" = Sequence{p}
 	}
+	target : "../output/" + p.name + ".dot"
 	
 }
 

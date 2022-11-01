@@ -23,7 +23,8 @@ Picto.selectedPath = null;
 Picto.viewContents = new Map();
 Picto.tempSelectedNode = null; // temporary holder when refreshing jstree
 Picto.tempSelectedPath = null; // temporary holder when refreshing jstree
-
+Picto.views = new Map();
+Picto.disableJsTreeOnSelectEvent = false;
 
 Picto.convertToPictoRequest = function (pictoFile, type, message) {
   return JSON.stringify(
@@ -134,7 +135,56 @@ Picto.getSelectedViewPath = function (data) {
   return path;
 }
 
+Picto.setZoom = function (view, svg) {
+  var zoomedSvg = svgPanZoom(svg,
+    {
+      minZoom: 0.01, zoomEnabled: true, fit: false, center: true,
+      onZoom: function (scale) {
+        view.zoomScale = scale;
+      },
+      onPan: function (pan) {
+        view.pan = pan;
+      }
+    }
+  );
+  var baseHeight = svg.height.baseVal.value;
+  var baseWidth = svg.width.baseVal.value;
+  var boundingClientRect = svg.getBoundingClientRect();
+  var actualHeight = boundingClientRect.height;
+  var actualWidth = boundingClientRect.width;
+  var heightRatio = actualHeight / baseHeight;
+  var widthRatio = actualWidth / baseWidth;
+  var smallestRatio = (heightRatio > widthRatio) ? widthRatio : heightRatio;
+  var ratio = (smallestRatio > 1) ? 1 / smallestRatio : 1;
+  if (view.zoomScale != null) {
+    ratio = view.zoomScale;
+  } else {
+    view.zoomScale = ratio;
+  }
+  zoomedSvg.zoom(ratio);
+  if (view.pan != null) {
+    zoomedSvg.pan(view.pan);
+  }
+}
+
 Picto.render = function (view) {
+
+  var localView = Picto.views.get(view.path);
+
+  // old or updated, else is new
+  if (localView != null) {
+    // old
+    if (view.timestamp <= localView.timestamp) {
+      view = localView;
+    } else { // updated
+      // copy the old zoom and pan to the updated one
+      view.zoomScale = localView.zoomScale;
+      view.pan = localView.pan;
+      Picto.views.delete(view.path);
+    }
+  }
+  Picto.views.set(view.path, view);
+
   var container = document.getElementById("visualisation");
   container.innerHTML = '';
   if (view.type == 'svg') {
@@ -143,7 +193,7 @@ Picto.render = function (view) {
     var xmlDoc = parser.parseFromString(text, "text/xml");
     var svg = xmlDoc.getElementsByTagName("svg")[0];
     container.appendChild(svg);
-    svgPanZoom(svg, { zoomEnabled: true, fit: true, center: true });
+    Picto.setZoom(view, svg);
   } else if (view.type == 'html') {
     var text = view.content;
     if (text.trim() == "") {
@@ -161,7 +211,7 @@ Picto.render = function (view) {
       for (var i = 0; i < svgs.length; i++) {
         var svg = svgs[i];
         svg.setAttribute("style", null);
-        svgPanZoom(svg, { zoomEnabled: true, fit: false, center: true });
+        Picto.setZoom(view, svg);
       }
     }
     // container.innerHTML = xmlDoc.innerHTML;
@@ -182,6 +232,7 @@ Picto.render = function (view) {
     var tree = $('#tree').jstree(true);
     Picto.tempSelectedNode = tree.get_selected(true)[0];
     Picto.tempSelectedPath = "/" + tree.get_path(Picto.tempSelectedNode, '/');
+    Picto.disableJsTreeOnSelectEvent = true;
     tree.refresh();
     console.log("");
   } else {
@@ -240,5 +291,29 @@ Picto.connectToServer = function (pictoFile) {
   }
   );
 }
+
+Picto.selectJsTreeNode = function (path) {
+  var tree = $('#tree').jstree();
+  tree.deselect_all(true);
+  var root = tree.get_node('#');
+  for (key in root.children_d) {
+    var id = root.children_d[key];
+    var node = tree.get_node(id);
+    var fullPath = "/" + tree.get_path(node, '/');
+    if (fullPath == path) {
+      Picto.disableJsTreeOnSelectEvent = false;
+      tree.select_node(node, true, true);
+      console.log(id + ": " + fullPath);
+      break;
+    }
+  }
+}
+
+var top = new Object();
+top.showView = function (param) {
+  path = "/" + param.join("/");
+  Picto.selectJsTreeNode(path);
+  console.log(param);
+};
 
 
