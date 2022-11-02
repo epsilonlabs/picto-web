@@ -2,7 +2,9 @@ package org.eclipse.epsilon.picto.web;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 import org.springframework.stereotype.Controller;
@@ -19,38 +21,46 @@ import org.springframework.web.bind.annotation.GetMapping;
 @Controller
 public class PictoController {
 
+  @GetMapping(value = "/")
+  public String getPictoFiles(String information, Model model) throws IOException {
+    List<String> pictoFiles = ProjectTreeToJson.getPictoFiles(PictoApplication.WORKSPACE).stream()
+        .map(s -> s.replace("\\", "/")).collect(Collectors.toList());
+    model.addAttribute("pictofiles", pictoFiles);
+    return "pictofiles";
+  }
 
-	@GetMapping(value = "/")
-	public String getPictoFiles(String information, Model model) throws IOException {
-		List<String> pictoFiles = ProjectTreeToJson.getPictoFiles(PictoApplication.WORKSPACE).stream()
-				.map(s -> s.replace("\\", "/")).collect(Collectors.toList());
-		model.addAttribute("pictofiles", pictoFiles);
-		return "pictofiles";
-	}
+  @GetMapping(value = "/picto")
+  public String getPicto(String file, String path, String name, Model model) throws Exception {
+    model.addAttribute("pictoName", file);
 
-	@GetMapping(value = "/picto")
-	public String getPicto(String file, String path, String name, Model model) throws Exception {
-		model.addAttribute("pictoName", file);
-		
-		if (FileViewContentCache.getViewContentCache(file) == null) {
-			WebEglPictoSource source = new WebEglPictoSource();
-			source.transform(file);
-		}
-		if (path == null) {
-			String treeResult = FileViewContentCache.getViewContentCache(file)
-					.getViewContentCache(FileViewContentCache.PICTO_TREE);
-			model.addAttribute("treeResponse", treeResult);
-		} else {
-			String treeResult = FileViewContentCache.getViewContentCache(file)
-					.getViewContentCache(FileViewContentCache.PICTO_TREE);
-			String viewResult = FileViewContentCache.getViewContentCache(file).getViewContentCache(path);
-			model.addAttribute("treeResponse", treeResult);
-			model.addAttribute("viewResponse", viewResult);
-			model.addAttribute("selectedUri", path);
-		}
+    if (FileViewContentCache.getViewContentCache(file) == null) {
+      File modifiedFile = new File(new File(PictoApplication.WORKSPACE + file).getAbsolutePath());
+      Set<PictoProject> affectedPictoProjects = new HashSet<>();
+      for (PictoProject project : PictoProject.getPictoProjects()) {
+        if (project.getFiles().contains(modifiedFile)) {
+          affectedPictoProjects.add(project);
+        }
+      }
+      for (PictoProject pictoProject : affectedPictoProjects) {
+        WebEglPictoSource source = new WebEglPictoSource();
+        source.transform(file, pictoProject);
+      }
+    }
+    if (path == null) {
+      String treeResult = FileViewContentCache.getViewContentCache(file)
+          .getViewContentCache(FileViewContentCache.PICTO_TREE);
+      model.addAttribute("treeResponse", treeResult);
+    } else {
+      String treeResult = FileViewContentCache.getViewContentCache(file)
+          .getViewContentCache(FileViewContentCache.PICTO_TREE);
+      String viewResult = FileViewContentCache.getViewContentCache(file).getViewContentCache(path);
+      model.addAttribute("treeResponse", treeResult);
+      model.addAttribute("viewResponse", viewResult);
+      model.addAttribute("selectedUri", path);
+    }
 
-		return "picto";
-	}
+    return "picto";
+  }
 
 //	@MessageMapping("/treeview")
 //	@SendTo("/topic/picto")

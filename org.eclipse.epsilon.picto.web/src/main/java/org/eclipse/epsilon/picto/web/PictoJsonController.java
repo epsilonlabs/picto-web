@@ -2,11 +2,12 @@ package org.eclipse.epsilon.picto.web;
 
 import java.io.File;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.Set;
 
-import org.eclipse.epsilon.picto.dom.Picto;
 import org.eclipse.epsilon.picto.dom.PictoPackage;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationContext;
@@ -56,40 +57,37 @@ public class PictoJsonController {
   @SendTo("/topic/picto")
   public void sendChangesToBroker(File modifiedFile) throws Exception {
 
-    List<Object[]> list = new ArrayList<>();  
+    Set<PictoProject> affectedPictoProjects = new HashSet<>();
     for (PictoProject project : PictoProject.getPictoProjects()) {
       if (project.getFiles().contains(modifiedFile)) {
-        list.add(new Object[]{modifiedFile, project});
+        affectedPictoProjects.add(project);
       }
     }
-    if (list.size() == 0) {
-      return;
-    }
-    
-    String modifiedFilePath = modifiedFile.getAbsolutePath()
-        .replace(new File(PictoApplication.WORKSPACE).getAbsolutePath(), "").replace("\\", "/");
+    for (PictoProject pictoProject : affectedPictoProjects) {
 
-    WebEglPictoSource source = new WebEglPictoSource();
-    //Map<String, String> modifiedObjects = source.transform(modifiedFilePath);
-    Map<String, String> modifiedObjects = source.transform(modifiedFilePath);
-    System.out.println("PICTO: number of modified objects = " + modifiedObjects.size());
+      String modifiedFilePath = modifiedFile.getAbsolutePath()
+          .replace(new File(PictoApplication.WORKSPACE).getAbsolutePath(), "").replace("\\", "/");
 
-    File pictoFile = modifiedFile;
-    if (modifiedFile.getAbsolutePath().endsWith(".model") || modifiedFile.getAbsolutePath().endsWith(".flexmi")
-        || modifiedFile.getAbsolutePath().endsWith(".xmi") || modifiedFile.getAbsolutePath().endsWith(".emf")) {
+      WebEglPictoSource source = new WebEglPictoSource();
+      // Map<String, String> modifiedObjects = source.transform(modifiedFilePath);
+      Map<String, String> modifiedObjects = source.transform(modifiedFilePath, pictoProject);
+      System.out.println("PICTO: number of modified objects = " + modifiedObjects.size());
+
+      if (modifiedFile.getAbsolutePath().endsWith(".model") || modifiedFile.getAbsolutePath().endsWith(".flexmi")
+          || modifiedFile.getAbsolutePath().endsWith(".xmi") || modifiedFile.getAbsolutePath().endsWith(".emf")) {
 //			pictoFile = new File(modifiedFile.getAbsolutePath() + ".picto");
-      modifiedFilePath += ".picto";
-    }
+        modifiedFilePath += ".picto";
+      }
 
-    MessageChannel brokerChannel = context.getBean("brokerChannel", MessageChannel.class);
-    for (Entry<String, String> entry : modifiedObjects.entrySet()) {
-      SimpMessagingTemplate messaging = new SimpMessagingTemplate(brokerChannel);
+      MessageChannel brokerChannel = context.getBean("brokerChannel", MessageChannel.class);
+      for (Entry<String, String> entry : modifiedObjects.entrySet()) {
+        SimpMessagingTemplate messaging = new SimpMessagingTemplate(brokerChannel);
 //		messaging.setMessageConverter(new MappingJackson2MessageConverter());
-      String topicName = "/topic/picto" + modifiedFilePath;
-      messaging.convertAndSend(topicName, entry.getValue().getBytes());
+        String topicName = "/topic/picto" + modifiedFilePath;
+        messaging.convertAndSend(topicName, entry.getValue().getBytes());
+      }
     }
 
-//		return modifiedObjects;
   }
 
 }

@@ -37,6 +37,14 @@ public class PictoProject {
     this.projectFile = projectFile;
   }
 
+  public Set<File> getModelFiles() {
+    return modelFiles;
+  }
+
+  public Set<File> getMetamodelFiles() {
+    return metamodelFiles;
+  }
+
   @Override
   public String toString() {
     return projectFile.getAbsolutePath() + " : ["

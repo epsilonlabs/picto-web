@@ -10,7 +10,7 @@ digraph G {
         var elementLabel = "<table border=\"0\"><tr>"
                 + "<td href=\"javascript:top.showView(" + elementPath + ")\""
                 + " tooltip=\"" + tooltip+  "\">" 
-                + p.name
+                + p.name + ""
                 + "</td></tr></table>";
     %]
         [%=p.name%] [label=<[%=elementLabel%]>, fillcolor="azure2:ghostwhite"]
@@ -47,7 +47,7 @@ operation addPersonWithViewEvent(p) {
     var elementLabel = "<table border=\"0\"><tr>"
             + "<td href=\"javascript:top.showView(" + elementPath + ")\""
             + " tooltip=\"" + tooltip+  "\">" 
-            + p.name 
+            + p.name + ""
             + "</td></tr></table>";
 %]
     [%=p.name%] [label=<[%=elementLabel%]>]
