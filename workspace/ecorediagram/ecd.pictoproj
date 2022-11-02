@@ -1,0 +1,5 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project picto="ecd.flexmi.picto">
+	<model path="ecd.flexmi" />
+	<metamodel path="ecd.ecore" />
+</project>

@@ -1,0 +1,5 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project picto="egldoc-standalone.picto">
+	<model path="egldoc/Families.ecore" />
+	<metamodel path="../ecorediagram/Ecore.ecore" />
+</project>
