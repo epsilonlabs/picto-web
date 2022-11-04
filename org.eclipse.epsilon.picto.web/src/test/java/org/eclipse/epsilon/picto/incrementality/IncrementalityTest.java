@@ -207,7 +207,6 @@ class IncrementalityTest {
 	}
 
 	@SuppressWarnings("unchecked")
-	@Disabled
 	@Test
 	void testAddElement() throws Exception {
 		setUp("socialnetwork/socialnetwork.model.picto", "socialnetwork/socialnetwork.model");
