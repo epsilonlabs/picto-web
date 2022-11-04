@@ -9,14 +9,17 @@
 		<version>2.6.6</version>
 		<relativePath /> <!-- lookup parent from repository -->
 	</parent>
+
 	<groupId>epsilon.web</groupId>
 	<artifactId>picto</artifactId>
 	<version>0.0.1-SNAPSHOT</version>
 	<name>picto</name>
-	<description>Web Picto</description>
+
+	<description>Picto Web</description>
 	<properties>
 		<java.version>11</java.version>
 	</properties>
+
 	<dependencies>
 		<dependency>
 			<groupId>org.springframework.boot</groupId>
@@ -57,7 +60,6 @@
 			<artifactId>reactor-test</artifactId>
 			<scope>test</scope>
 		</dependency>
-
 
 		<dependency>
 			<groupId>org.springframework.boot</groupId>
@@ -183,31 +185,14 @@
 			<version>1.2022.8</version>
 		</dependency>
 
-
-		<!-- START: FROM LOCAL REPOSITORY -->
-		<!--<dependency> <groupId>org.eclipse.epsilon</groupId> <artifactId>org.eclipse.epsilon.common.dt</artifactId> 
-			<version>2.5.0</version> </dependency> <dependency> <groupId>org.eclipse.epsilon</groupId> 
-			<artifactId>org.eclipse.epsilon.eol.dt</artifactId> <version>2.5.0</version> 
-			</dependency> -->
-		<!--<dependency> <groupId>org.eclipse.ui</groupId> <artifactId>org.eclipse.ui.workbench</artifactId> 
-			<version>3.123.0</version> </dependency> -->
-		<!--<dependency> <groupId>org.eclipse.epsilon</groupId> <artifactId>org.eclipse.epsilon.picto</artifactId> 
-			<version>2.5.0</version> </dependency> -->
-		<!-- local plantuml ### INSTALLING LOCAL PLANTUML Since I couldn't find 
-			the right PlantUML file on the maven central, I have to install the library 
-			manually on my local repo so that I could build as Picto Web jar file that 
-			includes the libary. To install execute the following command. Change the 
-			-Dfile path according to the local path of the jar file on your machine. 
-			mvn install:install-file -Dfile=/mnt/d/PROJECTS/picto-web/org.eclipse.epsilon.picto.web/jars/plantuml-2018.8.jar 
-			-DgroupId=net.sourceforge.plantuml -DartifactId=plantuml -Dversion=2018.8 
-			-Dpackaging=jar -DgeneratePom=true -->
-		<!-- <dependency> <groupId>net.sourceforge.plantuml</groupId> <artifactId>plantuml</artifactId> 
-			<version>2018.8</version> </dependency> -->
-
-		<!-- END: FROM LOCAL REPOSITORY -->
-
-
+		<dependency>
+			<groupId>org.assertj</groupId>
+			<artifactId>assertj-core</artifactId>
+			<version>3.23.1</version>
+			<scope>test</scope>
+		</dependency>
 	</dependencies>
+
 	<build>
 		<plugins>
 			<plugin>
@@ -235,28 +220,7 @@
 						<descriptorRef>jar-with-dependencies</descriptorRef>
 					</descriptorRefs>
 					<!-- PICTO WEB -->
-
 				</configuration>
-			</plugin>
-			<plugin>
-				<groupId>com.github.jeluard</groupId>
-				<artifactId>plantuml-maven-plugin</artifactId>
-				<version>1.2</version>
-				<configuration>
-					<sourceFiles>
-						<directory>${basedir}</directory>
-						<includes>
-							<include>src/main/plantuml/**/*.txt</include>
-						</includes>
-					</sourceFiles>
-				</configuration>
-				<dependencies>
-					<dependency>
-						<groupId>net.sourceforge.plantuml</groupId>
-						<artifactId>plantuml</artifactId>
-						<version>8059</version>
-					</dependency>
-				</dependencies>
 			</plugin>
 		</plugins>
 	</build>

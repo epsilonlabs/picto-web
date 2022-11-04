@@ -14,7 +14,7 @@
 FROM maven:3-openjdk-11 AS build
 
 COPY . /sources
-RUN cd /sources/org.eclipse.epsilon.picto.web && mvn clean install
+RUN cd /sources/org.eclipse.epsilon.picto.web && mvn -B clean install
 
 FROM openjdk:11-jre-slim-bullseye AS dist
 
