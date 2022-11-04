@@ -128,7 +128,6 @@ class IncrementalityTest {
 			"/Social Network/Dan");
 	}
 
-	@Disabled
 	@Test
 	void testDeleteElement() throws Exception {
 		setUp("socialnetwork/socialnetwork.model.picto", "socialnetwork/socialnetwork.model");
