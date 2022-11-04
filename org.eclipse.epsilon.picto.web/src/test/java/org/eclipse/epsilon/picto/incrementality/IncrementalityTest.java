@@ -73,7 +73,6 @@ class IncrementalityTest {
 		modelFileBackup.delete();
 	}
 
-	@Disabled
 	@Test
 	void testGeneration() throws Exception {
 		Map<String, String> generatedViews = setUp(
