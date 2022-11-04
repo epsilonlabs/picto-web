@@ -22,6 +22,7 @@ import org.eclipse.epsilon.picto.web.WebEglPictoSource;
 import org.junit.Ignore;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 
 import com.google.common.io.Files;
@@ -72,7 +73,7 @@ class IncrementalityTest {
 		modelFileBackup.delete();
 	}
 
-	@Ignore
+	@Disabled
 	@Test
 	void testGeneration() throws Exception {
 		Map<String, String> generatedViews = setUp(
@@ -89,7 +90,7 @@ class IncrementalityTest {
 			"/Readme");
 	}
 
-	@Ignore
+	@Disabled
 	@Test
 	void testUpdateEglDoc() throws Exception {
 		try {
@@ -110,7 +111,7 @@ class IncrementalityTest {
 		}
 	}
 
-	@Ignore
+	@Disabled
 	@Test
 	void testUpdateProperty() throws Exception {
 		setUp("socialnetwork/socialnetwork.model.picto", "socialnetwork/socialnetwork.model");
@@ -127,7 +128,7 @@ class IncrementalityTest {
 			"/Social Network/Dan");
 	}
 
-	@Ignore
+	@Disabled
 	@Test
 	void testDeleteElement() throws Exception {
 		setUp("socialnetwork/socialnetwork.model.picto", "socialnetwork/socialnetwork.model");
@@ -205,7 +206,7 @@ class IncrementalityTest {
 	}
 
 	@SuppressWarnings("unchecked")
-	@Ignore
+	@Disabled
 	@Test
 	void testAddElement() throws Exception {
 		setUp("socialnetwork/socialnetwork.model.picto", "socialnetwork/socialnetwork.model");
@@ -235,7 +236,7 @@ class IncrementalityTest {
 	}
 
 	@SuppressWarnings("unchecked")
-	@Ignore
+	@Disabled
 	@Test
 	void testAddNonDeterminingElement() throws Exception {
 		setUp("socialnetwork/socialnetwork.model.picto", "socialnetwork/socialnetwork.model");
@@ -264,6 +265,7 @@ class IncrementalityTest {
 	}
 
 	@SuppressWarnings("unchecked")
+	@Disabled
 	@Test
 	void testMultipleUpdates() throws Exception {
 			setUp("socialnetwork/socialnetwork.model.picto", "socialnetwork/socialnetwork.model");
