@@ -1,36 +1,37 @@
 digraph G {
-	node[shape=rectangle, fontname=Tahoma, fontsize=10, style="filled", gradientangle="270", fillcolor="bisque:floralwhite"]
-	edge[penwidth=3, style=tapered, arrowhead=none]
-	
+    node[shape=rectangle, fontname=Tahoma, fontsize=10, style="filled", gradientangle="270", fillcolor="bisque:floralwhite"]
+    edge[penwidth=3, style=tapered, arrowhead=none]
+    
 [%for (p in people){%]
-	[%if (people.size()==1) { /* if generating individual views */
-		var tooltip = "Go to " + p.name + " in the editor";
-		var elementLabel = "<table border=\"0\"><tr>"
-				+ "<td"
-				+ " tooltip=\"" + tooltip + "\">"
-				+ p.name
-				+ "</td></tr></table>";
-	%]
-		[%=p.name%] [label=<[%=elementLabel%]>, fillcolor="azure2:ghostwhite"]
-	[%} else {
-		addPersonWithViewEvent(p);
-	}%]
-	
-	[%if (isLayerActive("likes")){%]
-		[%for (l in p.likes){
-			addPersonWithViewEvent(l);%]
+    [%if (people.size()==1) { /* if generating individual views */
+        var elementPath = "['Social Network', '" + p.name + "' ]";
+        var tooltip = "Go to " + p.name;
+        var elementLabel = "<table border=\"0\"><tr>"
+            + "<td href=\"javascript:top.showView(" + elementPath + ")\""
+            + " tooltip=\"" + tooltip+  "\">" 
+                + p.name
+                + "</td></tr></table>";
+    %]
+        [%=p.name%] [label=<[%=elementLabel%]>, fillcolor="azure2:ghostwhite"]
+    [%} else {
+        addPersonWithViewEvent(p);
+    }%]
+    
+    [%if (isLayerActive("likes")){%]
+        [%for (l in p.likes){
+            addPersonWithViewEvent(l);%]
 
-			[%=p.name%] -> [%=l.name%] [color="#2A6C41"]
-		[%}%]
-	[%}%]
-	
-	[%if (isLayerActive("dislikes")){%]
-		[%for (l in p.dislikes){
-			addPersonWithViewEvent(l); %]
+            [%=p.name%] -> [%=l.name%] [color="#2A6C41"]
+        [%}%]
+    [%}%]
+    
+    [%if (isLayerActive("dislikes")){%]
+        [%for (l in p.dislikes){
+            addPersonWithViewEvent(l); %]
 
-			[%=p.name%] -> [%=l.name%] [color="#B43431"]
-		[%}%]
-	[%}%]
+            [%=p.name%] -> [%=l.name%] [color="#B43431"]
+        [%}%]
+    [%}%]
 
     
 [%}%]
@@ -38,8 +39,8 @@ digraph G {
 node[shape=circle, fontname=Tahoma, fontsize=10, style="filled", gradientangle="270", fillcolor="violet:white"]
 [%for (p in people){%]
     [%for (item in p.items){ %]
-	    [%=item.name%][]
-	    [%=p.name%] -> [%=item.name%][color="#999999"]
+        [%=item.name%][]
+        [%=p.name%] -> [%=item.name%][color="#999999"]
     [% } %]
 [%}%]
 }
@@ -47,25 +48,25 @@ node[shape=circle, fontname=Tahoma, fontsize=10, style="filled", gradientangle="
 [%
 operation addPersonWithViewEvent(p) {
 
-	var elementPath = "['Social Network', '" + p.name + "' ]";
-	var tooltip = "Go to " + p.name;
-	var elementLabel = "<table border=\"0\"><tr>"
-			+ "<td "
-			+ " tooltip=\"" + tooltip+  "\">" 
-			+ p.name 
-			+ "</td></tr></table>";
+    var elementPath = "['Social Network', '" + p.name + "' ]";
+    var tooltip = "Go to " + p.name;
+    var elementLabel = "<table border=\"0\"><tr>"
+            + "<td href=\"javascript:top.showView(" + elementPath + ")\""
+            + " tooltip=\"" + tooltip+  "\">" 
+            + p.name 
+            + "</td></tr></table>";
 %]
-	[%=p.name%] [label=<[%=elementLabel%]>]
+    [%=p.name%] [label=<[%=elementLabel%]>]
 [%
 }
 
 operation isLayerActive(id : String) {
-	var layer = layers.selectOne(l|l.id = id);
-	if (layer.isDefined()) {
-		return layer.active;
-	}
-	else {
-		return true;
-	}
+    var layer = layers.selectOne(l|l.id = id);
+    if (layer.isDefined()) {
+        return layer.active;
+    }
+    else {
+        return true;
+    }
 }
 %]

@@ -2,7 +2,7 @@
 <picto format="egx" transformation="egldoc/EglDoc.egx" standalone="true">
 	<model type="EMF">
 		<parameter name="name" value="M"/>
-		<parameter name="metamodelUri" value="http://www.eclipse.org/emf/2002/Ecore"/>
+		<parameter name="metamodelUri" file="http://www.eclipse.org/emf/2002/Ecore"/>
 		<parameter name="modelFile" file="egldoc/Families.ecore"/>
 	</model>                   
 </picto>         

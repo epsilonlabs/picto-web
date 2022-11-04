@@ -3,6 +3,7 @@
 	<model type="EMF">
 		<parameter name="name" value="M"/>
 		<parameter name="metamodelUri" value="socialnetwork"/>
+		<parameter name="metamodelFile" file="socialnetwork.ecore"/>
 		<parameter name="modelFile" file="socialnetwork.flexmi"/>
 	</model>                                  
 </picto>      

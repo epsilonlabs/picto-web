@@ -6,7 +6,7 @@ var date = new Native("java.util.Date");
 note "Generated at [%=formatter.format(date)%]" as N1
 [%diagram.populate();%]
 [%=diagram.preamble%]
-[%for (class in diagram.types.select(t|t.isTypeOf(Class))){%]
+[%for (class in diagram.types.select(t|t.isTypeOf(ECD!Class))){%]
 [%= (class.abstract)? "abstract " : "" %][%= (class.interface)? "interface" : "class" %] [%=class.name%] {
 	[%for (attribute in class.attributes){%]
 	[%=attribute.name%] : [%=attribute.type%]

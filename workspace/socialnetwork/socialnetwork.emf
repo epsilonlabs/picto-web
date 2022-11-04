@@ -2,16 +2,16 @@
 package socialnetwork;
 
 class SocialNetwork {
-	val Person[*] people;
+    val Person[*] people;
 }
 
 class Item {
-	attr String name;
+    attr String name;
 }
 
 class Person {
-	attr String name;
-	ref Person[*] likes;
-	ref Person[*] dislikes;
-	val Item[*] items;
+    attr String name;
+    ref Person[*] likes;
+    ref Person[*] dislikes;
+    val Item[*] items;
 }

@@ -40,297 +40,297 @@ import org.eclipse.epsilon.picto.pictograph.Template;
  */
 public class RuleImpl extends InputEntityImpl implements Rule {
 	/**
-	 * The cached value of the '{@link #getTemplate() <em>Template</em>}' reference.
-	 * <!-- begin-user-doc -->
+   * The cached value of the '{@link #getTemplate() <em>Template</em>}' reference.
+   * <!-- begin-user-doc -->
 	 * <!-- end-user-doc -->
-	 * @see #getTemplate()
-	 * @generated
-	 * @ordered
-	 */
+   * @see #getTemplate()
+   * @generated
+   * @ordered
+   */
 	protected Template template;
 
 	/**
-	 * The cached value of the '{@link #getContextElements() <em>Context Elements</em>}' reference list.
-	 * <!-- begin-user-doc -->
+   * The cached value of the '{@link #getContextElements() <em>Context Elements</em>}' reference list.
+   * <!-- begin-user-doc -->
 	 * <!-- end-user-doc -->
-	 * @see #getContextElements()
-	 * @generated
-	 * @ordered
-	 */
+   * @see #getContextElements()
+   * @generated
+   * @ordered
+   */
 	protected EList<Element> contextElements;
 
 	/**
-	 * The cached value of the '{@link #getElements() <em>Elements</em>}' reference list.
-	 * <!-- begin-user-doc -->
+   * The cached value of the '{@link #getElements() <em>Elements</em>}' reference list.
+   * <!-- begin-user-doc -->
 	 * <!-- end-user-doc -->
-	 * @see #getElements()
-	 * @generated
-	 * @ordered
-	 */
+   * @see #getElements()
+   * @generated
+   * @ordered
+   */
 	protected EList<Element> elements;
 
 	/**
-	 * <!-- begin-user-doc -->
+   * <!-- begin-user-doc -->
 	 * <!-- end-user-doc -->
-	 * @generated
-	 */
+   * @generated
+   */
 	protected RuleImpl() {
-		super();
-	}
+    super();
+  }
 
 	/**
-	 * <!-- begin-user-doc -->
+   * <!-- begin-user-doc -->
 	 * <!-- end-user-doc -->
-	 * @generated
-	 */
+   * @generated
+   */
 	@Override
 	protected EClass eStaticClass() {
-		return PictographPackage.Literals.RULE;
-	}
+    return PictographPackage.Literals.RULE;
+  }
 
 	/**
-	 * <!-- begin-user-doc -->
+   * <!-- begin-user-doc -->
 	 * <!-- end-user-doc -->
-	 * @generated
-	 */
+   * @generated
+   */
 	@Override
 	public org.eclipse.epsilon.picto.pictograph.Module getModule() {
-		if (eContainerFeatureID() != PictographPackage.RULE__MODULE) return null;
-		return (org.eclipse.epsilon.picto.pictograph.Module)eInternalContainer();
-	}
+    if (eContainerFeatureID() != PictographPackage.RULE__MODULE) return null;
+    return (org.eclipse.epsilon.picto.pictograph.Module)eInternalContainer();
+  }
 
 	/**
-	 * <!-- begin-user-doc -->
+   * <!-- begin-user-doc -->
 	 * <!-- end-user-doc -->
-	 * @generated
-	 */
+   * @generated
+   */
 	public NotificationChain basicSetModule(org.eclipse.epsilon.picto.pictograph.Module newModule, NotificationChain msgs) {
-		msgs = eBasicSetContainer((InternalEObject)newModule, PictographPackage.RULE__MODULE, msgs);
-		return msgs;
-	}
+    msgs = eBasicSetContainer((InternalEObject)newModule, PictographPackage.RULE__MODULE, msgs);
+    return msgs;
+  }
 
 	/**
-	 * <!-- begin-user-doc -->
+   * <!-- begin-user-doc -->
 	 * <!-- end-user-doc -->
-	 * @generated
-	 */
+   * @generated
+   */
 	@Override
 	public void setModule(org.eclipse.epsilon.picto.pictograph.Module newModule) {
-		if (newModule != eInternalContainer() || (eContainerFeatureID() != PictographPackage.RULE__MODULE && newModule != null)) {
-			if (EcoreUtil.isAncestor(this, newModule))
-				throw new IllegalArgumentException("Recursive containment not allowed for " + toString());
-			NotificationChain msgs = null;
-			if (eInternalContainer() != null)
-				msgs = eBasicRemoveFromContainer(msgs);
-			if (newModule != null)
-				msgs = ((InternalEObject)newModule).eInverseAdd(this, PictographPackage.MODULE__RULES, org.eclipse.epsilon.picto.pictograph.Module.class, msgs);
-			msgs = basicSetModule(newModule, msgs);
-			if (msgs != null) msgs.dispatch();
-		}
-		else if (eNotificationRequired())
-			eNotify(new ENotificationImpl(this, Notification.SET, PictographPackage.RULE__MODULE, newModule, newModule));
-	}
+    if (newModule != eInternalContainer() || (eContainerFeatureID() != PictographPackage.RULE__MODULE && newModule != null)) {
+      if (EcoreUtil.isAncestor(this, newModule))
+        throw new IllegalArgumentException("Recursive containment not allowed for " + toString());
+      NotificationChain msgs = null;
+      if (eInternalContainer() != null)
+        msgs = eBasicRemoveFromContainer(msgs);
+      if (newModule != null)
+        msgs = ((InternalEObject)newModule).eInverseAdd(this, PictographPackage.MODULE__RULES, org.eclipse.epsilon.picto.pictograph.Module.class, msgs);
+      msgs = basicSetModule(newModule, msgs);
+      if (msgs != null) msgs.dispatch();
+    }
+    else if (eNotificationRequired())
+      eNotify(new ENotificationImpl(this, Notification.SET, PictographPackage.RULE__MODULE, newModule, newModule));
+  }
 
 	/**
-	 * <!-- begin-user-doc -->
+   * <!-- begin-user-doc -->
 	 * <!-- end-user-doc -->
-	 * @generated
-	 */
+   * @generated
+   */
 	@Override
 	public Template getTemplate() {
-		if (template != null && template.eIsProxy()) {
-			InternalEObject oldTemplate = (InternalEObject)template;
-			template = (Template)eResolveProxy(oldTemplate);
-			if (template != oldTemplate) {
-				if (eNotificationRequired())
-					eNotify(new ENotificationImpl(this, Notification.RESOLVE, PictographPackage.RULE__TEMPLATE, oldTemplate, template));
-			}
-		}
-		return template;
-	}
+    if (template != null && template.eIsProxy()) {
+      InternalEObject oldTemplate = (InternalEObject)template;
+      template = (Template)eResolveProxy(oldTemplate);
+      if (template != oldTemplate) {
+        if (eNotificationRequired())
+          eNotify(new ENotificationImpl(this, Notification.RESOLVE, PictographPackage.RULE__TEMPLATE, oldTemplate, template));
+      }
+    }
+    return template;
+  }
 
 	/**
-	 * <!-- begin-user-doc -->
+   * <!-- begin-user-doc -->
 	 * <!-- end-user-doc -->
-	 * @generated
-	 */
+   * @generated
+   */
 	public Template basicGetTemplate() {
-		return template;
-	}
+    return template;
+  }
 
 	/**
-	 * <!-- begin-user-doc -->
+   * <!-- begin-user-doc -->
 	 * <!-- end-user-doc -->
-	 * @generated
-	 */
+   * @generated
+   */
 	@Override
 	public void setTemplate(Template newTemplate) {
-		Template oldTemplate = template;
-		template = newTemplate;
-		if (eNotificationRequired())
-			eNotify(new ENotificationImpl(this, Notification.SET, PictographPackage.RULE__TEMPLATE, oldTemplate, template));
-	}
+    Template oldTemplate = template;
+    template = newTemplate;
+    if (eNotificationRequired())
+      eNotify(new ENotificationImpl(this, Notification.SET, PictographPackage.RULE__TEMPLATE, oldTemplate, template));
+  }
 
 	/**
-	 * <!-- begin-user-doc -->
+   * <!-- begin-user-doc -->
 	 * <!-- end-user-doc -->
-	 * @generated
-	 */
+   * @generated
+   */
 	@Override
 	public EList<Element> getContextElements() {
-		if (contextElements == null) {
-			contextElements = new EObjectResolvingEList<Element>(Element.class, this, PictographPackage.RULE__CONTEXT_ELEMENTS);
-		}
-		return contextElements;
-	}
+    if (contextElements == null) {
+      contextElements = new EObjectResolvingEList<Element>(Element.class, this, PictographPackage.RULE__CONTEXT_ELEMENTS);
+    }
+    return contextElements;
+  }
 
 	/**
-	 * <!-- begin-user-doc -->
+   * <!-- begin-user-doc -->
 	 * <!-- end-user-doc -->
-	 * @generated
-	 */
+   * @generated
+   */
 	@Override
 	public EList<Element> getElements() {
-		if (elements == null) {
-			elements = new EObjectResolvingEList<Element>(Element.class, this, PictographPackage.RULE__ELEMENTS);
-		}
-		return elements;
-	}
+    if (elements == null) {
+      elements = new EObjectResolvingEList<Element>(Element.class, this, PictographPackage.RULE__ELEMENTS);
+    }
+    return elements;
+  }
 
 	/**
-	 * <!-- begin-user-doc -->
+   * <!-- begin-user-doc -->
 	 * <!-- end-user-doc -->
-	 * @generated
-	 */
+   * @generated
+   */
 	@Override
 	public NotificationChain eInverseAdd(InternalEObject otherEnd, int featureID, NotificationChain msgs) {
-		switch (featureID) {
-			case PictographPackage.RULE__MODULE:
-				if (eInternalContainer() != null)
-					msgs = eBasicRemoveFromContainer(msgs);
-				return basicSetModule((org.eclipse.epsilon.picto.pictograph.Module)otherEnd, msgs);
-		}
-		return super.eInverseAdd(otherEnd, featureID, msgs);
-	}
+    switch (featureID) {
+      case PictographPackage.RULE__MODULE:
+        if (eInternalContainer() != null)
+          msgs = eBasicRemoveFromContainer(msgs);
+        return basicSetModule((org.eclipse.epsilon.picto.pictograph.Module)otherEnd, msgs);
+    }
+    return super.eInverseAdd(otherEnd, featureID, msgs);
+  }
 
 	/**
-	 * <!-- begin-user-doc -->
+   * <!-- begin-user-doc -->
 	 * <!-- end-user-doc -->
-	 * @generated
-	 */
+   * @generated
+   */
 	@Override
 	public NotificationChain eInverseRemove(InternalEObject otherEnd, int featureID, NotificationChain msgs) {
-		switch (featureID) {
-			case PictographPackage.RULE__MODULE:
-				return basicSetModule(null, msgs);
-		}
-		return super.eInverseRemove(otherEnd, featureID, msgs);
-	}
+    switch (featureID) {
+      case PictographPackage.RULE__MODULE:
+        return basicSetModule(null, msgs);
+    }
+    return super.eInverseRemove(otherEnd, featureID, msgs);
+  }
 
 	/**
-	 * <!-- begin-user-doc -->
+   * <!-- begin-user-doc -->
 	 * <!-- end-user-doc -->
-	 * @generated
-	 */
+   * @generated
+   */
 	@Override
 	public NotificationChain eBasicRemoveFromContainerFeature(NotificationChain msgs) {
-		switch (eContainerFeatureID()) {
-			case PictographPackage.RULE__MODULE:
-				return eInternalContainer().eInverseRemove(this, PictographPackage.MODULE__RULES, org.eclipse.epsilon.picto.pictograph.Module.class, msgs);
-		}
-		return super.eBasicRemoveFromContainerFeature(msgs);
-	}
+    switch (eContainerFeatureID()) {
+      case PictographPackage.RULE__MODULE:
+        return eInternalContainer().eInverseRemove(this, PictographPackage.MODULE__RULES, org.eclipse.epsilon.picto.pictograph.Module.class, msgs);
+    }
+    return super.eBasicRemoveFromContainerFeature(msgs);
+  }
 
 	/**
-	 * <!-- begin-user-doc -->
+   * <!-- begin-user-doc -->
 	 * <!-- end-user-doc -->
-	 * @generated
-	 */
+   * @generated
+   */
 	@Override
 	public Object eGet(int featureID, boolean resolve, boolean coreType) {
-		switch (featureID) {
-			case PictographPackage.RULE__MODULE:
-				return getModule();
-			case PictographPackage.RULE__TEMPLATE:
-				if (resolve) return getTemplate();
-				return basicGetTemplate();
-			case PictographPackage.RULE__CONTEXT_ELEMENTS:
-				return getContextElements();
-			case PictographPackage.RULE__ELEMENTS:
-				return getElements();
-		}
-		return super.eGet(featureID, resolve, coreType);
-	}
+    switch (featureID) {
+      case PictographPackage.RULE__MODULE:
+        return getModule();
+      case PictographPackage.RULE__TEMPLATE:
+        if (resolve) return getTemplate();
+        return basicGetTemplate();
+      case PictographPackage.RULE__CONTEXT_ELEMENTS:
+        return getContextElements();
+      case PictographPackage.RULE__ELEMENTS:
+        return getElements();
+    }
+    return super.eGet(featureID, resolve, coreType);
+  }
 
 	/**
-	 * <!-- begin-user-doc -->
+   * <!-- begin-user-doc -->
 	 * <!-- end-user-doc -->
-	 * @generated
-	 */
+   * @generated
+   */
 	@SuppressWarnings("unchecked")
 	@Override
 	public void eSet(int featureID, Object newValue) {
-		switch (featureID) {
-			case PictographPackage.RULE__MODULE:
-				setModule((org.eclipse.epsilon.picto.pictograph.Module)newValue);
-				return;
-			case PictographPackage.RULE__TEMPLATE:
-				setTemplate((Template)newValue);
-				return;
-			case PictographPackage.RULE__CONTEXT_ELEMENTS:
-				getContextElements().clear();
-				getContextElements().addAll((Collection<? extends Element>)newValue);
-				return;
-			case PictographPackage.RULE__ELEMENTS:
-				getElements().clear();
-				getElements().addAll((Collection<? extends Element>)newValue);
-				return;
-		}
-		super.eSet(featureID, newValue);
-	}
+    switch (featureID) {
+      case PictographPackage.RULE__MODULE:
+        setModule((org.eclipse.epsilon.picto.pictograph.Module)newValue);
+        return;
+      case PictographPackage.RULE__TEMPLATE:
+        setTemplate((Template)newValue);
+        return;
+      case PictographPackage.RULE__CONTEXT_ELEMENTS:
+        getContextElements().clear();
+        getContextElements().addAll((Collection<? extends Element>)newValue);
+        return;
+      case PictographPackage.RULE__ELEMENTS:
+        getElements().clear();
+        getElements().addAll((Collection<? extends Element>)newValue);
+        return;
+    }
+    super.eSet(featureID, newValue);
+  }
 
 	/**
-	 * <!-- begin-user-doc -->
+   * <!-- begin-user-doc -->
 	 * <!-- end-user-doc -->
-	 * @generated
-	 */
+   * @generated
+   */
 	@Override
 	public void eUnset(int featureID) {
-		switch (featureID) {
-			case PictographPackage.RULE__MODULE:
-				setModule((org.eclipse.epsilon.picto.pictograph.Module)null);
-				return;
-			case PictographPackage.RULE__TEMPLATE:
-				setTemplate((Template)null);
-				return;
-			case PictographPackage.RULE__CONTEXT_ELEMENTS:
-				getContextElements().clear();
-				return;
-			case PictographPackage.RULE__ELEMENTS:
-				getElements().clear();
-				return;
-		}
-		super.eUnset(featureID);
-	}
+    switch (featureID) {
+      case PictographPackage.RULE__MODULE:
+        setModule((org.eclipse.epsilon.picto.pictograph.Module)null);
+        return;
+      case PictographPackage.RULE__TEMPLATE:
+        setTemplate((Template)null);
+        return;
+      case PictographPackage.RULE__CONTEXT_ELEMENTS:
+        getContextElements().clear();
+        return;
+      case PictographPackage.RULE__ELEMENTS:
+        getElements().clear();
+        return;
+    }
+    super.eUnset(featureID);
+  }
 
 	/**
-	 * <!-- begin-user-doc -->
+   * <!-- begin-user-doc -->
 	 * <!-- end-user-doc -->
-	 * @generated
-	 */
+   * @generated
+   */
 	@Override
 	public boolean eIsSet(int featureID) {
-		switch (featureID) {
-			case PictographPackage.RULE__MODULE:
-				return getModule() != null;
-			case PictographPackage.RULE__TEMPLATE:
-				return template != null;
-			case PictographPackage.RULE__CONTEXT_ELEMENTS:
-				return contextElements != null && !contextElements.isEmpty();
-			case PictographPackage.RULE__ELEMENTS:
-				return elements != null && !elements.isEmpty();
-		}
-		return super.eIsSet(featureID);
-	}
+    switch (featureID) {
+      case PictographPackage.RULE__MODULE:
+        return getModule() != null;
+      case PictographPackage.RULE__TEMPLATE:
+        return template != null;
+      case PictographPackage.RULE__CONTEXT_ELEMENTS:
+        return contextElements != null && !contextElements.isEmpty();
+      case PictographPackage.RULE__ELEMENTS:
+        return elements != null && !elements.isEmpty();
+    }
+    return super.eIsSet(featureID);
+  }
 
 } //RuleImpl

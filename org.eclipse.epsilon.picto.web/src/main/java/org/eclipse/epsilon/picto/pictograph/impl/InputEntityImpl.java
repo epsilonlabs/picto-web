@@ -33,134 +33,134 @@ import org.eclipse.epsilon.picto.pictograph.PictographPackage;
  */
 public abstract class InputEntityImpl extends EntityImpl implements InputEntity {
 	/**
-	 * The cached value of the '{@link #getAffects() <em>Affects</em>}' reference list.
-	 * <!-- begin-user-doc -->
+   * The cached value of the '{@link #getAffects() <em>Affects</em>}' reference list.
+   * <!-- begin-user-doc -->
 	 * <!-- end-user-doc -->
-	 * @see #getAffects()
-	 * @generated
-	 * @ordered
-	 */
+   * @see #getAffects()
+   * @generated
+   * @ordered
+   */
 	protected EList<Path> affects;
 
 	/**
-	 * <!-- begin-user-doc -->
+   * <!-- begin-user-doc -->
 	 * <!-- end-user-doc -->
-	 * @generated
-	 */
+   * @generated
+   */
 	protected InputEntityImpl() {
-		super();
-	}
+    super();
+  }
 
 	/**
-	 * <!-- begin-user-doc -->
+   * <!-- begin-user-doc -->
 	 * <!-- end-user-doc -->
-	 * @generated
-	 */
+   * @generated
+   */
 	@Override
 	protected EClass eStaticClass() {
-		return PictographPackage.Literals.INPUT_ENTITY;
-	}
+    return PictographPackage.Literals.INPUT_ENTITY;
+  }
 
 	/**
-	 * <!-- begin-user-doc -->
+   * <!-- begin-user-doc -->
 	 * <!-- end-user-doc -->
-	 * @generated
-	 */
+   * @generated
+   */
 	@Override
 	public EList<Path> getAffects() {
-		if (affects == null) {
-			affects = new EObjectWithInverseResolvingEList.ManyInverse<Path>(Path.class, this, PictographPackage.INPUT_ENTITY__AFFECTS, PictographPackage.PATH__AFFECTED_BY);
-		}
-		return affects;
-	}
+    if (affects == null) {
+      affects = new EObjectWithInverseResolvingEList.ManyInverse<Path>(Path.class, this, PictographPackage.INPUT_ENTITY__AFFECTS, PictographPackage.PATH__AFFECTED_BY);
+    }
+    return affects;
+  }
 
 	/**
-	 * <!-- begin-user-doc -->
+   * <!-- begin-user-doc -->
 	 * <!-- end-user-doc -->
-	 * @generated
-	 */
+   * @generated
+   */
 	@SuppressWarnings("unchecked")
 	@Override
 	public NotificationChain eInverseAdd(InternalEObject otherEnd, int featureID, NotificationChain msgs) {
-		switch (featureID) {
-			case PictographPackage.INPUT_ENTITY__AFFECTS:
-				return ((InternalEList<InternalEObject>)(InternalEList<?>)getAffects()).basicAdd(otherEnd, msgs);
-		}
-		return super.eInverseAdd(otherEnd, featureID, msgs);
-	}
+    switch (featureID) {
+      case PictographPackage.INPUT_ENTITY__AFFECTS:
+        return ((InternalEList<InternalEObject>)(InternalEList<?>)getAffects()).basicAdd(otherEnd, msgs);
+    }
+    return super.eInverseAdd(otherEnd, featureID, msgs);
+  }
 
 	/**
-	 * <!-- begin-user-doc -->
+   * <!-- begin-user-doc -->
 	 * <!-- end-user-doc -->
-	 * @generated
-	 */
+   * @generated
+   */
 	@Override
 	public NotificationChain eInverseRemove(InternalEObject otherEnd, int featureID, NotificationChain msgs) {
-		switch (featureID) {
-			case PictographPackage.INPUT_ENTITY__AFFECTS:
-				return ((InternalEList<?>)getAffects()).basicRemove(otherEnd, msgs);
-		}
-		return super.eInverseRemove(otherEnd, featureID, msgs);
-	}
+    switch (featureID) {
+      case PictographPackage.INPUT_ENTITY__AFFECTS:
+        return ((InternalEList<?>)getAffects()).basicRemove(otherEnd, msgs);
+    }
+    return super.eInverseRemove(otherEnd, featureID, msgs);
+  }
 
 	/**
-	 * <!-- begin-user-doc -->
+   * <!-- begin-user-doc -->
 	 * <!-- end-user-doc -->
-	 * @generated
-	 */
+   * @generated
+   */
 	@Override
 	public Object eGet(int featureID, boolean resolve, boolean coreType) {
-		switch (featureID) {
-			case PictographPackage.INPUT_ENTITY__AFFECTS:
-				return getAffects();
-		}
-		return super.eGet(featureID, resolve, coreType);
-	}
+    switch (featureID) {
+      case PictographPackage.INPUT_ENTITY__AFFECTS:
+        return getAffects();
+    }
+    return super.eGet(featureID, resolve, coreType);
+  }
 
 	/**
-	 * <!-- begin-user-doc -->
+   * <!-- begin-user-doc -->
 	 * <!-- end-user-doc -->
-	 * @generated
-	 */
+   * @generated
+   */
 	@SuppressWarnings("unchecked")
 	@Override
 	public void eSet(int featureID, Object newValue) {
-		switch (featureID) {
-			case PictographPackage.INPUT_ENTITY__AFFECTS:
-				getAffects().clear();
-				getAffects().addAll((Collection<? extends Path>)newValue);
-				return;
-		}
-		super.eSet(featureID, newValue);
-	}
+    switch (featureID) {
+      case PictographPackage.INPUT_ENTITY__AFFECTS:
+        getAffects().clear();
+        getAffects().addAll((Collection<? extends Path>)newValue);
+        return;
+    }
+    super.eSet(featureID, newValue);
+  }
 
 	/**
-	 * <!-- begin-user-doc -->
+   * <!-- begin-user-doc -->
 	 * <!-- end-user-doc -->
-	 * @generated
-	 */
+   * @generated
+   */
 	@Override
 	public void eUnset(int featureID) {
-		switch (featureID) {
-			case PictographPackage.INPUT_ENTITY__AFFECTS:
-				getAffects().clear();
-				return;
-		}
-		super.eUnset(featureID);
-	}
+    switch (featureID) {
+      case PictographPackage.INPUT_ENTITY__AFFECTS:
+        getAffects().clear();
+        return;
+    }
+    super.eUnset(featureID);
+  }
 
 	/**
-	 * <!-- begin-user-doc -->
+   * <!-- begin-user-doc -->
 	 * <!-- end-user-doc -->
-	 * @generated
-	 */
+   * @generated
+   */
 	@Override
 	public boolean eIsSet(int featureID) {
-		switch (featureID) {
-			case PictographPackage.INPUT_ENTITY__AFFECTS:
-				return affects != null && !affects.isEmpty();
-		}
-		return super.eIsSet(featureID);
-	}
+    switch (featureID) {
+      case PictographPackage.INPUT_ENTITY__AFFECTS:
+        return affects != null && !affects.isEmpty();
+    }
+    return super.eIsSet(featureID);
+  }
 
 } //InputEntityImpl

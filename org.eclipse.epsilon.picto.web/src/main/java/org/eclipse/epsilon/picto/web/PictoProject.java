@@ -1,130 +1,158 @@
 package org.eclipse.epsilon.picto.web;
 
 import java.io.File;
-import java.io.IOException;
-import java.util.ArrayList;
 import java.util.HashSet;
-import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
 
+import org.eclipse.emf.ecore.EClass;
 import org.eclipse.emf.ecore.resource.Resource;
 import org.eclipse.emf.ecore.resource.ResourceSet;
 import org.eclipse.emf.ecore.resource.impl.ResourceSetImpl;
 import org.eclipse.epsilon.egl.EgxModule;
 import org.eclipse.epsilon.egl.dom.GenerationRule;
 import org.eclipse.epsilon.flexmi.FlexmiResourceFactory;
+import org.eclipse.epsilon.picto.dom.Model;
+import org.eclipse.epsilon.picto.dom.Parameter;
 import org.eclipse.epsilon.picto.dom.Picto;
+import org.eclipse.epsilon.picto.dom.PictoPackage;
 
 public class PictoProject {
-	private String name;
-	private File pictoFile;
-	private Set<File> files = new HashSet<File>();
+  private String name;
+  private File pictoFile;
+  private Set<File> files = new HashSet<File>();
+  private Set<File> modelFiles = new HashSet<File>();
+  private Set<File> metamodelFiles = new HashSet<File>();
+  private EClass eClass = PictoPackage.eINSTANCE.eClass();
 
-	private static List<PictoProject> pictoProjects = new ArrayList<PictoProject>();
+  public PictoProject(File pictoFile) {
+    this.setName(pictoFile.getName());
+    this.pictoFile = pictoFile;
+    this.getFiles().add(pictoFile);
+  }
 
-	public PictoProject(File pictoFile) {
-		this.setName(pictoFile.getName());
-		this.pictoFile = pictoFile;
-	}
+  public Set<File> getModelFiles() {
+    return modelFiles;
+  }
 
-	@Override
-	public String toString() {
-		return pictoFile.getAbsolutePath() + " : ["
-				+ String.join(", ", files.stream().map(f -> f.getAbsolutePath()).collect(Collectors.toList())) + "]";
-	}
+  public Set<File> getMetamodelFiles() {
+    return metamodelFiles;
+  }
 
-	public String getName() {
-		return name;
-	}
+  @Override
+  public String toString() {
+    return pictoFile.getAbsolutePath() + " : ["
+        + String.join(", ", files.stream().map(f -> f.getAbsolutePath()).collect(Collectors.toList())) + "]";
+  }
 
-	public void setName(String name) {
-		this.name = name;
-	}
+  public String getName() {
+    return name;
+  }
 
-	public File getPictoFile() {
-		return pictoFile;
-	}
+  public void setName(String name) {
+    this.name = name;
+  }
 
-	public void setPictoFile(File pictoFile) {
-		this.pictoFile = pictoFile;
-	}
+  public Set<File> getFiles() {
+    return files;
+  }
 
-	public Set<File> getFiles() {
-		return files;
-	}
+  public void setFiles(Set<File> files) {
+    this.files = files;
+  }
 
-	public void setFiles(Set<File> files) {
-		this.files = files;
-	}
+  protected void clear() {
+    for (PictoProject project : PictoApplication.getPictoProjects()) {
+      project.getFiles().clear();
+    }
+    PictoApplication.getPictoProjects().clear();
+  }
 
-	public static List<PictoProject> getPictoProjects() {
-		return pictoProjects;
-	}
+  public static PictoProject createPictoProject(File pictoFile) throws Exception {
+    PictoProject pictoProject = new PictoProject(pictoFile);
 
-	protected void clear() {
-		for (PictoProject project : pictoProjects) {
-			project.getFiles().clear();
-		}
-		pictoProjects.clear();
-	}
+    Picto picto = loadPicto(pictoFile);
 
-	protected static List<PictoProject> scanDirectory(String directory) throws Exception {
-		File file = new File(directory);
-		for (File f : file.listFiles()) {
-			if (f.isDirectory()) {
-				scanDirectory(f.getAbsolutePath());
-			}
-			if (f.isFile() && f.getName().endsWith(".picto")) {
-				createPictoProject(f);
-			}
-		}
-		return pictoProjects;
-	}
+    // get the egx module file
+    String egxPath = picto.getTransformation();
+    EgxModule egxModule = new EgxModule();
+    try {
+      File egxFile = new File(pictoFile.getParent() + File.separator + egxPath);
+      egxModule.parse(egxFile);
+      pictoProject.getFiles().add(egxFile);
 
-	protected static void createPictoProject(File pictoFile) throws Exception {
-		try {
-			PictoProject pictoProject = new PictoProject(pictoFile);
+      // get the template files
+      for (GenerationRule rule : egxModule.getGenerationRules()) {
+        if (rule.getTemplateBlock() == null) {
+          continue;
+        }
+        String templateName = rule.getTemplateBlock().execute(egxModule.getContext());
 
-			File modelFile = new File(
-					pictoFile.getAbsolutePath().substring(0, pictoFile.getAbsolutePath().lastIndexOf(".picto")));
-			pictoProject.getFiles().add(modelFile);
+        if (templateName != null) {
+          File templateFile = new File(egxModule.getFile().getParent() + File.separator + templateName);
+          pictoProject.getFiles().add(templateFile);
+        }
+      }
+    } catch (Exception e) {
+      e.printStackTrace();
+    }
 
-			ResourceSet resourceSet = new ResourceSetImpl();
-			resourceSet.getResourceFactoryRegistry().getExtensionToFactoryMap().put("picto",
-					new FlexmiResourceFactory());
-			Resource resource = resourceSet
-					.getResource(org.eclipse.emf.common.util.URI.createFileURI(pictoFile.getAbsolutePath()), true);
-			resource.load(null);
+    // get models and metamodels in the project file
 
-			Picto picto = (Picto) resource.getContents().get(0);
-			String egxPath = picto.getTransformation();
+    for (Model model : picto.getModels()) {
 
-			EgxModule egxModule = new EgxModule();
-			try {
-				File egxFile = new File(pictoFile.getParent() + File.separator + egxPath);
-				egxModule.parse(egxFile);
-				pictoProject.getFiles().add(egxFile);
+      for (Parameter parameter : model.getParameters()) {
+        if (parameter.getName().equals("modelFile")) {
+          String path = (String) parameter.getFile();
+          File file = new File(pictoFile.getParentFile().getAbsolutePath() + File.separator + path);
+          pictoProject.files.add(file);
+          pictoProject.modelFiles.add(file);
+        }
+        if (parameter.getName().equals("metamodelFile")) {
+          String path = (String) parameter.getFile();
+          File file = new File(pictoFile.getParentFile().getAbsolutePath() + File.separator + path);
+          pictoProject.files.add(file);
+          pictoProject.metamodelFiles.add(file);
+        }
+      }
+    }
+    
+    // clear the resource
+    Resource resource = picto.eResource();
+    resource.getContents().clear();
+    resource.getResourceSet().getResources().clear();
+    resource.unload();
 
-				for (GenerationRule rule : egxModule.getGenerationRules()) {
-					if (rule.getTemplateBlock() == null) {
-						continue;
-					}
-					String templateName = rule.getTemplateBlock().execute(egxModule.getContext());
+    PictoApplication.getPictoProjects().add(pictoProject);
+    return pictoProject;
+  }
+  
+  /**
+   * @return the pictoFile
+   */
+  public File getPictoFile() {
+    return pictoFile;
+  }
 
-					if (templateName != null) {
-						File templateFile = new File(egxModule.getFile().getParent() + File.separator + templateName);
-						pictoProject.getFiles().add(templateFile);
-					}
-				}
-			} catch (Exception e) {
-				e.printStackTrace();
-			}
+  /**
+   * @param pictoFile the pictoFile to set
+   */
+  public void setPictoFile(File pictoFile) {
+    this.pictoFile = pictoFile;
+  }
 
-			pictoProjects.add(pictoProject);
-		} catch (IOException e) {
-			e.printStackTrace();
-		}
-	}
+  public static Picto loadPicto(File pictoFile) {
+    try {
+      ResourceSet resourceSet = new ResourceSetImpl();
+      resourceSet.getResourceFactoryRegistry().getExtensionToFactoryMap().put("*", new FlexmiResourceFactory());
+      Resource resource = resourceSet
+          .getResource(org.eclipse.emf.common.util.URI.createFileURI(pictoFile.getAbsolutePath()), true);
+      resource.load(null);
+      return (Picto) resource.getContents().iterator().next();
+    } catch (Exception ex) {
+      ex.printStackTrace();
+      return null;
+    }
+  }
 
 }

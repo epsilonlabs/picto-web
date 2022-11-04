@@ -30,212 +30,212 @@ import org.eclipse.epsilon.picto.pictograph.Template;
  */
 public class PictographFactoryImpl extends EFactoryImpl implements PictographFactory {
 	/**
-	 * Creates the default factory implementation.
-	 * <!-- begin-user-doc -->
+   * Creates the default factory implementation.
+   * <!-- begin-user-doc -->
 	 * <!-- end-user-doc -->
-	 * @generated
-	 */
+   * @generated
+   */
 	public static PictographFactory init() {
-		try {
-			PictographFactory thePictographFactory = (PictographFactory)EPackage.Registry.INSTANCE.getEFactory(PictographPackage.eNS_URI);
-			if (thePictographFactory != null) {
-				return thePictographFactory;
-			}
-		}
-		catch (Exception exception) {
-			EcorePlugin.INSTANCE.log(exception);
-		}
-		return new PictographFactoryImpl();
-	}
+    try {
+      PictographFactory thePictographFactory = (PictographFactory)EPackage.Registry.INSTANCE.getEFactory(PictographPackage.eNS_URI);
+      if (thePictographFactory != null) {
+        return thePictographFactory;
+      }
+    }
+    catch (Exception exception) {
+      EcorePlugin.INSTANCE.log(exception);
+    }
+    return new PictographFactoryImpl();
+  }
 
 	/**
-	 * Creates an instance of the factory.
-	 * <!-- begin-user-doc -->
+   * Creates an instance of the factory.
+   * <!-- begin-user-doc -->
 	 * <!-- end-user-doc -->
-	 * @generated
-	 */
+   * @generated
+   */
 	public PictographFactoryImpl() {
-		super();
-	}
+    super();
+  }
 
 	/**
-	 * <!-- begin-user-doc -->
+   * <!-- begin-user-doc -->
 	 * <!-- end-user-doc -->
-	 * @generated
-	 */
+   * @generated
+   */
 	@Override
 	public EObject create(EClass eClass) {
-		switch (eClass.getClassifierID()) {
-			case PictographPackage.PICTO_GRAPH: return createPictoGraph();
-			case PictographPackage.PATH: return createPath();
-			case PictographPackage.MODULE: return createModule();
-			case PictographPackage.RESOURCE: return createResource();
-			case PictographPackage.PROPERTY: return createProperty();
-			case PictographPackage.ELEMENT: return createElement();
-			case PictographPackage.RULE: return createRule();
-			case PictographPackage.TEMPLATE: return createTemplate();
-			default:
-				throw new IllegalArgumentException("The class '" + eClass.getName() + "' is not a valid classifier");
-		}
-	}
+    switch (eClass.getClassifierID()) {
+      case PictographPackage.PICTO_GRAPH: return createPictoGraph();
+      case PictographPackage.PATH: return createPath();
+      case PictographPackage.MODULE: return createModule();
+      case PictographPackage.RESOURCE: return createResource();
+      case PictographPackage.PROPERTY: return createProperty();
+      case PictographPackage.ELEMENT: return createElement();
+      case PictographPackage.RULE: return createRule();
+      case PictographPackage.TEMPLATE: return createTemplate();
+      default:
+        throw new IllegalArgumentException("The class '" + eClass.getName() + "' is not a valid classifier");
+    }
+  }
 
 	/**
-	 * <!-- begin-user-doc -->
+   * <!-- begin-user-doc -->
 	 * <!-- end-user-doc -->
-	 * @generated
-	 */
+   * @generated
+   */
 	@Override
 	public Object createFromString(EDataType eDataType, String initialValue) {
-		switch (eDataType.getClassifierID()) {
-			case PictographPackage.STATE:
-				return createStateFromString(eDataType, initialValue);
-			default:
-				throw new IllegalArgumentException("The datatype '" + eDataType.getName() + "' is not a valid classifier");
-		}
-	}
+    switch (eDataType.getClassifierID()) {
+      case PictographPackage.STATE:
+        return createStateFromString(eDataType, initialValue);
+      default:
+        throw new IllegalArgumentException("The datatype '" + eDataType.getName() + "' is not a valid classifier");
+    }
+  }
 
 	/**
-	 * <!-- begin-user-doc -->
+   * <!-- begin-user-doc -->
 	 * <!-- end-user-doc -->
-	 * @generated
-	 */
+   * @generated
+   */
 	@Override
 	public String convertToString(EDataType eDataType, Object instanceValue) {
-		switch (eDataType.getClassifierID()) {
-			case PictographPackage.STATE:
-				return convertStateToString(eDataType, instanceValue);
-			default:
-				throw new IllegalArgumentException("The datatype '" + eDataType.getName() + "' is not a valid classifier");
-		}
-	}
+    switch (eDataType.getClassifierID()) {
+      case PictographPackage.STATE:
+        return convertStateToString(eDataType, instanceValue);
+      default:
+        throw new IllegalArgumentException("The datatype '" + eDataType.getName() + "' is not a valid classifier");
+    }
+  }
 
 	/**
-	 * <!-- begin-user-doc -->
+   * <!-- begin-user-doc -->
 	 * <!-- end-user-doc -->
-	 * @generated
-	 */
+   * @generated
+   */
 	@Override
 	public PictoGraph createPictoGraph() {
-		PictoGraphImpl pictoGraph = new PictoGraphImpl();
-		return pictoGraph;
-	}
+    PictoGraphImpl pictoGraph = new PictoGraphImpl();
+    return pictoGraph;
+  }
 
 	/**
-	 * <!-- begin-user-doc -->
+   * <!-- begin-user-doc -->
 	 * <!-- end-user-doc -->
-	 * @generated
-	 */
+   * @generated
+   */
 	@Override
 	public Path createPath() {
-		PathImpl path = new PathImpl();
-		return path;
-	}
+    PathImpl path = new PathImpl();
+    return path;
+  }
 
 	/**
-	 * <!-- begin-user-doc -->
+   * <!-- begin-user-doc -->
 	 * <!-- end-user-doc -->
-	 * @generated
-	 */
+   * @generated
+   */
 	@Override
 	public org.eclipse.epsilon.picto.pictograph.Module createModule() {
-		ModuleImpl module = new ModuleImpl();
-		return module;
-	}
+    ModuleImpl module = new ModuleImpl();
+    return module;
+  }
 
 	/**
-	 * <!-- begin-user-doc -->
+   * <!-- begin-user-doc -->
 	 * <!-- end-user-doc -->
-	 * @generated
-	 */
+   * @generated
+   */
 	@Override
 	public Resource createResource() {
-		ResourceImpl resource = new ResourceImpl();
-		return resource;
-	}
+    ResourceImpl resource = new ResourceImpl();
+    return resource;
+  }
 
 	/**
-	 * <!-- begin-user-doc -->
+   * <!-- begin-user-doc -->
 	 * <!-- end-user-doc -->
-	 * @generated
-	 */
+   * @generated
+   */
 	@Override
 	public Property createProperty() {
-		PropertyImpl property = new PropertyImpl();
-		return property;
-	}
+    PropertyImpl property = new PropertyImpl();
+    return property;
+  }
 
 	/**
-	 * <!-- begin-user-doc -->
+   * <!-- begin-user-doc -->
 	 * <!-- end-user-doc -->
-	 * @generated
-	 */
+   * @generated
+   */
 	@Override
 	public Element createElement() {
-		ElementImpl element = new ElementImpl();
-		return element;
-	}
+    ElementImpl element = new ElementImpl();
+    return element;
+  }
 
 	/**
-	 * <!-- begin-user-doc -->
+   * <!-- begin-user-doc -->
 	 * <!-- end-user-doc -->
-	 * @generated
-	 */
+   * @generated
+   */
 	@Override
 	public Rule createRule() {
-		RuleImpl rule = new RuleImpl();
-		return rule;
-	}
+    RuleImpl rule = new RuleImpl();
+    return rule;
+  }
 
 	/**
-	 * <!-- begin-user-doc -->
+   * <!-- begin-user-doc -->
 	 * <!-- end-user-doc -->
-	 * @generated
-	 */
+   * @generated
+   */
 	@Override
 	public Template createTemplate() {
-		TemplateImpl template = new TemplateImpl();
-		return template;
-	}
+    TemplateImpl template = new TemplateImpl();
+    return template;
+  }
 
 	/**
-	 * <!-- begin-user-doc -->
+   * <!-- begin-user-doc -->
 	 * <!-- end-user-doc -->
-	 * @generated
-	 */
+   * @generated
+   */
 	public State createStateFromString(EDataType eDataType, String initialValue) {
-		State result = State.get(initialValue);
-		if (result == null) throw new IllegalArgumentException("The value '" + initialValue + "' is not a valid enumerator of '" + eDataType.getName() + "'");
-		return result;
-	}
+    State result = State.get(initialValue);
+    if (result == null) throw new IllegalArgumentException("The value '" + initialValue + "' is not a valid enumerator of '" + eDataType.getName() + "'");
+    return result;
+  }
 
 	/**
-	 * <!-- begin-user-doc -->
+   * <!-- begin-user-doc -->
 	 * <!-- end-user-doc -->
-	 * @generated
-	 */
+   * @generated
+   */
 	public String convertStateToString(EDataType eDataType, Object instanceValue) {
-		return instanceValue == null ? null : instanceValue.toString();
-	}
+    return instanceValue == null ? null : instanceValue.toString();
+  }
 
 	/**
-	 * <!-- begin-user-doc -->
+   * <!-- begin-user-doc -->
 	 * <!-- end-user-doc -->
-	 * @generated
-	 */
+   * @generated
+   */
 	@Override
 	public PictographPackage getPictographPackage() {
-		return (PictographPackage)getEPackage();
-	}
+    return (PictographPackage)getEPackage();
+  }
 
 	/**
-	 * <!-- begin-user-doc -->
+   * <!-- begin-user-doc -->
 	 * <!-- end-user-doc -->
-	 * @deprecated
-	 * @generated
-	 */
+   * @deprecated
+   * @generated
+   */
 	@Deprecated
 	public static PictographPackage getPackage() {
-		return PictographPackage.eINSTANCE;
-	}
+    return PictographPackage.eINSTANCE;
+  }
 
 } //PictographFactoryImpl

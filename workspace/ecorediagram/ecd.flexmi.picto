@@ -3,12 +3,12 @@
      <model type="EMF">
         <parameter name="name" value="ECD"/>
         <parameter name="metamodelUri" value="ecd"/>
+        <parameter name="metamodelFile" file="ecd.ecore"/>
         <parameter name="modelFile" file="ecd.flexmi"/>
     </model>
      <model type="EMF"> 
         <parameter name="name" value="ECORE"/>
         <parameter name="metamodelUri" value="http://www.eclipse.org/emf/2002/Ecore"/>
         <parameter name="modelFile" file="Ecore.ecore"/>
-        <!--<parameter name="modelFile" file="ecorediagram.emf"/> -->
     </model>    
 </picto>
