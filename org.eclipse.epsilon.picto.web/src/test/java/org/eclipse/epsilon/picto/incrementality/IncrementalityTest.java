@@ -147,6 +147,7 @@ class IncrementalityTest {
 			"/Custom/Alice and Bob");
 	}
 
+	@Disabled
 	@SuppressWarnings("unchecked")
 	@Test
 	void testRemoveReference() throws Exception {
