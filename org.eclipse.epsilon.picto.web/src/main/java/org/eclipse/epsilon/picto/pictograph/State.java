@@ -19,214 +19,214 @@ import org.eclipse.emf.common.util.Enumerator;
  */
 public enum State implements Enumerator {
 	/**
-	 * The '<em><b>NEW</b></em>' literal object.
-	 * <!-- begin-user-doc -->
+   * The '<em><b>NEW</b></em>' literal object.
+   * <!-- begin-user-doc -->
 	 * <!-- end-user-doc -->
-	 * @see #NEW_VALUE
-	 * @generated
-	 * @ordered
-	 */
+   * @see #NEW_VALUE
+   * @generated
+   * @ordered
+   */
 	NEW(0, "NEW", "NEW"),
 
 	/**
-	 * The '<em><b>UPDATED</b></em>' literal object.
-	 * <!-- begin-user-doc -->
+   * The '<em><b>UPDATED</b></em>' literal object.
+   * <!-- begin-user-doc -->
 	 * <!-- end-user-doc -->
-	 * @see #UPDATED_VALUE
-	 * @generated
-	 * @ordered
-	 */
+   * @see #UPDATED_VALUE
+   * @generated
+   * @ordered
+   */
 	UPDATED(1, "UPDATED", "UPDATED"),
 
 	/**
-	 * The '<em><b>PROCESSED</b></em>' literal object.
-	 * <!-- begin-user-doc -->
+   * The '<em><b>PROCESSED</b></em>' literal object.
+   * <!-- begin-user-doc -->
 	 * <!-- end-user-doc -->
-	 * @see #PROCESSED_VALUE
-	 * @generated
-	 * @ordered
-	 */
+   * @see #PROCESSED_VALUE
+   * @generated
+   * @ordered
+   */
 	PROCESSED(2, "PROCESSED", "PROCESSED");
 
 	/**
-	 * The '<em><b>NEW</b></em>' literal value.
-	 * <!-- begin-user-doc -->
+   * The '<em><b>NEW</b></em>' literal value.
+   * <!-- begin-user-doc -->
 	 * <!-- end-user-doc -->
-	 * @see #NEW
-	 * @model
-	 * @generated
-	 * @ordered
-	 */
+   * @see #NEW
+   * @model
+   * @generated
+   * @ordered
+   */
 	public static final int NEW_VALUE = 0;
 
 	/**
-	 * The '<em><b>UPDATED</b></em>' literal value.
-	 * <!-- begin-user-doc -->
+   * The '<em><b>UPDATED</b></em>' literal value.
+   * <!-- begin-user-doc -->
 	 * <!-- end-user-doc -->
-	 * @see #UPDATED
-	 * @model
-	 * @generated
-	 * @ordered
-	 */
+   * @see #UPDATED
+   * @model
+   * @generated
+   * @ordered
+   */
 	public static final int UPDATED_VALUE = 1;
 
 	/**
-	 * The '<em><b>PROCESSED</b></em>' literal value.
-	 * <!-- begin-user-doc -->
+   * The '<em><b>PROCESSED</b></em>' literal value.
+   * <!-- begin-user-doc -->
 	 * <!-- end-user-doc -->
-	 * @see #PROCESSED
-	 * @model
-	 * @generated
-	 * @ordered
-	 */
+   * @see #PROCESSED
+   * @model
+   * @generated
+   * @ordered
+   */
 	public static final int PROCESSED_VALUE = 2;
 
 	/**
-	 * An array of all the '<em><b>State</b></em>' enumerators.
-	 * <!-- begin-user-doc -->
+   * An array of all the '<em><b>State</b></em>' enumerators.
+   * <!-- begin-user-doc -->
 	 * <!-- end-user-doc -->
-	 * @generated
-	 */
+   * @generated
+   */
 	private static final State[] VALUES_ARRAY =
 		new State[] {
-			NEW,
-			UPDATED,
-			PROCESSED,
-		};
+      NEW,
+      UPDATED,
+      PROCESSED,
+    };
 
 	/**
-	 * A public read-only list of all the '<em><b>State</b></em>' enumerators.
-	 * <!-- begin-user-doc -->
+   * A public read-only list of all the '<em><b>State</b></em>' enumerators.
+   * <!-- begin-user-doc -->
 	 * <!-- end-user-doc -->
-	 * @generated
-	 */
+   * @generated
+   */
 	public static final List<State> VALUES = Collections.unmodifiableList(Arrays.asList(VALUES_ARRAY));
 
 	/**
-	 * Returns the '<em><b>State</b></em>' literal with the specified literal value.
-	 * <!-- begin-user-doc -->
+   * Returns the '<em><b>State</b></em>' literal with the specified literal value.
+   * <!-- begin-user-doc -->
 	 * <!-- end-user-doc -->
-	 * @param literal the literal.
-	 * @return the matching enumerator or <code>null</code>.
-	 * @generated
-	 */
+   * @param literal the literal.
+   * @return the matching enumerator or <code>null</code>.
+   * @generated
+   */
 	public static State get(String literal) {
-		for (int i = 0; i < VALUES_ARRAY.length; ++i) {
-			State result = VALUES_ARRAY[i];
-			if (result.toString().equals(literal)) {
-				return result;
-			}
-		}
-		return null;
-	}
+    for (int i = 0; i < VALUES_ARRAY.length; ++i) {
+      State result = VALUES_ARRAY[i];
+      if (result.toString().equals(literal)) {
+        return result;
+      }
+    }
+    return null;
+  }
 
 	/**
-	 * Returns the '<em><b>State</b></em>' literal with the specified name.
-	 * <!-- begin-user-doc -->
+   * Returns the '<em><b>State</b></em>' literal with the specified name.
+   * <!-- begin-user-doc -->
 	 * <!-- end-user-doc -->
-	 * @param name the name.
-	 * @return the matching enumerator or <code>null</code>.
-	 * @generated
-	 */
+   * @param name the name.
+   * @return the matching enumerator or <code>null</code>.
+   * @generated
+   */
 	public static State getByName(String name) {
-		for (int i = 0; i < VALUES_ARRAY.length; ++i) {
-			State result = VALUES_ARRAY[i];
-			if (result.getName().equals(name)) {
-				return result;
-			}
-		}
-		return null;
-	}
+    for (int i = 0; i < VALUES_ARRAY.length; ++i) {
+      State result = VALUES_ARRAY[i];
+      if (result.getName().equals(name)) {
+        return result;
+      }
+    }
+    return null;
+  }
 
 	/**
-	 * Returns the '<em><b>State</b></em>' literal with the specified integer value.
-	 * <!-- begin-user-doc -->
+   * Returns the '<em><b>State</b></em>' literal with the specified integer value.
+   * <!-- begin-user-doc -->
 	 * <!-- end-user-doc -->
-	 * @param value the integer value.
-	 * @return the matching enumerator or <code>null</code>.
-	 * @generated
-	 */
+   * @param value the integer value.
+   * @return the matching enumerator or <code>null</code>.
+   * @generated
+   */
 	public static State get(int value) {
-		switch (value) {
-			case NEW_VALUE: return NEW;
-			case UPDATED_VALUE: return UPDATED;
-			case PROCESSED_VALUE: return PROCESSED;
-		}
-		return null;
-	}
+    switch (value) {
+      case NEW_VALUE: return NEW;
+      case UPDATED_VALUE: return UPDATED;
+      case PROCESSED_VALUE: return PROCESSED;
+    }
+    return null;
+  }
 
 	/**
-	 * <!-- begin-user-doc -->
+   * <!-- begin-user-doc -->
 	 * <!-- end-user-doc -->
-	 * @generated
-	 */
+   * @generated
+   */
 	private final int value;
 
 	/**
-	 * <!-- begin-user-doc -->
+   * <!-- begin-user-doc -->
 	 * <!-- end-user-doc -->
-	 * @generated
-	 */
+   * @generated
+   */
 	private final String name;
 
 	/**
-	 * <!-- begin-user-doc -->
+   * <!-- begin-user-doc -->
 	 * <!-- end-user-doc -->
-	 * @generated
-	 */
+   * @generated
+   */
 	private final String literal;
 
 	/**
-	 * Only this class can construct instances.
-	 * <!-- begin-user-doc -->
+   * Only this class can construct instances.
+   * <!-- begin-user-doc -->
 	 * <!-- end-user-doc -->
-	 * @generated
-	 */
+   * @generated
+   */
 	private State(int value, String name, String literal) {
-		this.value = value;
-		this.name = name;
-		this.literal = literal;
-	}
+    this.value = value;
+    this.name = name;
+    this.literal = literal;
+  }
 
 	/**
-	 * <!-- begin-user-doc -->
+   * <!-- begin-user-doc -->
 	 * <!-- end-user-doc -->
-	 * @generated
-	 */
+   * @generated
+   */
 	@Override
 	public int getValue() {
-	  return value;
-	}
+    return value;
+  }
 
 	/**
-	 * <!-- begin-user-doc -->
+   * <!-- begin-user-doc -->
 	 * <!-- end-user-doc -->
-	 * @generated
-	 */
+   * @generated
+   */
 	@Override
 	public String getName() {
-	  return name;
-	}
+    return name;
+  }
 
 	/**
-	 * <!-- begin-user-doc -->
+   * <!-- begin-user-doc -->
 	 * <!-- end-user-doc -->
-	 * @generated
-	 */
+   * @generated
+   */
 	@Override
 	public String getLiteral() {
-	  return literal;
-	}
+    return literal;
+  }
 
 	/**
-	 * Returns the literal value of the enumerator, which is its string representation.
-	 * <!-- begin-user-doc -->
+   * Returns the literal value of the enumerator, which is its string representation.
+   * <!-- begin-user-doc -->
 	 * <!-- end-user-doc -->
-	 * @generated
-	 */
+   * @generated
+   */
 	@Override
 	public String toString() {
-		return literal;
-	}
+    return literal;
+  }
 	
 } //State

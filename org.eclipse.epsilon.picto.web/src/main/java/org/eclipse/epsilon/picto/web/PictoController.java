@@ -36,7 +36,7 @@ public class PictoController {
     if (FileViewContentCache.getViewContentCache(file) == null) {
       File modifiedFile = new File(new File(PictoApplication.WORKSPACE + file).getAbsolutePath());
       Set<PictoProject> affectedPictoProjects = new HashSet<>();
-      for (PictoProject project : PictoProject.getPictoProjects()) {
+      for (PictoProject project : PictoApplication.getPictoProjects()) {
         if (project.getFiles().contains(modifiedFile)) {
           affectedPictoProjects.add(project);
         }

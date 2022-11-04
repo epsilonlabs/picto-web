@@ -33,134 +33,134 @@ import org.eclipse.epsilon.picto.pictograph.PictographPackage;
  */
 public class PathImpl extends EntityImpl implements Path {
 	/**
-	 * The cached value of the '{@link #getAffectedBy() <em>Affected By</em>}' reference list.
-	 * <!-- begin-user-doc -->
+   * The cached value of the '{@link #getAffectedBy() <em>Affected By</em>}' reference list.
+   * <!-- begin-user-doc -->
 	 * <!-- end-user-doc -->
-	 * @see #getAffectedBy()
-	 * @generated
-	 * @ordered
-	 */
+   * @see #getAffectedBy()
+   * @generated
+   * @ordered
+   */
 	protected EList<InputEntity> affectedBy;
 
 	/**
-	 * <!-- begin-user-doc -->
+   * <!-- begin-user-doc -->
 	 * <!-- end-user-doc -->
-	 * @generated
-	 */
+   * @generated
+   */
 	protected PathImpl() {
-		super();
-	}
+    super();
+  }
 
 	/**
-	 * <!-- begin-user-doc -->
+   * <!-- begin-user-doc -->
 	 * <!-- end-user-doc -->
-	 * @generated
-	 */
+   * @generated
+   */
 	@Override
 	protected EClass eStaticClass() {
-		return PictographPackage.Literals.PATH;
-	}
+    return PictographPackage.Literals.PATH;
+  }
 
 	/**
-	 * <!-- begin-user-doc -->
+   * <!-- begin-user-doc -->
 	 * <!-- end-user-doc -->
-	 * @generated
-	 */
+   * @generated
+   */
 	@Override
 	public EList<InputEntity> getAffectedBy() {
-		if (affectedBy == null) {
-			affectedBy = new EObjectWithInverseResolvingEList.ManyInverse<InputEntity>(InputEntity.class, this, PictographPackage.PATH__AFFECTED_BY, PictographPackage.INPUT_ENTITY__AFFECTS);
-		}
-		return affectedBy;
-	}
+    if (affectedBy == null) {
+      affectedBy = new EObjectWithInverseResolvingEList.ManyInverse<InputEntity>(InputEntity.class, this, PictographPackage.PATH__AFFECTED_BY, PictographPackage.INPUT_ENTITY__AFFECTS);
+    }
+    return affectedBy;
+  }
 
 	/**
-	 * <!-- begin-user-doc -->
+   * <!-- begin-user-doc -->
 	 * <!-- end-user-doc -->
-	 * @generated
-	 */
+   * @generated
+   */
 	@SuppressWarnings("unchecked")
 	@Override
 	public NotificationChain eInverseAdd(InternalEObject otherEnd, int featureID, NotificationChain msgs) {
-		switch (featureID) {
-			case PictographPackage.PATH__AFFECTED_BY:
-				return ((InternalEList<InternalEObject>)(InternalEList<?>)getAffectedBy()).basicAdd(otherEnd, msgs);
-		}
-		return super.eInverseAdd(otherEnd, featureID, msgs);
-	}
+    switch (featureID) {
+      case PictographPackage.PATH__AFFECTED_BY:
+        return ((InternalEList<InternalEObject>)(InternalEList<?>)getAffectedBy()).basicAdd(otherEnd, msgs);
+    }
+    return super.eInverseAdd(otherEnd, featureID, msgs);
+  }
 
 	/**
-	 * <!-- begin-user-doc -->
+   * <!-- begin-user-doc -->
 	 * <!-- end-user-doc -->
-	 * @generated
-	 */
+   * @generated
+   */
 	@Override
 	public NotificationChain eInverseRemove(InternalEObject otherEnd, int featureID, NotificationChain msgs) {
-		switch (featureID) {
-			case PictographPackage.PATH__AFFECTED_BY:
-				return ((InternalEList<?>)getAffectedBy()).basicRemove(otherEnd, msgs);
-		}
-		return super.eInverseRemove(otherEnd, featureID, msgs);
-	}
+    switch (featureID) {
+      case PictographPackage.PATH__AFFECTED_BY:
+        return ((InternalEList<?>)getAffectedBy()).basicRemove(otherEnd, msgs);
+    }
+    return super.eInverseRemove(otherEnd, featureID, msgs);
+  }
 
 	/**
-	 * <!-- begin-user-doc -->
+   * <!-- begin-user-doc -->
 	 * <!-- end-user-doc -->
-	 * @generated
-	 */
+   * @generated
+   */
 	@Override
 	public Object eGet(int featureID, boolean resolve, boolean coreType) {
-		switch (featureID) {
-			case PictographPackage.PATH__AFFECTED_BY:
-				return getAffectedBy();
-		}
-		return super.eGet(featureID, resolve, coreType);
-	}
+    switch (featureID) {
+      case PictographPackage.PATH__AFFECTED_BY:
+        return getAffectedBy();
+    }
+    return super.eGet(featureID, resolve, coreType);
+  }
 
 	/**
-	 * <!-- begin-user-doc -->
+   * <!-- begin-user-doc -->
 	 * <!-- end-user-doc -->
-	 * @generated
-	 */
+   * @generated
+   */
 	@SuppressWarnings("unchecked")
 	@Override
 	public void eSet(int featureID, Object newValue) {
-		switch (featureID) {
-			case PictographPackage.PATH__AFFECTED_BY:
-				getAffectedBy().clear();
-				getAffectedBy().addAll((Collection<? extends InputEntity>)newValue);
-				return;
-		}
-		super.eSet(featureID, newValue);
-	}
+    switch (featureID) {
+      case PictographPackage.PATH__AFFECTED_BY:
+        getAffectedBy().clear();
+        getAffectedBy().addAll((Collection<? extends InputEntity>)newValue);
+        return;
+    }
+    super.eSet(featureID, newValue);
+  }
 
 	/**
-	 * <!-- begin-user-doc -->
+   * <!-- begin-user-doc -->
 	 * <!-- end-user-doc -->
-	 * @generated
-	 */
+   * @generated
+   */
 	@Override
 	public void eUnset(int featureID) {
-		switch (featureID) {
-			case PictographPackage.PATH__AFFECTED_BY:
-				getAffectedBy().clear();
-				return;
-		}
-		super.eUnset(featureID);
-	}
+    switch (featureID) {
+      case PictographPackage.PATH__AFFECTED_BY:
+        getAffectedBy().clear();
+        return;
+    }
+    super.eUnset(featureID);
+  }
 
 	/**
-	 * <!-- begin-user-doc -->
+   * <!-- begin-user-doc -->
 	 * <!-- end-user-doc -->
-	 * @generated
-	 */
+   * @generated
+   */
 	@Override
 	public boolean eIsSet(int featureID) {
-		switch (featureID) {
-			case PictographPackage.PATH__AFFECTED_BY:
-				return affectedBy != null && !affectedBy.isEmpty();
-		}
-		return super.eIsSet(featureID);
-	}
+    switch (featureID) {
+      case PictographPackage.PATH__AFFECTED_BY:
+        return affectedBy != null && !affectedBy.isEmpty();
+    }
+    return super.eIsSet(featureID);
+  }
 
 } //PathImpl

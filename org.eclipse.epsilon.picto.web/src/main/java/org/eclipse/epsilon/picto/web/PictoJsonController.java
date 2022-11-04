@@ -37,11 +37,10 @@ public class PictoJsonController {
   @Autowired
   public SimpMessagingTemplate template;
 
-  public final FileWatcher FILE_WATCHER = new FileWatcher(this);
+  
 
   public PictoJsonController() {
-    PictoPackage.eINSTANCE.eClass();
-    FILE_WATCHER.start();
+    FileWatcher.setResponseController(this);
   }
 
   @GetMapping(path = "/picto", produces = MediaType.APPLICATION_JSON_VALUE)
@@ -58,7 +57,7 @@ public class PictoJsonController {
   public void sendChangesToBroker(File modifiedFile) throws Exception {
 
     Set<PictoProject> affectedPictoProjects = new HashSet<>();
-    for (PictoProject project : PictoProject.getPictoProjects()) {
+    for (PictoProject project : PictoApplication.getPictoProjects()) {
       if (project.getFiles().contains(modifiedFile)) {
         affectedPictoProjects.add(project);
       }

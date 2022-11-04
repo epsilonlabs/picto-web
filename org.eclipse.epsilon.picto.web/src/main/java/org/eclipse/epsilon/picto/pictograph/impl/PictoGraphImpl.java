@@ -18,22 +18,22 @@ import org.eclipse.epsilon.picto.pictograph.PictographPackage;
  */
 public class PictoGraphImpl extends EObjectImpl implements PictoGraph {
 	/**
-	 * <!-- begin-user-doc -->
+   * <!-- begin-user-doc -->
 	 * <!-- end-user-doc -->
-	 * @generated
-	 */
+   * @generated
+   */
 	protected PictoGraphImpl() {
-		super();
-	}
+    super();
+  }
 
 	/**
-	 * <!-- begin-user-doc -->
+   * <!-- begin-user-doc -->
 	 * <!-- end-user-doc -->
-	 * @generated
-	 */
+   * @generated
+   */
 	@Override
 	protected EClass eStaticClass() {
-		return PictographPackage.Literals.PICTO_GRAPH;
-	}
+    return PictographPackage.Literals.PICTO_GRAPH;
+  }
 
 } //PictoGraphImpl

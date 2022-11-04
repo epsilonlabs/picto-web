@@ -22,6 +22,7 @@ class PictoGraph {
 abstract class Entity {
 	attr String name;
 	attr State state;
+	attr String hash; 
 }
 
 abstract class InputEntity extends Entity {
