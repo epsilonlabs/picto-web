@@ -111,7 +111,6 @@ class IncrementalityTest {
 		}
 	}
 
-	@Disabled
 	@Test
 	void testUpdateProperty() throws Exception {
 		setUp("socialnetwork/socialnetwork.model.picto", "socialnetwork/socialnetwork.model");
