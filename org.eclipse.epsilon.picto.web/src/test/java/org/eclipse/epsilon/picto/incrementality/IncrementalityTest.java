@@ -90,7 +90,6 @@ class IncrementalityTest {
 			"/Readme");
 	}
 
-	@Disabled
 	@Test
 	void testUpdateEglDoc() throws Exception {
 		try {
