@@ -147,23 +147,21 @@ Picto.setZoom = function (view, svg) {
       }
     }
   );
-
-  // if (view.zoomScale != null) {
-  //   zoomedSvg.zoom(view.zoomScale);
-  // } else {
-    var baseHeight = svg.height.baseVal.value;
-    var baseWidth = svg.width.baseVal.value;
-    var boundingClientRect = svg.getBoundingClientRect();
-    var actualHeight = boundingClientRect.height;
-    var actualWidth = boundingClientRect.width;
-    var heightRatio = actualHeight / baseHeight;
-    var widthRatio = actualWidth / baseWidth;
-    var smallestRatio = (heightRatio > widthRatio) ? widthRatio : heightRatio;
-    var ratio = (smallestRatio > 1) ? 1 / smallestRatio : 1;
+  var baseHeight = svg.height.baseVal.value;
+  var baseWidth = svg.width.baseVal.value;
+  var boundingClientRect = svg.getBoundingClientRect();
+  var actualHeight = boundingClientRect.height;
+  var actualWidth = boundingClientRect.width;
+  var heightRatio = actualHeight / baseHeight;
+  var widthRatio = actualWidth / baseWidth;
+  var smallestRatio = (heightRatio > widthRatio) ? widthRatio : heightRatio;
+  var ratio = (smallestRatio > 1) ? 1 / smallestRatio : 1;
+  if (view.zoomScale != null) {
+    ratio = view.zoomScale;
+  } else {
     view.zoomScale = ratio;
-    zoomedSvg.zoom(ratio);
-  // }
-  
+  }
+  zoomedSvg.zoom(ratio);
   if (view.pan != null) {
     zoomedSvg.pan(view.pan);
   }
