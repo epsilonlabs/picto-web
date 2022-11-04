@@ -264,7 +264,6 @@ class IncrementalityTest {
 	}
 
 	@SuppressWarnings("unchecked")
-	@Ignore
 	@Test
 	void testMultipleUpdates() throws Exception {
 			setUp("socialnetwork/socialnetwork.model.picto", "socialnetwork/socialnetwork.model");
