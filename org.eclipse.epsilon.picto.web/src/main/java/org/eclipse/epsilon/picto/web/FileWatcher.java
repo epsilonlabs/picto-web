@@ -5,6 +5,7 @@ import static java.nio.file.StandardWatchEventKinds.ENTRY_DELETE;
 import static java.nio.file.StandardWatchEventKinds.ENTRY_MODIFY;
 
 import java.io.File;
+import java.io.IOException;
 import java.nio.file.FileSystems;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -13,8 +14,11 @@ import java.nio.file.WatchKey;
 import java.nio.file.WatchService;
 import java.util.HashMap;
 
+import javax.annotation.PreDestroy;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.messaging.handler.annotation.MessageMapping;
+import org.springframework.stereotype.Component;
 
 /***
  * Monitor file changes.
@@ -23,6 +27,7 @@ import org.springframework.messaging.handler.annotation.MessageMapping;
  *
  */
 
+@Component
 public class FileWatcher extends Thread {
 
   public static FileWatcher FILE_WATCHER;
@@ -33,6 +38,8 @@ public class FileWatcher extends Thread {
   private boolean isRunning = false;
   private boolean isPaused = false;
 
+  private WatchService watcher;
+
   public FileWatcher() {
     this.setName(FileWatcher.class.getSimpleName());
   }
@@ -42,7 +49,9 @@ public class FileWatcher extends Thread {
     this.setName(FileWatcher.class.getSimpleName());
   }
 
-  public void terminate() {
+  public void terminate() throws IOException {
+    if (watcher != null)
+      watcher.close();
     isRunning = false;
   }
 
@@ -67,7 +76,7 @@ public class FileWatcher extends Thread {
   public void run() {
     try {
       HashMap<WatchKey, Path> keys = new HashMap<WatchKey, Path>();
-      WatchService watcher = FileSystems.getDefault().newWatchService();
+      watcher = FileSystems.getDefault().newWatchService();
       registerDirectory(watcher, PictoApplication.WORKSPACE, keys);
 
       isRunning = true;
@@ -117,6 +126,7 @@ public class FileWatcher extends Thread {
         }
 
       }
+      watcher.close();
     } catch (Exception e) {
       e.printStackTrace();
     }
@@ -178,8 +188,22 @@ public class FileWatcher extends Thread {
     FILE_WATCHER.unpause();
   }
 
-  public static void stopWatching() {
+  public static void stopWatching() throws IOException {
     if (FILE_WATCHER != null)
       FILE_WATCHER.terminate();
+  }
+
+  @PreDestroy
+  public void destroy() {
+
+    try {
+      System.out.println("Terminating FileWatcher ...");
+      FileWatcher.stopWatching();
+      System.out.println("FileWatcher stopped.");
+    } catch (IOException e) {
+      System.out.println("Error while stopping FileWacher.");
+      e.printStackTrace();
+    }
+
   }
 }
