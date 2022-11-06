@@ -1,13 +1,11 @@
 package org.eclipse.epsilon.picto.web;
 
 import java.io.File;
-import java.security.PublicKey;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
-import org.eclipse.epsilon.picto.dom.PictoPackage;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 
