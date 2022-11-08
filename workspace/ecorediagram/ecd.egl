@@ -28,7 +28,6 @@ note "Generated at [%=formatter.format(date)%]" as N1
 
 [%}%]
 
-[%diagram.types.clear();%]
 [%=diagram.postamble%]
 @enduml
 

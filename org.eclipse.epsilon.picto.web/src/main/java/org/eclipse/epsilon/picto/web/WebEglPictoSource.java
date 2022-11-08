@@ -458,7 +458,7 @@ public class WebEglPictoSource extends EglPictoSource {
     org.eclipse.emf.common.util.URI uri = (metamodelFile != null) ? loadMetamodel(metamodelFile) : null;
     
     EmfModel newModel = null;
-    if (modelFile.getName().endsWith(".model")) {
+    if (modelFile.getName().endsWith(".model") || modelFile.getName().endsWith(".xmi")) {
       newModel = new EmfModel();
     } else {
       newModel = new InMemoryEmfModel(modelName, getResource(modelFile));
@@ -466,6 +466,7 @@ public class WebEglPictoSource extends EglPictoSource {
     newModel.setReadOnLoad(true);
     newModel.setExpand(true);
     newModel.setName(modelName);
+    
     if (metamodelUri != null)
       newModel.setMetamodelUri(metamodelUri);
     if (metamodelFile != null)

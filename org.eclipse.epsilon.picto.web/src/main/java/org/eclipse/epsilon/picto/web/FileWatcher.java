@@ -36,7 +36,6 @@ public class FileWatcher extends Thread {
   public PictoJsonController pictoJsonController;
 
   private boolean isRunning = false;
-  private boolean isPaused = false;
 
   private WatchService watcher;
 
@@ -50,17 +49,9 @@ public class FileWatcher extends Thread {
   }
 
   public void terminate() throws IOException {
+    isRunning = false;
     if (watcher != null)
       watcher.close();
-    isRunning = false;
-  }
-
-  private void pause() {
-    isPaused = true;
-  }
-
-  private void unpause() {
-    isPaused = false;
   }
 
   @MessageMapping("/gs-guide-websocket")
@@ -83,10 +74,6 @@ public class FileWatcher extends Thread {
 
       while (isRunning) {
 
-        if (isPaused) {
-          continue;
-        }
-
         WatchKey key;
         Path path;
         try {
@@ -97,12 +84,11 @@ public class FileWatcher extends Thread {
             continue;
           }
         } catch (InterruptedException ex) {
+          ex.printStackTrace();
           return;
         }
 
         for (WatchEvent<?> event : key.pollEvents()) {
-//					WatchEvent.Kind<?> kind = event.kind();
-//					System.out.println(kind);
 
           @SuppressWarnings("unchecked")
           WatchEvent<Path> ev = (WatchEvent<Path>) event;
@@ -176,16 +162,16 @@ public class FileWatcher extends Thread {
     FILE_WATCHER.start();
   }
 
-  public static void pauseWatching() {
+  public static void pauseWatching() throws InterruptedException {
     if (FILE_WATCHER == null)
       FILE_WATCHER = new FileWatcher();
-    FILE_WATCHER.pause();
+    FILE_WATCHER.wait();
   }
 
-  public static void resumeWatching() {
+  public static void resumeWatching() throws InterruptedException {
     if (FILE_WATCHER == null)
       FILE_WATCHER = new FileWatcher();
-    FILE_WATCHER.unpause();
+    FILE_WATCHER.join();
   }
 
   public static void stopWatching() throws IOException {
