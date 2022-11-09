@@ -162,18 +162,6 @@ public class FileWatcher extends Thread {
     FILE_WATCHER.start();
   }
 
-  public static void pauseWatching() throws InterruptedException {
-    if (FILE_WATCHER == null)
-      FILE_WATCHER = new FileWatcher();
-    FILE_WATCHER.wait();
-  }
-
-  public static void resumeWatching() throws InterruptedException {
-    if (FILE_WATCHER == null)
-      FILE_WATCHER = new FileWatcher();
-    FILE_WATCHER.join();
-  }
-
   public static void stopWatching() throws IOException {
     if (FILE_WATCHER != null)
       FILE_WATCHER.terminate();
