@@ -10,6 +10,7 @@ class Item {
 }
 
 class Person {
+    attr int age;
     attr String name;
     ref Person[*] likes;
     ref Person[*] dislikes;

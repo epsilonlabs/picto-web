@@ -155,9 +155,12 @@
           }
           var path = Picto.getSelectedViewPath(data);
           Picto.selectedPath = path;
+          var localView = Picto.views.get(path);
           console.log(path);
           var label = pictoName + '#' + path;
-          var url = '/picto?file=' + pictoName + '&path=' + path + '&name=' + data.node.text;
+          var url = '/picto?file=' + pictoName + '&path=' + path + '&name=' + data.node.text ;
+          if (localView != null)
+            url = url + '&hash=' + localView.hash;
           Picto.draw(label, url);
         }
       });

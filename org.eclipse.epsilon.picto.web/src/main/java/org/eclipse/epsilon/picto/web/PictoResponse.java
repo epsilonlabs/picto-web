@@ -5,6 +5,7 @@ import java.time.Instant;
 
 public class PictoResponse {
 
+  private String hash;
   private String timestamp = Timestamp.from(Instant.now()).toString();
   private String filename;
   private String path;
@@ -13,7 +14,7 @@ public class PictoResponse {
 
   public PictoResponse() {
   }
-  
+
   public String getTimestamp() {
     return timestamp;
   }
@@ -52,6 +53,14 @@ public class PictoResponse {
 
   public void setType(String type) {
     this.type = type;
+  }
+
+  public String getHash() {
+    return hash;
+  }
+
+  public void setHash(String hash) {
+    this.hash = hash;
   }
 
 }

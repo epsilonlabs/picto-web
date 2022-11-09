@@ -411,11 +411,11 @@ public abstract class EglPictoSource implements PictoSource {
 		return m;
 	}
 	
-	protected String getDefaultFormat() {
+	protected static String getDefaultFormat() {
 		return "html";
 	}
 	
-	protected String getDefaultIcon() {
+	protected static String getDefaultIcon() {
 		return "icons/diagram.gif";
 	}
 	

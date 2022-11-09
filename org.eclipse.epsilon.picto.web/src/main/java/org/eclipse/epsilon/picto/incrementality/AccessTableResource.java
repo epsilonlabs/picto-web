@@ -20,6 +20,7 @@ import org.eclipse.epsilon.emc.emf.EmfModel;
 import org.eclipse.epsilon.eol.execute.context.Variable;
 import org.eclipse.epsilon.eol.models.IModel;
 import org.eclipse.epsilon.picto.LazyEgxModule.LazyGenerationRuleContentPromise;
+import org.eclipse.epsilon.picto.incrementality.IncrementalLazyEgxModule.IncrementalLazyGenerationRuleContentPromise;
 
 public class AccessTableResource implements AccessRecordResource {
 
@@ -82,11 +83,11 @@ public class AccessTableResource implements AccessRecordResource {
 	}
 
 	@Override
-	public Set<String> getToBeProcessedPaths(List<LazyGenerationRuleContentPromise> inProcessingPromises,
+	public Set<String> getToBeProcessedPaths(List<IncrementalLazyGenerationRuleContentPromise> inProcessingPromises,
 			EgxModule module) {
 		Set<String> toBeProcessedPaths = new HashSet<String>();
 
-		for (LazyGenerationRuleContentPromise promise : inProcessingPromises) {
+		for (IncrementalLazyGenerationRuleContentPromise promise : inProcessingPromises) {
 			String checkedPath = Util.getPath(promise);
 			System.out.println(checkedPath);
 

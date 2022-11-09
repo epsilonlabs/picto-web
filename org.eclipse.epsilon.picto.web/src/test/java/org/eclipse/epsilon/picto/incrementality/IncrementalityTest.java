@@ -55,7 +55,7 @@ class IncrementalityTest {
     Files.copy(modelFile, modelFileBackup);
 
     eglPictoSource = new WebEglPictoSource();
-    Map<String, String> result = eglPictoSource.transform(modifiedFilePath, PictoProject.createPictoProject(pictoFile));
+    Map<String, String> result = eglPictoSource.generatePromises(modifiedFilePath, PictoProject.createPictoProject(pictoFile));
 
     res = (new XMIResourceImpl(URI.createFileURI(modelFile.getAbsolutePath())));
     res.load(null);
@@ -100,7 +100,7 @@ class IncrementalityTest {
 
       eglPictoSource = new WebEglPictoSource();
     } finally {
-      Map<String, String> generatedViews = eglPictoSource.transform(modifiedFilePath,
+      Map<String, String> generatedViews = eglPictoSource.generatePromises(modifiedFilePath,
           PictoProject.createPictoProject(pictoFile));
       Arrays.asList( //
           "/families/Bicycle").stream().forEach(path -> {
@@ -119,7 +119,7 @@ class IncrementalityTest {
     res.save(null);
 
     eglPictoSource = new WebEglPictoSource();
-    Map<String, String> generatedViews = eglPictoSource.transform(modifiedFilePath,
+    Map<String, String> generatedViews = eglPictoSource.generatePromises(modifiedFilePath,
         PictoProject.createPictoProject(pictoFile));
     assertThat(generatedViews.keySet()).contains(
         "/Social Network",
@@ -135,7 +135,7 @@ class IncrementalityTest {
     res.save(null);
 
     eglPictoSource = new WebEglPictoSource();
-    Map<String, String> generatedViews = eglPictoSource.transform(modifiedFilePath,
+    Map<String, String> generatedViews = eglPictoSource.generatePromises(modifiedFilePath,
         PictoProject.createPictoProject(pictoFile));
 
     assertThat(generatedViews.keySet()).contains(
@@ -160,7 +160,7 @@ class IncrementalityTest {
     res.save(null);
 
     eglPictoSource = new WebEglPictoSource();
-    Map<String, String> generatedViews = eglPictoSource.transform(modifiedFilePath,
+    Map<String, String> generatedViews = eglPictoSource.generatePromises(modifiedFilePath,
         PictoProject.createPictoProject(pictoFile));
     assertThat(generatedViews.keySet()).contains(
         "/Social Network",
@@ -195,7 +195,7 @@ class IncrementalityTest {
     res.save(null);
 
     eglPictoSource = new WebEglPictoSource();
-    Map<String, String> generatedViews = eglPictoSource.transform(modifiedFilePath,
+    Map<String, String> generatedViews = eglPictoSource.generatePromises(modifiedFilePath,
         PictoProject.createPictoProject(pictoFile));
     assertThat(generatedViews.keySet()).contains(
         "/Social Network",
@@ -227,7 +227,7 @@ class IncrementalityTest {
     res.save(null);
 
     eglPictoSource = new WebEglPictoSource();
-    Map<String, String> generatedViews = eglPictoSource.transform(modifiedFilePath,
+    Map<String, String> generatedViews = eglPictoSource.generatePromises(modifiedFilePath,
         PictoProject.createPictoProject(pictoFile));
     assertThat(generatedViews.keySet()).contains(
         "/Social Network",
@@ -256,7 +256,7 @@ class IncrementalityTest {
     res.save(null);
 
     eglPictoSource = new WebEglPictoSource();
-    Map<String, String> generatedViews = eglPictoSource.transform(modifiedFilePath,
+    Map<String, String> generatedViews = eglPictoSource.generatePromises(modifiedFilePath,
         PictoProject.createPictoProject(pictoFile));
     assertThat(generatedViews.keySet()).contains(
         "/Social Network",
@@ -277,7 +277,7 @@ class IncrementalityTest {
     res.save(null);
 
     eglPictoSource = new WebEglPictoSource();
-    Map<String, String> generatedViews = eglPictoSource.transform(modifiedFilePath,
+    Map<String, String> generatedViews = eglPictoSource.generatePromises(modifiedFilePath,
         PictoProject.createPictoProject(pictoFile));
 
     assertThat(generatedViews.keySet())
@@ -290,7 +290,7 @@ class IncrementalityTest {
     res.save(null);
 
     eglPictoSource = new WebEglPictoSource();
-    Map<String, String> generatedViews2 = eglPictoSource.transform(modifiedFilePath,
+    Map<String, String> generatedViews2 = eglPictoSource.generatePromises(modifiedFilePath,
         PictoProject.createPictoProject(pictoFile));
 
     assertThat(generatedViews2.keySet())
@@ -320,7 +320,7 @@ class IncrementalityTest {
     res.save(null);
 
     eglPictoSource = new WebEglPictoSource();
-    Map<String, String> generatedViews3 = eglPictoSource.transform(modifiedFilePath,
+    Map<String, String> generatedViews3 = eglPictoSource.generatePromises(modifiedFilePath,
         PictoProject.createPictoProject(pictoFile));
 
     assertThat(generatedViews3.keySet())
@@ -346,7 +346,7 @@ class IncrementalityTest {
     res.save(null);
 
     eglPictoSource = new WebEglPictoSource();
-    Map<String, String> generatedViews4 = eglPictoSource.transform(modifiedFilePath,
+    Map<String, String> generatedViews4 = eglPictoSource.generatePromises(modifiedFilePath,
         PictoProject.createPictoProject(pictoFile));
 
     assertThat(generatedViews4.keySet())

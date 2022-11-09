@@ -30,7 +30,7 @@ public class PictoController {
   }
 
   @GetMapping(value = "/picto")
-  public String getPicto(String file, String path, String name, Model model) throws Exception {
+  public String getPicto(String file, String path, String name, String hash, Model model) throws Exception {
     model.addAttribute("pictoName", file);
 
     if (FileViewContentCache.getViewContentCache(file) == null) {
@@ -43,19 +43,26 @@ public class PictoController {
       }
       for (PictoProject pictoProject : affectedPictoProjects) {
         WebEglPictoSource source = new WebEglPictoSource();
-        source.transform(file, pictoProject);
+        source.generatePromises(file, pictoProject);
       }
     }
     if (path == null) {
-      String treeResult = FileViewContentCache.getViewContentCache(file)
-          .getViewContentCache(FileViewContentCache.PICTO_TREE);
+      PromiseView treePromiseView = FileViewContentCache.getViewContentCache(file)
+          .getPromiseView(FileViewContentCache.PICTO_TREE);
+      String treeResult = (hash == null) ? treePromiseView.getViewContent() : treePromiseView.getViewContent(hash);
       model.addAttribute("treeResponse", treeResult);
     } else {
-      String treeResult = FileViewContentCache.getViewContentCache(file)
-          .getViewContentCache(FileViewContentCache.PICTO_TREE);
-      String viewResult = FileViewContentCache.getViewContentCache(file).getViewContentCache(path);
+      PromiseView treePromiseView = FileViewContentCache.getViewContentCache(file)
+          .getPromiseView(FileViewContentCache.PICTO_TREE);
+      String treeResult = (hash == null) ? treePromiseView.getViewContent() : treePromiseView.getViewContent(hash);
       model.addAttribute("treeResponse", treeResult);
-      model.addAttribute("viewResponse", viewResult);
+
+      String viewResult = null;
+      PromiseView promiseView = FileViewContentCache.getViewContentCache(file).getPromiseView(path);
+      if (promiseView != null) {
+        viewResult = promiseView.getViewContent(hash);
+        model.addAttribute("viewResponse", viewResult);
+      }
       model.addAttribute("selectedUri", path);
     }
 

@@ -109,6 +109,7 @@ public class ViewTree {
 			}
 
 		}
+		child.getChildren();
 		return child;
 	}
 

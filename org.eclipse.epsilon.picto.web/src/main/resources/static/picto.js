@@ -174,7 +174,7 @@ Picto.render = function (view) {
   // old or updated, else is new
   if (localView != null) {
     // old
-    if (view.timestamp <= localView.timestamp) {
+    if (view.hash != localView.hash) {
       view = localView;
     } else { // updated
       // copy the old zoom and pan to the updated one

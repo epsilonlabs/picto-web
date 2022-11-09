@@ -9,10 +9,14 @@ import org.eclipse.epsilon.picto.incrementality.AccessRecordResource;
 public class FileViewContentCache {
 
 	public static final String PICTO_TREE = "/";
-	private static final Map<String, ViewContentCache> fileViewContentCache = new HashMap<String, ViewContentCache>();
+	
+	//map 'picto file' --> 'path' and 'view cache' 
+	private static final Map<String, PromiseViewCache> fileViewContentCache = new HashMap<String, PromiseViewCache>();
+	
+	//map  'picto file' --> 'access record resource' (e.g., accress graph resource)
 	private static final Map<String, AccessRecordResource> fileAccessRecordResources = new HashMap<String, AccessRecordResource>();
 
-	public static Map<String, ViewContentCache> getMap() {
+	public static Map<String, PromiseViewCache> getMap() {
 		return fileViewContentCache;
 	}
 
@@ -25,10 +29,10 @@ public class FileViewContentCache {
 		fileAccessRecordResources.clear();
 	}
 
-	public static ViewContentCache addPictoFile(String pictoFilename) {
-		ViewContentCache map = getViewContentCache(pictoFilename);
+	public static PromiseViewCache addPictoFile(String pictoFilename) {
+		PromiseViewCache map = getViewContentCache(pictoFilename);
 		if (map == null) {
-			map = new ViewContentCache();
+			map = new PromiseViewCache();
 			fileViewContentCache.put(pictoFilename, map);
 		}
 		return map;
@@ -48,7 +52,7 @@ public class FileViewContentCache {
 		return fileAccessRecordResources.get(pictoFilename);
 	}
 
-	public static ViewContentCache getViewContentCache(String pictoFilename) {
+	public static PromiseViewCache getViewContentCache(String pictoFilename) {
 		return fileViewContentCache.get(pictoFilename);
 	}
 }

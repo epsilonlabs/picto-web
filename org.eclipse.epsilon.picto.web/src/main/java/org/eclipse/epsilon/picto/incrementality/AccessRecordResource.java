@@ -6,6 +6,7 @@ import java.util.Set;
 
 import org.eclipse.epsilon.egl.EgxModule;
 import org.eclipse.epsilon.picto.LazyEgxModule.LazyGenerationRuleContentPromise;
+import org.eclipse.epsilon.picto.incrementality.IncrementalLazyEgxModule.IncrementalLazyGenerationRuleContentPromise;
 
 public interface AccessRecordResource {
 
@@ -15,11 +16,9 @@ public interface AccessRecordResource {
 
 	public void printIncrementalRecords();
 
-//	public void updateStatusToProcessed(String path);
-
 	public void updateStatusToProcessed(Collection<String> paths);
 
-	public Set<String> getToBeProcessedPaths(List<LazyGenerationRuleContentPromise> inProcessingPromises, EgxModule module);
+	public Set<String> getToBeProcessedPaths(List<IncrementalLazyGenerationRuleContentPromise> promises, EgxModule module);
 
 	public void clear();
 

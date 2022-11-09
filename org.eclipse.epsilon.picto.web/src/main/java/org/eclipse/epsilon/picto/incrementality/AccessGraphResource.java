@@ -19,6 +19,7 @@ import org.eclipse.epsilon.egl.EgxModule;
 import org.eclipse.epsilon.emc.emf.AbstractEmfModel;
 import org.eclipse.epsilon.emc.emf.EmfModel;
 import org.eclipse.epsilon.picto.LazyEgxModule.LazyGenerationRuleContentPromise;
+import org.eclipse.epsilon.picto.incrementality.IncrementalLazyEgxModule.IncrementalLazyGenerationRuleContentPromise;
 import org.eclipse.epsilon.picto.pictograph.Element;
 import org.eclipse.epsilon.picto.pictograph.Entity;
 import org.eclipse.epsilon.picto.pictograph.InputEntity;
@@ -196,13 +197,13 @@ public class AccessGraphResource implements AccessRecordResource {
    * 
    */
   @Override
-  public Set<String> getToBeProcessedPaths(List<LazyGenerationRuleContentPromise> inProcessingPromises,
+  public Set<String> getToBeProcessedPaths(List<IncrementalLazyGenerationRuleContentPromise> inProcessingPromises,
       EgxModule module) {
     Set<String> toBeProcessedPaths = new HashSet<String>();
     Set<String> toBeDeletedKeys = new HashSet<String>();
     Set<EObject> toBeDeletedElements = new HashSet<EObject>();
 
-    for (LazyGenerationRuleContentPromise promise : inProcessingPromises) {
+    for (IncrementalLazyGenerationRuleContentPromise promise : inProcessingPromises) {
       String checkedPath = Util.getPath(promise);
       checkPath(module, toBeProcessedPaths, toBeDeletedKeys, toBeDeletedElements, checkedPath);
     }
