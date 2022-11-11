@@ -83,8 +83,8 @@ public class FileWatcher extends Thread {
             System.err.println("WatchKey not recognized!!");
             continue;
           }
-        } catch (InterruptedException ex) {
-          ex.printStackTrace();
+        } catch (Exception ex) {
+          // ex.printStackTrace();
           return;
         }
 
@@ -130,7 +130,21 @@ public class FileWatcher extends Thread {
       if (f.isDirectory()) {
         registerDirectory(watcher, f.getAbsolutePath(), keys);
       }
+    }
+  }
+
+  public static void scanPictoFiles() throws Exception {
+    scanPictoFiles(PictoApplication.WORKSPACE);
+  }
+
+  private static void scanPictoFiles(String directory) throws Exception {
+    File file = new File(directory);
+    for (File f : file.listFiles()) {
+      if (f.isDirectory()) {
+        scanPictoFiles(f.getAbsolutePath());
+      }
       if (f.isFile() && f.getName().endsWith(".picto")) {
+        System.out.println("PICTO: Found Picto file: " + file.getAbsolutePath());
         PictoProject.createPictoProject(f);
       }
     }
@@ -162,13 +176,13 @@ public class FileWatcher extends Thread {
     FILE_WATCHER.start();
   }
 
-  public static void stopWatching() throws IOException {
+  public static void stopWatching() throws IOException, InterruptedException {
     if (FILE_WATCHER != null)
       FILE_WATCHER.terminate();
   }
 
   @PreDestroy
-  public void destroy() {
+  public void destroy() throws InterruptedException {
 
     try {
       System.out.println("Terminating FileWatcher ...");

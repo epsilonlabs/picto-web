@@ -43,6 +43,21 @@ public class PictoJsonController {
 
   @GetMapping(path = "/picto", produces = MediaType.APPLICATION_JSON_VALUE)
   public String getPictoJson(String file, String path, String name, String hash, Model model) throws Exception {
+    
+    if (FileViewContentCache.getViewContentCache(file) == null) {
+      File modifiedFile = new File(new File(PictoApplication.WORKSPACE + file).getAbsolutePath());
+      Set<PictoProject> affectedPictoProjects = new HashSet<>();
+      for (PictoProject project : PictoApplication.getPictoProjects()) {
+        if (project.getFiles().contains(modifiedFile)) {
+          affectedPictoProjects.add(project);
+        }
+      }
+      for (PictoProject pictoProject : affectedPictoProjects) {
+        WebEglPictoSource source = new WebEglPictoSource();
+        source.generatePromises(file, pictoProject);
+      }
+    }
+    
     PromiseViewCache promiseViewCache = FileViewContentCache.getViewContentCache(file);
     String result = "";
     if (promiseViewCache != null) {
@@ -80,9 +95,11 @@ public class PictoJsonController {
       for (Entry<String, String> entry : modifiedObjects.entrySet()) {
         String path = entry.getKey();
         String content = FileViewContentCache.getViewContentCache(pictoFilePath).getPromiseView(path).getViewContent();
-        SimpMessagingTemplate messaging = new SimpMessagingTemplate(brokerChannel);
-        String topicName = "/topic/picto" + pictoFilePath;
-        messaging.convertAndSend(topicName, content.getBytes());
+        if (content != null) {
+          SimpMessagingTemplate messaging = new SimpMessagingTemplate(brokerChannel);
+          String topicName = "/topic/picto" + pictoFilePath;
+          messaging.convertAndSend(topicName, content.getBytes());
+        }
       }
     }
 

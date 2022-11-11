@@ -1,12 +1,23 @@
 package org.eclipse.epsilon.picto.web;
 
 import java.io.File;
-import java.security.MessageDigest;
+import java.io.IOException;
+import java.sql.Timestamp;
+import java.time.Instant;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.springframework.boot.ExitCodeGenerator;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
+import org.springframework.context.ApplicationListener;
+import org.springframework.context.ConfigurableApplicationContext;
+import org.springframework.context.event.ApplicationContextEvent;
+import org.springframework.context.event.ContextClosedEvent;
+import org.springframework.context.event.ContextRefreshedEvent;
+import org.springframework.context.event.ContextStartedEvent;
+import org.springframework.context.event.ContextStoppedEvent;
+import org.springframework.stereotype.Component;
 
 /***
  * The main class for Picto Web Application
@@ -15,7 +26,8 @@ import org.springframework.boot.autoconfigure.SpringBootApplication;
  *
  */
 @SpringBootApplication
-public class PictoApplication {
+@Component
+public class PictoApplication implements ApplicationListener<ApplicationContextEvent> {
 
   /***
    * Define the relative workspace target
@@ -34,6 +46,8 @@ public class PictoApplication {
 
   private static List<PictoProject> pictoProjects = new ArrayList<PictoProject>();
 
+  private static ConfigurableApplicationContext context;
+
   /***
    * Initialise Picto Application
    * 
@@ -50,13 +64,13 @@ public class PictoApplication {
    * Main program launcher
    * 
    * @param args
+   * @throws Exception
    */
-  public static void main(String[] args) {
+  public static void main(String[] args) throws Exception {
     PictoApplication.args = args;
-
-    // run the Spring application
-    SpringApplication.run(PictoApplication.class, args);
+    FileWatcher.scanPictoFiles();
     FileWatcher.startWatching();
+    context = SpringApplication.run(PictoApplication.class, args);
   }
 
   /**
@@ -66,4 +80,27 @@ public class PictoApplication {
     return pictoProjects;
   }
 
+  public static void exit() throws IOException, InterruptedException {
+    FileWatcher.stopWatching();
+    SpringApplication.exit(context, new ExitCodeGenerator() {
+      @Override
+      public int getExitCode() {
+        return 0;
+      }
+    });
+  }
+
+  @Override
+  public void onApplicationEvent(ApplicationContextEvent event) {
+    if (event instanceof ContextStartedEvent) {
+      System.out.println("PICTO: started - " + Timestamp.from(Instant.now()).toString());
+    } else if (event instanceof ContextRefreshedEvent) {
+      System.out.println("PICTO: loaded - " + Timestamp.from(Instant.now()).toString());
+    } else if (event instanceof ContextStoppedEvent) {
+      System.out.println("PICTO: stopped - " + Timestamp.from(Instant.now()).toString());
+    } else if (event instanceof ContextClosedEvent) {
+      System.out.println("PICTO: closed - " + Timestamp.from(Instant.now()).toString());
+    }
+
+  }
 }
