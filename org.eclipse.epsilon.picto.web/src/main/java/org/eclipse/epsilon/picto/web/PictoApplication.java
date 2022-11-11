@@ -47,6 +47,12 @@ public class PictoApplication implements ApplicationListener<ApplicationContextE
   private static List<PictoProject> pictoProjects = new ArrayList<PictoProject>();
 
   private static ConfigurableApplicationContext context;
+  
+  private static PictoWebOnLoadedListener pictoWebOnLoadedListener = new PictoWebOnLoadedListener() {
+    @Override
+    public void onLoaded() {
+    }
+  };
 
   /***
    * Initialise Picto Application
@@ -90,16 +96,16 @@ public class PictoApplication implements ApplicationListener<ApplicationContextE
     });
   }
 
+  public static void setPictoWebOnLoadedListener(PictoWebOnLoadedListener listener) {
+    PictoApplication.pictoWebOnLoadedListener = listener;
+  }
+  
   @Override
   public void onApplicationEvent(ApplicationContextEvent event) {
     if (event instanceof ContextStartedEvent) {
       System.out.println("PICTO: started - " + Timestamp.from(Instant.now()).toString());
     } else if (event instanceof ContextRefreshedEvent) {
-      if (args != null) {
-        synchronized (args) {
-          args.notify();
-        }
-      }
+      pictoWebOnLoadedListener.onLoaded();
       System.out.println("PICTO: loaded - " + Timestamp.from(Instant.now()).toString());
     } else if (event instanceof ContextStoppedEvent) {
       System.out.println("PICTO: stopped - " + Timestamp.from(Instant.now()).toString());

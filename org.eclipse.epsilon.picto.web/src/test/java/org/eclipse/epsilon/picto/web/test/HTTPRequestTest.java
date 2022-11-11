@@ -17,11 +17,13 @@ import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 
 import org.eclipse.epsilon.picto.web.PictoApplication;
+import org.eclipse.epsilon.picto.web.PictoWebOnLoadedListener;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.springframework.boot.ExitCodeGenerator;
 import org.w3c.dom.Document;
 import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
@@ -52,6 +54,17 @@ class HTTPRequestTest {
         }
       }
     };
+    PictoApplication.setPictoWebOnLoadedListener(new PictoWebOnLoadedListener() {
+      @Override
+      public void onLoaded() {
+        if (args != null) {
+          synchronized (args) {
+            args.notify();
+          }
+        }
+      }
+      //---
+    });
     synchronized (args) {
       pictoAppThread.start();
       args.wait();
@@ -92,7 +105,7 @@ class HTTPRequestTest {
 //    String actualFile = node.get("filename").textValue();
     String htmlString = node.get("content").textValue();
     builder.parse(new InputSource(new StringReader(htmlString)));
-    
+
     assertThat(expectedPath.equals(actualPath));
 
   }

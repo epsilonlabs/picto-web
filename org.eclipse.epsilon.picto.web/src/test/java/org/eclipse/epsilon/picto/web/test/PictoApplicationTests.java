@@ -14,6 +14,7 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.context.SpringBootTest.WebEnvironment;
 import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
+import org.springframework.test.web.servlet.MvcResult;
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers;
 
@@ -39,6 +40,7 @@ class PictoApplicationTests {
 
   @Test
   void testGetSocialNetwork() throws Exception {
+//  MvcResult result = mvc.perform(MockMvcRequestBuilders.get(LOCALHOST)
     mvc.perform(MockMvcRequestBuilders.get(LOCALHOST)
         .queryParam("file", "/socialnetwork/socialnetwork.model.picto")
         .queryParam("path", "/Social Network")
@@ -46,6 +48,7 @@ class PictoApplicationTests {
         .andExpect(status().isOk())
         .andExpect(content().contentTypeCompatibleWith(MediaType.APPLICATION_JSON))
         .andExpect(MockMvcResultMatchers.jsonPath("$.path").value("/Social Network"))
-        .andDo(print());
+        .andDo(print()).andReturn();
+//    String x = result.getResponse().getContentAsString();
   }
 }
