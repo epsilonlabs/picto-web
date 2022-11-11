@@ -41,18 +41,21 @@ class HTTPRequestTest {
 
   @BeforeAll
   static void setUpBeforeClass() throws Exception {
+    String[] args = new String[] {};
     pictoAppThread = new Thread() {
       @Override
       public void run() {
         try {
-          PictoApplication.main(new String[] {});
+          PictoApplication.main(args);
         } catch (Exception e) {
           e.printStackTrace();
         }
       }
     };
-    pictoAppThread.start();
-    Thread.sleep(5000);
+    synchronized (args) {
+      pictoAppThread.start();
+      args.wait();
+    }
     mapper = new ObjectMapper();
     DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
     builder = factory.newDocumentBuilder();

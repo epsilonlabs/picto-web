@@ -14,11 +14,8 @@ import java.nio.file.WatchKey;
 import java.nio.file.WatchService;
 import java.util.HashMap;
 
-import javax.annotation.PreDestroy;
-
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.messaging.handler.annotation.MessageMapping;
-import org.springframework.stereotype.Component;
 
 /***
  * Monitor file changes.
@@ -27,7 +24,6 @@ import org.springframework.stereotype.Component;
  *
  */
 
-@Component
 public class FileWatcher extends Thread {
 
   public static FileWatcher FILE_WATCHER;
@@ -159,39 +155,27 @@ public class FileWatcher extends Thread {
   }
 
   public static void startWatching() {
-    if (FILE_WATCHER == null)
+    if (FILE_WATCHER == null || !FILE_WATCHER.isAlive())
       FILE_WATCHER = new FileWatcher();
     FILE_WATCHER.start();
   }
 
   public static void setResponseController(PictoJsonController pictoJsonController) {
-    if (FILE_WATCHER == null)
+    if (FILE_WATCHER == null || !FILE_WATCHER.isAlive())
       FILE_WATCHER = new FileWatcher();
     FILE_WATCHER.setPictoJsonController(pictoJsonController);
   }
 
   public static void startWatching(PictoJsonController pictoJsonController) {
-    if (FILE_WATCHER == null)
+    if (FILE_WATCHER == null || !FILE_WATCHER.isAlive())
       FILE_WATCHER = new FileWatcher(pictoJsonController);
     FILE_WATCHER.start();
   }
 
   public static void stopWatching() throws IOException, InterruptedException {
-    if (FILE_WATCHER != null)
+    if (FILE_WATCHER != null) {
       FILE_WATCHER.terminate();
-  }
-
-  @PreDestroy
-  public void destroy() throws InterruptedException {
-
-    try {
-      System.out.println("Terminating FileWatcher ...");
-      FileWatcher.stopWatching();
-      System.out.println("FileWatcher stopped.");
-    } catch (IOException e) {
-      System.out.println("Error while stopping FileWacher.");
-      e.printStackTrace();
+      FILE_WATCHER = null;
     }
-
   }
 }

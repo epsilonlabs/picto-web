@@ -95,6 +95,11 @@ public class PictoApplication implements ApplicationListener<ApplicationContextE
     if (event instanceof ContextStartedEvent) {
       System.out.println("PICTO: started - " + Timestamp.from(Instant.now()).toString());
     } else if (event instanceof ContextRefreshedEvent) {
+      if (args != null) {
+        synchronized (args) {
+          args.notify();
+        }
+      }
       System.out.println("PICTO: loaded - " + Timestamp.from(Instant.now()).toString());
     } else if (event instanceof ContextStoppedEvent) {
       System.out.println("PICTO: stopped - " + Timestamp.from(Instant.now()).toString());
