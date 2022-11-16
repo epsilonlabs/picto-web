@@ -1,0 +1,14 @@
+<?nsuri picto?>
+<picto format="egx" transformation="picto/socialnetwork.egx">
+    <model type="EMF">
+        <parameter name="name" value="M"/>
+        <parameter name="metamodelUri" value="socialnetwork"/>
+        <parameter name="metamodelFile" file="socialnetwork.ecore"/>
+        <parameter name="modelFile" file="scpdemo.model"/>
+    </model>        
+	<view path="Custom, Abbey and Bella" icon="icons/diagram.gif" 
+	   type="Persons2Graphviz">
+		<parameter name="names" values="Abbey, Bella"/>
+	</view>         
+	<view path="Readme" icon="icons/document.gif" format="markdown" source="socialnetwork/readme.md" position="0"/>
+</picto>

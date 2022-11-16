@@ -1,13 +1,8 @@
 digraph G {
-    node[shape=rectangle, fontname=Tahoma, fontsize=10, style="filled", fillcolor="bisque"]
-    edge[penwidth=3, style=tapered, arrowhead=none]
+    node[shape=circle, fixedsize=true fontname=Tahoma, fontsize=10, style="filled",  fillcolor="#FFE6CC"]
+    edge[penwidth=2]
     
 [%for (p in people){%]
-    [%
-        for (x in people){
-        x.name.println("ALFA: ");
-        }
-    %]
     [%if (people.size()==1) { /* if generating individual views */
         var elementPath = "['Social Network', '" + p.name + "' ]";
         var tooltip = "Go to " + p.name;
@@ -17,7 +12,7 @@ digraph G {
                 + p.name
                 + "</td></tr></table>";
     %]
-        [%=p.name%] [label=<[%=elementLabel%]>, fillcolor="azure2"]
+        [%=p.name%] [label=<[%=elementLabel%]>, fillcolor="#DAE8FC"]
     [%} else {
         addPersonWithViewEvent(p);
     }%]
@@ -41,7 +36,7 @@ digraph G {
     
 [%}%]
 
-node[shape=circle, fontname=Tahoma, fontsize=10, style="filled", fillcolor="violet:white"]
+node[shape=circle, fontname=Tahoma, fontsize=10, style="filled", gradientangle="270", fillcolor="violet:white"]
 [%for (p in people){%]
     [%for (item in p.items){ %]
         [%=item.name%][]
