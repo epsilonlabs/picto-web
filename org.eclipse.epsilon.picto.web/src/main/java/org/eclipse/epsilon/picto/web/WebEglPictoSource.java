@@ -196,7 +196,7 @@ public class WebEglPictoSource extends EglPictoSource {
           }
 
           accessRecordResource.printIncrementalRecords();
-//          accessRecordResource.updateStatusToProcessed(toBeProcessedPaths);
+          accessRecordResource.updateStatusToProcessed(toBeProcessedPaths);
           generateAll = false;
 
           System.out.println();

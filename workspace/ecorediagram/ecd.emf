@@ -7,7 +7,7 @@ class Diagram {
 	val Include[*] includes;
 	transient val Type[*] types;
 	transient val Association[*] associations;
-	transient val Constraint[*] constraints;
+	val Constraint[*] constraints;
 }
 
 class Constraint {
