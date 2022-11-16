@@ -155,19 +155,19 @@ public class FileWatcher extends Thread {
   }
 
   public static void startWatching() {
-    if (FILE_WATCHER == null || !FILE_WATCHER.isAlive())
+    if (FILE_WATCHER == null)
       FILE_WATCHER = new FileWatcher();
     FILE_WATCHER.start();
   }
 
   public static void setResponseController(PictoJsonController pictoJsonController) {
-    if (FILE_WATCHER == null || !FILE_WATCHER.isAlive())
-      FILE_WATCHER = new FileWatcher();
+    if (FILE_WATCHER == null)
+      FILE_WATCHER = new FileWatcher(); 
     FILE_WATCHER.setPictoJsonController(pictoJsonController);
   }
 
   public static void startWatching(PictoJsonController pictoJsonController) {
-    if (FILE_WATCHER == null || !FILE_WATCHER.isAlive())
+    if (FILE_WATCHER == null)
       FILE_WATCHER = new FileWatcher(pictoJsonController);
     FILE_WATCHER.start();
   }

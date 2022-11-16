@@ -30,7 +30,7 @@ public class PictoController {
   }
 
   @GetMapping(value = "/picto")
-  public String getPicto(String file, String path, String name, String hash, Model model) throws Exception {
+  public String getPicto(String file, String path, String name, String timestamp, Model model) throws Exception {
     model.addAttribute("pictoName", file);
 
     if (FileViewContentCache.getViewContentCache(file) == null) {
@@ -49,18 +49,18 @@ public class PictoController {
     if (path == null) {
       PromiseView treePromiseView = FileViewContentCache.getViewContentCache(file)
           .getPromiseView(FileViewContentCache.PICTO_TREE);
-      String treeResult = (hash == null) ? treePromiseView.getViewContent() : treePromiseView.getViewContent(hash);
+      String treeResult = (timestamp == null) ? treePromiseView.getViewContent() : treePromiseView.getViewContent(timestamp);
       model.addAttribute("treeResponse", treeResult);
     } else {
       PromiseView treePromiseView = FileViewContentCache.getViewContentCache(file)
           .getPromiseView(FileViewContentCache.PICTO_TREE);
-      String treeResult = (hash == null) ? treePromiseView.getViewContent() : treePromiseView.getViewContent(hash);
+      String treeResult = (timestamp == null) ? treePromiseView.getViewContent() : treePromiseView.getViewContent(timestamp);
       model.addAttribute("treeResponse", treeResult);
 
       String viewResult = null;
       PromiseView promiseView = FileViewContentCache.getViewContentCache(file).getPromiseView(path);
       if (promiseView != null) {
-        viewResult = promiseView.getViewContent(hash);
+        viewResult = promiseView.getViewContent(timestamp);
         model.addAttribute("viewResponse", viewResult);
       }
       model.addAttribute("selectedUri", path);

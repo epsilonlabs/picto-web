@@ -42,7 +42,7 @@ public class PictoJsonController {
   }
 
   @GetMapping(path = "/picto", produces = MediaType.APPLICATION_JSON_VALUE)
-  public String getPictoJson(String file, String path, String name, String hash, Model model) throws Exception {
+  public String getPictoJson(String file, String path, String name, String timestamp, Model model) throws Exception {
     
     if (FileViewContentCache.getViewContentCache(file) == null) {
       File modifiedFile = new File(new File(PictoApplication.WORKSPACE + file).getAbsolutePath());
@@ -63,7 +63,7 @@ public class PictoJsonController {
     if (promiseViewCache != null) {
       PromiseView promiseView = promiseViewCache.getPromiseView(path);
       if (promiseView != null)
-        result = promiseView.getViewContent(hash);
+        result = promiseView.getViewContent(timestamp);
     }
     return result;
   }
@@ -84,8 +84,8 @@ public class PictoJsonController {
           .replace(new File(PictoApplication.WORKSPACE).getAbsolutePath(), "").replace("\\", "/");
 
       WebEglPictoSource source = new WebEglPictoSource();
-      // Map<String, String> modifiedObjects = source.transform(modifiedFilePath);
-      Map<String, String> modifiedObjects = source.generatePromises(modifiedFilePath, pictoProject);
+      
+      Map<String, String> modifiedObjects = source.generatePromises(modifiedFilePath, pictoProject, true);
       System.out.println("PICTO: number of modified objects = " + modifiedObjects.size());
 
       String pictoFilePath = pictoProject.getPictoFile().getAbsolutePath()

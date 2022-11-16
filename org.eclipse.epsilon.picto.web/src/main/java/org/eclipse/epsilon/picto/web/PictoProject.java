@@ -5,7 +5,6 @@ import java.util.HashSet;
 import java.util.Set;
 import java.util.stream.Collectors;
 
-import org.eclipse.emf.ecore.EClass;
 import org.eclipse.emf.ecore.resource.Resource;
 import org.eclipse.emf.ecore.resource.ResourceSet;
 import org.eclipse.emf.ecore.resource.impl.ResourceSetImpl;
@@ -15,7 +14,6 @@ import org.eclipse.epsilon.flexmi.FlexmiResourceFactory;
 import org.eclipse.epsilon.picto.dom.Model;
 import org.eclipse.epsilon.picto.dom.Parameter;
 import org.eclipse.epsilon.picto.dom.Picto;
-import org.eclipse.epsilon.picto.dom.PictoPackage;
 
 public class PictoProject {
   private String name;
@@ -23,8 +21,7 @@ public class PictoProject {
   private Set<File> files = new HashSet<File>();
   private Set<File> modelFiles = new HashSet<File>();
   private Set<File> metamodelFiles = new HashSet<File>();
-  private EClass eClass = PictoPackage.eINSTANCE.eClass();
-
+  
   public PictoProject(File pictoFile) {
     this.setName(pictoFile.getName());
     this.pictoFile = pictoFile;

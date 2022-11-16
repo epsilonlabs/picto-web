@@ -7,6 +7,9 @@ import java.time.Instant;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.eclipse.emf.ecore.EClass;
+import org.eclipse.epsilon.picto.dom.PictoFactory;
+import org.eclipse.epsilon.picto.dom.PictoPackage;
 import org.springframework.boot.ExitCodeGenerator;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
@@ -26,7 +29,6 @@ import org.springframework.stereotype.Component;
  *
  */
 @SpringBootApplication
-@Component
 public class PictoApplication implements ApplicationListener<ApplicationContextEvent> {
 
   /***
@@ -41,7 +43,7 @@ public class PictoApplication implements ApplicationListener<ApplicationContextE
 
   /***
    * To keep the arguments accessible.
-   */
+   */     
   public static String[] args;
 
   private static List<PictoProject> pictoProjects = new ArrayList<PictoProject>();
@@ -53,6 +55,9 @@ public class PictoApplication implements ApplicationListener<ApplicationContextE
     public void onLoaded() {
     }
   };
+
+  private static PictoFactory pictoFactory;
+  private static PictoPackage pictoPackage;
 
   /***
    * Initialise Picto Application
@@ -74,9 +79,12 @@ public class PictoApplication implements ApplicationListener<ApplicationContextE
    */
   public static void main(String[] args) throws Exception {
     PictoApplication.args = args;
+    context = SpringApplication.run(PictoApplication.class, args);
+    pictoFactory = PictoFactory.eINSTANCE;
+    pictoPackage = PictoPackage.eINSTANCE;
     FileWatcher.scanPictoFiles();
     FileWatcher.startWatching();
-    context = SpringApplication.run(PictoApplication.class, args);
+    pictoWebOnLoadedListener.onLoaded();
   }
 
   /**
@@ -105,7 +113,6 @@ public class PictoApplication implements ApplicationListener<ApplicationContextE
     if (event instanceof ContextStartedEvent) {
       System.out.println("PICTO: started - " + Timestamp.from(Instant.now()).toString());
     } else if (event instanceof ContextRefreshedEvent) {
-      pictoWebOnLoadedListener.onLoaded();
       System.out.println("PICTO: loaded - " + Timestamp.from(Instant.now()).toString());
     } else if (event instanceof ContextStoppedEvent) {
       System.out.println("PICTO: stopped - " + Timestamp.from(Instant.now()).toString());

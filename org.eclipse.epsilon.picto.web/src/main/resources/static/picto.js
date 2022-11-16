@@ -174,7 +174,7 @@ Picto.render = function (view) {
   // old or updated, else is new
   if (localView != null) {
     // old
-    if (view.hash != localView.hash) {
+    if (view.timestamp <= localView.timestamp) {
       view = localView;
     } else { // updated
       // copy the old zoom and pan to the updated one
@@ -256,9 +256,17 @@ Picto.draw = function (label, url) {
 
   Picto.selectedPath = label.split('#')[1];
 
+  var localView = Picto.views.get(Picto.selectedPath);
+  var urlWithTimestamp;
+  if (localView != null && localView.timestamp != null) {
+    urlWithTimestamp = url + '&timestamp=' + localView.timestamp;
+  } else {
+    urlWithTimestamp = url;
+  }
+
   var request = new XMLHttpRequest();
   request.addEventListener("load", Picto.getView);
-  request.open("GET", "/pictojson" + url);
+  request.open("GET", "/pictojson" + urlWithTimestamp);
   request.send();
 
   window.history.pushState(null, label, url);
