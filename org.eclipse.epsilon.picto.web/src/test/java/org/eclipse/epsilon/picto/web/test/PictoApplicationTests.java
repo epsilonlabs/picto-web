@@ -49,6 +49,7 @@ class PictoApplicationTests {
         .andExpect(content().contentTypeCompatibleWith(MediaType.APPLICATION_JSON))
         .andExpect(MockMvcResultMatchers.jsonPath("$.path").value("/Social Network"))
         .andDo(print()).andReturn();
+        
 //    String x = result.getResponse().getContentAsString();
   }
 }

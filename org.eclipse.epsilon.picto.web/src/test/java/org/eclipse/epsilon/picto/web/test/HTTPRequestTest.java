@@ -10,11 +10,17 @@ import java.io.StringReader;
 import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.util.Arrays;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
+import javax.xml.xpath.XPath;
+import javax.xml.xpath.XPathConstants;
+import javax.xml.xpath.XPathExpressionException;
+import javax.xml.xpath.XPathFactory;
 
 import org.eclipse.epsilon.picto.web.PictoApplication;
 import org.eclipse.epsilon.picto.web.PictoWebOnLoadedListener;
@@ -23,8 +29,8 @@ import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.springframework.boot.ExitCodeGenerator;
 import org.w3c.dom.Document;
+import org.w3c.dom.NodeList;
 import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
 
@@ -63,7 +69,7 @@ class HTTPRequestTest {
           }
         }
       }
-      //---
+      // ---
     });
     synchronized (args) {
       pictoAppThread.start();
@@ -88,7 +94,7 @@ class HTTPRequestTest {
   }
 
   @Test
-  void testGetSocialNetwork() throws IOException, SAXException {
+  void testGetSocialNetwork() throws IOException, SAXException, XPathExpressionException {
     String expectedPath = "/Social Network";
     String expectedFile = "/socialnetwork/socialnetwork.model.picto";
     Map<String, String> parameters = new HashMap<>();
@@ -103,10 +109,22 @@ class HTTPRequestTest {
     JsonNode node = getJsonNode(GET_URL);
     String actualPath = node.get("path").textValue();
 //    String actualFile = node.get("filename").textValue();
-    String htmlString = node.get("content").textValue();
-    builder.parse(new InputSource(new StringReader(htmlString)));
-
     assertThat(expectedPath.equals(actualPath));
+
+    List<String> names = Arrays.asList(new String[] { "Alice", "Bob", "Charlie" });
+
+    String htmlString = node.get("content").textValue();
+    Document html = builder.parse(new InputSource(new StringReader(htmlString)));
+
+    XPath xPath = XPathFactory.newInstance().newXPath();
+    String expression = "//title";
+    NodeList elements = (NodeList) xPath.compile(expression).evaluate(html, XPathConstants.NODESET);
+
+//    NodeList elements = html.getElementsByTagName("title");
+    for (int i = 0; i < elements.getLength(); i++) {
+      String name = elements.item(i).getTextContent();
+      assertThat(names.contains(name));
+    }
 
   }
 
