@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="ASCII"?>
 <SocialNetwork xmi:version="2.0" xmlns:xmi="http://www.omg.org/XMI" xmlns="socialnetwork" xmi:id="0">
-  <people xmi:id="1" name="Alice" likes="2" />
+  <people xmi:id="1" name="Alice" likes="2"/>
   <people xmi:id="2" name="Bob"/>
   <people xmi:id="3" name="Charlie"/>
 </SocialNetwork>

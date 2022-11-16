@@ -188,7 +188,10 @@ public class WebEglPictoSource extends EglPictoSource {
 //            } else {
 //
 //            }
-            String content = (fromFileWatcher) ? content = promiseView.getViewContent(null) : "";
+            String content = "";
+            if (fromFileWatcher) {
+              content = promiseView.getViewContent(null);
+            }
             modifiedViewContents.put(pathString, content);
 
             System.out.println("PROCESSED");

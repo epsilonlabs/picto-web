@@ -297,6 +297,7 @@ public class AccessGraphResource implements AccessRecordResource {
               String currentValue = AccessRecord.convertValueToString(currentValueObject);
               if (!Util.equals(property.getPreviousValue(), currentValue)) {
                 toBeProcessedPaths.add(checkedPath);
+//                property.getAffects().forEach(p -> toBeProcessedPaths.add(p.getName()));
                 return;
               }
 
