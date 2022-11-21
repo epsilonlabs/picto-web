@@ -1,0 +1,24 @@
+rule Graph2Graphviz  
+	transform g : graph::Graph {
+	parameters : 
+	   Map{
+		"path" = Sequence{"Graph"},
+		"format" = "graphviz-dot",
+		"nodes" = g.nodes,
+		"edges" = g.edges
+	}
+	template : "graph.egl"
+	target : "output/Graph.dot"
+}
+
+rule Node2Graphviz 
+	transform n : graph::Node {
+	template : "graph.egl"
+	parameters : Map{
+		"path" = Sequence{"Graph", n.name},
+		"format" = "graphviz-dot",
+		"nodes" = n.edges.nodes.flatten().asSet(),
+		"edges" = n.edges
+	}
+	target : "output/" + n.name + ".dot"
+}

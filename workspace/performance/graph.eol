@@ -1,0 +1,5 @@
+
+
+for ( n in Node.all()){
+    n.edges.nodes.flatten().sortBy(n | n.name).asOrderedSet().println();
+}

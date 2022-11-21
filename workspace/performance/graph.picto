@@ -1,0 +1,9 @@
+<?nsuri picto?>
+<picto format="egx" transformation="graph.egx">
+    <model type="EMF">
+        <parameter name="name" value="M"/>
+        <parameter name="metamodelUri" value="graph"/>
+        <parameter name="metamodelFile" file="graph.ecore"/>
+        <parameter name="modelFile" file="graph.xmi"/>
+    </model>        
+</picto>
