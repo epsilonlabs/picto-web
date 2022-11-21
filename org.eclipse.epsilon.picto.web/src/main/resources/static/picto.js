@@ -1,15 +1,3 @@
-/*function connect() {
-  var socket = new SockJS('/picto-web');
-  stompClient = Stomp.over(socket);
-  stompClient.connect({}, function(frame) {
-    setConnected(true);
-    console.log('Connected: ' + frame);
-    stompClient.subscribe('/topic/greetings', function(greeting) {
-      showGreeting(JSON.parse(greeting.body).content);
-    });
-  });
-}*/
-
 /*** PICTO ****/
 var Picto = new Object();
 
@@ -26,6 +14,10 @@ Picto.tempSelectedPath = null; // temporary holder when refreshing jstree
 Picto.views = new Map();
 Picto.disableJsTreeOnSelectEvent = false;
 
+/***
+ * Covert a json object to string. The object contains the information of the file selected,
+ * the type of the document, and the message.
+ */
 Picto.convertToPictoRequest = function (pictoFile, type, message) {
   return JSON.stringify(
     {
@@ -36,6 +28,9 @@ Picto.convertToPictoRequest = function (pictoFile, type, message) {
   );
 }
 
+/***
+ * 
+ */
 Picto.listToJsTreeData = function (list) {
   var tree = [];
   var t = tree;
