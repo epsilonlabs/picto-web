@@ -1,14 +1,11 @@
 package org.eclipse.epsilon.picto.web;
 
 import java.io.File;
-import java.util.ArrayList;
 import java.util.HashSet;
-import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
 
-import org.eclipse.epsilon.picto.dom.PictoPackage;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationContext;
 import org.springframework.http.MediaType;
@@ -22,7 +19,12 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 /***
- * Receive Requests and send back Responses
+ * A controller to receive JSON requests from clicking the TreeView nodes inside
+ * the TreeView panel on the left side ('getPictoJson' method). This controller
+ * also sends back JSON objects to clients via a STOMP broker server
+ * ('sendChangesToBroker' method) triggered by (1) Request from clicking
+ * TreeView nodes, and (2) Modifying a
+ * file monitored by Picto Web.
  * 
  * @author Alfa Yohannis
  *
@@ -31,19 +33,35 @@ import org.springframework.web.bind.annotation.RestController;
 @RequestMapping("/pictojson")
 public class PictoJsonController {
 
+  /*** The ApplicationContext of Spring Boot ***/
   @Autowired
   private ApplicationContext context;
 
-  @Autowired
-  public SimpMessagingTemplate template;
-
+  /***
+   * The constructor to attach the controller to the FileWatcher that monitors
+   * changes on files so that new views can be send to the client via a STOMP
+   * broker server.
+   * 
+   */
   public PictoJsonController() {
     FileWatcher.setResponseController(this);
   }
 
+  /***
+   * This method receives the JSON requests from clients that come by clicking the
+   * TreeView nodes on the left panel.
+   * 
+   * @param file
+   * @param path
+   * @param name
+   * @param timestamp
+   * @param model
+   * @return
+   * @throws Exception
+   */
   @GetMapping(path = "/picto", produces = MediaType.APPLICATION_JSON_VALUE)
   public String getPictoJson(String file, String path, String name, String timestamp, Model model) throws Exception {
-    
+
     if (FileViewContentCache.getViewContentCache(file) == null) {
       File modifiedFile = new File(new File(PictoApplication.WORKSPACE + file).getAbsolutePath());
       Set<PictoProject> affectedPictoProjects = new HashSet<>();
@@ -57,7 +75,7 @@ public class PictoJsonController {
         source.generatePromises(file, pictoProject);
       }
     }
-    
+
     PromiseViewCache promiseViewCache = FileViewContentCache.getViewContentCache(file);
     String result = "";
     if (promiseViewCache != null) {
@@ -68,6 +86,14 @@ public class PictoJsonController {
     return result;
   }
 
+  /***
+   * This method sends new views to clients via a STOMP broker server triggered by
+   * (1) Clicking on the TreeView nodes on the left panel of clients, and (2)
+   * Modifying files monitored by Picto Web.
+   * 
+   * @param modifiedFile
+   * @throws Exception
+   */
   @MessageMapping("/picto-web")
   @SendTo("/topic/picto")
   public void sendChangesToBroker(File modifiedFile) throws Exception {
@@ -84,7 +110,7 @@ public class PictoJsonController {
           .replace(new File(PictoApplication.WORKSPACE).getAbsolutePath(), "").replace("\\", "/");
 
       WebEglPictoSource source = new WebEglPictoSource();
-      
+
       Map<String, String> modifiedObjects = source.generatePromises(modifiedFilePath, pictoProject, true);
       System.out.println("PICTO: number of modified objects = " + modifiedObjects.size());
 
@@ -102,7 +128,7 @@ public class PictoJsonController {
         }
       }
     }
-
   }
 
+  
 }

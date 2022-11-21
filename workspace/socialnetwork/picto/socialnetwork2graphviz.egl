@@ -3,11 +3,6 @@ digraph G {
     edge[penwidth=3, style=tapered, arrowhead=none]
     
 [%for (p in people){%]
-    [%
-        for (x in people){
-        x.name.println("ALFA: ");
-        }
-    %]
     [%if (people.size()==1) { /* if generating individual views */
         var elementPath = "['Social Network', '" + p.name + "' ]";
         var tooltip = "Go to " + p.name;
