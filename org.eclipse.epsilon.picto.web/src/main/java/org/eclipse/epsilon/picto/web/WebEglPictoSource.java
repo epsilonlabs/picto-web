@@ -24,7 +24,6 @@ import org.eclipse.emf.ecore.resource.impl.ResourceSetImpl;
 import org.eclipse.emf.ecore.xmi.impl.EcoreResourceFactoryImpl;
 import org.eclipse.emf.ecore.xmi.impl.XMIResourceFactoryImpl;
 import org.eclipse.emf.emfatic.core.EmfaticResourceFactory;
-import org.eclipse.epsilon.common.util.StringProperties;
 import org.eclipse.epsilon.egl.EglFileGeneratingTemplateFactory;
 import org.eclipse.epsilon.egl.EglTemplateFactoryModuleAdapter;
 import org.eclipse.epsilon.egl.EgxModule;
@@ -72,11 +71,30 @@ public class WebEglPictoSource extends EglPictoSource {
     return this.generatePromises(modifiedFilePath, pictoProject, false);
   }
 
-  @SuppressWarnings("unchecked")
+  /***
+   * This method is executed when a file associated with a Picto file is modified,
+   * Picto Web is accessed for the first time. The method generate Promises, which
+   * contain references to EGX rules, EGL templates, and models. The final views
+   * haven't been generated yet. When the promises are executed, they generate the
+   * final views displayed to users.
+   * 
+   * @param modifiedFilePath The path to the modified file.
+   * @param pictoProject     The PictoProject, a concept that .
+   * @param fromFileWatcher  Indicating if the the method is executed by the
+   *                         FileWatcher. False means the method is triggered
+   *                         by a request from a client (e.g., when Picto Web is
+   *                         accessed for the first time), not from file
+   *                         modification.
+   * @return The paths affected by the modification.
+   * @throws Exception
+   */
+  @SuppressWarnings({ "unchecked", "deprecation", "null" })
   public Map<String, String> generatePromises(String modifiedFilePath, PictoProject pictoProject,
       boolean fromFileWatcher) throws Exception {
     Map<String, String> modifiedViewContents = new HashMap<>();
     try {
+      
+      
       PictoView pictoView = new PictoView();
       ViewTree rootViewTree = pictoView.getViewTree();
 
@@ -90,23 +108,27 @@ public class WebEglPictoSource extends EglPictoSource {
       Picto picto = this.getRenderingMetadata(pictoFile);
 
       if (picto != null) {
+
+        // Define the EgxModule.
         IEolModule module;
         if (picto.getFormat() == null)
           picto.setFormat("egx");
-
         if ("egx".equals(picto.getFormat())) {
           module = new IncrementalLazyEgxModule(accessRecordResource);
         } else {
           module = new EglTemplateFactoryModuleAdapter(new EglFileGeneratingTemplateFactory());
         }
 
+        // Get the transformation context.
         IEolContext context = module.getContext();
 
+        // Get all parameters from the Picto file.
         FrameStack fs = context.getFrameStack();
         for (Parameter customParameter : picto.getParameters()) {
           fs.put(new Variable(customParameter.getName(), getValue(customParameter), EolAnyType.Instance));
         }
 
+        // Parse the EgxModule. 
         URI transformationUri = null;
         if (picto.getTransformation() != null) {
           transformationUri = new File(
@@ -117,6 +139,7 @@ public class WebEglPictoSource extends EglPictoSource {
           module.parse("");
         }
 
+        // load all models defined in the Picto file
         File mainModelFile = null;
         for (Model toBeLoadedModel : picto.getModels()) {
           File modelFile = null;
@@ -167,27 +190,25 @@ public class WebEglPictoSource extends EglPictoSource {
           for (IncrementalLazyGenerationRuleContentPromise promise : promises) {
 
             String pathString = Util.getPath(promise);
-            if (pathString.contains("Dan")) {
-              System.console();
-            }
 
             System.out.print("Processing " + pathString + " ... ");
 
             ViewTree viewTree = generateViewTree(rootViewTree, promise);
 
-            // Check if the path should be processed to generated new view
+            // Replace the old promises with the new ones.
+            PromiseView promiseView = new PromiseView(pictoView, viewTree);
+            viewContentCache.putPromiseView(promiseView);
+
+            // Check if the path should be processed to generated new view.
+            // Skip to next promise if path is not in the the toBeProcessedPaths.
             if (!toBeProcessedPaths.contains(pathString)) {
               System.out.println("SKIP");
               continue;
             }
 
-            // PromiseView promiseView = viewContentCache.getPromiseView(pathString);
-//            if (promiseView == null) {
-            PromiseView promiseView = new PromiseView(pictoView, viewTree);
-            viewContentCache.putPromiseView(promiseView);
-//            } else {
-//
-//            }
+            // Immediately generates the final view of the UN-skipped path and put the view
+            // into the modified contents so that it can be immediately sent to the Broker
+            // server and then retrieved by clients.
             String content = "";
             if (fromFileWatcher) {
               content = promiseView.getViewContent(null);
@@ -204,7 +225,7 @@ public class WebEglPictoSource extends EglPictoSource {
 
           System.out.println();
         }
-        // if it's other than EGX transformation
+        // if it's other than EGX transformation, use static content promise.
         else {
           String content = module.execute() + "";
           rootViewTree = new ViewTree();
@@ -240,7 +261,6 @@ public class WebEglPictoSource extends EglPictoSource {
         rootViewTree = createEmptyViewTree();
         PictoResponse pictoResponse = generateJsTreeData(pictoFilePath, rootViewTree);
         PromiseView promiseView = new PromiseView(pictoResponse);
-//        viewContentCache.putPromiseView(promiseView);
         modifiedViewContents.put(promiseView.getPath(), promiseView.getViewContent());
       }
 
@@ -257,6 +277,7 @@ public class WebEglPictoSource extends EglPictoSource {
   }
 
   /***
+   * The method to handle patches for existing views.
    * 
    * @param rootViewTree
    * @param renderingMetadata
@@ -289,6 +310,18 @@ public class WebEglPictoSource extends EglPictoSource {
     }
   }
 
+  /***
+   * The method to handle static view, the view loaded from a HTML file.
+   * 
+   * @param modifiedViewContents
+   * @param rootViewTree
+   * @param filename
+   * @param viewContentCache
+   * @param picto
+   * @param module
+   * @param pictoView
+   * @throws Exception
+   */
   private void handleStaticViews(Map<String, String> modifiedViewContents, ViewTree rootViewTree, String filename,
       PromiseViewCache viewContentCache, Picto picto, IEolModule module, PictoView pictoView)
       throws Exception {
@@ -304,8 +337,6 @@ public class WebEglPictoSource extends EglPictoSource {
                       customView.getSource())),
               format, icon, customView.getPosition(), customView.getPatches(), Collections.emptyList()));
 
-      // put the content into the elementViewContentMap
-
       ViewTree vt = rootViewTree.getChildren().get(rootViewTree.getChildren().size() - 1);
 
       PromiseView promiseView = new PromiseView(pictoView, vt);
@@ -314,10 +345,20 @@ public class WebEglPictoSource extends EglPictoSource {
     }
   }
 
-  private List<IncrementalLazyGenerationRuleContentPromise> handleCustomViews(Picto renderingMetadata,
+  /***
+   * The method to handle custom views defined in the Picto file.
+   * 
+   * @param picto
+   * @param module
+   * @param context
+   * @param fs
+   * @return
+   * @throws EolRuntimeException
+   */
+  private List<IncrementalLazyGenerationRuleContentPromise> handleCustomViews(Picto picto,
       IEolModule module, IEolContext context, FrameStack fs) throws EolRuntimeException {
     List<IncrementalLazyGenerationRuleContentPromise> customPromises = new ArrayList<>();
-    List<CustomView> customViews = renderingMetadata.getCustomViews().stream().filter(cv -> cv.getType() != null)
+    List<CustomView> customViews = picto.getCustomViews().stream().filter(cv -> cv.getType() != null)
         .collect(Collectors.toList());
     for (CustomView customView : customViews) {
 
@@ -382,7 +423,16 @@ public class WebEglPictoSource extends EglPictoSource {
     return customPromises;
   }
 
-  protected PictoResponse generateJsTreeData(String filename, ViewTree viewTree) throws JsonProcessingException {
+  /***
+   * Generate the response containing the data for the JsTree panel on the client
+   * side.
+   * 
+   * @param filename
+   * @param viewTree
+   * @return
+   * @throws JsonProcessingException
+   */
+  private PictoResponse generateJsTreeData(String filename, ViewTree viewTree) throws JsonProcessingException {
     JsTreeNode root = new JsTreeNode();
     copyViewTreeToJsTreeData(filename, viewTree, root);
     List<JsTreeNode> jsTreeNodes = new ArrayList<>();
@@ -400,7 +450,16 @@ public class WebEglPictoSource extends EglPictoSource {
 
   }
 
-  protected void copyViewTreeToJsTreeData(String filename, ViewTree viewTree, JsTreeNode jsTreeNode) {
+  /***
+   * Copy some information from the Picto ViewTree nodes to JsTree nodes to
+   * represent
+   * the ViewTree as JsTree on the client side.
+   * 
+   * @param filename
+   * @param viewTree
+   * @param jsTreeNode
+   */
+  private void copyViewTreeToJsTreeData(String filename, ViewTree viewTree, JsTreeNode jsTreeNode) {
     for (ViewTree viewTreeChild : viewTree.getChildren()) {
       JsTreeNode jsonChild = new JsTreeNode();
       jsTreeNode.getChildren().add(jsonChild);
@@ -414,31 +473,17 @@ public class WebEglPictoSource extends EglPictoSource {
     }
   }
 
-  protected JsonViewTree generateJsonViewTree(ViewTree viewTree) {
-    JsonViewTree root = new JsonViewTree();
-    copyViewTreeToJsonViewTree(viewTree, root);
-    return root;
-  }
-
-  protected void copyViewTreeToJsonViewTree(ViewTree viewTree, JsonViewTree jsonViewTree) {
-    for (ViewTree child : viewTree.getChildren()) {
-      JsonViewTree jsonChild = new JsonViewTree();
-      jsonViewTree.getChildren().add(jsonChild);
-      copyViewTreeToJsonViewTree(child, jsonChild);
-    }
-    JsonViewContent jvc = new JsonViewContent();
-    jvc.setFormat(viewTree.getContent().getFormat());
-    jvc.setText(viewTree.getContent().getText());
-    jvc.setLabel(viewTree.getContent().getLabel());
-    jsonViewTree.setContent(jvc);
-    jsonViewTree.setName(viewTree.getName());
-    if (viewTree.getIcon() != null)
-      jsonViewTree.setIcon(viewTree.getIcon());
-    jsonViewTree.setPosition(viewTree.getPosition());
-    jsonViewTree.setUri(viewTree.getPathString());
-  }
-
-  protected IModel loadModel(String modelName, String metamodelUri, File modelFile, File metamodelFile)
+  /***
+   * Load model file as an EmfModel.
+   * 
+   * @param modelName
+   * @param metamodelUri
+   * @param modelFile
+   * @param metamodelFile
+   * @return
+   * @throws Exception
+   */
+  private IModel loadModel(String modelName, String metamodelUri, File modelFile, File metamodelFile)
       throws Exception {
     org.eclipse.emf.common.util.URI uri = (metamodelFile != null) ? loadMetamodel(metamodelFile) : null;
 
@@ -465,24 +510,27 @@ public class WebEglPictoSource extends EglPictoSource {
 
   }
 
-  protected IModel loadModel(Model model, String code) throws Exception {
-    IModel m = new EmfModel();
-    m.setName(model.getName());
-    m.setReadOnLoad(true);
-    m.setStoredOnDisposal(false);
-    StringProperties properties = new StringProperties();
-    m.load(properties, code);
-    return m;
-  }
-
-  public org.eclipse.emf.common.util.URI loadMetamodel(File metamodelFile) throws Exception {
+  /***
+   * Load a metamodel from a file.
+   * 
+   * @param metamodelFile The File object that represents the file.
+   * @return
+   * @throws Exception
+   */
+  private org.eclipse.emf.common.util.URI loadMetamodel(File metamodelFile) throws Exception {
     org.eclipse.emf.common.util.URI uri = org.eclipse.emf.common.util.URI
         .createFileURI(metamodelFile.getAbsolutePath());
     EmfUtil.register(uri, EPackage.Registry.INSTANCE);
     return uri;
   }
 
-  public Resource getResource(File modelFile) {
+  /***
+   * Load a resource from a file.
+   * 
+   * @param modelFile The File object that represents the file.
+   * @return The Resource.
+   */
+  private Resource getResource(File modelFile) {
     ResourceSet resourceSet = new ResourceSetImpl();
     resourceSet.getPackageRegistry().put(EcorePackage.eNS_URI, EcorePackage.eINSTANCE);
     resourceSet.getResourceFactoryRegistry().getExtensionToFactoryMap().put("xmi", new XMIResourceFactoryImpl());
@@ -504,15 +552,15 @@ public class WebEglPictoSource extends EglPictoSource {
   /***
    * Load the Picto file to get the rendering metadata.
    * 
-   * @param file
+   * @param pictoFile The File object that represents the Picto file.
    * @return
    */
-  public Picto getRenderingMetadata(File file) {
+  private Picto getRenderingMetadata(File pictoFile) {
     try {
       ResourceSet resourceSet = new ResourceSetImpl();
       resourceSet.getResourceFactoryRegistry().getExtensionToFactoryMap().put("*", new FlexmiResourceFactory());
       Resource resource = resourceSet
-          .getResource(org.eclipse.emf.common.util.URI.createFileURI(file.getAbsolutePath()), true);
+          .getResource(org.eclipse.emf.common.util.URI.createFileURI(pictoFile.getAbsolutePath()), true);
       resource.load(null);
       return (Picto) resource.getContents().iterator().next();
     } catch (Exception ex) {
@@ -520,6 +568,14 @@ public class WebEglPictoSource extends EglPictoSource {
     }
   }
 
+  /***
+   * A method to generate ViewTree data structure, the tree displayed on the left
+   * panel.
+   * 
+   * @param rootViewTree
+   * @param instance
+   * @return
+   */
   @SuppressWarnings("unchecked")
   public static ViewTree generateViewTree(ViewTree rootViewTree, LazyGenerationRuleContentPromise instance) {
     String format = getDefaultFormat();
