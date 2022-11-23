@@ -57,12 +57,18 @@ import org.eclipse.epsilon.picto.dummy.IEditorPart;
 import org.eclipse.epsilon.picto.incrementality.AccessRecordResource;
 import org.eclipse.epsilon.picto.incrementality.IncrementalLazyEgxModule;
 import org.eclipse.epsilon.picto.incrementality.IncrementalLazyEgxModule.IncrementalLazyGenerationRuleContentPromise;
-import org.eclipse.epsilon.picto.incrementality.Util;
+import org.eclipse.epsilon.picto.incrementality.IncrementalityUtil;
 import org.eclipse.epsilon.picto.source.EglPictoSource;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
+/***
+ * This is the main class responsible to generate promises and views.
+ * 
+ * @author Alfa Yohannis
+ *
+ */
 public class WebEglPictoSource extends EglPictoSource {
 
   public static boolean generateAll = true; // true for first time running
@@ -93,8 +99,7 @@ public class WebEglPictoSource extends EglPictoSource {
       boolean fromFileWatcher) throws Exception {
     Map<String, String> modifiedViewContents = new HashMap<>();
     try {
-      
-      
+
       PictoView pictoView = new PictoView();
       ViewTree rootViewTree = pictoView.getViewTree();
 
@@ -128,7 +133,7 @@ public class WebEglPictoSource extends EglPictoSource {
           fs.put(new Variable(customParameter.getName(), getValue(customParameter), EolAnyType.Instance));
         }
 
-        // Parse the EgxModule. 
+        // Parse the EgxModule.
         URI transformationUri = null;
         if (picto.getTransformation() != null) {
           transformationUri = new File(
@@ -189,7 +194,7 @@ public class WebEglPictoSource extends EglPictoSource {
 //
           for (IncrementalLazyGenerationRuleContentPromise promise : promises) {
 
-            String pathString = Util.getPath(promise);
+            String pathString = IncrementalityUtil.getPath(promise);
 
             System.out.print("Processing " + pathString + " ... ");
 

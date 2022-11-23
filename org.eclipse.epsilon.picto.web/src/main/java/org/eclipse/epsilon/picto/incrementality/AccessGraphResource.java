@@ -204,7 +204,7 @@ public class AccessGraphResource implements AccessRecordResource {
     Set<EObject> toBeDeletedElements = new HashSet<EObject>();
 
     for (IncrementalLazyGenerationRuleContentPromise promise : inProcessingPromises) {
-      String checkedPath = Util.getPath(promise);
+      String checkedPath = IncrementalityUtil.getPath(promise);
       checkPath(module, toBeProcessedPaths, toBeDeletedKeys, toBeDeletedElements, checkedPath);
     }
 
@@ -295,7 +295,7 @@ public class AccessGraphResource implements AccessRecordResource {
 
               // check if the property has been changed
               String currentValue = AccessRecord.convertValueToString(currentValueObject);
-              if (!Util.equals(property.getPreviousValue(), currentValue)) {
+              if (!IncrementalityUtil.equals(property.getPreviousValue(), currentValue)) {
                 toBeProcessedPaths.add(checkedPath);
 //                property.getAffects().forEach(p -> toBeProcessedPaths.add(p.getName()));
                 return;

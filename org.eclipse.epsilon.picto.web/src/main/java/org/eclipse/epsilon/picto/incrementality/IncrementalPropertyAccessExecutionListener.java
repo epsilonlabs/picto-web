@@ -135,7 +135,7 @@ public class IncrementalPropertyAccessExecutionListener extends PropertyAccessEx
         if (map.containsKey("path")) {
           Collection<String> segments = (Collection<String>) map.entrySet().stream()
               .filter(e -> e.getKey().equals("path")).findFirst().map(e -> e.getValue()).orElse(null);
-          String path = Util.getPath(segments);
+          String path = IncrementalityUtil.getPath(segments);
           for (IPropertyAccessRecorder recorder : this.recorders) {
             if (recorder instanceof AccessRecordRecorder) {
               ((AccessRecordRecorder) recorder).setPath(path);

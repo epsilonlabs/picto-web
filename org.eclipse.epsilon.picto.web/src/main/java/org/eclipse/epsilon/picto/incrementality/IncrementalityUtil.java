@@ -7,7 +7,7 @@ import java.util.Collection;
 import org.eclipse.epsilon.eol.execute.context.Variable;
 import org.eclipse.epsilon.picto.LazyEgxModule.LazyGenerationRuleContentPromise;
 
-public class Util {
+public class IncrementalityUtil {
 
   public static String getPath(Collection<String> path) {
     return "/" + String.join("/", path);

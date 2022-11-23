@@ -62,9 +62,11 @@ Picto.listToJsTreeData = function (list) {
   return tree;
 }
 
+/***
+ * Get the TreeView.
+ */
 Picto.executeCode = function () {
   console.log("Get TreeView ...");
-  //this.stompClient.send("/app/treeview", {}, this.convertToPictoRequest(this.pictoFile, "TreeView", editor.getValue()));
   this.stompClient.send("/app/treeview", {}, this.convertToPictoRequest(this.pictoFile, "TreeView", ""));
   console.log("Code sent.");
 }

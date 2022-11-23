@@ -2,7 +2,6 @@ package org.eclipse.epsilon.picto.incrementality;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.Assert.assertTrue;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.forwardedUrl;
 
 import java.io.File;
 import java.util.Arrays;
@@ -16,14 +15,10 @@ import org.eclipse.emf.ecore.EStructuralFeature;
 import org.eclipse.emf.ecore.util.EcoreUtil;
 import org.eclipse.emf.ecore.xmi.XMIResource;
 import org.eclipse.emf.ecore.xmi.impl.XMIResourceImpl;
-import org.eclipse.epsilon.eol.models.IModel;
 import org.eclipse.epsilon.picto.dom.PictoPackage;
-import org.eclipse.epsilon.picto.incrementality.IncrementalLazyEgxModule.IncrementalLazyGenerationRuleContentPromise;
 import org.eclipse.epsilon.picto.web.FileViewContentCache;
 import org.eclipse.epsilon.picto.web.PictoApplication;
 import org.eclipse.epsilon.picto.web.PictoProject;
-import org.eclipse.epsilon.picto.web.PromiseView;
-import org.eclipse.epsilon.picto.web.PromiseViewCache;
 import org.eclipse.epsilon.picto.web.WebEglPictoSource;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeAll;
@@ -69,10 +64,7 @@ class IncrementalityTest {
   }
 
   @AfterEach
-  void tearDown() throws Exception {
-    
-
-    
+  void tearDown() throws Exception {  
     accessRecordResource.clear();
     FileViewContentCache.clear();
     res.unload();

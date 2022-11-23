@@ -1,16 +1,13 @@
 package org.eclipse.epsilon.picto.web.test;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.junit.Assert.assertTrue;
 
-import java.io.BufferedReader;
+import java.io.File;
+import java.io.FileOutputStream;
 import java.io.IOException;
-import java.io.InputStream;
-import java.io.InputStreamReader;
 import java.io.StringReader;
 import java.lang.reflect.Type;
-import java.net.HttpURLConnection;
-import java.net.MalformedURLException;
-import java.net.URL;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
@@ -18,10 +15,8 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.ExecutionException;
-import java.util.concurrent.TimeUnit;
-import java.util.concurrent.TimeoutException;
+import java.util.Timer;
+import java.util.TimerTask;
 
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
@@ -30,6 +25,18 @@ import javax.xml.xpath.XPathConstants;
 import javax.xml.xpath.XPathExpressionException;
 import javax.xml.xpath.XPathFactory;
 
+import org.eclipse.emf.common.util.EList;
+import org.eclipse.emf.common.util.URI;
+import org.eclipse.emf.ecore.EClass;
+import org.eclipse.emf.ecore.EObject;
+import org.eclipse.emf.ecore.EPackage;
+import org.eclipse.emf.ecore.EStructuralFeature;
+import org.eclipse.emf.ecore.util.EcoreUtil;
+import org.eclipse.emf.ecore.xmi.XMIResource;
+import org.eclipse.emf.ecore.xmi.impl.XMIResourceImpl;
+import org.eclipse.epsilon.emc.emf.EmfUtil;
+import org.eclipse.epsilon.picto.dom.PictoPackage;
+import org.eclipse.epsilon.picto.web.FileWatcher;
 import org.eclipse.epsilon.picto.web.PictoApplication;
 import org.eclipse.epsilon.picto.web.PictoWebOnLoadedListener;
 import org.junit.jupiter.api.AfterAll;
@@ -51,10 +58,9 @@ import org.w3c.dom.NodeList;
 import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.JsonMappingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.google.common.io.Files;
 
 /***
  * A test class that mocks http requests from web clients. For assertions, The
@@ -69,8 +75,8 @@ class HTTPRequestTest {
   private static final String LOCALHOST = "http://localhost:8080/pictojson/picto?";
 
   private static Thread pictoAppThread;
-  private static ObjectMapper mapper;
-  private static DocumentBuilder builder;
+  static ObjectMapper mapper;
+  static DocumentBuilder builder;
 
   /***
    * Initialise and run Picto Web server.
@@ -79,6 +85,7 @@ class HTTPRequestTest {
    */
   @BeforeAll
   static void setUpBeforeClass() throws Exception {
+    PictoPackage.eINSTANCE.eClass();
     String[] args = new String[] {};
     pictoAppThread = new Thread() {
       @Override
@@ -150,7 +157,7 @@ class HTTPRequestTest {
 
     String GET_URL = LOCALHOST + paramString;
 
-    JsonNode node = getJsonNode(GET_URL);
+    JsonNode node = TestUtil.getJsonNode(GET_URL);
     String actualPath = node.get("path").textValue();
 //    String actualFile = node.get("filename").textValue();
     assertThat(expectedPath.equals(actualPath));
@@ -170,94 +177,111 @@ class HTTPRequestTest {
   }
 
   /***
-   * This test modifies the '/socialnetwork/socialnetwork.model.picto' file under the
-   * Workspace by adding Daniel and the check whether '/Social Network' path returns a view
-   * that contains Alice, Bob, Charlie, and the new node, Daniel.
+   * This test modifies the '/socialnetwork/socialnetwork.model.picto' file under
+   * the Workspace by adding Daniel and the check whether '/Social Network' path
+   * returns a view that contains Alice, Bob, Charlie, and the new node, Daniel.
    * 
-   * 
-   * @throws InterruptedException
-   * @throws ExecutionException
-   * @throws TimeoutException
-   * @throws SAXException
-   * @throws IOException
-   * @throws XPathExpressionException
+   * @throws Exception
    */
   @Test
-  public void testGeneration() throws InterruptedException, ExecutionException, TimeoutException, SAXException,
-      IOException, XPathExpressionException {
+  public void testPushUpdatedView() throws Exception {
 
+    // initialise connection to the stomp server
     StandardWebSocketClient client = new StandardWebSocketClient();
     List<Transport> transports = new ArrayList<>(1);
     transports.add(new WebSocketTransport(client));
-
     SockJsClient sockJsClient = new SockJsClient(transports);
     WebSocketStompClient stompClient = new WebSocketStompClient(sockJsClient);
+
+    // connect
     StompSession session = stompClient.connect("ws://localhost:8080/picto-web", new SessionHandler()).get();
 
-    CompletableFuture<String> answer = new CompletableFuture<String>();
+    // subscribe
+    Answer answer = new Answer();
     session.subscribe("/topic/picto/socialnetwork/socialnetwork.model.picto", new StompHandler(answer));
 
-    // get the json
-    String json = answer.get(5, TimeUnit.SECONDS);
-    JsonNode node = mapper.readTree(json);
-    Set<String> expectedNames = new HashSet<String>(Arrays.asList(new String[] { "Alice", "Bob", "Charlie" }));
+    // change the file
+    String tmpdir = System.getProperty("java.io.tmpdir");
+    String modelFileName = "socialnetwork/socialnetwork.model";
+    String metamodelFileName = "socialnetwork/socialnetwork.ecore";
+    File modelFile = new File(PictoApplication.WORKSPACE + modelFileName);
+    File metamodelFile = new File(PictoApplication.WORKSPACE + metamodelFileName);
 
-    String htmlString = node.get("content").textValue();
-    Document html = builder.parse(new InputSource(new StringReader(htmlString)));
+    // backup model file
+    File modelFileBackup = new File(tmpdir + File.separator + modelFile.getName());
+    Files.copy(modelFile, modelFileBackup);
 
-    XPath xPath = XPathFactory.newInstance().newXPath();
-    String expression = "//g[@class='node']/title";
-    NodeList elements = (NodeList) xPath.compile(expression).evaluate(html, XPathConstants.NODESET);
-    Set<String> actualNames = new HashSet<String>(TestUtil.toStringList(elements));
-    assertThat(actualNames.equals(expectedNames));
-  }
+    // load the metamodel
+    org.eclipse.emf.common.util.URI uri = org.eclipse.emf.common.util.URI
+        .createFileURI(metamodelFile.getAbsolutePath());
+    EmfUtil.register(uri, EPackage.Registry.INSTANCE);
 
-  /***
-   * Get the view, a HTML document, retrieved from the Picto Web server.
-   * 
-   * @param GET_URL
-   * @return
-   * @throws JsonMappingException
-   * @throws JsonProcessingException
-   * @throws MalformedURLException
-   * @throws IOException
-   * @throws SAXException
-   */
-  public static Document getHtml(String GET_URL)
-      throws JsonMappingException, JsonProcessingException, MalformedURLException, IOException, SAXException {
-    JsonNode node = getJsonNode(GET_URL);
-    String htmlString = node.get("content").textValue();
-    Document html = builder.parse(new InputSource(new StringReader(htmlString)));
-    return html;
-  }
+    // load the model
+    XMIResource res = (new XMIResourceImpl(URI.createFileURI(modelFile.getAbsolutePath())));
+    res.load(null);
 
-  /***
-   * Get the JsonNode retrieved from Picto Web server.
-   * 
-   * @param GET_URL
-   * @return
-   * @throws MalformedURLException
-   * @throws IOException
-   * @throws JsonProcessingException
-   * @throws JsonMappingException
-   */
-  public static JsonNode getJsonNode(String GET_URL)
-      throws MalformedURLException, IOException, JsonProcessingException, JsonMappingException {
-    URL obj = new URL(GET_URL);
-    HttpURLConnection con = (HttpURLConnection) obj.openConnection();
-    con.setRequestProperty("accept", "application/json");
-    InputStream inputStream = con.getInputStream();
-    InputStreamReader inputStreamReader = new InputStreamReader(inputStream);
-    BufferedReader in = new BufferedReader(inputStreamReader);
-    String inputLine;
-    StringBuffer response = new StringBuffer();
-    while ((inputLine = in.readLine()) != null) {
-      response.append(inputLine);
+    // modify model
+    EObject sn = res.getEObject("0"); // get Alice (id = 1)
+    EClass socialNetwork = sn.eClass();
+    EStructuralFeature peopleProperty = socialNetwork.getEStructuralFeature("people");
+
+    EObject alice = res.getEObject("1"); // get Alice (id = 1)
+    EClass person = alice.eClass();
+    EStructuralFeature nameProperty = person.getEStructuralFeature("name");
+
+    EObject dan = EcoreUtil.create(person);
+    dan.eSet(nameProperty, "Dan");
+
+    @SuppressWarnings("unchecked")
+    EList<EObject> people = (EList<EObject>) sn.eGet(peopleProperty);
+    people.add(dan);
+    res.setID(dan, "4");
+    FileOutputStream fos = new FileOutputStream(modelFile);
+    res.save(fos, res.getDefaultSaveOptions());
+    fos.close();
+
+    long waitTime = 3 * 1000;
+//    (new Timer()).schedule(new TimerTask() {
+//      @Override
+//      public void run() {
+//        synchronized (answer) {
+//          answer.notify();
+//        }
+//      }
+//    }, waitTime);
+
+    synchronized (answer) {
+      answer.wait(waitTime);
     }
-    in.close();
-    String json = response.toString();
-    JsonNode node = mapper.readTree(json);
-    return node;
+    
+    
+
+    for (String jsonString : answer.getJsonString()) {
+      
+      // get the json
+      JsonNode node = mapper.readTree(jsonString);
+      String path = node.get("path").textValue();
+      if ("/".equals(path)) {
+        continue;
+      }
+
+      Set<String> expectedNames = new HashSet<String>(Arrays.asList(new String[] { "Alice", "Bob", "Charlie", "Dan" }));
+
+      String htmlString = node.get("content").textValue();
+      Document html = builder.parse(new InputSource(new StringReader(htmlString)));
+
+      XPath xPath = XPathFactory.newInstance().newXPath();
+      String expression = "//g[@class='node']/title";
+      NodeList elements = (NodeList) xPath.compile(expression).evaluate(html, XPathConstants.NODESET);
+      Set<String> actualNames = new HashSet<String>(TestUtil.toStringList(elements));
+
+      assertThat(actualNames).isSubsetOf(expectedNames);
+    }
+//     delete the modified model and restore the backup model
+    FileWatcher.stopWatching();
+    modelFile.delete();
+    Files.copy(modelFileBackup, modelFile);
+    modelFileBackup.delete();
   }
 
   /***
@@ -266,7 +290,7 @@ class HTTPRequestTest {
    * @author Alfa Yohannis
    *
    */
-  private class SessionHandler extends StompSessionHandlerAdapter {
+  private static class SessionHandler extends StompSessionHandlerAdapter {
 
     /***
      * Display the sessionId when connection to the Stomp Server is successful.
@@ -284,17 +308,17 @@ class HTTPRequestTest {
    * @author Alfa Yohannis
    *
    */
-  private class StompHandler implements StompFrameHandler {
-    private final CompletableFuture<String> answer;
+  private static class StompHandler implements StompFrameHandler {
+    private Answer answer;
 
     /***
      * The constructor receives a CompletableFuture<String> to hold the value (json
      * object string) returned from the server.
      * 
-     * @param answer A sync CompletableFuture<String> to get the value returned from
-     *               the server.
+     * @param answer
+     * @param numberOfExpectedJsons
      */
-    private StompHandler(CompletableFuture<String> answer) {
+    private StompHandler(Answer answer) {
       this.answer = answer;
     }
 
@@ -309,9 +333,15 @@ class HTTPRequestTest {
      * @param headers The Stomp Headers.
      */
     public void handleFrame(StompHeaders headers, Object payload) {
-      answer.complete(new String((byte[]) payload));
-
+      answer.getJsonString().add((new String((byte[]) payload)));
     }
+  }
 
+  public class Answer {
+    List<String> jsonStrings = new ArrayList<>();
+
+    public List<String> getJsonString() {
+      return jsonStrings;
+    }
   }
 }
