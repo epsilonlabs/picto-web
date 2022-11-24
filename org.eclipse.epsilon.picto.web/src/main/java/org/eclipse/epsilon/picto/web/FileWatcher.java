@@ -90,11 +90,13 @@ public class FileWatcher extends Thread {
           WatchEvent<Path> ev = (WatchEvent<Path>) event;
           Path filePath = ev.context();
 
-          if (filePath.toString().endsWith(".picto") || filePath.toString().endsWith(".egx")
-              || filePath.toString().endsWith(".egl") || filePath.toString().endsWith(".flexmi")
+          if (filePath.toString().endsWith(".picto")
+//              || filePath.toString().endsWith(".egx")
+//              || filePath.toString().endsWith(".egl") 
+              || filePath.toString().endsWith(".flexmi")
               || filePath.toString().endsWith(".model") || filePath.toString().endsWith(".emf")
               || filePath.toString().endsWith(".xmi")) {
-            System.out.println("Picto: " + filePath + " has changed!!!");
+            // System.out.println("Picto: " + filePath + " has changed!!!");
 
             File modifiedFile = new File(path.toString() + File.separator + filePath.toString());
             this.notifyFileChange(modifiedFile);
@@ -162,7 +164,7 @@ public class FileWatcher extends Thread {
 
   public static void setResponseController(PictoJsonController pictoJsonController) {
     if (FILE_WATCHER == null)
-      FILE_WATCHER = new FileWatcher(); 
+      FILE_WATCHER = new FileWatcher();
     FILE_WATCHER.setPictoJsonController(pictoJsonController);
   }
 

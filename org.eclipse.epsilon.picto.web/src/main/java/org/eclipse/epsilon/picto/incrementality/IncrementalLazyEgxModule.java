@@ -108,9 +108,9 @@ public class IncrementalLazyEgxModule extends LazyEgxModule {
 
 			propertyAccessRecorder.setContextElement(element);
 			propertyAccessRecorder.setRule(this);
-			// execute parent
-			Object wrappedPromise = super.execute(context_, element);
-			// after executing parent
+			// execute parent class
+			LazyGenerationRuleContentPromise wrappedPromise = (LazyGenerationRuleContentPromise) super.execute(context_, element);
+			// after executing parent class
 
 			IEgxContext context = (IEgxContext) context_;
 			URI templateUri = null;
@@ -129,7 +129,7 @@ public class IncrementalLazyEgxModule extends LazyEgxModule {
 //			PictoWeb.ACCESS_RECORD_RESOURCE.printIncrementalRecords();
 			
 			IncrementalLazyGenerationRuleContentPromise wrappingPromise = new IncrementalLazyGenerationRuleContentPromise(
-					(LazyGenerationRuleContentPromise) wrappedPromise, element, this, this.path, templateFactory,
+					 wrappedPromise, element, this, this.path, templateFactory,
 					templateUri);
 
 			propertyAccessRecorder.setContextElement(null);

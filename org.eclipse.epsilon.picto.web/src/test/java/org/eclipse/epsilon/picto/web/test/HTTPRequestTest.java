@@ -1,13 +1,11 @@
 package org.eclipse.epsilon.picto.web.test;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.junit.Assert.assertTrue;
 
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.StringReader;
-import java.lang.reflect.Type;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
@@ -15,8 +13,6 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.Timer;
-import java.util.TimerTask;
 
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
@@ -36,7 +32,6 @@ import org.eclipse.emf.ecore.xmi.XMIResource;
 import org.eclipse.emf.ecore.xmi.impl.XMIResourceImpl;
 import org.eclipse.epsilon.emc.emf.EmfUtil;
 import org.eclipse.epsilon.picto.dom.PictoPackage;
-import org.eclipse.epsilon.picto.web.FileWatcher;
 import org.eclipse.epsilon.picto.web.PictoApplication;
 import org.eclipse.epsilon.picto.web.PictoWebOnLoadedListener;
 import org.junit.jupiter.api.AfterAll;
@@ -44,10 +39,7 @@ import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.springframework.messaging.simp.stomp.StompFrameHandler;
-import org.springframework.messaging.simp.stomp.StompHeaders;
 import org.springframework.messaging.simp.stomp.StompSession;
-import org.springframework.messaging.simp.stomp.StompSessionHandlerAdapter;
 import org.springframework.web.socket.client.standard.StandardWebSocketClient;
 import org.springframework.web.socket.messaging.WebSocketStompClient;
 import org.springframework.web.socket.sockjs.client.SockJsClient;
@@ -59,7 +51,6 @@ import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
 
 import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.io.Files;
 
 /***
@@ -75,7 +66,6 @@ class HTTPRequestTest {
   private static final String LOCALHOST = "http://localhost:8080/pictojson/picto?";
 
   private static Thread pictoAppThread;
-  static ObjectMapper mapper;
   static DocumentBuilder builder;
 
   /***
@@ -112,7 +102,7 @@ class HTTPRequestTest {
       pictoAppThread.start();
       args.wait();
     }
-    mapper = new ObjectMapper();
+
     DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
     builder = factory.newDocumentBuilder();
   }
@@ -157,7 +147,7 @@ class HTTPRequestTest {
 
     String GET_URL = LOCALHOST + paramString;
 
-    JsonNode node = TestUtil.getJsonNode(GET_URL);
+    JsonNode node = TestUtil.requestView(GET_URL);
     String actualPath = node.get("path").textValue();
 //    String actualFile = node.get("filename").textValue();
     assertThat(expectedPath.equals(actualPath));
@@ -197,8 +187,8 @@ class HTTPRequestTest {
     StompSession session = stompClient.connect("ws://localhost:8080/picto-web", new SessionHandler()).get();
 
     // subscribe
-    Answer answer = new Answer();
-    session.subscribe("/topic/picto/socialnetwork/socialnetwork.model.picto", new StompHandler(answer));
+    ResponseHolder responseHolder = new ResponseHolder();
+    session.subscribe("/topic/picto/socialnetwork/socialnetwork.model.picto", new StompHandler(responseHolder));
 
     // change the file
     String tmpdir = System.getProperty("java.io.tmpdir");
@@ -241,25 +231,15 @@ class HTTPRequestTest {
     fos.close();
 
     long waitTime = 3 * 1000;
-//    (new Timer()).schedule(new TimerTask() {
-//      @Override
-//      public void run() {
-//        synchronized (answer) {
-//          answer.notify();
-//        }
-//      }
-//    }, waitTime);
-
-    synchronized (answer) {
-      answer.wait(waitTime);
+    
+    synchronized (responseHolder) {
+      responseHolder.wait(waitTime);
     }
-    
-    
 
-    for (String jsonString : answer.getJsonString()) {
-      
+    for (String jsonString : responseHolder.getResponseStrings()) {
+
       // get the json
-      JsonNode node = mapper.readTree(jsonString);
+      JsonNode node = TestUtil.MAPPER.readTree(jsonString);
       String path = node.get("path").textValue();
       if ("/".equals(path)) {
         continue;
@@ -278,70 +258,9 @@ class HTTPRequestTest {
       assertThat(actualNames).isSubsetOf(expectedNames);
     }
 //     delete the modified model and restore the backup model
-    FileWatcher.stopWatching();
+//    FileWatcher.stopWatching();
     modelFile.delete();
     Files.copy(modelFileBackup, modelFile);
     modelFileBackup.delete();
-  }
-
-  /***
-   * An internal handler class when connecting to the STOMP server.
-   * 
-   * @author Alfa Yohannis
-   *
-   */
-  private static class SessionHandler extends StompSessionHandlerAdapter {
-
-    /***
-     * Display the sessionId when connection to the Stomp Server is successful.
-     */
-    public void afterConnected(StompSession stompSession, StompHeaders stompHeaders) {
-      System.out.println("Connected with sessionId " + stompSession.getSessionId());
-    }
-  }
-
-  /***
-   * An internal handler class that handles the STOMP response from the server.
-   * Using this class, we can get the values, the returned pages, returned from
-   * Picto Web server.
-   * 
-   * @author Alfa Yohannis
-   *
-   */
-  private static class StompHandler implements StompFrameHandler {
-    private Answer answer;
-
-    /***
-     * The constructor receives a CompletableFuture<String> to hold the value (json
-     * object string) returned from the server.
-     * 
-     * @param answer
-     * @param numberOfExpectedJsons
-     */
-    private StompHandler(Answer answer) {
-      this.answer = answer;
-    }
-
-    public Type getPayloadType(StompHeaders headers) {
-      return byte[].class;
-    }
-
-    /***
-     * This method receives the page returned by Picto Web server.
-     * 
-     * @param payload The payload (.e.g., json, html) returned by the server.
-     * @param headers The Stomp Headers.
-     */
-    public void handleFrame(StompHeaders headers, Object payload) {
-      answer.getJsonString().add((new String((byte[]) payload)));
-    }
-  }
-
-  public class Answer {
-    List<String> jsonStrings = new ArrayList<>();
-
-    public List<String> getJsonString() {
-      return jsonStrings;
-    }
   }
 }

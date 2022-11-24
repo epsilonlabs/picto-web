@@ -2,7 +2,7 @@ package org.eclipse.epsilon.picto.web;
 
 public class PictoResponse {
 
-  private String hash;
+//  private String hash;
   private String timestamp;
   private String filename;
   private String path;
@@ -56,12 +56,12 @@ public class PictoResponse {
     this.type = type;
   }
 
-  public String getHash() {
-    return hash;
-  }
-
-  public void setHash(String hash) {
-    this.hash = hash;
-  }
+//  public String getHash() {
+//    return hash;
+//  }
+//
+//  public void setHash(String hash) {
+//    this.hash = hash;
+//  }
 
 }

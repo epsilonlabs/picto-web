@@ -7,7 +7,7 @@ digraph G {
 
 [% for (edge in edges) { %]
 [%   if (edge.nodes.size() == 2) { %]
-  [%=edge.nodes.get(0).name%] -> [%=edge.nodes.get(1).name%]
+  [%=edge.nodes.get(0).name%] -> [%=edge.nodes.get(1).name%] [label="[%=edge.nodes.get(0).name%]-[%=edge.nodes.get(1).name%]", fontname=Tahoma, fontsize=8]
 [%   } %]
 [% } %]
 }

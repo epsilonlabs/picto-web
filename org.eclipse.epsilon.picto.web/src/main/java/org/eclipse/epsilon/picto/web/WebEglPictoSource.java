@@ -189,25 +189,25 @@ public class WebEglPictoSource extends EglPictoSource {
           promises.addAll(handleCustomViews(picto, module, context, fs));
 
           /** loop through the content promises of rules **/
-          System.out.println("\nGENERATING VIEWS: ");
+          // System.out.println("\nGENERATING VIEWS: ");
           toBeProcessedPaths.addAll(accessRecordResource.getToBeProcessedPaths(promises, (EgxModule) module));
 //
           for (IncrementalLazyGenerationRuleContentPromise promise : promises) {
 
             String pathString = IncrementalityUtil.getPath(promise);
 
-            System.out.print("Processing " + pathString + " ... ");
+            // System.out.print("Processing " + pathString + " ... ");
 
             ViewTree viewTree = generateViewTree(rootViewTree, promise);
 
             // Replace the old promises with the new ones.
-            PromiseView promiseView = new PromiseView(pictoView, viewTree);
+            PromiseView promiseView = new PromiseView(pictoFilePath, pictoView, viewTree);
             viewContentCache.putPromiseView(promiseView);
 
             // Check if the path should be processed to generated new view.
             // Skip to next promise if path is not in the the toBeProcessedPaths.
             if (!toBeProcessedPaths.contains(pathString)) {
-              System.out.println("SKIP");
+              // System.out.println("SKIP");
               continue;
             }
 
@@ -216,19 +216,20 @@ public class WebEglPictoSource extends EglPictoSource {
             // server and then retrieved by clients.
             String content = "";
             if (fromFileWatcher) {
+//              System.out.println("FROM FILE");
               content = promiseView.getViewContent(null);
             }
             modifiedViewContents.put(pathString, content);
 
-            System.out.println("PROCESSED");
+            // System.out.println("PROCESSED");
 
           }
 
-          accessRecordResource.printIncrementalRecords();
+//          accessRecordResource.printIncrementalRecords();
           accessRecordResource.updateStatusToProcessed(toBeProcessedPaths);
           generateAll = false;
 
-          System.out.println();
+          // System.out.println();
         }
         // if it's other than EGX transformation, use static content promise.
         else {
@@ -258,6 +259,7 @@ public class WebEglPictoSource extends EglPictoSource {
         // generate JSON of the JsTree library (the tree panel on the client-side web
         // browser)
         PictoResponse pictoResponse = generateJsTreeData(pictoFilePath, rootViewTree);
+        pictoResponse.setFilename(pictoFilePath);
         PromiseView promiseView = new PromiseView(pictoResponse);
         viewContentCache.putPromiseView(promiseView);
         modifiedViewContents.put(promiseView.getPath(), promiseView.getViewContent());
@@ -265,6 +267,7 @@ public class WebEglPictoSource extends EglPictoSource {
       } else {
         rootViewTree = createEmptyViewTree();
         PictoResponse pictoResponse = generateJsTreeData(pictoFilePath, rootViewTree);
+        pictoResponse.setFilename(pictoFilePath);
         PromiseView promiseView = new PromiseView(pictoResponse);
         modifiedViewContents.put(promiseView.getPath(), promiseView.getViewContent());
       }
@@ -320,14 +323,14 @@ public class WebEglPictoSource extends EglPictoSource {
    * 
    * @param modifiedViewContents
    * @param rootViewTree
-   * @param filename
+   * @param pictoFilePath
    * @param viewContentCache
    * @param picto
    * @param module
    * @param pictoView
    * @throws Exception
    */
-  private void handleStaticViews(Map<String, String> modifiedViewContents, ViewTree rootViewTree, String filename,
+  private void handleStaticViews(Map<String, String> modifiedViewContents, ViewTree rootViewTree, String pictoFilePath,
       PromiseViewCache viewContentCache, Picto picto, IEolModule module, PictoView pictoView)
       throws Exception {
     for (CustomView customView : picto.getCustomViews().stream().filter(cv -> cv.getSource() != null)
@@ -344,7 +347,7 @@ public class WebEglPictoSource extends EglPictoSource {
 
       ViewTree vt = rootViewTree.getChildren().get(rootViewTree.getChildren().size() - 1);
 
-      PromiseView promiseView = new PromiseView(pictoView, vt);
+      PromiseView promiseView = new PromiseView(pictoFilePath, pictoView, vt);
       viewContentCache.putPromiseView(promiseView.getPath(), promiseView);
       modifiedViewContents.put(promiseView.getPath(), promiseView.getViewContent());
     }

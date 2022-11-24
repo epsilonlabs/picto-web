@@ -5,9 +5,12 @@ import java.io.IOException;
 import java.sql.Timestamp;
 import java.time.Instant;
 import java.util.ArrayList;
+import java.util.LinkedList;
 import java.util.List;
+import java.util.Queue;
 
 import org.eclipse.emf.ecore.EClass;
+import org.eclipse.epsilon.picto.ViewTree;
 import org.eclipse.epsilon.picto.dom.PictoFactory;
 import org.eclipse.epsilon.picto.dom.PictoPackage;
 import org.springframework.boot.ExitCodeGenerator;
@@ -55,7 +58,7 @@ public class PictoApplication implements ApplicationListener<ApplicationContextE
     public void onLoaded() {
     }
   };
-
+  
   private static PictoFactory pictoFactory;
   private static PictoPackage pictoPackage;
 
@@ -119,6 +122,9 @@ public class PictoApplication implements ApplicationListener<ApplicationContextE
     } else if (event instanceof ContextClosedEvent) {
       System.out.println("PICTO: closed - " + Timestamp.from(Instant.now()).toString());
     }
-
   }
+  
+ 
+  
+  
 }

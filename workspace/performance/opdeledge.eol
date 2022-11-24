@@ -1,0 +1,18 @@
+var numOfEdges = 1;  // max = n - 1
+
+// add edges
+var graph = Graph.all().first();
+var candidates = Set{};
+
+
+var affectedNodes = Set{};
+for (i in Sequence{1..numOfEdges}){
+    if (graph.edges.size() > 0){
+        var edge = graph.edges.random();
+        affectedNodes.addAll(edge.nodes.collect(n | n.name));
+        edge.nodes.clear();
+        graph.edges.remove(edge);
+    }
+}
+//affectedNodes.println();
+return affectedNodes;

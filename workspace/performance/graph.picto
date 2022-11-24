@@ -4,6 +4,6 @@
         <parameter name="name" value="M"/>
         <parameter name="metamodelUri" value="graph"/>
         <parameter name="metamodelFile" file="graph.ecore"/>
-        <parameter name="modelFile" file="graph.xmi"/>
+        <parameter name="modelFile" file="graph.model"/>
     </model>        
 </picto>

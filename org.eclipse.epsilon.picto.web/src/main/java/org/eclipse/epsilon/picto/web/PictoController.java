@@ -56,7 +56,7 @@ public class PictoController {
    * @throws Exception
    */
   @GetMapping(value = "/picto")
-  public String getPicto(String file, String path, String name, String timestamp, Model model) throws Exception {
+  public String getPicto(String file, String path, String timestamp, Model model) throws Exception {
     model.addAttribute("pictoName", file);
 
     if (FileViewContentCache.getViewContentCache(file) == null) {
@@ -72,6 +72,7 @@ public class PictoController {
         source.generatePromises(file, pictoProject);
       }
     }
+    
     if (path == null) {
       PromiseView treePromiseView = FileViewContentCache.getViewContentCache(file)
           .getPromiseView(FileViewContentCache.PICTO_TREE);
@@ -88,6 +89,7 @@ public class PictoController {
       String viewResult = null;
       PromiseView promiseView = FileViewContentCache.getViewContentCache(file).getPromiseView(path);
       if (promiseView != null) {
+//        System.out.println("FROM URL BAR");
         viewResult = promiseView.getViewContent(timestamp);
         model.addAttribute("viewResponse", viewResult);
       }

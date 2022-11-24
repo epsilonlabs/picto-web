@@ -1,0 +1,46 @@
+var numOfEdges = 1;  
+// max = n - 1
+
+// add edges
+var graph = Graph.all().first();
+var possiblePairs = Set{};
+var existingPairs = Set{};
+
+for (node1 in graph.nodes){
+    for (node2 in graph.nodes){
+        if (node1.name <> node2.name) {
+            possiblePairs.add(Set{node1, node2});
+        }    
+    }   
+}
+//possiblePairs.println("Possible Pairs: ");
+
+for (edge in graph.edges){
+    var pair = edge.nodes.asSet();
+    existingPairs.add(pair);
+}
+//existingPairs.println("Existing Pairs: ");
+
+possiblePairs.removeAll(existingPairs);
+//possiblePairs.println("After excluding: ");
+
+var affectedNodes = Set{};
+var max = (numOfEdges > possiblePairs.size()) ? possiblePairs.size() : numOfEdges;
+for (i in Sequence{0..(max-1)}){
+    if (possiblePairs.size() > 0) {
+	    var pair = possiblePairs.random();
+	    if (pair <> null and pair.at(0) <> null and pair.at(1) <> null){
+		    var edge = new Edge();
+		    edge.name = pair.at(0).name +"-" + pair.at(1).name;
+		    edge.nodes.addAll(pair);
+		    graph.edges.add(edge);
+		    affectedNodes.addAll(pair.collect(p | p.name));
+	    }
+    }
+}
+
+//affectedNodes.println();
+return affectedNodes;
+//for ( n in Node.all()){
+//    n.edges.nodes.flatten().sortBy(n | n.name).asOrderedSet().println();
+//}

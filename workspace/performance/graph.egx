@@ -17,8 +17,8 @@ rule Node2Graphviz
 	parameters : Map{
 		"path" = Sequence{"Graph", n.name},
 		"format" = "graphviz-dot",
-		"nodes" = n.edges.nodes.flatten().asSet(),
-		"edges" = n.edges
+		"nodes" =  (n.edges.size() == 0)? ((n==null)?Sequence{}:Sequence{n}) : n.edges.nodes.flatten().asSet(),
+		"edges" = (n==null)? Sequence{} : n.edges
 	}
 	target : "output/" + n.name + ".dot"
 }

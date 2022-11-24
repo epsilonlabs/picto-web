@@ -35,7 +35,7 @@ Picto.listToJsTreeData = function (list) {
   var tree = [];
   var t = tree;
   for (key1 in list) {
-    console.log(list[key1]);
+    // console.log(list[key1]);
     var segments = list[key1].split("\/");
     for (key2 in segments) {
       var node = null;
@@ -58,7 +58,7 @@ Picto.listToJsTreeData = function (list) {
     }
     t = tree;
   }
-  console.log(tree);
+  // console.log(tree);
   return tree;
 }
 
@@ -66,28 +66,28 @@ Picto.listToJsTreeData = function (list) {
  * Get the TreeView.
  */
 Picto.executeCode = function () {
-  console.log("Get TreeView ...");
+  // console.log("Get TreeView ...");
   this.stompClient.send("/app/treeview", {}, this.convertToPictoRequest(this.pictoFile, "TreeView", ""));
-  console.log("Code sent.");
+  // console.log("Code sent.");
 }
 
 Picto.projectTree = function () {
-  console.log("Get Project Tree ...");
+  // console.log("Get Project Tree ...");
   this.stompClient.send("/app/projecttree", {}, this.convertToPictoRequest(this.pictoFile, "ProjectTree", ""));
-  console.log("Code sent.");
+  // console.log("Code sent.");
 }
 
 Picto.getTreeView = function () {
-  console.log("Get Treeview ...");
+  // console.log("Get Treeview ...");
   this.stompClient.send("/app/treeview", {}, this.convertToPictoRequest(this.pictoFile, "TreeView", ""));
-  console.log("Code sent.");
+  // console.log("Code sent.");
 }
 
 Picto.openFile = function (filename) {
-  console.log("Open File ...");
+  // console.log("Open File ...");
   this.stompClient.send("/app/treeview", {}, this.convertToPictoRequest(this.pictoFile, "TreeView", filename));
   //this.stompClient.send("/app/openfile", {}, this.convertToPictoRequest(this.pictoFile, "OpenFile", filename));
-  console.log("Code sent.");
+  // console.log("Code sent.");
 }
 
 Picto.displayResult = function (message) {
@@ -193,17 +193,18 @@ Picto.render = function (view) {
     Picto.setZoom(view, svg);
   } else if (view.type == 'html') {
     var text = view.content;
+    console.log(text);
     if (text.trim() == "") {
       text = "<body></body>";
       container.innerHTML = text;
     } else {
-      console.log(text);
+      // console.log(text);
       // container.innerHTML = text;
       var parser = new DOMParser();
       var xmlDoc = parser.parseFromString(text, "text/xml");
       var body = xmlDoc.getElementsByTagName("body")[0];
       container.innerHTML = body.innerHTML;
-      console.log(container.innerHTML);
+      // console.log(container.innerHTML);
       var svgs = container.getElementsByTagName("svg");
       for (var i = 0; i < svgs.length; i++) {
         var svg = svgs[i];
@@ -219,26 +220,56 @@ Picto.render = function (view) {
     //container.innerHTML = fragment.innerHTML;
   } else if (view.type == 'markdown') {
     var text = view.content;
-    console.log(text);
+    // console.log(text);
     var md = marked.parse(text);
-    console.log(md);
+    // console.log(md);
     container.innerHTML = md;
   } else if (view.type == 'treeview') {
     Picto.treeContent = JSON.parse(view.content);
-    console.log(Picto.treeContent);
+    // console.log(Picto.treeContent);
     var tree = $('#tree').jstree(true);
-    Picto.tempSelectedNode = tree.get_selected(true)[0];
-    Picto.tempSelectedPath = "/" + tree.get_path(Picto.tempSelectedNode, '/');
-    Picto.disableJsTreeOnSelectEvent = true;
-    tree.refresh();
-    console.log("");
+    // var selectedNodes = tree.get_selected(true);
+    // if (selectedNodes.length > 0) {
+    //   // Picto.tempSelectedNode = selectedNodes[0];
+    //   // Picto.tempSelectedPath = "/" + tree.get_path(Picto.tempSelectedNode, '/');
+    //   // Picto.disableJsTreeOnSelectEvent = true;
+    // } else {
+    //   // Sometimes the jstree loses the previous state. 
+    //   // So, internally, jstree has no information of the previous selected node.
+    //   // But, we keep it ourself using the Picto.selectedPath.
+    //   // Therefore, use it to select the node.
+    //   if (Picto.selectedPath != null) {
+    //     Picto.selectJsTreeNode(Picto.selectedPath);
+    //   }
+    // }
+    //tree.deselect_all(true);
+    tree.refresh(false, false);
+    // console.log("");
   } else {
     console.log("Please check since this view type is not handled!");
   }
 }
 
+Picto.selectJsTreeNode = function (path) {
+  var tree = $('#tree').jstree(true);
+  //tree.deselect_all(true);
+  var root = tree.get_node('#');
+  for (key in root.children_d) {
+    var id = root.children_d[key];
+    var node = tree.get_node(id);
+    var fullPath = "/" + tree.get_path(node, '/');
+    if (fullPath == path) {
+      // Picto.disableJsTreeOnSelectEvent = false;
+      tree.select_node(node, false, false);
+      tree.open_node(node);
+      // console.log(id + ": " + fullPath);
+      break;
+    }
+  }
+}
+
 Picto.getView = function (event) {
-  console.log("PICTO: receiving when an element is clicked");
+  // console.log("PICTO: receiving when an element is clicked");
   if (event.target.readyState == 4 && event.target.status == 200) {
     if (event.target.responseText == null || event.target.responseText == "") {
       return;
@@ -249,7 +280,7 @@ Picto.getView = function (event) {
 }
 
 Picto.draw = function (label, url) {
-  console.log('PICTO: element clicked - ' + label + ", " + url);
+  // console.log('PICTO: element clicked - ' + label + ", " + url);
 
   Picto.selectedPath = label.split('#')[1];
 
@@ -277,13 +308,13 @@ Picto.connectToServer = function (pictoFile) {
   this.stompClient = Stomp.over(this.socket);
   this.stompClient.connect({}, function (frame) {
     //setConnected(true);
-    console.log('PICTO - Connected to server: ' + frame);
+    // console.log('PICTO - Connected to server: ' + frame);
     Picto.stompClient.subscribe('/topic/picto' + Picto.pictoFile, function (message) {
-      console.log("PICTO - Receiving messages ... ");
-      //console.log(message);
-      //console.log(message.body);
+      // console.log("PICTO - Receiving messages ... ");
+      //// console.log(message);
+      //// console.log(message.body);
       var view = JSON.parse(message.body);
-      console.log(view);
+      // console.log(view);
       if (view == null || !'type' in view) {
         return;
       }
@@ -297,28 +328,11 @@ Picto.connectToServer = function (pictoFile) {
   );
 }
 
-Picto.selectJsTreeNode = function (path) {
-  var tree = $('#tree').jstree();
-  tree.deselect_all(true);
-  var root = tree.get_node('#');
-  for (key in root.children_d) {
-    var id = root.children_d[key];
-    var node = tree.get_node(id);
-    var fullPath = "/" + tree.get_path(node, '/');
-    if (fullPath == path) {
-      Picto.disableJsTreeOnSelectEvent = false;
-      tree.select_node(node, true, true);
-      console.log(id + ": " + fullPath);
-      break;
-    }
-  }
-}
-
 var top = new Object();
 top.showView = function (param) {
   path = "/" + param.join("/");
   Picto.selectJsTreeNode(path);
-  console.log(param);
+  // console.log(param);
 };
 
 

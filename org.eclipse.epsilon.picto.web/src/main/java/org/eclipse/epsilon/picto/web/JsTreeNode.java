@@ -19,7 +19,7 @@ public class JsTreeNode {
 	protected String path;
 //	protected String icon = "jstree-folder";
 	protected String icon = "icons/diagram.gif";
-	protected JsTreeState state = new JsTreeState();
+//	protected JsTreeState state = new JsTreeState();
 
 	public List<JsTreeNode> getChildren() {
 		return children;
@@ -45,13 +45,13 @@ public class JsTreeNode {
 		this.icon = icon;
 	}
 
-	public JsTreeState getState() {
-		return state;
-	}
-
-	public void setState(JsTreeState state) {
-		this.state = state;
-	}
+//	public JsTreeState getState() {
+//		return state;
+//	}
+//
+//	public void setState(JsTreeState state) {
+//		this.state = state;
+//	}
 
 	public String getPath() {
 		return path;

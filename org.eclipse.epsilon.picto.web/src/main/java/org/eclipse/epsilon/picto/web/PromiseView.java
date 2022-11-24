@@ -2,6 +2,10 @@ package org.eclipse.epsilon.picto.web;
 
 import java.sql.Timestamp;
 import java.time.Instant;
+import java.util.concurrent.Callable;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.Future;
 
 import org.eclipse.epsilon.eol.models.IModel;
 import org.eclipse.epsilon.picto.PictoView;
@@ -36,8 +40,9 @@ public class PromiseView {
     this.viewContent = (new ObjectMapper()).writerWithDefaultPrettyPrinter().writeValueAsString(pictoResponse);
   }
 
-  public PromiseView(PictoView pictoView, ViewTree viewTree) {
+  public PromiseView(String pictoFilePath, PictoView pictoView, ViewTree viewTree) {
     this.pictoView = pictoView;
+    this.filename = pictoFilePath;
     this.viewTree = viewTree;
     this.path = viewTree.getPathString();
   }
@@ -70,10 +75,15 @@ public class PromiseView {
             .getPromise())
             .getGenerationRule().getModule();
 
-        module.startRecording();
-        pictoView.renderView(viewTree);
-        vc = viewTree.getContent().getFinal(pictoView);
-        module.stopRecording();
+//        System.out.println(this.toString() + " : " + this.path + " : " + module.toString() + " - " + clientTimestamp);
+
+          Future<ViewContent> result = promiseExecutor.submit(new GetViewContentTask(module, pictoView, viewTree));
+          vc = result.get();
+        
+//        module.startRecording();
+//        pictoView.renderView(viewTree);
+//        vc = viewTree.getContent().getFinal(pictoView);
+//        module.stopRecording();
 
 //        for (IModel model : module.getContext().getModelRepository().getModels()) {
 //          model.close();
@@ -112,6 +122,31 @@ public class PromiseView {
 
   public String getPath() {
     return path;
+  }
+
+  
+  private static final ExecutorService promiseExecutor = Executors.newSingleThreadExecutor();
+
+  public class GetViewContentTask implements Callable<ViewContent> {
+
+    IncrementalLazyEgxModule module;
+    PictoView pictoView;
+    ViewTree viewTree;
+
+    public GetViewContentTask(IncrementalLazyEgxModule module, PictoView pictoView, ViewTree viewTree) {
+      this.module = module;
+      this.pictoView = pictoView;
+      this.viewTree = viewTree;
+    }
+
+    public ViewContent call() throws Exception {
+      module.startRecording();
+      pictoView.renderView(viewTree);
+      ViewContent vc = viewTree.getContent().getFinal(pictoView);
+      module.stopRecording();
+      return vc;
+    }
+
   }
 
 }

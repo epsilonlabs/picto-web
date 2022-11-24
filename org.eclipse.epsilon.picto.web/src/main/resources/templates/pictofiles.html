@@ -23,7 +23,7 @@
 
   <script th:inline="javascript">
     var pictofiles = [[${pictofiles}]];
-    console.log(pictofiles);
+    // console.log(pictofiles);
     var workspace = Picto.listToJsTreeData(pictofiles);
 
     /*var workspace = [
@@ -69,9 +69,9 @@
       if (data.selected.length) {
         var path = Picto.getSelectedViewPath(data);
         if (path.endsWith(".picto")) {
-          console.log(path);
+          // console.log(path);
           var url = 'picto?file=' + path;
-          console.log(url);
+          // console.log(url);
           window.open(url, '_blank');
         }
       }
@@ -82,14 +82,14 @@
       if (to) {clearTimeout(to);}
       to = setTimeout(function () {
         var v = $('#searchTree').val();
-        console.log(v);
+        // console.log(v);
         $('#tree').jstree(true).search(v, false, true);
       }, 250);
     });
 
     $('#tree').on("show_contextmenu.jstree", function (event, data) {
-      console.log(event);
-      console.log(data);
+      // console.log(event);
+      // console.log(data);
     });
 
 

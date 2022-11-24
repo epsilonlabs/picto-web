@@ -55,7 +55,7 @@ public class HtmlContentTransformer implements ViewContentTransformer {
 //		htmlElementTransformers.addAll(new HtmlElementTransformerExtensionPointManager().getExtensions());
 	}
 	
-	protected XmlHelper xmlHelper = new XmlHelper();
+	
 	
 	@Override
 	public boolean canTransform(ViewContent content) {
@@ -72,9 +72,10 @@ public class HtmlContentTransformer implements ViewContentTransformer {
 		
 		if (content instanceof FinalViewContent) return null;
 		
-		String text = content.getText();
+		String text = content.getText().trim();
 		
 		try {
+		    XmlHelper xmlHelper = new XmlHelper();
 			Document document = xmlHelper.parse(text);
 			String temp = xmlHelper.getXml(document);
 			

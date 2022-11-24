@@ -1,0 +1,23 @@
+var numOfNodes = 3;  
+
+var graph = Graph.all().first();
+if (graph == null){
+    graph = new Graph();
+}
+
+for (edge in graph.edges) {
+    edge.nodes.clear();
+}
+graph.edges.clear();
+graph.nodes.clear();
+
+var node = null;
+var i = 0;
+while(i < numOfNodes) {
+    node = new Node();
+    node.name = "N" + i;
+    graph.nodes.add(node);
+    //node.id.println();
+    i++;
+}
+return i;

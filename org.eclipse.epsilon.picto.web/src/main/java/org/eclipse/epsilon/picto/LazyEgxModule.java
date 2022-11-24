@@ -12,6 +12,7 @@ package org.eclipse.epsilon.picto;
 import java.net.URI;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -94,7 +95,8 @@ public class LazyEgxModule extends EgxModule {
 
 			final String templateName = (templateBlock == null) ? null : templateBlock.execute(context, false);
 			final EglTemplateFactory templateFactory = context.getTemplateFactory();
-			final Map<URI, EglTemplate> templateCache = context.getTemplateCache();
+//			final Map<URI, EglTemplate> templateCache = context.getTemplateCache();
+			final Map<URI, EglTemplate> templateCache = new HashMap<>();
 			List<Variable> variables = new ArrayList<>();
 			URI templateUri = null;
 
@@ -211,7 +213,7 @@ public class LazyEgxModule extends EgxModule {
 			for (Variable variable : variables) {
 				template.populate(variable.getName(), variable.getValue());
 			}
-
+			
 			String result = template.process();
 			template.reset();
 

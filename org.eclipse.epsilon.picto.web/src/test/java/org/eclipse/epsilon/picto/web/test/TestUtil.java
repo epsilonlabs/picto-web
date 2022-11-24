@@ -15,6 +15,7 @@ import org.xml.sax.SAXException;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonMappingException;
 import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
 
 import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
@@ -33,6 +34,8 @@ import java.util.Map;
 
 public class TestUtil {
 
+  public static ObjectMapper MAPPER = new ObjectMapper();
+  
   /***
    * This method constructs the parameters string for HTTP URL.
    * 
@@ -86,7 +89,7 @@ public class TestUtil {
    */
   public static Document getHtml(String GET_URL)
       throws JsonMappingException, JsonProcessingException, MalformedURLException, IOException, SAXException {
-    JsonNode node = TestUtil.getJsonNode(GET_URL);
+    JsonNode node = TestUtil.requestView(GET_URL);
     String htmlString = node.get("content").textValue();
     Document html = HTTPRequestTest.builder.parse(new InputSource(new StringReader(htmlString)));
     return html;
@@ -102,7 +105,7 @@ public class TestUtil {
    * @throws JsonProcessingException
    * @throws JsonMappingException
    */
-  public static JsonNode getJsonNode(String GET_URL)
+  public static JsonNode requestView(String GET_URL)
       throws MalformedURLException, IOException, JsonProcessingException, JsonMappingException {
     URL obj = new URL(GET_URL);
     HttpURLConnection con = (HttpURLConnection) obj.openConnection();
@@ -116,9 +119,12 @@ public class TestUtil {
       response.append(inputLine);
     }
     in.close();
+    con.disconnect();
     String json = response.toString();
-    JsonNode node = HTTPRequestTest.mapper.readTree(json);
+    JsonNode node = TestUtil.MAPPER.readTree(json);
     return node;
   }
+
+  
 
 }
