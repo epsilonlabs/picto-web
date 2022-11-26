@@ -18,7 +18,12 @@ public class WebSocketConfig implements WebSocketMessageBrokerConfigurer {
 
   @Override
   public void registerStompEndpoints(StompEndpointRegistry registry) {
-    registry.addEndpoint("/picto-web").withSockJS();
+    registry.addEndpoint("/picto-web").withSockJS()
+    .setStreamBytesLimit(Integer.MAX_VALUE)
+    .setHttpMessageCacheSize(Integer.MAX_VALUE)
+    .setWebSocketEnabled(true)
+    .setHeartbeatTime(Integer.MAX_VALUE)
+    .setDisconnectDelay( Integer.MAX_VALUE);
   }
 
 }

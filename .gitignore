@@ -26,3 +26,4 @@ workspace/ecorediagram/puml
 workspace/socialnetwork/output
 workspace/performance/output
 workspace/performance/graph.model
+*.gz

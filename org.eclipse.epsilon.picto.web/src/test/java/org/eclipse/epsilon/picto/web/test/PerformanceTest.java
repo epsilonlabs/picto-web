@@ -12,6 +12,7 @@ import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map.Entry;
 import java.util.Random;
 import java.util.concurrent.ExecutionException;
 
@@ -35,14 +36,21 @@ import org.eclipse.epsilon.eol.execute.context.IEolContext;
 import org.eclipse.epsilon.picto.dom.PictoPackage;
 import org.eclipse.epsilon.picto.web.PictoApplication;
 import org.eclipse.epsilon.picto.web.PictoWebOnLoadedListener;
+import org.eclipse.jetty.client.HttpChannel;
+import org.eclipse.jetty.client.HttpClient;
+import org.eclipse.jetty.util.thread.QueuedThreadPool;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
+import org.springframework.messaging.converter.MappingJackson2MessageConverter;
 import org.springframework.messaging.simp.stomp.StompFrameHandler;
 import org.springframework.messaging.simp.stomp.StompHeaders;
 import org.springframework.messaging.simp.stomp.StompSession;
+import org.springframework.scheduling.concurrent.DefaultManagedTaskScheduler;
 import org.springframework.web.socket.client.standard.StandardWebSocketClient;
 import org.springframework.web.socket.messaging.WebSocketStompClient;
+import org.springframework.web.socket.sockjs.client.JettyXhrTransport;
+import org.springframework.web.socket.sockjs.client.RestTemplateXhrTransport;
 import org.springframework.web.socket.sockjs.client.SockJsClient;
 import org.springframework.web.socket.sockjs.client.Transport;
 import org.springframework.web.socket.sockjs.client.WebSocketTransport;
@@ -88,8 +96,8 @@ class PerformanceTest {
   private static DocumentBuilder builder;
 
   private static final int numberOfNodes = 20;
-  private static final int numberOfClients = 2;
-  private static final int numberOfEdges = 4; 
+  private static final int numberOfClients = 4;
+  private static final int numberOfEdges = 3;
   private static final int duration = 5 * 60 * 1000; // miliseconds
   private static final int modifyEvery = 3 * 1000; // miliseconds
   private static final double addProbability = 0.8; // 0.0 to 1.0
@@ -268,20 +276,55 @@ class PerformanceTest {
 
     public void run() {
       // initialise connection to the stomp server
+      HttpClient jettyHttpClient = new HttpClient();
+      jettyHttpClient.setMaxConnectionsPerDestination(Integer.MAX_VALUE);
+      jettyHttpClient.setExecutor(new QueuedThreadPool(Integer.MAX_VALUE));
+      try {
+        jettyHttpClient.start();
+      } catch (Exception e1) {
+        // TODO Auto-generated catch block
+        e1.printStackTrace();
+      }
+      
       StandardWebSocketClient client = new StandardWebSocketClient();
-      List<Transport> transports = new ArrayList<>(1);
-      transports.add(new WebSocketTransport(client));
+      List<Transport> transports = new ArrayList<>(2);
+//      WebSocketTransport wst = new WebSocketTransport(client);
+//      RestTemplateXhrTransport rtxt = new RestTemplateXhrTransport();
+      JettyXhrTransport jxt = new JettyXhrTransport(jettyHttpClient);
+//      transports.add(wst);
+//      transports.add(rtxt);
+      transports.add(jxt);
       SockJsClient sockJsClient = new SockJsClient(transports);
+      
+      
+      
       stompClient = new WebSocketStompClient(sockJsClient);
       try {
+//        StompHeaders sh = new StompHeaders();
+//        sh.setHeartbeat(new long[] {2000, 2000});
+        DefaultManagedTaskScheduler ts = new DefaultManagedTaskScheduler();
+        stompClient.setTaskScheduler(ts);
+        stompClient.setDefaultHeartbeat(new long[] {Long.MAX_VALUE, Long.MAX_VALUE});
+        stompClient.setReceiptTimeLimit(Long.MAX_VALUE);
+        stompClient.setInboundMessageSizeLimit(Integer.MAX_VALUE);
+        stompClient.setMessageConverter(new MappingJackson2MessageConverter());
         session = stompClient.connect(WEB_SOCKET_ADDRESS, new SessionHandler()).get();
+
         session.subscribe(PICTO_TOPIC + PICTO_FILE, new StompFrameHandler() {
           public void handleFrame(StompHeaders headers, Object payload) {
             System.out.println("PICTO: " + Client.this.getName() + " received");
+//            String message = new String((byte[]) payload);
+//            System.out.println(message);
+//            session.subscribe(PICTO_TOPIC + PICTO_FILE, this);
+//            session.acknowledge(headers, true);
+//            session.disconnect();
+//            System.console();
           }
 
           public Type getPayloadType(StompHeaders headers) {
             return byte[].class;
+//            return null;
+
           }
         });
       } catch (InterruptedException | ExecutionException e) {
