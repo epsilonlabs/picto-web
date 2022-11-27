@@ -26,20 +26,6 @@
     // console.log(pictofiles);
     var workspace = Picto.listToJsTreeData(pictofiles);
 
-    /*var workspace = [
-      {
-        "text": "egldoc", "children": [
-          {"text": "egldoc-standalone.picto"},
-        ],
-      },
-      {
-        "text": "socialnetwork", "children": [
-          {"text": "socialnetwork.model.picto"},
-          {"text": "socialnetwork-standalone.picto"}
-        ],
-      }
-    ];*/
-
     /** JsTree **/
     var jsTreeConfig = {
       'core': {
@@ -95,14 +81,6 @@
 
 
   </script>
-  <!-- <h1>Picto Files</h1>
-  <ol>
-    <span th:each="pictofile: ${pictofiles}">
-      <li>
-        <a th:text="${pictofile}" target="_blank" th:href="'picto?file=' + ${pictofile}"></a>
-      </li>
-      </span>
-  </ol>-->
 </body>
 
 </html>

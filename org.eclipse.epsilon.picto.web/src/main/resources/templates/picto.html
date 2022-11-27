@@ -37,7 +37,7 @@
 
     /*** GOLDEN LAYOUT ***/
     var config = {
-      dimensions: {
+	  dimensions: {
         headerHeight: 36
       },
       settings: {
@@ -89,7 +89,8 @@
     myLayout.registerComponent('Visualisation', function (container,
       componentState) {
       container.getElement()
-        .html('<div id="visualisation" class="visualisation"></div>');
+        .html('<div id="visualisationLoader" class="loader"></div>'  +
+        '<div id="visualisation" class="visualisation"></div>');
 
       var layoutSettings = container.layoutManager.config.settings;
       layoutSettings.showMaximiseIcon = false;
@@ -119,7 +120,7 @@
     });
 
     myLayout.on('initialised', function (stack) {
-      // console.log("PICTO: Golden-layout Initialised");
+      console.log("PICTO: Golden-layout Initialised");
 
       var jsTreeConfig = {
         'core': {
@@ -128,21 +129,20 @@
             cb.call(this, Picto.treeContent);
           }
         },
-        "plugins": ["search", "contextmenu"]
-        // ,
-        // "contextmenu": {
-        //   items: {
-        //     "open": {
-        //       "separator_before": true,
-        //       "separator_after": true,
-        //       "label": "Open Tab ...",
-        //       "title": "Open in a new tab",
-        //       "action": function () { alert("Open in a new tab"); }
-        //     }
-        //     //
-        //   }
-        //   //
-        // }
+        "plugins": ["search", "contextmenu"],
+        "contextmenu": {
+          items: {
+            "open": {
+              "separator_before": true,
+              "separator_after": true,
+              "label": "Open Tab ...",
+              "title": "Open in a new tab",
+              "action": function () { alert("Open in a new tab"); }
+            }
+            //
+          }
+          //
+        }
         //
       };
 
@@ -150,33 +150,21 @@
 
       $('#tree').on("select_node.jstree", function (event, data) {
         if (data.selected.length) {
-          // console.log("SELECT");
-          // if (Picto.disableJsTreeOnSelectEvent) {
-          //   Picto.disableJsTreeOnSelectEvent = false;
-          //   // console.log("skip " + data.node.text);
-          //   return;
-          // }
+          if (Picto.disableJsTreeOnSelectEvent){
+            console.log("skip " + data.node.text);
+            return;
+          }
           var path = Picto.getSelectedViewPath(data);
           Picto.selectedPath = path;
-          var localView = Picto.views.get(path);
-          // console.log(path);
+          console.log(path);
           var label = pictoName + '#' + path;
-          var url = '/picto?file=' + pictoName + '&path=' + path + '&name=' + data.node.text;
+          var url = '/picto?file=' + pictoName + '&path=' + path + '&name=' + data.node.text ;
           Picto.draw(label, url);
         }
       });
 
       $('#tree').on("refresh.jstree", function (event, data) {
-        // console.log("REFRESH");
-        // if (Picto.tempSelectedNode == null) {
-        //   return;
-        // }
-        // console.log(Picto.tempSelectedNode);
-        // var tree = $('#tree').jstree(true);
-        // var selectedNode = tree.get_selected(false);
-        // if (selectedNode == null) {
-          Picto.selectJsTreeNode(Picto.selectedPath);
-        // }
+        Picto.selectJsTreeNode(Picto.selectedPath);
       });
 
       var to = false;
@@ -184,7 +172,7 @@
         if (to) { clearTimeout(to); }
         to = setTimeout(function () {
           var v = $('#searchTree').val();
-          // console.log(v);
+          console.log(v);
           $('#tree').jstree(true).search(v, false, true);
         }, 250);
       });
@@ -192,8 +180,8 @@
       //$.jstree.defaults.contextmenu.items = 
 
       $('#tree').on("show_contextmenu.jstree", function (event, data) {
-        // console.log(event);
-        // console.log(data);
+        console.log(event);
+        console.log(data);
       });
 
       // Render the default view, the most top, first view

@@ -198,53 +198,28 @@ Picto.render = function (view) {
       text = "<body></body>";
       container.innerHTML = text;
     } else {
-      // console.log(text);
-      // container.innerHTML = text;
       var parser = new DOMParser();
       var xmlDoc = parser.parseFromString(text, "text/xml");
       var body = xmlDoc.getElementsByTagName("body")[0];
+
       container.innerHTML = body.innerHTML;
-      // console.log(container.innerHTML);
+      
       var svgs = container.getElementsByTagName("svg");
       for (var i = 0; i < svgs.length; i++) {
         var svg = svgs[i];
         svg.setAttribute("style", null);
         Picto.setZoom(view, svg);
       }
+      
     }
-    // container.innerHTML = xmlDoc.innerHTML;
-    //var parser = new DOMParser();
-    //var xmlDoc = parser.parseFromString(text, "text/xml");
-    //fragment = xmlDoc.innerHTML;
-    //fragment = xmlDoc.getElementsByTagName("body")[0];
-    //container.innerHTML = fragment.innerHTML;
   } else if (view.type == 'markdown') {
     var text = view.content;
-    // console.log(text);
     var md = marked.parse(text);
-    // console.log(md);
     container.innerHTML = md;
   } else if (view.type == 'treeview') {
     Picto.treeContent = JSON.parse(view.content);
-    // console.log(Picto.treeContent);
     var tree = $('#tree').jstree(true);
-    // var selectedNodes = tree.get_selected(true);
-    // if (selectedNodes.length > 0) {
-    //   // Picto.tempSelectedNode = selectedNodes[0];
-    //   // Picto.tempSelectedPath = "/" + tree.get_path(Picto.tempSelectedNode, '/');
-    //   // Picto.disableJsTreeOnSelectEvent = true;
-    // } else {
-    //   // Sometimes the jstree loses the previous state. 
-    //   // So, internally, jstree has no information of the previous selected node.
-    //   // But, we keep it ourself using the Picto.selectedPath.
-    //   // Therefore, use it to select the node.
-    //   if (Picto.selectedPath != null) {
-    //     Picto.selectJsTreeNode(Picto.selectedPath);
-    //   }
-    // }
-    //tree.deselect_all(true);
     tree.refresh(false, false);
-    // console.log("");
   } else {
     console.log("Please check since this view type is not handled!");
   }
@@ -252,24 +227,20 @@ Picto.render = function (view) {
 
 Picto.selectJsTreeNode = function (path) {
   var tree = $('#tree').jstree(true);
-  //tree.deselect_all(true);
   var root = tree.get_node('#');
   for (key in root.children_d) {
     var id = root.children_d[key];
     var node = tree.get_node(id);
     var fullPath = "/" + tree.get_path(node, '/');
     if (fullPath == path) {
-      // Picto.disableJsTreeOnSelectEvent = false;
       tree.select_node(node, false, false);
       tree.open_node(node);
-      // console.log(id + ": " + fullPath);
       break;
     }
   }
 }
 
 Picto.getView = function (event) {
-  // console.log("PICTO: receiving when an element is clicked");
   if (event.target.readyState == 4 && event.target.status == 200) {
     if (event.target.responseText == null || event.target.responseText == "") {
       return;
@@ -280,7 +251,6 @@ Picto.getView = function (event) {
 }
 
 Picto.draw = function (label, url) {
-  // console.log('PICTO: element clicked - ' + label + ", " + url);
 
   Picto.selectedPath = label.split('#')[1];
 
@@ -307,14 +277,8 @@ Picto.connectToServer = function (pictoFile) {
   this.socket = new SockJS('/picto-web');
   this.stompClient = Stomp.over(this.socket);
   this.stompClient.connect({}, function (frame) {
-    //setConnected(true);
-    // console.log('PICTO - Connected to server: ' + frame);
-    Picto.stompClient.subscribe('/topic/picto' + Picto.pictoFile, function (message) {
-      // console.log("PICTO - Receiving messages ... ");
-      //// console.log(message);
-      //// console.log(message.body);
+  Picto.stompClient.subscribe('/topic/picto' + Picto.pictoFile, function (message) {
       var view = JSON.parse(message.body);
-      // console.log(view);
       if (view == null || !'type' in view) {
         return;
       }
@@ -332,7 +296,6 @@ var top = new Object();
 top.showView = function (param) {
   path = "/" + param.join("/");
   Picto.selectJsTreeNode(path);
-  // console.log(param);
 };
 
 
