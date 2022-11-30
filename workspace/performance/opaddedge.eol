@@ -1,46 +1,36 @@
-var numOfEdges = 1;  
-// max = n - 1
+var numOfAffectedViews = 10;  
+var iterIndex = 0;  
 
 // add edges
 var graph = Graph.all().first();
-var possiblePairs = Set{};
-var existingPairs = Set{};
 
-for (node1 in graph.nodes){
-    for (node2 in graph.nodes){
-        if (node1.name <> node2.name) {
-            possiblePairs.add(Set{node1, node2});
-        }    
-    }   
-}
-//possiblePairs.println("Possible Pairs: ");
+// get left nodes
+var leftNodes = graph.nodes.select( n | n.name.startsWith("I")).asSet();
+//leftNodes.println();
 
-for (edge in graph.edges){
-    var pair = edge.nodes.asSet();
-    existingPairs.add(pair);
-}
-//existingPairs.println("Existing Pairs: ");
+// get right nodes
+var rightNodes = graph.nodes.select( n | n.name.startsWith("N")).asSet();
+//rightNodes.println();
 
-possiblePairs.removeAll(existingPairs);
-//possiblePairs.println("After excluding: ");
+// get left node
+var leftNode = leftNodes.selectOne(n | n.name.equals("I" + iterIndex));
 
 var affectedNodes = Set{};
-var max = (numOfEdges > possiblePairs.size()) ? possiblePairs.size() : numOfEdges;
-for (i in Sequence{0..(max-1)}){
-    if (possiblePairs.size() > 0) {
-	    var pair = possiblePairs.random();
-	    if (pair <> null and pair.at(0) <> null and pair.at(1) <> null){
-		    var edge = new Edge();
-		    edge.name = pair.at(0).name +"-" + pair.at(1).name;
-		    edge.nodes.addAll(pair);
-		    graph.edges.add(edge);
-		    affectedNodes.addAll(pair.collect(p | p.name));
-	    }
-    }
+affectedNodes.add(leftNode.name);
+
+var i = 0;
+while( i < numOfAffectedViews){
+    //get right node
+    var rightNode = rightNodes.selectOne(n | n.name.equals("N" + i));
+    affectedNodes.add(rightNode.name);
+    
+    //add an edge between left and right nodes
+    var edge = new Edge();
+    edge.nodes.add(leftNode);
+    edge.nodes.add(rightNode);
+    edge.name = leftNode.name +"-" + rightNode.name;
+    graph.edges.add(edge);
+    i++;   
 }
 
-//affectedNodes.println();
 return affectedNodes;
-//for ( n in Node.all()){
-//    n.edges.nodes.flatten().sortBy(n | n.name).asOrderedSet().println();
-//}

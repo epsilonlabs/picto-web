@@ -10,8 +10,10 @@ import java.lang.reflect.Type;
 import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.StandardOpenOption;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Random;
@@ -39,7 +41,6 @@ import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.springframework.messaging.converter.MappingJackson2MessageConverter;
 import org.springframework.messaging.simp.stomp.StompFrameHandler;
 import org.springframework.messaging.simp.stomp.StompHeaders;
 import org.springframework.messaging.simp.stomp.StompSession;
@@ -72,13 +73,11 @@ class PerformanceTest {
   private static final String GRAPH_MODEL = "/performance/graph.model";
   private static final String OP_INIT = "/performance/opinit.eol";
   private static final String OP_ADD_EDGE = "/performance/opaddedge.eol";
-  private static final String OP_DEL_EDGE = "/performance/opdeledge.eol";
   private static final String PICTO_TOPIC = "/topic/picto";
   private static final File metamodelFile = new File(PictoApplication.WORKSPACE + File.separator + GRAPH_METAMODEL);
   private static final File modelFile = new File(PictoApplication.WORKSPACE + File.separator + GRAPH_MODEL);
   private static final File opInitFile = new File(PictoApplication.WORKSPACE + File.separator + OP_INIT);
   private static final File opAddEdgeFile = new File(PictoApplication.WORKSPACE + File.separator + OP_ADD_EDGE);
-  private static final File opDelEdgeFile = new File(PictoApplication.WORKSPACE + File.separator + OP_DEL_EDGE);
   private static final XMIResource resource = new XMIResourceImpl(URI.createFileURI(modelFile.getAbsolutePath()));
   private static final EolModule eolModule = new EolModule();
   private static final EmfModel emfModel = new EmfModel();
@@ -92,6 +91,11 @@ class PerformanceTest {
   private static ObjectMapper mapper = new ObjectMapper();
   private static long startTime;
   private static Set<String> expectedViews;
+
+  private static List<Record> records = new ArrayList<>();
+  private static int gloNumViews;
+  private static int gloNumIter;
+  private static boolean genAll;
 
   /***
    * Initialise and run Picto Web server.
@@ -125,6 +129,7 @@ class PerformanceTest {
     eolModule.getContext().getModelRepository().addModel(emfModel);
 
     eolModule.parse(opInitFile);
+
   }
 
   @AfterEach
@@ -153,31 +158,33 @@ class PerformanceTest {
    */
   @Test
   public void testGreedyVsSelectiveGenerations() throws Exception {
+    // clear all previous records
+    records.clear();
 
-  }
-
-  /***
-   * This test performs simulation that modifies a model and send the updates to
-   * clients.
-   * 
-   * @throws Exception
-   */
-  @Test
-  public void testSimulation() throws Exception {
-
-    int numberOfNodes = 1000; // Number of nodes the graph model.
+    int numberOfNodes = 10; // Number of nodes the graph model.
     int numberOfClients = 100; // number of clients subscribed to Picto Web's STOMP server.
-    int numberOfEdges = 1; // number of edges added for each modification
-    int modifyEvery = 10 * 1000; // miliseconds
-    int numberOfModification = 10;
+    int numberOfIteration = 3; // Number of iteration measuring for each number of affected views
 
-    // /The probability of add operation. The rest is delete operation.
-    double addProbability = 1; // 0.0 to 1.0
+    // a.k.a number of edges added for each modification + 3 views (origin node,
+    // viewtree, overall graph)
+    int[] numbersOfAffectedViews = { 1, 6, 10/* , 60, 100, 600, 1000 */ };
+//    int slices = 3;
+//    int[] numbersOfAffectedViews = new int[slices];
+//    for (int i = 1; i <= slices; i++) {
+//      numbersOfAffectedViews[i - 1] = numberOfNodes * i / 3;
+//    }
+
+    boolean[] genAllViews = { false, true };
 
     // create the initial model
     AssignmentStatement as = (AssignmentStatement) eolModule.getChildren().get(0).getChildren().get(0);
     IntegerLiteral il = (IntegerLiteral) as.getValueExpression();
     il.setText(String.valueOf(numberOfNodes));
+
+    as = (AssignmentStatement) eolModule.getChildren().get(0).getChildren().get(1);
+    il = (IntegerLiteral) as.getValueExpression();
+    il.setText(String.valueOf(numberOfIteration));
+
     eolModule.execute();
     FileOutputStream fos = new FileOutputStream(modelFile);
     emfModel.store(fos);
@@ -199,86 +206,131 @@ class PerformanceTest {
       client.join(); // wait until each process finishes one by one
     }
 
-//    // wait until all clients are already subscribed to the broker
-//    for (Client client : clients) {
-//      client.join();
-//    }
-
     // modify
     try {
-      for (int i = 1; i <= numberOfModification; i++) {
 
-         System.out.println(" ## ITERATION " + i + " ##");
+      for (boolean temp : genAllViews) {
+        genAll = temp;
+        if (temp) {
+          PictoApplication.setModelModificationRegeneratesAllViews(true);
+        } else {
+          PictoApplication.setModelModificationRegeneratesAllViews(false);
+        }
 
-        waitList.clear();
-        Set<String> set = clients.stream().map(c -> c.getName()).collect(Collectors.toSet());
-        waitList.addAll(set);
+        // iterate for each number of affected views
+        for (int numViews : numbersOfAffectedViews) {
+          gloNumViews = numViews;
+          for (int iterationIndex = 1; iterationIndex <= numberOfIteration; iterationIndex++) {
+            gloNumIter = iterationIndex;
+
+            System.out
+                .println("\n## GEN ALL: " + genAll + " AFFECTED VIEWS: " + numViews + ", ITERATION: " + iterationIndex
+                    + " ##");
+
+            waitList.clear();
+            Set<String> set = clients.stream().map(c -> c.getName()).collect(Collectors.toSet());
+            waitList.addAll(set);
 //        // System.out.println("Initial waitlist size = " + waitList.size());
 
-        eolModule.getChildren().clear();
-        eolModule.clearCache();
+            eolModule.getChildren().clear();
+            eolModule.clearCache();
 
-        // if true then add edges (60% probability), else delete edges (40% probability)
-        boolean isAdd = (random.nextDouble() <= addProbability) ? true : false;
-        // number of edges to be added or deleted
-        int n = numberOfEdges;
+            // System.out.println("Operation ADD");
+            eolModule.parse(opAddEdgeFile);
 
-        // if true then add edges, else delete edges
-        if (i == 1)
-          isAdd = true;
-        if (isAdd) {
-          // System.out.println("Operation ADD");
-          eolModule.parse(opAddEdgeFile);
-        } else {
-          // System.out.println("Operation DELETE");
-          eolModule.parse(opDelEdgeFile);
-        }
+            // update the numOfAffectedViews in the oppaddedge.eol
+            as = (AssignmentStatement) eolModule.getChildren().get(eolModule.getChildren().size() - 1)
+                .getChildren().get(0);
+            il = (IntegerLiteral) as.getValueExpression();
+            il.setText(String.valueOf(numViews));
 
-        as = (AssignmentStatement) eolModule.getChildren().get(eolModule.getChildren().size() - 1)
-            .getChildren().get(0);
-        il = (IntegerLiteral) as.getValueExpression();
-        il.setText(String.valueOf(n));
+            // update the interationIndex in the oppaddedge.eol
+            as = (AssignmentStatement) eolModule.getChildren().get(eolModule.getChildren().size() - 1)
+                .getChildren().get(1);
+            il = (IntegerLiteral) as.getValueExpression();
+            il.setText(String.valueOf(iterationIndex - 1));
 
 //        eolModule.execute();
-        EolSet<String> affectedNodes = (EolSet<String>) eolModule.execute();
-        expectedViews = new HashSet<>();
-        expectedViews.add("/");
-        expectedViews.add("/Graph");
-        if (i == 1) {
-          for (int a = 0; a < numberOfNodes; a++  ) {
-            expectedViews.add("/Graph/N" + a);
-          }
-        } else {
-          for (String item : affectedNodes) {
-            expectedViews.add("/Graph/" + item);
-          }
-        }
-        // System.out.println("Expected Views : " + expectedViews);
+            @SuppressWarnings("unchecked")
+            EolSet<String> affectedNodes = (EolSet<String>) eolModule.execute();
 
-        fos = new FileOutputStream(modelFile);
-        emfModel.store(fos);
-        fos.close();
-        Thread.sleep(100);
-        startTime = System.currentTimeMillis();
+            expectedViews = new HashSet<>();
+            expectedViews.add("/");
+            expectedViews.add("/Graph");
+
+            // initially, all views should be generated
+            if (!genAll) {
+              if (iterationIndex == 1 && numViews == numbersOfAffectedViews[0]) {
+                for (int a = 0; a < numberOfIteration; a++) {
+                  expectedViews.add("/Graph/I" + a);
+                }
+                for (int a = 0; a < numberOfNodes; a++) {
+                  expectedViews.add("/Graph/N" + a);
+                }
+              } else {
+                for (String item : affectedNodes) {
+                  expectedViews.add("/Graph/" + item);
+                }
+              }
+            } else {
+              for (int a = 0; a < numberOfIteration; a++) {
+                expectedViews.add("/Graph/I" + a);
+              }
+              for (int a = 0; a < numberOfNodes; a++) {
+                expectedViews.add("/Graph/N" + a);
+              }
+            }
+
+            System.out.println("Expected Views : " + expectedViews);
+
+            fos = new FileOutputStream(modelFile);
+            emfModel.store(fos);
+            fos.close();
+            Thread.sleep(100);
+            startTime = System.currentTimeMillis();
 
 //         wait until all clients are already subscribed to the broker
-        synchronized (waitList) {
-          waitList.wait();
-        }
-
-//        if (i == 1) {
-//          Thread.sleep(4 * 1000);
-//        } else {
-//          Thread.sleep(3 * 1000);
-//        }
+            synchronized (waitList) {
+              waitList.wait();
+            }
+            // ----
+          } // for (int i = 1; i <= numberOfIteration; i++) {
+        } // for (int numViews : numbersOfAffectedViews) {
       }
 
-       System.out.println("FINISHED!");
-      Thread.sleep(60 * 1000);
+      System.out.println("FINISHED!");
+
+      // saving data to a file
+      File outputFile = new File("data/selective.csv");
+      if (outputFile.exists())
+        outputFile.delete();
+      outputFile.createNewFile();
       
+      Files.write(Path.of(outputFile.toURI()),
+          ("genall,views,iteration,client,path,waittime,bytes" + System.lineSeparator()).getBytes(),
+          StandardOpenOption.APPEND);
+      
+      for (Record record : records) {
+        String line = record.isGenAll() + "," + record.getNumOfAffectedView() + "," + record.getIteration()
+            + "," + record.getClient().getName() + "," + record.getPath() + "," + record.getDuration()
+            + "," + record.getPayloadSize() + System.lineSeparator();
+        Files.write(Path.of(outputFile.toURI()), line.getBytes(), StandardOpenOption.APPEND);
+      }
+
     } catch (Exception e) {
       e.printStackTrace();
     }
+  }
+
+  /***
+   * This test performs simulation that modifies a model and send the updates to
+   * clients.
+   * 
+   * @throws Exception
+   */
+  @Test
+  public void testSimulation() throws Exception {
+
   }
 
   /***
@@ -299,7 +351,7 @@ class PerformanceTest {
      * starts retrieving messages.
      */
     public void run() {
-      
+
       // System.out.println("Start " + getName());
       // initialise connection to the stomp server
       HttpClient jettyHttpClient = new HttpClient();
@@ -307,7 +359,7 @@ class PerformanceTest {
       jettyHttpClient.setExecutor(new QueuedThreadPool(Integer.MAX_VALUE));
       jettyHttpClient.setRequestBufferSize(10 * 1024 * 1024);
       jettyHttpClient.setResponseBufferSize(10 * 1024 * 1024);
-      
+
       try {
         jettyHttpClient.start();
       } catch (Exception e1) {
@@ -319,7 +371,7 @@ class PerformanceTest {
       JettyXhrTransport jxt = new JettyXhrTransport(jettyHttpClient);
       transports.add(jxt);
       SockJsClient sockJsClient = new SockJsClient(transports);
-      
+
       stompClient = new WebSocketStompClient(sockJsClient);
       try {
         DefaultManagedTaskScheduler ts = new DefaultManagedTaskScheduler();
@@ -331,19 +383,32 @@ class PerformanceTest {
         // connect
         session = stompClient.connect(WEB_SOCKET_ADDRESS, new StompSessionHandlerAdapter() {
           public void afterConnected(StompSession stompSession, StompHeaders stompHeaders) {
-            // System.out.println( "PICTO: " + Client.this.getName() + " connected with sessionId " + stompSession.getSessionId());
+            // System.out.println( "PICTO: " + Client.this.getName() + " connected with
+            // sessionId " + stompSession.getSessionId());
           }
         }).get();
 
         // subscribe
         session.subscribe(PICTO_TOPIC + PICTO_FILE, new StompFrameHandler() {
+
+          /**
+           * Handle the payload from the Picto Web/broker
+           * 
+           * @param headers
+           * @param payload
+           */
           public void handleFrame(StompHeaders headers, Object payload) {
             long waitTime = (System.currentTimeMillis() - startTime);
-            String message = new String((byte[]) payload);
+            byte[] payloadByte = (byte[]) payload;
+            String message = new String(payloadByte);
             try {
               JsonNode node = mapper.readTree(message);
               String path = node.get("path").textValue();
-//              System.out.println("PICTO: " + Client.this.getName() + ",  " + path + " " + " received, " + waitTime + " ms");
+              Record record = new Record(genAll, gloNumViews, gloNumIter, Client.this, path, waitTime,
+                  payloadByte.length);
+              records.add(record);
+//              System.out
+//                  .println("PICTO: " + Client.this.getName() + ",  " + path + " " + " received, " + waitTime + " ms");
               receivedViews.add(path);
             } catch (JsonProcessingException e) {
               e.printStackTrace();
@@ -364,6 +429,12 @@ class PerformanceTest {
             // ---
           }
 
+          /***
+           * Get the payload type
+           * 
+           * @param headers
+           * @return
+           */
           public Type getPayloadType(StompHeaders headers) {
             return byte[].class;
           }
@@ -454,5 +525,62 @@ class PerformanceTest {
     public void stop() throws IOException, InterruptedException {
       PictoApplication.exit();
     }
+  }
+
+  /***
+   * Record the clientName, path, and duration
+   * 
+   * @author Alfa Yohannis
+   *
+   */
+  static class Record {
+
+    boolean genAll;
+    int numOfAffectedView;
+    int iteration;
+    Client client;
+    String path;
+    long duration;
+    int payloadSize;
+
+    public Record(boolean genAll, int numOfAffectedView, int iteration, Client client, String path, long duration,
+        int payloadSize) {
+      this.genAll = genAll;
+      this.numOfAffectedView = numOfAffectedView;
+      this.iteration = iteration;
+      this.client = client;
+      this.path = path;
+      this.duration = duration;
+      this.payloadSize = payloadSize;
+    }
+
+    public boolean isGenAll() {
+      return genAll;
+    }
+
+    public int getNumOfAffectedView() {
+      return numOfAffectedView;
+    }
+
+    public int getIteration() {
+      return iteration;
+    }
+
+    public Client getClient() {
+      return client;
+    }
+
+    public String getPath() {
+      return path;
+    }
+
+    public long getDuration() {
+      return duration;
+    }
+
+    public int getPayloadSize() {
+      return payloadSize;
+    }
+
   }
 }

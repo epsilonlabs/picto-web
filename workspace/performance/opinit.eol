@@ -1,4 +1,5 @@
-var numOfNodes = 5;  
+var numOfNodes = 10;
+var numOfIter = 3;  
 
 var graph = Graph.all().first();
 if (graph == null){
@@ -11,32 +12,20 @@ for (edge in graph.edges) {
 graph.edges.clear();
 graph.nodes.clear();
 
-var node = null;
+// create left nodes
 var i = 0;
-while(i < numOfNodes) {
-    node = new Node();
-    node.name = "N" + i;
+while(i < numOfIter) {
+    var node = new Node();
+    node.name = "I" + i;
     graph.nodes.add(node);
     i++;
 }
 
-//var possiblePairs = Set{};
-//for (node1 in graph.nodes){
-//    for (node2 in graph.nodes){
-//        if (node1.name <> node2.name) {
-//            possiblePairs.add(Set{node1, node2});
-//        }    
-//    }   
-//}
-//
-//var affectedNodes = Set{};
-//for (pair in possiblePairs) {
-//	var edge = new Edge();
-//	edge.name = pair.at(0).name +"-" + pair.at(1).name;
-//	edge.nodes.addAll(pair);
-//	graph.edges.add(edge);
-//	affectedNodes.addAll(pair.collect(p | p.name));
-//}
-//
-////affectedNodes.println();
-//return affectedNodes;
+// create right nodes
+i = 0;
+while(i < numOfNodes) {
+    var node = new Node();
+    node.name = "N" + i;
+    graph.nodes.add(node);
+    i++;
+}

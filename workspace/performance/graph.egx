@@ -3,7 +3,7 @@ rule Graph2Graphviz
 	parameters : 
 	   Map{
 		"path" = Sequence{"Graph"},
-		"format" = "graphviz-dot",
+		"format" = "graphviz-circo",
 		"nodes" = g.nodes,
 		"edges" = g.edges
 	}
@@ -16,7 +16,7 @@ rule Node2Graphviz
 	template : "graph.egl"
 	parameters : Map{
 		"path" = Sequence{"Graph", n.name},
-		"format" = "graphviz-dot",
+		"format" = "graphviz-circo",
 		"nodes" =  (n.edges.size() == 0)? ((n==null)?Sequence{}:Sequence{n}) : n.edges.nodes.flatten().asSet(),
 		"edges" = (n==null)? Sequence{} : n.edges
 	}

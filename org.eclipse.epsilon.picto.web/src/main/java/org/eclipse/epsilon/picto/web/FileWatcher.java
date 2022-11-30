@@ -56,14 +56,14 @@ public class FileWatcher extends Thread {
     if (this.pictoJsonController != null) {
       this.pictoJsonController.sendChangesToBroker(modifiedFile);
     } else {
-      System.out.println("No PictoJsonController attached");
+      // System.out.println("No PictoJsonController attached");
     }
   }
 
   @Override
   public void run() {
     try {
-//      System.out.println("YYYYY");
+//      // System.out.println("YYYYY");
       HashMap<WatchKey, Path> keys = new HashMap<WatchKey, Path>();
       watcher = FileSystems.getDefault().newWatchService();
       registerDirectory(watcher, PictoApplication.WORKSPACE, keys);
@@ -78,7 +78,7 @@ public class FileWatcher extends Thread {
           key = watcher.take();
           Thread.sleep(100);
           path = keys.get(key);
-//          System.out.println("XXX: " + path);
+//          // System.out.println("XXX: " + path);
           if (path == null) {
             System.err.println("WatchKey not recognized!!");
             continue;
@@ -101,19 +101,19 @@ public class FileWatcher extends Thread {
               || filePath.toString().endsWith(".flexmi")
               || filePath.toString().endsWith(".model") || filePath.toString().endsWith(".emf")
               || filePath.toString().endsWith(".xmi")) {
-            // System.out.println("Picto: " + filePath + " has changed!!!");
+            // // System.out.println("Picto: " + filePath + " has changed!!!");
 
             
             File modifiedFile = new File(path.toString() + File.separator + filePath.toString());
             
-//            System.out.println("Modified file: " + modifiedFile.getAbsolutePath());
+//            // System.out.println("Modified file: " + modifiedFile.getAbsolutePath());
             this.notifyFileChange(modifiedFile);
           }
         }
 
         boolean valid = key.reset();
         if (!valid) {
-          System.out.println("Picto: FileWatcher is not valid anymore!");
+          // System.out.println("Picto: FileWatcher is not valid anymore!");
           break;
         }
 
@@ -129,7 +129,7 @@ public class FileWatcher extends Thread {
     Path dir = Paths.get(directory).toAbsolutePath();
     WatchKey key = dir.register(watcher, ENTRY_CREATE, ENTRY_DELETE, ENTRY_MODIFY);
     keys.put(key, dir);
-    System.out.println("PICTO: Watch Service registered for dir: " + dir);
+    // System.out.println("PICTO: Watch Service registered for dir: " + dir);
 
     File file = new File(directory);
     for (File f : file.listFiles()) {
@@ -150,7 +150,7 @@ public class FileWatcher extends Thread {
         scanPictoFiles(f.getAbsolutePath());
       }
       if (f.isFile() && f.getName().endsWith(".picto")) {
-        System.out.println("PICTO: Found Picto file: " + file.getAbsolutePath());
+        // System.out.println("PICTO: Found Picto file: " + file.getAbsolutePath());
         PictoProject.createPictoProject(f);
       }
     }

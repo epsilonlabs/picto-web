@@ -128,7 +128,7 @@ public class PictoApplication implements ApplicationListener<ApplicationContextE
 //    }
   }
 
-  public static boolean isModelModificationRegeneratesAllViews() {
+  public static boolean getModelModificationRegeneratesAllViews() {
     return modelModificationRegeneratesAllViews;
   }
 
@@ -136,7 +136,7 @@ public class PictoApplication implements ApplicationListener<ApplicationContextE
     PictoApplication.modelModificationRegeneratesAllViews = modelModificationRegeneratesAllViews;
   }
 
-  public static boolean isEachRequestAlwaysRegeneratesView() {
+  public static boolean getEachRequestAlwaysRegeneratesView() {
     return eachRequestAlwaysRegeneratesView;
   }
 

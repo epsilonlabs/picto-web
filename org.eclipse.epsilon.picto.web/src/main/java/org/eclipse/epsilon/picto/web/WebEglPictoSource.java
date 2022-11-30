@@ -190,7 +190,9 @@ public class WebEglPictoSource extends EglPictoSource {
 
           /** loop through the content promises of rules **/
           // System.out.println("\nGENERATING VIEWS: ");
-          toBeProcessedPaths.addAll(accessRecordResource.getToBeProcessedPaths(promises, (EgxModule) module));
+          if (!PictoApplication.getModelModificationRegeneratesAllViews()) {
+            toBeProcessedPaths.addAll(accessRecordResource.getToBeProcessedPaths(promises, (EgxModule) module));
+          }
 //
           for (IncrementalLazyGenerationRuleContentPromise promise : promises) {
 
@@ -206,9 +208,11 @@ public class WebEglPictoSource extends EglPictoSource {
 
             // Check if the path should be processed to generated new view.
             // Skip to next promise if path is not in the the toBeProcessedPaths.
-            if (!toBeProcessedPaths.contains(pathString)) {
-              // System.out.println("SKIP");
-              continue;
+            if (!PictoApplication.getModelModificationRegeneratesAllViews()) {
+              if (!toBeProcessedPaths.contains(pathString)) {
+                // System.out.println("SKIP");
+                continue;
+              }
             }
 
             // Immediately generates the final view of the UN-skipped path and put the view

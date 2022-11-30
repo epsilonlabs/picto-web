@@ -21,9 +21,12 @@
 
 # virtual machine crash logs, see http://www.java.com/en/download/help/error_hotspot.xml
 hs_err_pid*
+org.eclipse.epsilon.picto.web/data
 workspace/egldoc/egldoc/families
 workspace/ecorediagram/puml
 workspace/socialnetwork/output
 workspace/performance/output
+workspace/performance/data
+workspace/performance/backup
 workspace/performance/graph.model
 *.gz
