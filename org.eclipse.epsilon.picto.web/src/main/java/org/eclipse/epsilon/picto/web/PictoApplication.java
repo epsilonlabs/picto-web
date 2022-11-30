@@ -33,7 +33,7 @@ import org.springframework.stereotype.Component;
  */
 @SpringBootApplication
 public class PictoApplication implements ApplicationListener<ApplicationContextEvent> {
-
+  
   /***
    * Define the relative workspace target
    */
@@ -49,6 +49,10 @@ public class PictoApplication implements ApplicationListener<ApplicationContextE
    */     
   public static String[] args;
 
+  private static boolean modelModificationRegeneratesAllViews = false;
+  
+  private static boolean eachRequestAlwaysRegeneratesView = false;
+    
   private static List<PictoProject> pictoProjects = new ArrayList<PictoProject>();
 
   private static ConfigurableApplicationContext context;
@@ -113,15 +117,31 @@ public class PictoApplication implements ApplicationListener<ApplicationContextE
   
   @Override
   public void onApplicationEvent(ApplicationContextEvent event) {
-    if (event instanceof ContextStartedEvent) {
-      System.out.println("PICTO: started - " + Timestamp.from(Instant.now()).toString());
-    } else if (event instanceof ContextRefreshedEvent) {
-      System.out.println("PICTO: loaded - " + Timestamp.from(Instant.now()).toString());
-    } else if (event instanceof ContextStoppedEvent) {
-      System.out.println("PICTO: stopped - " + Timestamp.from(Instant.now()).toString());
-    } else if (event instanceof ContextClosedEvent) {
-      System.out.println("PICTO: closed - " + Timestamp.from(Instant.now()).toString());
-    }
+//    if (event instanceof ContextStartedEvent) {
+//      System.out.println("PICTO: started - " + Timestamp.from(Instant.now()).toString());
+//    } else if (event instanceof ContextRefreshedEvent) {
+//      System.out.println("PICTO: loaded - " + Timestamp.from(Instant.now()).toString());
+//    } else if (event instanceof ContextStoppedEvent) {
+//      System.out.println("PICTO: stopped - " + Timestamp.from(Instant.now()).toString());
+//    } else if (event instanceof ContextClosedEvent) {
+//      System.out.println("PICTO: context closed - " + Timestamp.from(Instant.now()).toString());
+//    }
+  }
+
+  public static boolean isModelModificationRegeneratesAllViews() {
+    return modelModificationRegeneratesAllViews;
+  }
+
+  public static void setModelModificationRegeneratesAllViews(boolean modelModificationRegeneratesAllViews) {
+    PictoApplication.modelModificationRegeneratesAllViews = modelModificationRegeneratesAllViews;
+  }
+
+  public static boolean isEachRequestAlwaysRegeneratesView() {
+    return eachRequestAlwaysRegeneratesView;
+  }
+
+  public static void setEachRequestAlwaysRegeneratesView(boolean eachRequestAlwaysRegeneratesView) {
+    PictoApplication.eachRequestAlwaysRegeneratesView = eachRequestAlwaysRegeneratesView;
   }
   
  

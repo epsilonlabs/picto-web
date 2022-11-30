@@ -2,8 +2,8 @@
 package graph;
 
 class Graph {
-	val Node[*] nodes;
-	val Edge[*] edges;
+	!ordered val Node[*] nodes;
+	!ordered val Edge[*] edges;
 }
 
 abstract class Entity {
@@ -12,9 +12,9 @@ abstract class Entity {
 
 class Node extends Entity{
     
-    ref Edge[*]#nodes edges;
+    !ordered ref Edge[*]#nodes edges;
 }
 
 class Edge extends Entity{
-    ref Node[*..2]#edges nodes;
+    !ordered ref Node[*..2]#edges nodes;
 }

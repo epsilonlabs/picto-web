@@ -13,6 +13,7 @@ import java.nio.file.WatchEvent;
 import java.nio.file.WatchKey;
 import java.nio.file.WatchService;
 import java.util.HashMap;
+import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.messaging.handler.annotation.MessageMapping;
@@ -62,6 +63,7 @@ public class FileWatcher extends Thread {
   @Override
   public void run() {
     try {
+//      System.out.println("YYYYY");
       HashMap<WatchKey, Path> keys = new HashMap<WatchKey, Path>();
       watcher = FileSystems.getDefault().newWatchService();
       registerDirectory(watcher, PictoApplication.WORKSPACE, keys);
@@ -74,7 +76,9 @@ public class FileWatcher extends Thread {
         Path path;
         try {
           key = watcher.take();
+          Thread.sleep(100);
           path = keys.get(key);
+//          System.out.println("XXX: " + path);
           if (path == null) {
             System.err.println("WatchKey not recognized!!");
             continue;
@@ -84,8 +88,9 @@ public class FileWatcher extends Thread {
           return;
         }
 
-        for (WatchEvent<?> event : key.pollEvents()) {
-
+        List<WatchEvent<?>> events = key.pollEvents();
+        for (WatchEvent<?> event : events) {
+          
           @SuppressWarnings("unchecked")
           WatchEvent<Path> ev = (WatchEvent<Path>) event;
           Path filePath = ev.context();
@@ -98,7 +103,10 @@ public class FileWatcher extends Thread {
               || filePath.toString().endsWith(".xmi")) {
             // System.out.println("Picto: " + filePath + " has changed!!!");
 
+            
             File modifiedFile = new File(path.toString() + File.separator + filePath.toString());
+            
+//            System.out.println("Modified file: " + modifiedFile.getAbsolutePath());
             this.notifyFileChange(modifiedFile);
           }
         }

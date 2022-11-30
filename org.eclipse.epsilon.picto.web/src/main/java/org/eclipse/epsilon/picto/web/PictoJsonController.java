@@ -111,6 +111,7 @@ public class PictoJsonController {
 
       WebEglPictoSource source = new WebEglPictoSource();
 
+//      System.out.println("Affected Picto Project: " + pictoProject.getPictoFile().getAbsolutePath());
       Map<String, String> modifiedObjects = source.generatePromises(modifiedFilePath, pictoProject, true);
 //      System.out.println("PICTO: number of modified objects = " + modifiedObjects.size());
 
@@ -118,6 +119,7 @@ public class PictoJsonController {
           .replace(new File(PictoApplication.WORKSPACE).getAbsolutePath(), "").replace("\\", "/");
 
       MessageChannel brokerChannel = context.getBean("brokerChannel", MessageChannel.class);
+      System.out.println("Sending " + modifiedObjects.size() + " views");
       for (Entry<String, String> entry : modifiedObjects.entrySet()) {
         String path = entry.getKey();
         String content = FileViewContentCache.getViewContentCache(pictoFilePath).getPromiseView(path).getViewContent();
