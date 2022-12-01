@@ -14,6 +14,7 @@ import org.eclipse.epsilon.flexmi.FlexmiResourceFactory;
 import org.eclipse.epsilon.picto.dom.Model;
 import org.eclipse.epsilon.picto.dom.Parameter;
 import org.eclipse.epsilon.picto.dom.Picto;
+import org.eclipse.epsilon.picto.dom.PictoPackage;
 
 public class PictoProject {
   private String name;
@@ -145,6 +146,7 @@ public class PictoProject {
       Resource resource = resourceSet
           .getResource(org.eclipse.emf.common.util.URI.createFileURI(pictoFile.getAbsolutePath()), true);
       resource.load(null);
+      Object x = resource.getContents();
       return (Picto) resource.getContents().iterator().next();
     } catch (Exception ex) {
       ex.printStackTrace();

@@ -1,5 +1,4 @@
-var numOfNodes = 10;
-var numOfIter = 3;  
+var numOfNodes = 10;  
 
 var graph = Graph.all().first();
 if (graph == null){
@@ -13,16 +12,12 @@ graph.edges.clear();
 graph.nodes.clear();
 
 // create left nodes
-var i = 0;
-while(i < numOfIter) {
-    var node = new Node();
-    node.name = "I" + i;
-    graph.nodes.add(node);
-    i++;
-}
+var node = new Node();
+node.name = "I0";
+graph.nodes.add(node);
 
 // create right nodes
-i = 0;
+var i = 0;
 while(i < numOfNodes) {
     var node = new Node();
     node.name = "N" + i;

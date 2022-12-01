@@ -198,7 +198,7 @@ public class WebEglPictoSource extends EglPictoSource {
 
             String pathString = IncrementalityUtil.getPath(promise);
 
-            // System.out.print("Processing " + pathString + " ... ");
+             System.out.print("Processing " + pathString + " ... ");
 
             ViewTree viewTree = generateViewTree(rootViewTree, promise);
 
@@ -210,7 +210,7 @@ public class WebEglPictoSource extends EglPictoSource {
             // Skip to next promise if path is not in the the toBeProcessedPaths.
             if (!PictoApplication.getModelModificationRegeneratesAllViews()) {
               if (!toBeProcessedPaths.contains(pathString)) {
-                // System.out.println("SKIP");
+                 System.out.println("SKIP");
                 continue;
               }
             }
@@ -221,11 +221,14 @@ public class WebEglPictoSource extends EglPictoSource {
             String content = "";
             if (fromFileWatcher) {
 //              System.out.println("FROM FILE");
+              long start = System.currentTimeMillis();
               content = promiseView.getViewContent(null);
+              long delta = System.currentTimeMillis() - start;
+              System.out.print("[" + delta + " ms] ");
             }
             modifiedViewContents.put(pathString, content);
 
-            // System.out.println("PROCESSED");
+             System.out.println("PROCESSED");
 
           }
 

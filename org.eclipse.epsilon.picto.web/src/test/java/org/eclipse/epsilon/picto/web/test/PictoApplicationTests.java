@@ -4,6 +4,8 @@ import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
+import org.eclipse.epsilon.picto.dom.PictoFactory;
+import org.eclipse.epsilon.picto.dom.PictoPackage;
 import org.eclipse.epsilon.picto.web.FileWatcher;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
@@ -26,6 +28,7 @@ class PictoApplicationTests {
 
   @BeforeAll
   static void setUpBeforeClass() throws Exception {
+    PictoPackage.eINSTANCE.eClass();
     FileWatcher.scanPictoFiles();
     FileWatcher.startWatching();
   }
@@ -40,8 +43,8 @@ class PictoApplicationTests {
 
   @Test
   void testGetSocialNetwork() throws Exception {
-//  MvcResult result = mvc.perform(MockMvcRequestBuilders.get(LOCALHOST)
-    mvc.perform(MockMvcRequestBuilders.get(LOCALHOST)
+    MvcResult result = mvc.perform(MockMvcRequestBuilders.get(LOCALHOST)
+//    mvc.perform(MockMvcRequestBuilders.get(LOCALHOST)
         .queryParam("file", "/socialnetwork/socialnetwork.model.picto")
         .queryParam("path", "/Social Network")
         .contentType(MediaType.APPLICATION_JSON))
@@ -49,7 +52,7 @@ class PictoApplicationTests {
         .andExpect(content().contentTypeCompatibleWith(MediaType.APPLICATION_JSON))
         .andExpect(MockMvcResultMatchers.jsonPath("$.path").value("/Social Network"))
         .andDo(print()).andReturn();
-        
-//    String x = result.getResponse().getContentAsString();
+
+    String x = result.getResponse().getContentAsString();
   }
 }
