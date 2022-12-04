@@ -1,5 +1,7 @@
 package org.eclipse.epsilon.picto.web.test;
 
+import static org.assertj.core.api.Assertions.assertThat;
+
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileOutputStream;
@@ -21,6 +23,8 @@ import java.util.Map;
 import java.util.Random;
 import java.util.Set;
 import java.util.concurrent.ExecutionException;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 import java.util.stream.Collectors;
 
 import org.eclipse.emf.common.util.URI;
@@ -90,7 +94,7 @@ class PerformanceTest {
 
   private static Server server;
   private static final List<Client> clients = new ArrayList<>();
-  private static final Set<String> waitList = new HashSet<>();
+  private static Set<String> clientWaitingList = new HashSet<>();
 
   private static ObjectMapper mapper = new ObjectMapper();
   private static long startTime;
@@ -151,77 +155,82 @@ class PerformanceTest {
    */
   @Test
   public void testGeneratedVsCachedViewRequests() throws Exception {
+    try {
+      int numberOfNodes = 500; // Number of nodes the graph model.
+      int numberOfClients = 100; // number of clients subscribed to Picto Web's STOMP server.
+      int numberOfIteration = 30; // Number of requests per client
 
-    int numberOfNodes = 100; // Number of nodes the graph model.
-    int numberOfClients = 100; // number of clients subscribed to Picto Web's STOMP server.
-    int numberOfIteration = 10; // Number of requests per client
+      boolean[] isAlwaysGenerated = { false, true };
 
-    boolean[] isAlwaysGenerated = { false, true };
+      // create the initial model
+      AssignmentStatement as = (AssignmentStatement) eolModule.getChildren().get(0).getChildren().get(0);
+      IntegerLiteral il = (IntegerLiteral) as.getValueExpression();
+      il.setText(String.valueOf(numberOfNodes));
 
-    // create the initial model
-    AssignmentStatement as = (AssignmentStatement) eolModule.getChildren().get(0).getChildren().get(0);
-    IntegerLiteral il = (IntegerLiteral) as.getValueExpression();
-    il.setText(String.valueOf(numberOfNodes));
+      eolModule.execute();
+      FileOutputStream fos = new FileOutputStream(modelFile);
+      emfModel.store(fos);
+      fos.flush();
+      fos.close();
 
-    as = (AssignmentStatement) eolModule.getChildren().get(0).getChildren().get(1);
-    il = (IntegerLiteral) as.getValueExpression();
-    il.setText(String.valueOf(numberOfIteration));
+      // start Picto Web server
+      server = new Server();
+      server.start();
+      Thread.sleep(3000);
 
-    eolModule.execute();
-    FileOutputStream fos = new FileOutputStream(modelFile);
-    emfModel.store(fos);
-    fos.flush();
-    fos.close();
-
-    // start Picto Web server
-    server = new Server();
-    server.start();
-    Thread.sleep(5000);
-
-    // create clients
-    clients.clear();
-    for (int i = 0; i < numberOfClients; i++) {
-      Client client = new Client();
-      clients.add(client);
-      client.setName("Client-" + i);
-//      client.start();
-//      client.join(); // wait until each process finishes one by one
-    }
-
-    for (boolean temp : isAlwaysGenerated) {
-      genAlways = temp;
-      PictoApplication.setEachRequestAlwaysRegeneratesView(genAlways);
-
-      for (Client client : clients) {
-        client.sendMultipleRequests(numberOfIteration, numberOfNodes);
-        Thread.sleep(1000);
+      // create clients
+      clients.clear();
+      for (int i = 0; i < numberOfClients; i++) {
+        Client client = new Client();
+        clients.add(client);
+        client.setName("Client-" + i);
       }
+
+      for (boolean temp : isAlwaysGenerated) {
+
+        genAlways = temp;
+        PictoApplication.setEachRequestAlwaysRegeneratesView(genAlways);
+
+        List<Thread> tasks = clients.stream().map(c -> {
+          try {
+            return c.sendMultipleRequests(numberOfIteration, numberOfNodes);
+          } catch (Exception e) {
+          }
+          return null;
+        })
+            .collect(Collectors.toList());
+
+        for (Thread task : tasks) {
+          task.start();
+          Thread.sleep(100);
+        }
+        for (Thread task : tasks) {
+          task.join();
+        }
+      }
+
+      // saving data to a file
+      File outputFile = new File("data/cached.csv");
+      if (!outputFile.getParentFile().exists())
+        outputFile.getParentFile().delete();
+      if (outputFile.exists())
+        outputFile.delete();
+      outputFile.createNewFile();
+
+      Files.write(Path.of(outputFile.toURI()),
+          ("always,iteration,client,path,waittime,bytes" + System.lineSeparator()).getBytes(),
+          StandardOpenOption.APPEND);
+
+      for (GeneratedVsCachedViewRecord record : generatedVsCachedViewRecords) {
+        String line = record.isAlwaysGenerated() + "," + record.getIteration()
+            + "," + record.getClient().getName() + "," + record.getPath() + "," + record.getDuration()
+            + "," + record.getPayloadSize() + System.lineSeparator();
+        Files.write(Path.of(outputFile.toURI()), line.getBytes(), StandardOpenOption.APPEND);
+      }
+      System.out.println("FINISHED!");
+    } catch (Exception e) {
+      e.printStackTrace();
     }
-
-    for (Client client : clients) {
-      client.join();
-    }
-
-    Thread.sleep(2 * 60 * 1000);
-    // saving data to a file
-    File outputFile = new File("data/cached.csv");
-    if (!outputFile.getParentFile().exists())
-      outputFile.getParentFile().delete();
-    if (outputFile.exists())
-      outputFile.delete();
-    outputFile.createNewFile();
-
-    Files.write(Path.of(outputFile.toURI()),
-        ("always,iteration,client,path,waittime,bytes" + System.lineSeparator()).getBytes(),
-        StandardOpenOption.APPEND);
-
-    for (GeneratedVsCachedViewRecord record : generatedVsCachedViewRecords) {
-      String line = record.isAlwaysGenerated() + "," + record.getIteration()
-          + "," + record.getClient().getName() + "," + record.getPath() + "," + record.getDuration()
-          + "," + record.getPayloadSize() + System.lineSeparator();
-      Files.write(Path.of(outputFile.toURI()), line.getBytes(), StandardOpenOption.APPEND);
-    }
-    System.out.println("FINISHED!");
   }
 
   /***
@@ -237,16 +246,16 @@ class PerformanceTest {
     // clear all previous records
     greedyVsSelectiveGenerationRecords.clear();
 
-    int numberOfNodes = 100; // Number of nodes the graph model.
-    int numberOfClients = 1; // number of clients subscribed to Picto Web's STOMP server.
-    int numberOfIteration = 10; // Number of iteration measuring for each number of affected views
+    int numberOfNodes = 500; // Number of nodes the graph model.
+    int numberOfClients = 100; // number of clients subscribed to Picto Web's STOMP server.
+    int numberOfIteration = 5; // Number of iteration measuring for each number of affected views
 
     // a.k.a number of edges added for each modification + 3 views (origin node,
     // viewtree, overall graph)
 //    int[] numbersOfAffectedViews = { 1, 6, 10/* , 60, 100, 600, 1000 */ };
-    int[] numbersOfAffectedViews = {50};
+    int[] numbersOfAffectedViews = { 1, 10, 50, 100, 200, 300, 400, 500 };
 
-    boolean[] genAllViews = {false};
+    boolean[] genAllViews = { false, true };
 
     // create the initial model
     AssignmentStatement as = (AssignmentStatement) eolModule.getChildren().get(0).getChildren().get(0);
@@ -295,14 +304,13 @@ class PerformanceTest {
                 .println("\n## GEN ALL: " + genAll + " AFFECTED VIEWS: " + numViews + ", ITERATION: " + iterationIndex
                     + " ##");
 
-            waitList.clear();
+            clientWaitingList.clear();
             Set<String> set = clients.stream().map(c -> c.getName()).collect(Collectors.toSet());
-            waitList.addAll(set);
+            clientWaitingList.addAll(set);
 //        // System.out.println("Initial waitlist size = " + waitList.size());
             eolModule.getChildren().clear();
             eolModule.clearCache();
 
-            
             if (iterationIndex % 2 == 1) {
               System.out.println("Operation ADD");
               eolModule.parse(opAddEdgeFile);
@@ -310,7 +318,7 @@ class PerformanceTest {
               System.out.println("Operation DELETE");
               eolModule.parse(opDelEdgeFile);
             }
-            
+
             // update the numOfAffectedViews in the oppaddedge.eol
             as = (AssignmentStatement) eolModule.getChildren().get(eolModule.getChildren().size() - 1)
                 .getChildren().get(0);
@@ -352,8 +360,8 @@ class PerformanceTest {
             startTime = System.currentTimeMillis();
 
 //         wait until all clients are already subscribed to the broker
-            synchronized (waitList) {
-              waitList.wait();
+            synchronized (clientWaitingList) {
+              clientWaitingList.wait(5 * 60 * 1000);
             }
             // ----
           } // for (int i = 1; i <= numberOfIteration; i++) {
@@ -453,6 +461,7 @@ class PerformanceTest {
             long waitTime = (System.currentTimeMillis() - startTime);
             byte[] payloadByte = (byte[]) payload;
             String message = new String(payloadByte);
+
             try {
               JsonNode node = mapper.readTree(message);
               String path = node.get("path").textValue();
@@ -461,10 +470,11 @@ class PerformanceTest {
                   waitTime,
                   payloadByte.length);
               greedyVsSelectiveGenerationRecords.add(record);
-           
+
               System.out
-                  .println("PICTO: " + Client.this.getName() + ",  " + path + " " + " received, " + waitTime + " ms");
-              
+                  .println("PICTO: " + genAll + ", " + gloNumViews + ", " + gloNumIter + ", " + Client.this.getName()
+                      + " received " + path + " " + waitTime + " ms");
+
               receivedViews.add(path);
             } catch (JsonProcessingException e) {
               e.printStackTrace();
@@ -473,11 +483,11 @@ class PerformanceTest {
             // System.out.println("Received views: " + receivedViews);
             if (receivedViews.equals(expectedViews)) {
 //              // System.out.println("Received views: " + receivedViews);
-              waitList.remove(Client.this.getName());
-              // System.out.println("Waitlist size = " + waitList.size());
-              if (waitList.size() == 0) {
-                synchronized (waitList) {
-                  waitList.notify();
+              synchronized (clientWaitingList) {
+                clientWaitingList.remove(Client.this.getName());
+                System.out.println("Waitlist size = " + clientWaitingList.size());
+                if (clientWaitingList.size() <= 1) {
+                  clientWaitingList.notify();
                 }
               }
               receivedViews.clear();
@@ -507,12 +517,13 @@ class PerformanceTest {
      * 
      * @param iteration
      * @param numberOfNodes
+     * @return
      * @throws JsonMappingException
      * @throws JsonProcessingException
      * @throws MalformedURLException
      * @throws IOException
      */
-    public void sendMultipleRequests(int iteration, int numberOfNodes)
+    public Thread sendMultipleRequests(int iteration, int numberOfNodes)
         throws JsonMappingException, JsonProcessingException, MalformedURLException, IOException {
 
       Thread t = new Thread() {
@@ -530,58 +541,73 @@ class PerformanceTest {
 
               String pageAddress = PICTO_WEB_ADDRESS + TestUtil.getParamsString(parameters);
 
-//              URL url = new URL(pageAddress);
-//              
-//              long startTime = System.currentTimeMillis();
-//              
-//              HttpURLConnection httpConnection = (HttpURLConnection) url.openConnection();
-//              httpConnection.setRequestProperty("accept", "application/json");
-//              
-//              InputStream inputStream = httpConnection.getInputStream();
+              URL url = new URL(pageAddress);
+
+              long startTime = System.currentTimeMillis();
+
+              HttpURLConnection httpConnection = (HttpURLConnection) url.openConnection();
+              httpConnection.setRequestProperty("accept", "application/json");
+
+              InputStream inputStream = httpConnection.getInputStream();
 //              InputStreamReader inputStreamReader = new InputStreamReader(inputStream);
 //              BufferedReader in = new BufferedReader(inputStreamReader);
+//              inputStreamReader.read
 //              String inputLine;
 //              StringBuffer response = new StringBuffer();
 //              while ((inputLine = in.readLine()) != null) {
 //                response.append(inputLine);
 //              }
-//              
-//              long duration = System.currentTimeMillis() - startTime;
-//              
-//              in.close();
-//              httpConnection.disconnect();
-//              
-//              String message = response.toString();
-//              int size = message.getBytes().length;
-//
-//              JsonNode node = mapper.readTree(message);
-
-              long startTime = System.currentTimeMillis();
-              JsonNode node = TestUtil.requestView(pageAddress);
+              byte[] bytes = inputStream.readAllBytes();
               long waitTime = System.currentTimeMillis() - startTime;
 
-              int size = node.toString().getBytes().length;
+//              in.close();
+              httpConnection.disconnect();
+
+              String message = new String(bytes);
+//              String message = response.toString();
+              int size = message.getBytes().length;
+
+              JsonNode node = mapper.readTree(message);
+
+//              long startTime = System.currentTimeMillis();
+//              JsonNode node = TestUtil.requestView(pageAddress);
+//              long waitTime = System.currentTimeMillis() - startTime;
+//              int size = node.toString().getBytes().length;
+
 //              System.out
 //                  .println("PICTO: " + Client.this.getName() + " received, " + size + " byte(s)");
               if (size > 0) {
-                String path = node.get("path").textValue();
+                String receivedPath = node.get("path").textValue();
+                assertThat(receivedPath).isEqualTo(receivedPath);
                 System.out
-                    .println("PICTO: " + Client.this.getName() + ",  " + path + " " + " received, " + waitTime + " ms");
+                    .println("PICTO: always generate " + genAlways + ", " + Client.this.getName() + ",  request "
+                        + (i + 1) + ", " + receivedPath + " "
+                        + " received, " + waitTime
+                        + " ms");
 
                 GeneratedVsCachedViewRecord record = new GeneratedVsCachedViewRecord(genAlways, i + 1, Client.this,
-                    path,
+                    receivedPath,
                     waitTime, size);
                 generatedVsCachedViewRecords.add(record);
               }
 
-              Thread.sleep(1000);
+//              this.wait(200);
             }
           } catch (Exception e) {
             e.printStackTrace();
           }
+
+//          // check if all clients have done all their requests
+//          synchronized (clientWaitingList) {
+//            clientWaitingList.remove(Client.this.getName());
+//            System.out.println("Remaining working clients: " + clientWaitingList.size());
+//            if (clientWaitingList.size() == 0) {
+//              clientWaitingList.notifyAll();
+//            }
+//          }
         }
       };
-      t.start();
+      return t;
     }
 
     public void dispose() {

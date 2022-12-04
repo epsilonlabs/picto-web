@@ -228,7 +228,7 @@ public class WebEglPictoSource extends EglPictoSource {
             }
             modifiedViewContents.put(pathString, content);
 
-             System.out.println("PROCESSED");
+            System.out.println("PROCESSED");
 
           }
 

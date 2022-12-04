@@ -70,13 +70,14 @@ public class PromiseView {
         vc = this.viewTree.getContent().getFinal(pictoView);
       } //
       else if (viewTree.getPromise() instanceof IncrementalLazyGenerationRuleContentPromise) {
-
+        System.out.println("Generate " + path);
         IncrementalLazyEgxModule module = (IncrementalLazyEgxModule) ((IncrementalLazyGenerationRuleContentPromise) viewTree
             .getPromise())
             .getGenerationRule().getModule();
 
 //        System.out.println(this.toString() + " : " + this.path + " : " + module.toString() + " - " + clientTimestamp);
 
+        
           Future<ViewContent> result = promiseExecutor.submit(new GetViewContentTask(module, pictoView, viewTree));
           vc = result.get();
         
