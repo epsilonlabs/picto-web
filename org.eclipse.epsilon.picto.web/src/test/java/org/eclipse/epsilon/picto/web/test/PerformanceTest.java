@@ -156,9 +156,15 @@ class PerformanceTest {
   @Test
   public void testGeneratedVsCachedViewRequests() throws Exception {
     try {
-      int numberOfNodes = 500; // Number of nodes the graph model.
-      int numberOfClients = 100; // number of clients subscribed to Picto Web's STOMP server.
-      int numberOfIteration = 30; // Number of requests per client
+//      // a configuration for a larger scale test
+//      int numberOfNodes = 500; // Number of nodes the graph model.
+//      int numberOfClients = 100; // number of clients subscribed to Picto Web's STOMP server.
+//      int numberOfIteration = 30; // Number of requests per client
+
+      // a configuration for a smaller scale test
+      int numberOfNodes = 4; // Number of nodes the graph model.
+      int numberOfClients = 2; // number of clients subscribed to Picto Web's STOMP server.
+      int numberOfIteration = 6; // Number of requests per client
 
       boolean[] isAlwaysGenerated = { false, true };
 
@@ -246,14 +252,19 @@ class PerformanceTest {
     // clear all previous records
     greedyVsSelectiveGenerationRecords.clear();
 
-    int numberOfNodes = 500; // Number of nodes the graph model.
-    int numberOfClients = 100; // number of clients subscribed to Picto Web's STOMP server.
-    int numberOfIteration = 5; // Number of iteration measuring for each number of affected views
+////  // configuration for larger experiment
+//    int numberOfNodes = 500; // Number of nodes the graph model.
+//    int numberOfClients = 100; // number of clients subscribed to Picto Web's STOMP server.
+//    int numberOfIteration = 6; // Number of iteration measuring for each number of affected views
+// // a.k.a number of edges added for each modification + 3 views (origin node,
+//    // viewtree, overall graph)
+//    int[] numbersOfAffectedViews = { 98, 99, 100, 101, 200, 300, 400, 500 };
 
-    // a.k.a number of edges added for each modification + 3 views (origin node,
-    // viewtree, overall graph)
-//    int[] numbersOfAffectedViews = { 1, 6, 10/* , 60, 100, 600, 1000 */ };
-    int[] numbersOfAffectedViews = { 1, 10, 50, 100, 200, 300, 400, 500 };
+    // configuration for smaller experiment
+    int numberOfNodes = 4; // Number of nodes the graph model.
+    int numberOfClients = 2; // number of clients subscribed to Picto Web's STOMP server.
+    int numberOfIteration = 3; // Number of iteration measuring for each number of affected views
+    int[] numbersOfAffectedViews = { 1, 2, 3, 4 };
 
     boolean[] genAllViews = { false, true };
 
@@ -288,11 +299,7 @@ class PerformanceTest {
 
       for (boolean temp : genAllViews) {
         genAll = temp;
-        if (temp) {
-          PictoApplication.setModelModificationRegeneratesAllViews(true);
-        } else {
-          PictoApplication.setModelModificationRegeneratesAllViews(false);
-        }
+        PictoApplication.setModelModificationRegeneratesAllViews(genAll);
 
         // iterate for each number of affected views
         for (int numViews : numbersOfAffectedViews) {
@@ -368,6 +375,7 @@ class PerformanceTest {
         } // for (int numViews : numbersOfAffectedViews) {
       }
 
+      Thread.sleep(1000);
       System.out.println("FINISHED!");
 
       // saving data to a file

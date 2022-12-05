@@ -16,6 +16,7 @@ import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
 import org.eclipse.epsilon.picto.dom.Patch;
+import org.eclipse.epsilon.picto.web.PictoApplication;
 import org.eclipse.swt.graphics.Point;
 
 public class ViewTree {
@@ -203,7 +204,13 @@ public class ViewTree {
       }
     }
 
-    return cachedContent;
+    if (PictoApplication.getEachRequestAlwaysRegeneratesView()) {
+      ViewContent[] temp = new ViewContent[] { cachedContent };
+      cachedContent = null;
+      return temp[0];
+    } else {
+      return cachedContent;
+    }
   }
 
   public List<Patch> getPatches() {

@@ -42,10 +42,18 @@ public class AccessRecordRecorder extends PropertyAccessRecorder {
   }
 
   public void saveToAccessRecordResource() {
+
+//    long start = System.currentTimeMillis();
     for (AccessRecord r : currentPropertyAccesses) {
 //			if (r.getPath() == null) continue;
+//      System.out.println(r.toString());
       accessRecordResource.add(r);
     }
+//    long delta = System.currentTimeMillis() - start;
+//    System.out.print(", ADD TIME: " + delta + " ms (" + currentPropertyAccesses.size() + " records), ");
+//    if (currentPropertyAccesses.size() == 8 || currentPropertyAccesses.size() == 16) {
+//      System.console();
+//    }
     currentPropertyAccesses.clear();
   }
 
@@ -116,7 +124,7 @@ public class AccessRecordRecorder extends PropertyAccessRecorder {
     } else if (modelElement instanceof NameExpression) {
       modelElementId = ((NameExpression) modelElement).getName();
     }
-    
+
     AccessRecord access = null;
     try {
       access = new AccessRecord(modulePath, templatePath, ruleName, contextResourceUri, contextElementId,
