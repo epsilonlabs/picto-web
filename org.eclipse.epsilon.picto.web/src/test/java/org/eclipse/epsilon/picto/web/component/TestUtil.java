@@ -1,4 +1,4 @@
-package org.eclipse.epsilon.picto.web.test;
+package org.eclipse.epsilon.picto.web.component;
 
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -6,6 +6,17 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.StringReader;
 import java.io.UnsupportedEncodingException;
+import java.net.HttpURLConnection;
+import java.net.MalformedURLException;
+import java.net.URL;
+import java.net.URLEncoder;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
+
+import javax.xml.parsers.DocumentBuilder;
+import javax.xml.parsers.DocumentBuilderFactory;
+import javax.xml.parsers.ParserConfigurationException;
 
 import org.w3c.dom.Document;
 import org.w3c.dom.NodeList;
@@ -17,14 +28,6 @@ import com.fasterxml.jackson.databind.JsonMappingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
-import java.net.HttpURLConnection;
-import java.net.MalformedURLException;
-import java.net.URL;
-import java.net.URLEncoder;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
-
 /***
  * A utility class used in Picto Web tests.
  * 
@@ -35,6 +38,7 @@ import java.util.Map;
 public class TestUtil {
 
   public static ObjectMapper MAPPER = new ObjectMapper();
+  
   
   /***
    * This method constructs the parameters string for HTTP URL.
@@ -86,12 +90,16 @@ public class TestUtil {
    * @throws MalformedURLException
    * @throws IOException
    * @throws SAXException
+   * @throws ParserConfigurationException 
    */
   public static Document getHtml(String GET_URL)
-      throws JsonMappingException, JsonProcessingException, MalformedURLException, IOException, SAXException {
+      throws JsonMappingException, JsonProcessingException, MalformedURLException, IOException, SAXException, ParserConfigurationException {
+    
     JsonNode node = TestUtil.requestView(GET_URL);
     String htmlString = node.get("content").textValue();
-    Document html = HTTPRequestTest.builder.parse(new InputSource(new StringReader(htmlString)));
+    DocumentBuilder builder = (DocumentBuilderFactory.newInstance()).newDocumentBuilder();
+    Document html = builder.parse(new InputSource(new StringReader(htmlString)));
+    builder.reset();
     return html;
   }
 

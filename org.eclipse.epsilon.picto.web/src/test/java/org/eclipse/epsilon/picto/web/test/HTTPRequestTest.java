@@ -35,6 +35,7 @@ import org.eclipse.epsilon.emc.emf.EmfUtil;
 import org.eclipse.epsilon.picto.dom.PictoPackage;
 import org.eclipse.epsilon.picto.web.PictoApplication;
 import org.eclipse.epsilon.picto.web.PictoWebOnLoadedListener;
+import org.eclipse.epsilon.picto.web.component.TestUtil;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeAll;
@@ -65,12 +66,12 @@ import com.google.common.io.Files;
  * @author Alfa Yohannis
  *
  */
-class HTTPRequestTest {
+public class HTTPRequestTest {
 
   private static final String LOCALHOST = "http://localhost:8080/pictojson/picto?";
 
   private static Thread pictoAppThread;
-  static DocumentBuilder builder;
+  private static DocumentBuilder builder;
 
   /***
    * Initialise and run Picto Web server.
@@ -334,4 +335,10 @@ class HTTPRequestTest {
       answer.getResponseStrings().add((new String((byte[]) payload)));
     }
   }
+
+  public static DocumentBuilder getBuilder() {
+    return builder;
+  }
+  
+  
 }

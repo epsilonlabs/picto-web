@@ -111,9 +111,7 @@ public class PictoJsonController {
 
       WebEglPictoSource source = new WebEglPictoSource();
 
-//      System.out.println("Affected Picto Project: " + pictoProject.getPictoFile().getAbsolutePath());
       Map<String, String> modifiedObjects = source.generatePromises(modifiedFilePath, pictoProject, true);
-//      System.out.println("PICTO: number of modified objects = " + modifiedObjects.size());
 
       String pictoFilePath = pictoProject.getPictoFile().getAbsolutePath()
           .replace(new File(PictoApplication.WORKSPACE).getAbsolutePath(), "").replace("\\", "/");
