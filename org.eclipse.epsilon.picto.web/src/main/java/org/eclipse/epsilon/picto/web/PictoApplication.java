@@ -2,15 +2,9 @@ package org.eclipse.epsilon.picto.web;
 
 import java.io.File;
 import java.io.IOException;
-import java.sql.Timestamp;
-import java.time.Instant;
 import java.util.ArrayList;
-import java.util.LinkedList;
 import java.util.List;
-import java.util.Queue;
 
-import org.eclipse.emf.ecore.EClass;
-import org.eclipse.epsilon.picto.ViewTree;
 import org.eclipse.epsilon.picto.dom.PictoFactory;
 import org.eclipse.epsilon.picto.dom.PictoPackage;
 import org.springframework.boot.ExitCodeGenerator;
@@ -19,11 +13,6 @@ import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.context.ApplicationListener;
 import org.springframework.context.ConfigurableApplicationContext;
 import org.springframework.context.event.ApplicationContextEvent;
-import org.springframework.context.event.ContextClosedEvent;
-import org.springframework.context.event.ContextRefreshedEvent;
-import org.springframework.context.event.ContextStartedEvent;
-import org.springframework.context.event.ContextStoppedEvent;
-import org.springframework.stereotype.Component;
 
 /***
  * The main class for Picto Web Application
@@ -33,7 +22,7 @@ import org.springframework.stereotype.Component;
  */
 @SpringBootApplication
 public class PictoApplication implements ApplicationListener<ApplicationContextEvent> {
-  
+
   /***
    * Define the relative workspace target
    */
@@ -46,25 +35,30 @@ public class PictoApplication implements ApplicationListener<ApplicationContextE
 
   /***
    * To keep the arguments accessible.
-   */     
+   */
   public static String[] args;
 
   private static boolean modelModificationRegeneratesAllViews = false;
-  
+
   private static boolean eachRequestAlwaysRegeneratesView = false;
-    
+
   private static List<PictoProject> pictoProjects = new ArrayList<PictoProject>();
 
   private static ConfigurableApplicationContext context;
-  
+
   private static PictoWebOnLoadedListener pictoWebOnLoadedListener = new PictoWebOnLoadedListener() {
     @Override
     public void onLoaded() {
     }
   };
-  
-  private static PictoFactory pictoFactory;
-  private static PictoPackage pictoPackage;
+
+  private static PromisesGenerationListener promisesGenerationListener = new PromisesGenerationListener() {
+    @Override
+    public void onGenerated(java.util.Set<String> invalidatedViews) {
+    };
+  };
+
+
 
   /***
    * Initialise Picto Application
@@ -87,8 +81,8 @@ public class PictoApplication implements ApplicationListener<ApplicationContextE
   public static void main(String[] args) throws Exception {
     PictoApplication.args = args;
     context = SpringApplication.run(PictoApplication.class, args);
-    pictoFactory = PictoFactory.eINSTANCE;
-    pictoPackage = PictoPackage.eINSTANCE;
+    PictoFactory.eINSTANCE.eClass();
+    PictoPackage.eINSTANCE.eClass();
     FileWatcher.scanPictoFiles();
     FileWatcher.startWatching();
     pictoWebOnLoadedListener.onLoaded();
@@ -114,7 +108,7 @@ public class PictoApplication implements ApplicationListener<ApplicationContextE
   public static void setPictoWebOnLoadedListener(PictoWebOnLoadedListener listener) {
     PictoApplication.pictoWebOnLoadedListener = listener;
   }
-  
+
   @Override
   public void onApplicationEvent(ApplicationContextEvent event) {
 //    if (event instanceof ContextStartedEvent) {
@@ -143,8 +137,14 @@ public class PictoApplication implements ApplicationListener<ApplicationContextE
   public static void setEachRequestAlwaysRegeneratesView(boolean eachRequestAlwaysRegeneratesView) {
     PictoApplication.eachRequestAlwaysRegeneratesView = eachRequestAlwaysRegeneratesView;
   }
-  
- 
-  
-  
+
+  public static PromisesGenerationListener getPromisesGenerationListener() {
+    return promisesGenerationListener;
+  }
+
+  public static void setPromisesGenerationListener(PromisesGenerationListener promisesGenerationListener) {
+    PictoApplication.promisesGenerationListener = promisesGenerationListener;
+  }
+
+
 }

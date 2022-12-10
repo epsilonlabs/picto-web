@@ -1,9 +1,17 @@
+/*********************************************************************
+* Copyright (c) 2008 The University of York.
+*
+* This program and the accompanying materials are made
+* available under the terms of the Eclipse Public License 2.0
+* which is available at https://www.eclipse.org/legal/epl-2.0/
+*
+* SPDX-License-Identifier: EPL-2.0
+**********************************************************************/
+
 package org.eclipse.epsilon.picto.web;
 
 import java.io.File;
 import java.util.HashSet;
-import java.util.Map;
-import java.util.Map.Entry;
 import java.util.Set;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -17,6 +25,8 @@ import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
+
+import com.fasterxml.jackson.databind.ObjectMapper;
 
 /***
  * A controller to receive JSON requests from clicking the TreeView nodes inside
@@ -111,24 +121,27 @@ public class PictoJsonController {
 
       WebEglPictoSource source = new WebEglPictoSource();
 
-      Map<String, String> modifiedObjects = source.generatePromises(modifiedFilePath, pictoProject, true);
+      Set<String> modifiedObjects = source.generatePromises(modifiedFilePath, pictoProject, true);
 
       String pictoFilePath = pictoProject.getPictoFile().getAbsolutePath()
           .replace(new File(PictoApplication.WORKSPACE).getAbsolutePath(), "").replace("\\", "/");
 
       MessageChannel brokerChannel = context.getBean("brokerChannel", MessageChannel.class);
       System.out.println("Sending " + modifiedObjects.size() + " views");
-      for (Entry<String, String> entry : modifiedObjects.entrySet()) {
-        String path = entry.getKey();
-        String content = FileViewContentCache.getViewContentCache(pictoFilePath).getPromiseView(path).getViewContent();
-        if (content != null) {
-          SimpMessagingTemplate messaging = new SimpMessagingTemplate(brokerChannel);
-          String topicName = "/topic/picto" + pictoFilePath;
-          messaging.convertAndSend(topicName, content.getBytes());
-        }
-      }
+
+      PictoResponse response = new PictoResponse();
+      response.setType("newviews");
+      response.setFilename(pictoFilePath);
+
+      ObjectMapper mapper = new ObjectMapper();
+      String affectedViews = mapper.writerWithDefaultPrettyPrinter().writeValueAsString(modifiedObjects);
+      response.setContent(affectedViews);
+      String content = mapper.writerWithDefaultPrettyPrinter().writeValueAsString(response);
+
+      SimpMessagingTemplate messaging = new SimpMessagingTemplate(brokerChannel);
+      String topicName = "/topic/picto" + pictoFilePath;
+      messaging.convertAndSend(topicName, content.getBytes());
     }
   }
 
-  
 }

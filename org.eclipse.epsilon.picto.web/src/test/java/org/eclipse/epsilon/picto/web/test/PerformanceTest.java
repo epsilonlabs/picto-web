@@ -1,15 +1,21 @@
+/*********************************************************************
+* Copyright (c) 2008 The University of York.
+*
+* This program and the accompanying materials are made
+* available under the terms of the Eclipse Public License 2.0
+* which is available at https://www.eclipse.org/legal/epl-2.0/
+*
+* SPDX-License-Identifier: EPL-2.0
+**********************************************************************/
+
 package org.eclipse.epsilon.picto.web.test;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.InputStreamReader;
-import java.io.StringReader;
-import java.io.UnsupportedEncodingException;
 import java.lang.reflect.Type;
 import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
@@ -26,12 +32,7 @@ import java.util.Map;
 import java.util.Random;
 import java.util.Set;
 import java.util.concurrent.ExecutionException;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
 import java.util.stream.Collectors;
-
-import javax.xml.parsers.DocumentBuilder;
-import javax.xml.parsers.DocumentBuilderFactory;
 
 import org.eclipse.emf.common.util.URI;
 import org.eclipse.emf.ecore.EPackage;
@@ -42,11 +43,9 @@ import org.eclipse.epsilon.emc.emf.EmfUtil;
 import org.eclipse.epsilon.eol.EolModule;
 import org.eclipse.epsilon.eol.dom.AssignmentStatement;
 import org.eclipse.epsilon.eol.dom.IntegerLiteral;
-import org.eclipse.epsilon.eol.types.EolSet;
 import org.eclipse.epsilon.picto.dom.PictoPackage;
 import org.eclipse.epsilon.picto.web.PictoApplication;
-import org.eclipse.epsilon.picto.web.component.GeneratedVsCachedViewRecord;
-import org.eclipse.epsilon.picto.web.component.GreedyVsSelectiveGenerationRecord;
+import org.eclipse.epsilon.picto.web.PromisesGenerationListener;
 import org.eclipse.epsilon.picto.web.component.Server;
 import org.eclipse.epsilon.picto.web.component.TestUtil;
 import org.eclipse.jetty.client.HttpClient;
@@ -65,10 +64,9 @@ import org.springframework.web.socket.messaging.WebSocketStompClient;
 import org.springframework.web.socket.sockjs.client.JettyXhrTransport;
 import org.springframework.web.socket.sockjs.client.SockJsClient;
 import org.springframework.web.socket.sockjs.client.Transport;
-import org.w3c.dom.Document;
-import org.xml.sax.InputSource;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.JsonMappingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -108,15 +106,7 @@ public class PerformanceTest {
   static Set<String> clientWaitingList = Collections.synchronizedSet(new HashSet<>());
 
   static ObjectMapper mapper = new ObjectMapper();
-  static long startTime;
   static Set<String> expectedViews;
-
-  static List<GreedyVsSelectiveGenerationRecord> greedyVsSelectiveGenerationRecords = new ArrayList<>();
-  static List<GeneratedVsCachedViewRecord> generatedVsCachedViewRecords = new ArrayList<>();
-  static int gloNumViews;
-  static int gloNumIter;
-  static boolean genAll;
-  static boolean genAlways;
 
   /***
    * Initialise and run Picto Web server.
@@ -151,10 +141,13 @@ public class PerformanceTest {
 
     eolModule.parse(opInitFile);
 
+    PerformanceRecorder.startRecording();
   }
 
   @AfterEach
   void tearDown() throws Exception {
+    PerformanceRecorder.stopRecording();
+    
     server.stop();
     emfModel.dispose();
     emfModel.close();
@@ -205,8 +198,8 @@ public class PerformanceTest {
 
       for (boolean temp : isAlwaysGenerated) {
 
-        genAlways = temp;
-        PictoApplication.setEachRequestAlwaysRegeneratesView(genAlways);
+        PerformanceRecorder.genAlways = temp;
+        PictoApplication.setEachRequestAlwaysRegeneratesView(PerformanceRecorder.genAlways);
 
         List<Thread> tasks = clients.stream().map(c -> {
           try {
@@ -238,9 +231,9 @@ public class PerformanceTest {
           ("always,iteration,client,path,waittime,bytes" + System.lineSeparator()).getBytes(),
           StandardOpenOption.APPEND);
 
-      for (GeneratedVsCachedViewRecord record : generatedVsCachedViewRecords) {
+      for (PerformanceRecord record : PerformanceRecorder.getPerformanceRecords()) {
         String line = record.isAlwaysGenerated() + "," + record.getIteration()
-            + "," + record.getClient().getName() + "," + record.getPath() + "," + record.getDuration()
+            + "," + record.getClient() + "," + record.getPath() + "," + record.getDuration()
             + "," + record.getPayloadSize() + System.lineSeparator();
         Files.write(Path.of(outputFile.toURI()), line.getBytes(), StandardOpenOption.APPEND);
       }
@@ -260,31 +253,32 @@ public class PerformanceTest {
    */
   @Test
   public void testGreedyVsSelectiveGenerations() throws Exception {
-    // clear all previous records
-    greedyVsSelectiveGenerationRecords.clear();
-
+    
+    Object invalidatedViewsWaiter = new Object();
+    
 ////  // configuration for larger experiment
-//    int numberOfNodes = 500; // Number of nodes the graph model.
+//    int numberOfNodes = 10000; // Number of nodes the graph model.
 //    int numberOfClients = 100; // number of clients subscribed to Picto Web's STOMP server.
-//    int numberOfIteration = 6; // Number of iteration measuring for each number of affected views
+//    int numberOfIteration = 8; // Number of iteration measuring for each number of affected views
 //    // a.k.a number of edges added for each modification + 3 views (origin node,
 //    // viewtree, overall graph)
-//    int[] numbersOfAffectedViews = { 98, 99, 100, 101, 200, 300, 400, 500 };
+//    int[] numbersOfAffectedViews = {9999, 10000, 5000, 1000, 500, 100, 50, 10, 5, 1 };
+//    boolean[] genAllViews = { true, false };
 
-//    // configuration for smaller experiment
-    int numberOfNodes = 2; // Number of nodes the graph model.
-    int numberOfClients = 1; // number of clients subscribed to Picto Web's STOMP server.
-    int numberOfIteration = 1; // Number of iteration measuring for each number of affected views
+//     configuration for smaller experiment
+    int numberOfNodes = 12; // Number of nodes the graph model.
+    int numberOfClients = 3; // number of clients subscribed to Picto Web's STOMP server.
+    int numberOfIteration = 6; // Number of iteration measuring for each number of affected views
 //    int[] numbersOfAffectedViews = { 1, 2, 3, 4 };
-    int[] numbersOfAffectedViews = { 1 };
-
-    boolean[] genAllViews = { false };
+    int[] numbersOfAffectedViews = { 12, 8, 4 };
+    boolean[] genAllViews = { true, false };
 
     // create the initial model
     AssignmentStatement as = (AssignmentStatement) eolModule.getChildren().get(0).getChildren().get(0);
     IntegerLiteral il = (IntegerLiteral) as.getValueExpression();
     il.setText(String.valueOf(numberOfNodes));
 
+    System.out.println("Creating the initial model ...");
     eolModule.execute();
     FileOutputStream fos = new FileOutputStream(modelFile);
     emfModel.store(fos);
@@ -292,6 +286,7 @@ public class PerformanceTest {
     fos.close();
 
     // start Picto Web server
+    System.out.println("Starting server ...");
     server = new Server();
     server.start();
     Thread.sleep(3000);
@@ -310,17 +305,31 @@ public class PerformanceTest {
     try {
 
       for (boolean temp : genAllViews) {
-        genAll = temp;
-        PictoApplication.setModelModificationRegeneratesAllViews(genAll);
+        PerformanceRecorder.genAll = temp;
+        PictoApplication.setModelModificationRegeneratesAllViews(PerformanceRecorder.genAll);
 
         // iterate for each number of affected views
         for (int numViews : numbersOfAffectedViews) {
-          gloNumViews = numViews;
+          PerformanceRecorder.gloNumViews = numViews;
           for (int iterationIndex = 1; iterationIndex <= numberOfIteration; iterationIndex++) {
-            gloNumIter = iterationIndex;
+
+            Set<String> affectedNodes = new HashSet<>();
+            PictoApplication.setPromisesGenerationListener(new PromisesGenerationListener() {
+              @Override
+              public void onGenerated(Set<String> invalidatedViews) {
+                synchronized (invalidatedViewsWaiter) {
+                  affectedNodes.addAll(invalidatedViews);
+                  // notify the main thread to continue iteration
+                  invalidatedViewsWaiter.notify();
+                }
+              }
+            });
+
+            PerformanceRecorder.gloNumIter = iterationIndex;
 
             System.out
-                .println("\n## GEN ALL: " + genAll + " AFFECTED VIEWS: " + numViews + ", ITERATION: " + iterationIndex
+                .println("\n## GEN ALL: " + PerformanceRecorder.genAll + " AFFECTED VIEWS: " + numViews
+                    + ", ITERATION: " + iterationIndex
                     + " ##");
 
             clientWaitingList.clear();
@@ -344,27 +353,26 @@ public class PerformanceTest {
             il = (IntegerLiteral) as.getValueExpression();
             il.setText(String.valueOf(numViews));
 
-//        eolModule.execute();
-            @SuppressWarnings("unchecked")
-            EolSet<String> affectedNodes = (EolSet<String>) eolModule.execute();
+            eolModule.execute();
 
             expectedViews = new HashSet<>();
             expectedViews.add("/");
             expectedViews.add("/Graph");
             expectedViews.add("/Graph/I0");
 
-            // initially, all views should be generated
-            if (!genAll) {
+            // if it's selective view generation
+            if (!PerformanceRecorder.genAll) {
+              // when the test is run for the first time, expect to receive all views
               if (iterationIndex == 1 && numViews == numbersOfAffectedViews[0]) {
                 for (int a = 0; a < numberOfNodes; a++) {
                   expectedViews.add("/Graph/N" + a);
                 }
-              } else {
+              } else { // otherwise check only the affected views
                 for (String item : affectedNodes) {
-                  expectedViews.add("/Graph/" + item);
+                  expectedViews.add(item);
                 }
               }
-            } else {
+            } else { // if generate all views
               for (int a = 0; a < numberOfNodes; a++) {
                 expectedViews.add("/Graph/N" + a);
               }
@@ -375,8 +383,13 @@ public class PerformanceTest {
             fos = new FileOutputStream(modelFile);
             emfModel.store(fos);
             fos.close();
-            Thread.sleep(100);
-            startTime = System.currentTimeMillis();
+//          Thread.sleep(100);
+            PerformanceRecorder.startTime = System.currentTimeMillis();
+
+            // wait until we get the paths of invalidated views
+            synchronized (invalidatedViewsWaiter) {
+              invalidatedViewsWaiter.wait();
+            }
 
             synchronized (clientWaitingList) {
               clientWaitingList.wait(5 * 60 * 1000);
@@ -398,27 +411,19 @@ public class PerformanceTest {
       outputFile.createNewFile();
 
       Files.write(Path.of(outputFile.toURI()),
-          ("genall,views,iteration,client,path,waittime,bytes" + System.lineSeparator()).getBytes(),
+          ("genall,views,iteration,client,path,waittime,bytes,type" + System.lineSeparator()).getBytes(),
           StandardOpenOption.APPEND);
 
-      for (GreedyVsSelectiveGenerationRecord record : greedyVsSelectiveGenerationRecords) {
-        String line = record.isGenAll() + "," + record.getNumOfAffectedView() + "," + record.getIteration()
-            + "," + record.getClient().getName() + "," + record.getPath() + "," + record.getDuration()
-            + "," + record.getPayloadSize() + System.lineSeparator();
+      for (PerformanceRecord record : PerformanceRecorder.getPerformanceRecords()) {
+        String line = ((record.isGenAll())? "all" : "N")  + "," + record.getNumOfInvalidatedViews() + "," + record.getIteration()
+            + "," + record.getClient() + "," + record.getPath() + "," + record.getDuration()
+            + "," + record.getPayloadSize() + "," + record.getType() + System.lineSeparator();
         Files.write(Path.of(outputFile.toURI()), line.getBytes(), StandardOpenOption.APPEND);
       }
 
     } catch (Exception e) {
       e.printStackTrace();
     }
-  }
-
-  public static List<GreedyVsSelectiveGenerationRecord> getGreedyVsSelectiveGenerationRecords() {
-    return greedyVsSelectiveGenerationRecords;
-  }
-
-  public static List<GeneratedVsCachedViewRecord> getGeneratedVsCachedViewRecords() {
-    return generatedVsCachedViewRecords;
   }
 
   /***
@@ -470,8 +475,8 @@ public class PerformanceTest {
         // connect
         session = stompClient.connect(PerformanceTest.WEB_SOCKET_ADDRESS, new StompSessionHandlerAdapter() {
           public void afterConnected(StompSession stompSession, StompHeaders stompHeaders) {
-            // System.out.println( "PICTO: " + Client.this.getName() + " connected with
-            // sessionId " + stompSession.getSessionId());
+            System.out.println(
+                "PICTO: " + Client.this.getName() + " connected with sessionId " + stompSession.getSessionId());
           }
         }).get();
 
@@ -489,65 +494,95 @@ public class PerformanceTest {
             try {
               // get and parse the payload into json
               JsonNode node = PerformanceTest.mapper.readTree(new String((byte[]) payload));
-              String type = node.get("content").textValue();
-              if (!"invalidatedviews".equals(type)) {
-                
+              String type = node.get("type").textValue();
+              if (!"newviews".equals(type)) {
+                return;
               }
-              
+
               String content = node.get("content").textValue();
-              String[] invalidatedViews = content.split(",");
+              List<String> invalidatedViews = PerformanceTest.mapper.readValue(content,
+                  new TypeReference<List<String>>() {
+                  });
+              long overallTime = System.currentTimeMillis() - PerformanceRecorder.startTime;
+              long responseTime = overallTime - PerformanceRecorder.detectionTime - PerformanceRecorder.loadingTime; 
               
-              for (String invalidatedView : invalidatedViews) {
-                // request the content
-                String expectedPath = invalidatedView;
-                String expectedFile = "/performance/graph.picto";
-                Map<String, String> parameters = new HashMap<>();
-                parameters.put("file", expectedFile);
-                parameters.put("path", expectedPath);
+              byte[] bytes = content.getBytes();
 
-                String pageAddress = PerformanceTest.PICTO_WEB_ADDRESS + TestUtil.getParamsString(parameters);
-                URL url = new URL(pageAddress);
-                HttpURLConnection httpConnection = (HttpURLConnection) url.openConnection();
-                httpConnection.setRequestProperty("accept", "application/json");
-                InputStream inputStream = httpConnection.getInputStream();
-                byte[] bytes = inputStream.readAllBytes();
-                long waitTime = (System.currentTimeMillis() - PerformanceTest.startTime);
+//              invalidatedViews.remove("/");
+//              
+//              invalidatedViews.sort(null);
+//              String invalidatedView = invalidatedViews.get(0); 
+//              String invalidatedView = "/Graph/N" + Client.this.getName().split("-")[1]; 
+                  
+//              String invalidatedView = "/";
+//              while ("/".equals(invalidatedView)) {
+//                invalidatedView = invalidatedViews.get(random.nextInt(invalidatedViews.size()));
+//              }
 
-                httpConnection.disconnect();
+//              // request the content
+//              String expectedPath = invalidatedView;
+//              String expectedFile = "/performance/graph.picto";
+//              Map<String, String> parameters = new HashMap<>();
+//              parameters.put("file", expectedFile);
+//              parameters.put("path", expectedPath);
 
-                // parse the content
-                JsonNode contentNode = PerformanceTest.mapper.readTree(new String((byte[]) bytes));
-                String path = contentNode.get("path").textValue();
+//              String pageAddress = PerformanceTest.PICTO_WEB_ADDRESS + TestUtil.getParamsString(parameters);
+//              URL url = new URL(pageAddress);
+//              HttpURLConnection httpConnection = (HttpURLConnection) url.openConnection();
+//
+//              httpConnection.setRequestProperty("accept", "application/json");
+//              long start = System.currentTimeMillis();
+//              InputStream inputStream = httpConnection.getInputStream();
+//              byte[] bytes = inputStream.readAllBytes();
+//              long end = System.currentTimeMillis();
+//              long responseTime = end - start;
+//              long overallTime = end - PerformanceRecorder.startTime;
+//              httpConnection.disconnect();
+//
+//              // parse the content
+//              JsonNode contentNode = PerformanceTest.mapper.readTree(new String((byte[]) bytes));
+//              String path = contentNode.get("path").textValue();
+//
+//              assertThat(path).isEqualTo(expectedPath);
+//
+              // record the response time, from requesting a view to receiving the view
+              PerformanceRecord record = new PerformanceRecord(PerformanceRecorder.genAll,
+                  PerformanceRecorder.genAlways,
+                  PerformanceRecorder.gloNumViews,
+                  PerformanceRecorder.gloNumIter, Client.this.getName(), "No Path",
+                  responseTime,
+                  bytes.length, PerformanceTestType.RESPONSE_TIME);
+              PerformanceRecorder.getPerformanceRecords().add(record);
 
-                // record the result
-                GreedyVsSelectiveGenerationRecord record = new GreedyVsSelectiveGenerationRecord(PerformanceTest.genAll,
-                    PerformanceTest.gloNumViews,
-                    PerformanceTest.gloNumIter, Client.this, path,
-                    waitTime,
-                    bytes.length);
-                PerformanceTest.greedyVsSelectiveGenerationRecords.add(record);
+              // record the overall time from changing a model file to receiving the view
+              record = new PerformanceRecord(PerformanceRecorder.genAll, PerformanceRecorder.genAlways,
+                  PerformanceRecorder.gloNumViews,
+                  PerformanceRecorder.gloNumIter, Client.this.getName(), "No Path",
+                  overallTime,
+                  bytes.length, PerformanceTestType.OVERALL_TIME);
+              PerformanceRecorder.getPerformanceRecords().add(record);
 
-//              System.out
-//                  .println("PICTO: " + genAll + ", " + gloNumViews + ", " + gloNumIter + ", " + Client.this.getName()
-//                      + " received " + path + " " + waitTime + " ms");
+//              receivedViews.add(path);
+              System.out
+                  .println("PICTO: Type " + PerformanceTestType.RESPONSE_TIME + ", GenAll "
+                      + PerformanceRecorder.genAll + ", N-views " + PerformanceRecorder.gloNumViews + ", Iter "
+                      + PerformanceRecorder.gloNumIter + ", " + Client.this.getName()
+                      + " received, path " + "No Path" + ", time " + overallTime + " ms");
+//                Thread.sleep(100);
 
-                receivedViews.add(path);
-              }
-              //---
+              // ---
             } catch (IOException e) {
               e.printStackTrace();
             }
 
-            if (receivedViews.equals(PerformanceTest.expectedViews)) {
-              synchronized (PerformanceTest.clientWaitingList) {
-                PerformanceTest.clientWaitingList.remove(Client.this.getName());
-                System.out.println("Waitlist size = " + PerformanceTest.clientWaitingList.size());
-                if (PerformanceTest.clientWaitingList.isEmpty()) {
-                  PerformanceTest.clientWaitingList.notify();
-                }
+            synchronized (PerformanceTest.clientWaitingList) {
+              PerformanceTest.clientWaitingList.remove(Client.this.getName());
+//              System.out.println("Waiting list = " + PerformanceTest.clientWaitingList);
+              if (PerformanceTest.clientWaitingList.isEmpty()) {
+                PerformanceTest.clientWaitingList.notify();
               }
-              receivedViews.clear();
             }
+//            receivedViews.clear();
 
             // ---
           }
@@ -566,7 +601,6 @@ public class PerformanceTest {
       } catch (InterruptedException | ExecutionException e) {
         e.printStackTrace();
       }
-      // System.out.println("End " + getName());
     }
 
     /***
@@ -619,18 +653,24 @@ public class PerformanceTest {
               if (size > 0) {
                 String receivedPath = node.get("path").textValue();
                 assertThat(receivedPath).isEqualTo(receivedPath);
-                System.out
-                    .println("PICTO: always generate " + PerformanceTest.genAlways + ", " + Client.this.getName()
-                        + ",  request "
-                        + (i + 1) + ", " + receivedPath + " "
-                        + " received, " + waitTime
-                        + " ms");
 
-                GeneratedVsCachedViewRecord record = new GeneratedVsCachedViewRecord(PerformanceTest.genAlways, i + 1,
-                    Client.this,
-                    receivedPath,
-                    waitTime, size);
-                PerformanceTest.generatedVsCachedViewRecords.add(record);
+                System.out
+                    .println("PICTO: Type " + PerformanceTestType.RESPONSE_TIME + ", GenAll "
+                        + PerformanceRecorder.genAll + ", N-views " + PerformanceRecorder.gloNumViews + ", Iter "
+                        + (i + 1) + ", " + Client.this.getName()
+                        + " received, path " + receivedPath + ", time " + waitTime + " ms");
+
+//                System.out
+//                    .println("PICTO: always generate " + PerformanceTest.genAlways + ", " + Client.this.getName()
+//                        + ",  request "
+//                        + (i + 1) + ", " + receivedPath + " "
+//                        + " received, " + waitTime
+//                        + " ms");
+
+                PerformanceRecord record = new PerformanceRecord(PerformanceRecorder.genAll,
+                    PerformanceRecorder.genAlways, numberOfNodes, i + 1,
+                    Client.this.getName(), receivedPath, waitTime, size, PerformanceTestType.RESPONSE_TIME);
+                PerformanceRecorder.getPerformanceRecords().add(record);
               }
 
             }

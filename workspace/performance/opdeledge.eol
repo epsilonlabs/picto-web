@@ -4,7 +4,7 @@ var numOfAffectedViews = 5;
 var graph = Graph.all().first();
 
 // get left node
-var leftNode = graph.nodes.selectOne(n | n.name.equals("I0"));
+var leftNode = graph.nodes.at(0);
 
 var affectedNodes = Set{};
 affectedNodes.add(leftNode.name);

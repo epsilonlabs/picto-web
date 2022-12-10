@@ -1,3 +1,13 @@
+/*********************************************************************
+* Copyright (c) 2008 The University of York.
+*
+* This program and the accompanying materials are made
+* available under the terms of the Eclipse Public License 2.0
+* which is available at https://www.eclipse.org/legal/epl-2.0/
+*
+* SPDX-License-Identifier: EPL-2.0
+**********************************************************************/
+
 package org.eclipse.epsilon.picto.incrementality;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -5,7 +15,7 @@ import static org.junit.Assert.assertTrue;
 
 import java.io.File;
 import java.util.Arrays;
-import java.util.Map;
+import java.util.Set;
 
 import org.eclipse.emf.common.util.EList;
 import org.eclipse.emf.common.util.URI;
@@ -26,6 +36,13 @@ import org.junit.jupiter.api.Test;
 
 import com.google.common.io.Files;
 
+/**
+ * The class is to test if Picto Web could detect accurately which views should
+ * be invalidated due certain changes in a model.
+ * 
+ * @author Alfa Yohannis
+ *
+ */
 class IncrementalityTest {
 
   private static File pictoFile;
@@ -42,7 +59,7 @@ class IncrementalityTest {
     PictoPackage.eINSTANCE.eClass();
   }
 
-  public Map<String, String> setUp(String pictoFileName, String modelFileName) throws Exception {
+  public Set<String> setUp(String pictoFileName, String modelFileName) throws Exception {
     pictoFile = new File(PictoApplication.WORKSPACE + pictoFileName);
     modelFile = new File(PictoApplication.WORKSPACE + modelFileName);
     modelFileBackup = new File(modelFile.getAbsolutePath() + ".backup");
@@ -55,7 +72,7 @@ class IncrementalityTest {
     Files.copy(modelFile, modelFileBackup);
 
     eglPictoSource = new WebEglPictoSource();
-    Map<String, String> result = eglPictoSource.generatePromises(modifiedFilePath,
+    Set<String> result = eglPictoSource.generatePromises(modifiedFilePath,
         PictoProject.createPictoProject(pictoFile), true);
 
     res = (new XMIResourceImpl(URI.createFileURI(modelFile.getAbsolutePath())));
@@ -64,7 +81,7 @@ class IncrementalityTest {
   }
 
   @AfterEach
-  void tearDown() throws Exception {  
+  void tearDown() throws Exception {
     accessRecordResource.clear();
     FileViewContentCache.clear();
     res.unload();
@@ -75,11 +92,11 @@ class IncrementalityTest {
 
   @Test
   void testGeneration() throws Exception {
-    Map<String, String> generatedViews = setUp(
+    Set<String> generatedViews = setUp(
         "socialnetwork/socialnetwork.model.picto",
         "socialnetwork/socialnetwork.model");
 
-    assertThat(generatedViews.keySet()).contains(
+    assertThat(generatedViews).contains(
         "/Social Network",
         "/Social Network/Alice",
         "/Social Network/Bob",
@@ -101,12 +118,11 @@ class IncrementalityTest {
 
       eglPictoSource = new WebEglPictoSource();
     } finally {
-      Map<String, String> generatedViews = eglPictoSource.generatePromises(modifiedFilePath,
+      Set<String> generatedViews = eglPictoSource.generatePromises(modifiedFilePath,
           PictoProject.createPictoProject(pictoFile), true);
-      Arrays.asList( //
-          "/families/Bicycle").stream().forEach(path -> {
-            assertTrue(generatedViews.keySet().contains(path));
-          });
+      Arrays.asList("/families/Bicycle").stream().forEach(path -> {
+        assertTrue(generatedViews.contains(path));
+      });
     }
   }
 
@@ -120,9 +136,9 @@ class IncrementalityTest {
     res.save(null);
 
     eglPictoSource = new WebEglPictoSource();
-    Map<String, String> generatedViews = eglPictoSource.generatePromises(modifiedFilePath,
+    Set<String> generatedViews = eglPictoSource.generatePromises(modifiedFilePath,
         PictoProject.createPictoProject(pictoFile), true);
-    assertThat(generatedViews.keySet()).contains(
+    assertThat(generatedViews).contains(
         "/Social Network",
         "/Social Network/Dan");
   }
@@ -136,10 +152,10 @@ class IncrementalityTest {
     res.save(null);
 
     eglPictoSource = new WebEglPictoSource();
-    Map<String, String> generatedViews = eglPictoSource.generatePromises(modifiedFilePath,
+    Set<String> generatedViews = eglPictoSource.generatePromises(modifiedFilePath,
         PictoProject.createPictoProject(pictoFile), true);
 
-    assertThat(generatedViews.keySet()).contains(
+    assertThat(generatedViews).contains(
         "/Social Network",
         "/Social Network/Alice",
         "/Stats",
@@ -161,10 +177,10 @@ class IncrementalityTest {
     res.save(null);
 
     eglPictoSource = new WebEglPictoSource();
-    Map<String, String> generatedViews = eglPictoSource.generatePromises(modifiedFilePath,
+    Set<String> generatedViews = eglPictoSource.generatePromises(modifiedFilePath,
         PictoProject.createPictoProject(pictoFile), true);
 
-    assertThat(generatedViews.keySet()).contains(
+    assertThat(generatedViews).contains(
         "/Social Network",
         "/Social Network/Alice",
         "/Stats",
@@ -197,9 +213,9 @@ class IncrementalityTest {
     res.save(null);
 
     eglPictoSource = new WebEglPictoSource();
-    Map<String, String> generatedViews = eglPictoSource.generatePromises(modifiedFilePath,
+    Set<String> generatedViews = eglPictoSource.generatePromises(modifiedFilePath,
         PictoProject.createPictoProject(pictoFile), true);
-    assertThat(generatedViews.keySet()).contains(
+    assertThat(generatedViews).contains(
         "/Social Network",
         "/Social Network/Alice",
         "/Social Network/Dan",
@@ -229,9 +245,9 @@ class IncrementalityTest {
     res.save(null);
 
     eglPictoSource = new WebEglPictoSource();
-    Map<String, String> generatedViews = eglPictoSource.generatePromises(modifiedFilePath,
+    Set<String> generatedViews = eglPictoSource.generatePromises(modifiedFilePath,
         PictoProject.createPictoProject(pictoFile), true);
-    assertThat(generatedViews.keySet()).contains(
+    assertThat(generatedViews).contains(
         "/Social Network",
         "/Social Network/Dan",
         "/Stats");
@@ -258,9 +274,9 @@ class IncrementalityTest {
     res.save(null);
 
     eglPictoSource = new WebEglPictoSource();
-    Map<String, String> generatedViews = eglPictoSource.generatePromises(modifiedFilePath,
+    Set<String> generatedViews = eglPictoSource.generatePromises(modifiedFilePath,
         PictoProject.createPictoProject(pictoFile), true);
-    assertThat(generatedViews.keySet()).contains(
+    assertThat(generatedViews).contains(
         "/Social Network",
         "/Social Network/Alice",
         "/Custom/Alice and Bob");
@@ -279,10 +295,10 @@ class IncrementalityTest {
     res.save(null);
 
     eglPictoSource = new WebEglPictoSource();
-    Map<String, String> generatedViews = eglPictoSource.generatePromises(modifiedFilePath,
+    Set<String> generatedViews = eglPictoSource.generatePromises(modifiedFilePath,
         PictoProject.createPictoProject(pictoFile), true);
 
-    assertThat(generatedViews.keySet())
+    assertThat(generatedViews)
         .as("Generated views from updating name to 'Bobby'")
         .contains("/Social Network", "/Social Network/Bobby");
 
@@ -292,10 +308,10 @@ class IncrementalityTest {
     res.save(null);
 
     eglPictoSource = new WebEglPictoSource();
-    Map<String, String> generatedViews2 = eglPictoSource.generatePromises(modifiedFilePath,
+    Set<String> generatedViews2 = eglPictoSource.generatePromises(modifiedFilePath,
         PictoProject.createPictoProject(pictoFile), true);
 
-    assertThat(generatedViews2.keySet())
+    assertThat(generatedViews2)
         .as("Generated views from deleting Bob")
         .contains("/Social Network", "/Social Network/Alice", "/Stats", "/Custom/Alice and Bob");
 
@@ -322,10 +338,10 @@ class IncrementalityTest {
     res.save(null);
 
     eglPictoSource = new WebEglPictoSource();
-    Map<String, String> generatedViews3 = eglPictoSource.generatePromises(modifiedFilePath,
+    Set<String> generatedViews3 = eglPictoSource.generatePromises(modifiedFilePath,
         PictoProject.createPictoProject(pictoFile), true);
 
-    assertThat(generatedViews3.keySet())
+    assertThat(generatedViews3)
         .as("Generated views from creating Dan")
         .contains("/Social Network", "/Social Network/Alice", "/Social Network/Dan", "/Stats", "/Custom/Alice and Bob");
 
@@ -348,10 +364,10 @@ class IncrementalityTest {
     res.save(null);
 
     eglPictoSource = new WebEglPictoSource();
-    Map<String, String> generatedViews4 = eglPictoSource.generatePromises(modifiedFilePath,
+    Set<String> generatedViews4 = eglPictoSource.generatePromises(modifiedFilePath,
         PictoProject.createPictoProject(pictoFile), true);
 
-    assertThat(generatedViews4.keySet())
+    assertThat(generatedViews4)
         .as("Generated views from creating Erin")
         .contains("/Social Network", "/Social Network/Erin", "/Stats");
   }

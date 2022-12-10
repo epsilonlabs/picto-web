@@ -13,14 +13,11 @@ import java.util.stream.Collectors;
 import org.eclipse.emf.ecore.EObject;
 import org.eclipse.emf.ecore.EStructuralFeature;
 import org.eclipse.emf.ecore.resource.Resource;
-import org.eclipse.emf.ecore.util.EcoreUtil;
 import org.eclipse.epsilon.egl.EgxModule;
 import org.eclipse.epsilon.emc.emf.AbstractEmfModel;
 import org.eclipse.epsilon.emc.emf.EmfModel;
-import org.eclipse.epsilon.eol.execute.context.Variable;
-import org.eclipse.epsilon.eol.models.IModel;
-import org.eclipse.epsilon.picto.LazyEgxModule.LazyGenerationRuleContentPromise;
 import org.eclipse.epsilon.picto.incrementality.IncrementalLazyEgxModule.IncrementalLazyGenerationRuleContentPromise;
+import org.eclipse.epsilon.picto.pictograph.State;
 
 public class AccessTableResource implements AccessRecordResource {
 
@@ -198,13 +195,11 @@ public class AccessTableResource implements AccessRecordResource {
 		});
 	}
 
-//	@Override
-//	public void updateStatusToProcessed(String path) {
-//		for (Access r : propertyAccessRecords.stream().filter(r -> path.equals(r.getPath()))
-//				.collect(Collectors.toList())) {
-//			r.setState(AccessState.PROCESSED);
-//		}
-//		System.console();
-//	}
+  @Override
+  public State getPathStatus(String pathString) {
+    // TODO Auto-generated method stub
+    return null;
+  }
+
 
 }

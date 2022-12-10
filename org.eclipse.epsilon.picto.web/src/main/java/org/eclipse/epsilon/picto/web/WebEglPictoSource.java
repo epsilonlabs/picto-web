@@ -1,3 +1,13 @@
+/*********************************************************************
+* Copyright (c) 2008 The University of York.
+*
+* This program and the accompanying materials are made
+* available under the terms of the Eclipse Public License 2.0
+* which is available at https://www.eclipse.org/legal/epl-2.0/
+*
+* SPDX-License-Identifier: EPL-2.0
+**********************************************************************/
+
 package org.eclipse.epsilon.picto.web;
 
 import java.io.File;
@@ -7,7 +17,6 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
-import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
@@ -58,7 +67,11 @@ import org.eclipse.epsilon.picto.incrementality.AccessRecordResource;
 import org.eclipse.epsilon.picto.incrementality.IncrementalLazyEgxModule;
 import org.eclipse.epsilon.picto.incrementality.IncrementalLazyEgxModule.IncrementalLazyGenerationRuleContentPromise;
 import org.eclipse.epsilon.picto.incrementality.IncrementalityUtil;
+import org.eclipse.epsilon.picto.pictograph.State;
 import org.eclipse.epsilon.picto.source.EglPictoSource;
+import org.eclipse.epsilon.picto.web.test.PerformanceRecord;
+import org.eclipse.epsilon.picto.web.test.PerformanceRecorder;
+import org.eclipse.epsilon.picto.web.test.PerformanceTestType;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -71,9 +84,9 @@ import com.fasterxml.jackson.databind.ObjectMapper;
  */
 public class WebEglPictoSource extends EglPictoSource {
 
-  public static boolean generateAll = true; // true for first time running
+  public static boolean generateAll1stTime = true; // true for first time running
 
-  public Map<String, String> generatePromises(String modifiedFilePath, PictoProject pictoProject) throws Exception {
+  public Set<String> generatePromises(String modifiedFilePath, PictoProject pictoProject) throws Exception {
     return this.generatePromises(modifiedFilePath, pictoProject, false);
   }
 
@@ -95,9 +108,11 @@ public class WebEglPictoSource extends EglPictoSource {
    * @throws Exception
    */
   @SuppressWarnings({ "unchecked", "deprecation", "null" })
-  public Map<String, String> generatePromises(String modifiedFilePath, PictoProject pictoProject,
+  public Set<String> generatePromises(String modifiedFilePath, PictoProject pictoProject,
       boolean fromFileWatcher) throws Exception {
-    Map<String, String> modifiedViewContents = new HashMap<>();
+
+
+    Set<String> modifiedViewContents = new HashSet<>();
     try {
 
       PictoView pictoView = new PictoView();
@@ -173,7 +188,7 @@ public class WebEglPictoSource extends EglPictoSource {
         if ("egx".equals(picto.getFormat())) {
 
           Set<String> toBeProcessedPaths = new HashSet<>();
-//
+
           /** PROPERTY ACCESS RECORDS **/
           ((IncrementalLazyEgxModule) module).startRecording();
           List<IncrementalLazyGenerationRuleContentPromise> promises = (List<IncrementalLazyGenerationRuleContentPromise>) module
@@ -188,6 +203,15 @@ public class WebEglPictoSource extends EglPictoSource {
            **/
           promises.addAll(handleCustomViews(picto, module, context, fs));
 
+          /** Calculate the loading time from a change on a file to getting promises **/
+          PerformanceRecorder.loadingTime = System.currentTimeMillis() - PerformanceRecorder.startTime;
+          PerformanceRecord record = new PerformanceRecord(PerformanceRecorder.genAll, PerformanceRecorder.genAlways,
+              PerformanceRecorder.gloNumViews,
+              PerformanceRecorder.gloNumIter, "Server", "No Path",
+              PerformanceRecorder.loadingTime,
+              0, PerformanceTestType.LOADING_TIME);
+          PerformanceRecorder.record(record);
+
           /** loop through the content promises of rules **/
           // System.out.println("\nGENERATING VIEWS: ");
           if (!PictoApplication.getModelModificationRegeneratesAllViews()) {
@@ -198,7 +222,7 @@ public class WebEglPictoSource extends EglPictoSource {
 
             String pathString = IncrementalityUtil.getPath(promise);
 
-             System.out.print("Processing " + pathString + " ... ");
+            System.out.print("Processing " + pathString + " ... ");
 
             ViewTree viewTree = generateViewTree(rootViewTree, promise);
 
@@ -208,33 +232,28 @@ public class WebEglPictoSource extends EglPictoSource {
 
             // Check if the path should be processed to generated new view.
             // Skip to next promise if path is not in the the toBeProcessedPaths.
-            if (!PictoApplication.getModelModificationRegeneratesAllViews()) {
+            if (!generateAll1stTime && !PictoApplication.getModelModificationRegeneratesAllViews()) {
               if (!toBeProcessedPaths.contains(pathString)) {
-                 System.out.println("SKIP");
+                System.out.println("SKIP");
                 continue;
               }
             }
 
-            // Immediately generates the final view of the UN-skipped path and put the view
-            // into the modified contents so that it can be immediately sent to the Broker
-            // server and then retrieved by clients.
-            String content = "";
-            if (fromFileWatcher) {
-//              System.out.println("FROM FILE");
-              long start = System.currentTimeMillis();
-              content = promiseView.getViewContent(null);
-              long delta = System.currentTimeMillis() - start;
-              System.out.print("[" + delta + " ms] ");
+            // Immediately generates the final view of a new, recently added view
+            // into the modified contents to help construct accessresource which is used
+            // to identify views affected by the last change.
+            State isNew = accessRecordResource.getPathStatus(pathString);
+            if (State.NEW.equals(isNew)) {
+              promiseView.getViewContent(null);
             }
-            modifiedViewContents.put(pathString, content);
+            modifiedViewContents.add(pathString);
 
             System.out.println("PROCESSED");
-
           }
 
 //          accessRecordResource.printIncrementalRecords();
           accessRecordResource.updateStatusToProcessed(toBeProcessedPaths);
-          generateAll = false;
+          generateAll1stTime = false;
 
           // System.out.println();
         }
@@ -265,18 +284,19 @@ public class WebEglPictoSource extends EglPictoSource {
 
         // generate JSON of the JsTree library (the tree panel on the client-side web
         // browser)
+
         PictoResponse pictoResponse = generateJsTreeData(pictoFilePath, rootViewTree);
         pictoResponse.setFilename(pictoFilePath);
         PromiseView promiseView = new PromiseView(pictoResponse);
         viewContentCache.putPromiseView(promiseView);
-        modifiedViewContents.put(promiseView.getPath(), promiseView.getViewContent());
+        modifiedViewContents.add(promiseView.getPath());
 
       } else {
         rootViewTree = createEmptyViewTree();
         PictoResponse pictoResponse = generateJsTreeData(pictoFilePath, rootViewTree);
         pictoResponse.setFilename(pictoFilePath);
         PromiseView promiseView = new PromiseView(pictoResponse);
-        modifiedViewContents.put(promiseView.getPath(), promiseView.getViewContent());
+        modifiedViewContents.add(promiseView.getPath());
       }
 
 //      if (fromFileWatcher) {
@@ -287,6 +307,19 @@ public class WebEglPictoSource extends EglPictoSource {
     } catch (Exception ex) {
       ex.printStackTrace();
     }
+
+    /** Calculate the detection time of invalidated views **/
+    PerformanceRecorder.detectionTime = System.currentTimeMillis() - PerformanceRecorder.startTime - PerformanceRecorder.loadingTime;
+    PerformanceRecord record = new PerformanceRecord(PerformanceRecorder.genAll, PerformanceRecorder.genAlways,
+        PerformanceRecorder.gloNumViews,
+        PerformanceRecorder.gloNumIter, "Server", "No Path",
+        PerformanceRecorder.detectionTime,
+        0, PerformanceTestType.DETECTION_TIME);
+    PerformanceRecorder.record(record);
+    
+    // Returning the modifiedViewContents to external components
+    PictoApplication.getPromisesGenerationListener().onGenerated(modifiedViewContents);
+
     return modifiedViewContents;
 
   }
@@ -337,7 +370,7 @@ public class WebEglPictoSource extends EglPictoSource {
    * @param pictoView
    * @throws Exception
    */
-  private void handleStaticViews(Map<String, String> modifiedViewContents, ViewTree rootViewTree, String pictoFilePath,
+  private void handleStaticViews(Set<String> modifiedViewContents, ViewTree rootViewTree, String pictoFilePath,
       PromiseViewCache viewContentCache, Picto picto, IEolModule module, PictoView pictoView)
       throws Exception {
     for (CustomView customView : picto.getCustomViews().stream().filter(cv -> cv.getSource() != null)
@@ -356,7 +389,7 @@ public class WebEglPictoSource extends EglPictoSource {
 
       PromiseView promiseView = new PromiseView(pictoFilePath, pictoView, vt);
       viewContentCache.putPromiseView(promiseView.getPath(), promiseView);
-      modifiedViewContents.put(promiseView.getPath(), promiseView.getViewContent());
+      modifiedViewContents.add(promiseView.getPath());
     }
   }
 

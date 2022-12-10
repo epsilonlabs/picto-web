@@ -3,12 +3,8 @@ var numOfAffectedViews = 5;
 // add edges
 var graph = Graph.all().first();
 
-// get right nodes
-var rightNodes = graph.nodes.select( n | n.name.startsWith("N")).asSet();
-//rightNodes.println();
-
 // get left node
-var leftNode = graph.nodes.selectOne(n | n.name.equals("I0"));
+var leftNode = graph.nodes.at(0);
 
 var affectedNodes = Set{};
 affectedNodes.add(leftNode.name);
@@ -16,7 +12,7 @@ affectedNodes.add(leftNode.name);
 var i = 0;
 while( i < numOfAffectedViews){
     //get right node
-    var rightNode = rightNodes.selectOne(n | n.name.equals("N" + i));
+    var rightNode = graph.nodes.at(i + 1);
     affectedNodes.add(rightNode.name);
     
     //add an edge between left and right nodes

@@ -11,7 +11,6 @@ import org.eclipse.epsilon.egl.EgxModule;
 import org.eclipse.epsilon.egl.dom.GenerationRule;
 import org.eclipse.epsilon.eol.dom.NameExpression;
 import org.eclipse.epsilon.eol.execute.introspection.recording.PropertyAccessRecorder;
-import org.eclipse.epsilon.picto.web.FileViewContentCache;
 
 public class AccessRecordRecorder extends PropertyAccessRecorder {
 
