@@ -1,3 +1,13 @@
+/*********************************************************************
+* Copyright (c) 2008 The University of York.
+*
+* This program and the accompanying materials are made
+* available under the terms of the Eclipse Public License 2.0
+* which is available at https://www.eclipse.org/legal/epl-2.0/
+*
+* SPDX-License-Identifier: EPL-2.0
+**********************************************************************/
+
 package org.eclipse.epsilon.picto.web.test;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -33,6 +43,7 @@ import org.eclipse.emf.ecore.xmi.XMIResource;
 import org.eclipse.emf.ecore.xmi.impl.XMIResourceImpl;
 import org.eclipse.epsilon.emc.emf.EmfUtil;
 import org.eclipse.epsilon.picto.dom.PictoPackage;
+import org.eclipse.epsilon.picto.web.FileWatcher;
 import org.eclipse.epsilon.picto.web.PictoApplication;
 import org.eclipse.epsilon.picto.web.PictoWebOnLoadedListener;
 import org.eclipse.epsilon.picto.web.component.TestUtil;
@@ -234,41 +245,43 @@ public class HTTPRequestTest {
     FileOutputStream fos = new FileOutputStream(modelFile);
     res.save(fos, res.getDefaultSaveOptions());
     fos.close();
+    Thread.sleep(100);
 
-    long waitTime = 3 * 1000;
-    
     synchronized (responseHolder) {
-      responseHolder.wait(waitTime);
+      responseHolder.wait();
     }
 
-    for (String jsonString : responseHolder.getResponseStrings()) {
+    Set<String> expectedNames = new HashSet<String>(Arrays.asList(new String[] { "Alice", "Bob", "Charlie", "Dan" }));
 
-      // get the json
-      JsonNode node = TestUtil.MAPPER.readTree(jsonString);
-      String path = node.get("path").textValue();
-      if ("/".equals(path)) {
-        continue;
-      }
+    String expectedPath = "/Social Network";
+    String expectedFile = "/socialnetwork/socialnetwork.model.picto";
 
-      Set<String> expectedNames = new HashSet<String>(Arrays.asList(new String[] { "Alice", "Bob", "Charlie", "Dan" }));
+    Map<String, String> parameters = new HashMap<>();
+    parameters.put("file", expectedFile);
+    parameters.put("path", expectedPath);
+    parameters.put("name", "Social Network");
 
-      String htmlString = node.get("content").textValue();
-      Document html = builder.parse(new InputSource(new StringReader(htmlString)));
+    String paramString = TestUtil.getParamsString(parameters);
+    String GET_URL = LOCALHOST + paramString;
 
-      XPath xPath = XPathFactory.newInstance().newXPath();
-      String expression = "//g[@class='node']/title";
-      NodeList elements = (NodeList) xPath.compile(expression).evaluate(html, XPathConstants.NODESET);
-      Set<String> actualNames = new HashSet<String>(TestUtil.toStringList(elements));
+    JsonNode node = TestUtil.requestView(GET_URL);
+    String content = node.get("content").textValue();
 
-      assertThat(actualNames).isSubsetOf(expectedNames);
-    }
-//     delete the modified model and restore the backup model
-//    FileWatcher.stopWatching();
+    Document html = builder.parse(new InputSource(new StringReader(content)));
+    XPath xPath = XPathFactory.newInstance().newXPath();
+    String expression = "//g[@class='node']/title";
+    NodeList elements = (NodeList) xPath.compile(expression).evaluate(html, XPathConstants.NODESET);
+    Set<String> actualNames = new HashSet<String>(TestUtil.toStringList(elements));
+
+    assertThat(actualNames).isSubsetOf(expectedNames);
+
+//  delete the modified model and restore the backup model
+    FileWatcher.stopWatching();
     modelFile.delete();
     Files.copy(modelFileBackup, modelFile);
     modelFileBackup.delete();
   }
-    
+
   /***
    * An internal handler class when connecting to the STOMP server.
    * 
@@ -284,9 +297,10 @@ public class HTTPRequestTest {
       System.out.println("Connected with sessionId " + stompSession.getSessionId());
     }
   }
-  
+
   /***
-   * A class to hold the json returned from Picto Web server 
+   * A class to hold the json returned from Picto Web server
+   * 
    * @author Alfa Yohannis
    *
    */
@@ -297,7 +311,7 @@ public class HTTPRequestTest {
       return jsonStrings;
     }
   }
-  
+
   /***
    * An internal handler class that handles the STOMP response from the server.
    * Using this class, we can get the values, the returned pages, returned from
@@ -333,12 +347,15 @@ public class HTTPRequestTest {
      */
     public void handleFrame(StompHeaders headers, Object payload) {
       answer.getResponseStrings().add((new String((byte[]) payload)));
+      synchronized (answer) {
+        answer.notify();
+      }
     }
+
   }
 
   public static DocumentBuilder getBuilder() {
     return builder;
   }
-  
-  
+
 }

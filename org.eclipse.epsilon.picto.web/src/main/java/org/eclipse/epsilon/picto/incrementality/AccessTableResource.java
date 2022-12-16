@@ -80,7 +80,7 @@ public class AccessTableResource implements AccessRecordResource {
 	}
 
 	@Override
-	public Set<String> getToBeProcessedPaths(List<IncrementalLazyGenerationRuleContentPromise> inProcessingPromises,
+	public Set<String> getInvalidatedViewPaths(List<IncrementalLazyGenerationRuleContentPromise> inProcessingPromises,
 			EgxModule module) {
 		Set<String> toBeProcessedPaths = new HashSet<String>();
 

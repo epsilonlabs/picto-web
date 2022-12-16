@@ -18,7 +18,7 @@ public interface AccessRecordResource {
 
   public void updateStatusToProcessed(Collection<String> paths);
 
-  public Set<String> getToBeProcessedPaths(List<IncrementalLazyGenerationRuleContentPromise> promises,
+  public Set<String> getInvalidatedViewPaths(List<IncrementalLazyGenerationRuleContentPromise> promises,
       EgxModule module);
 
   public void clear();

@@ -1,8 +1,5 @@
 package org.eclipse.epsilon.picto.incrementality; 
 
-import org.eclipse.epsilon.picto.pictograph.PictoGraph;
-import org.eclipse.epsilon.picto.pictograph.Entity;
-import org.eclipse.epsilon.picto.pictograph.InputEntity;
 import org.eclipse.epsilon.picto.pictograph.Path;
 import org.eclipse.epsilon.picto.pictograph.Module;
 import org.eclipse.epsilon.picto.pictograph.Resource;

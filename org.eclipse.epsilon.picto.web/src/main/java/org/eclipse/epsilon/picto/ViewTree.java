@@ -186,8 +186,8 @@ public class ViewTree {
   }
 
   public ViewContent getContent() {
+    ViewContent content = null;
     if (cachedContent == null) {
-
       if (promise == null) {
         cachedContent = new ViewContent(format, "", null, getLayers(), getPatches(), getBaseUris());
       } else {
@@ -204,13 +204,12 @@ public class ViewTree {
       }
     }
 
+    content = cachedContent;
+    // keep the cachedContent null to keep regenerate content
     if (PictoApplication.getEachRequestAlwaysRegeneratesView()) {
-      ViewContent[] temp = new ViewContent[] { cachedContent };
       cachedContent = null;
-      return temp[0];
-    } else {
-      return cachedContent;
-    }
+    } 
+    return content;
   }
 
   public List<Patch> getPatches() {

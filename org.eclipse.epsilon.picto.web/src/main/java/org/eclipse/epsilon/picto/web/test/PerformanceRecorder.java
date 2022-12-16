@@ -15,6 +15,7 @@
 package org.eclipse.epsilon.picto.web.test;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 /**
@@ -25,7 +26,7 @@ public class PerformanceRecorder {
 
   private static boolean isRecording = false;
   public static long fileChangeTime = 0;
-  private static List<PerformanceRecord> performanceRecords = new ArrayList<>();
+  private static List<PerformanceRecord> performanceRecords = Collections.synchronizedList(new ArrayList<>());
 
   public static void record(PerformanceRecord record) {
     if (isRecording)
@@ -52,9 +53,10 @@ public class PerformanceRecorder {
   public static boolean genAlways;
   public static boolean genAll;
   public static int gloNumIter;
-  public static int gloNumViews;
+  public static int globalNumberOfViews;
   public static long startTime;
   public static long detectionTime;
   public static long loadingTime;
+  public static int globalNumberOfNodes;
 
 }

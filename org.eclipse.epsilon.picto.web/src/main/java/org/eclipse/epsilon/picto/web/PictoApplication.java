@@ -1,3 +1,13 @@
+/*********************************************************************
+* Copyright (c) 2008 The University of York.
+*
+* This program and the accompanying materials are made
+* available under the terms of the Eclipse Public License 2.0
+* which is available at https://www.eclipse.org/legal/epl-2.0/
+*
+* SPDX-License-Identifier: EPL-2.0
+**********************************************************************/
+
 package org.eclipse.epsilon.picto.web;
 
 import java.io.File;
@@ -38,7 +48,7 @@ public class PictoApplication implements ApplicationListener<ApplicationContextE
    */
   public static String[] args;
 
-  private static boolean modelModificationRegeneratesAllViews = false;
+  private static boolean isViewsGenerationGreedy = false;
 
   private static boolean eachRequestAlwaysRegeneratesView = false;
 
@@ -122,12 +132,12 @@ public class PictoApplication implements ApplicationListener<ApplicationContextE
 //    }
   }
 
-  public static boolean getModelModificationRegeneratesAllViews() {
-    return modelModificationRegeneratesAllViews;
+  public static boolean isViewsGenerationGreedy() {
+    return isViewsGenerationGreedy;
   }
 
-  public static void setModelModificationRegeneratesAllViews(boolean modelModificationRegeneratesAllViews) {
-    PictoApplication.modelModificationRegeneratesAllViews = modelModificationRegeneratesAllViews;
+  public static void setViewsGenerationGreedy(boolean viewsGenerationIsGreedy) {
+    PictoApplication.isViewsGenerationGreedy = viewsGenerationIsGreedy;
   }
 
   public static boolean getEachRequestAlwaysRegeneratesView() {

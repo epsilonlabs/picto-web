@@ -13,7 +13,6 @@ package org.eclipse.epsilon.picto.incrementality;
 import java.io.File;
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.Collections;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
@@ -211,17 +210,18 @@ public class AccessGraphResource implements AccessRecordResource {
    * 
    */
   @Override
-  public Set<String> getToBeProcessedPaths(List<IncrementalLazyGenerationRuleContentPromise> inProcessingPromises,
+  public Set<String> getInvalidatedViewPaths(List<IncrementalLazyGenerationRuleContentPromise> inProcessingPromises,
       EgxModule module) {
-    Set<String> toBeProcessedPaths = new HashSet<String>();
+    Set<String> invalidatedViewPaths = new HashSet<String>();
     Set<String> toBeDeletedKeys = new HashSet<String>();
     Set<EObject> toBeDeletedElements = new HashSet<EObject>();
 
     for (IncrementalLazyGenerationRuleContentPromise promise : inProcessingPromises) {
       String checkedPath = IncrementalityUtil.getPath(promise);
-      checkPath(module, toBeProcessedPaths, toBeDeletedKeys, toBeDeletedElements, checkedPath);
+      checkPath(module, invalidatedViewPaths, toBeDeletedKeys, toBeDeletedElements, checkedPath);
     }
 
+    // run a new thread in the background to remove deleted elements from the indices and graph
     new Thread() {
       public void run() {
         // first, remove all the entries of the deleted elements
@@ -255,7 +255,8 @@ public class AccessGraphResource implements AccessRecordResource {
         }
       }
     }.start();
-    return toBeProcessedPaths;
+    
+    return invalidatedViewPaths;
   }
 
   // check if a path is affected by changes

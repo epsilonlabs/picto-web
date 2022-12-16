@@ -48,8 +48,6 @@ public class IncrementalLazyEgxModule extends LazyEgxModule {
 
     this.accessRecordResource = accessRecordResource;
 
-    this.getContext().setExecutorFactory(new IncrementalRuleExecutorFactory(accessRecordResource));
-
     // Create the property access recorder that will record
     // all the property access events in the EGX transformation
     propertyAccessRecorder = new AccessRecordRecorder(accessRecordResource);

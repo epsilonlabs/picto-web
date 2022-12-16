@@ -1,3 +1,13 @@
+/*********************************************************************
+* Copyright (c) 2008 The University of York.
+*
+* This program and the accompanying materials are made
+* available under the terms of the Eclipse Public License 2.0
+* which is available at https://www.eclipse.org/legal/epl-2.0/
+*
+* SPDX-License-Identifier: EPL-2.0
+**********************************************************************/
+
 package org.eclipse.epsilon.picto.web;
 
 import java.sql.Timestamp;
@@ -7,7 +17,8 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 
-import org.eclipse.epsilon.eol.models.IModel;
+import javax.annotation.Nonnull;
+
 import org.eclipse.epsilon.picto.PictoView;
 import org.eclipse.epsilon.picto.StaticContentPromise;
 import org.eclipse.epsilon.picto.ViewContent;
@@ -22,7 +33,7 @@ public class PromiseView {
 
   private PictoView pictoView;
   private String timestamp = Timestamp.from(Instant.now()).toString();
-  private boolean generate = true;
+  private boolean hasBeenGenerated = false;
   private String path;
   private String filename;
   private ViewTree viewTree;
@@ -55,14 +66,18 @@ public class PromiseView {
     return this.viewTree;
   }
 
+  @SuppressWarnings("null")
   public String getViewContent(String clientTimestamp) throws Exception {
 
     if (path.equals(FileViewContentCache.PICTO_TREE)) {
       return viewContent;
     }
 
+    System.out.print("Request " + this.path + " ... ");
+    
+    @Nonnull
     ViewContent vc = null;
-    if (generate || PictoApplication.getEachRequestAlwaysRegeneratesView()) {
+    if (hasBeenGenerated == false || PictoApplication.getEachRequestAlwaysRegeneratesView()) {
 
       if (viewTree.getPromise() instanceof StaticContentPromise) {
 
@@ -75,20 +90,13 @@ public class PromiseView {
             .getPromise())
             .getGenerationRule().getModule();
 
-//        System.out.println(this.toString() + " : " + this.path + " : " + module.toString() + " - " + clientTimestamp);
+        Future<ViewContent> result = promiseExecutor.submit(new GetViewContentTask(module, pictoView, viewTree));
+        vc = result.get();
 
-        
-          Future<ViewContent> result = promiseExecutor.submit(new GetViewContentTask(module, pictoView, viewTree));
-          vc = result.get();
-        
 //        module.startRecording();
 //        pictoView.renderView(viewTree);
 //        vc = viewTree.getContent().getFinal(pictoView);
 //        module.stopRecording();
-
-//        for (IModel model : module.getContext().getModelRepository().getModels()) {
-//          model.close();
-//        }
       }
 
       PictoResponse pictoResponse = new PictoResponse();
@@ -107,7 +115,10 @@ public class PromiseView {
       viewContent = new ObjectMapper().writerWithDefaultPrettyPrinter()
           .writeValueAsString(pictoResponse);
 
-      this.generate = false;
+      this.hasBeenGenerated = true;
+      System.out.println("(re)generated");
+    } else {
+      System.out.println("cache returned");
     }
 
     if (clientTimestamp != null && timestamp.compareTo(clientTimestamp) <= 0) {
@@ -125,7 +136,6 @@ public class PromiseView {
     return path;
   }
 
-  
   private static final ExecutorService promiseExecutor = Executors.newSingleThreadExecutor();
 
   public class GetViewContentTask implements Callable<ViewContent> {
@@ -150,4 +160,21 @@ public class PromiseView {
 
   }
 
+  public boolean hasBeenGenerated() {
+    return hasBeenGenerated;
+  }
+
+  public void setHasBeenGenerated(boolean hasBeenGenerated) {
+    this.hasBeenGenerated = hasBeenGenerated;
+  }
+
+  public String getEmptyViewContent() {
+    return emptyViewContent;
+  }
+
+  public void setEmptyViewContent(String emptyViewContent) {
+    this.emptyViewContent = emptyViewContent;
+  }
+  
+  
 }

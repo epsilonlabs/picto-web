@@ -17,8 +17,8 @@ public class PromiseViewCache {
     promiseViewMap.clear();
   }
 
-  public void putPromiseView(PromiseView promiseView) {
-    promiseViewMap.put(promiseView.getPath(), promiseView);
+  public PromiseView putPromiseView(PromiseView promiseView) {
+    return promiseViewMap.put(promiseView.getPath(), promiseView);
   }
 
   public void putPromiseView(String path, PromiseView promiseView) {

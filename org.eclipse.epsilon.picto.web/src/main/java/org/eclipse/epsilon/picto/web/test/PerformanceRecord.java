@@ -40,6 +40,7 @@ public class PerformanceRecord {
     this.duration = duration;
     this.payloadSize = payloadSize;
     this.type = type;
+    this.alwaysGenerate = alwaysGenerate;
   }
 
   public boolean isGenAll() {
@@ -74,7 +75,7 @@ public class PerformanceRecord {
    * @return
    */
   public boolean isAlwaysGenerated() {
-    return false;
+    return alwaysGenerate;
   }
 
   public String getType() {

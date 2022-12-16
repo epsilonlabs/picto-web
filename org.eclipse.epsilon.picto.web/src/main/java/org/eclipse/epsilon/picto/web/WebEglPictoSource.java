@@ -111,7 +111,6 @@ public class WebEglPictoSource extends EglPictoSource {
   public Set<String> generatePromises(String modifiedFilePath, PictoProject pictoProject,
       boolean fromFileWatcher) throws Exception {
 
-
     Set<String> modifiedViewContents = new HashSet<>();
     try {
 
@@ -187,7 +186,7 @@ public class WebEglPictoSource extends EglPictoSource {
 
         if ("egx".equals(picto.getFormat())) {
 
-          Set<String> toBeProcessedPaths = new HashSet<>();
+          Set<String> invalidatedViewPaths = new HashSet<>();
 
           /** PROPERTY ACCESS RECORDS **/
           ((IncrementalLazyEgxModule) module).startRecording();
@@ -206,18 +205,29 @@ public class WebEglPictoSource extends EglPictoSource {
           /** Calculate the loading time from a change on a file to getting promises **/
           PerformanceRecorder.loadingTime = System.currentTimeMillis() - PerformanceRecorder.startTime;
           PerformanceRecord record = new PerformanceRecord(PerformanceRecorder.genAll, PerformanceRecorder.genAlways,
-              PerformanceRecorder.gloNumViews,
+              PerformanceRecorder.globalNumberOfViews,
               PerformanceRecorder.gloNumIter, "Server", "No Path",
               PerformanceRecorder.loadingTime,
               0, PerformanceTestType.LOADING_TIME);
           PerformanceRecorder.record(record);
 
+          // if picto generation is not greedy a.k.a. selective.
+          if (!PictoApplication.isViewsGenerationGreedy()) {
+            long startTime = System.currentTimeMillis();
+            invalidatedViewPaths.addAll(accessRecordResource.getInvalidatedViewPaths(promises, (EgxModule) module));
+            /** Calculate the detection time of invalidated views **/
+            PerformanceRecorder.detectionTime = System.currentTimeMillis() - startTime;
+            PerformanceRecord r = new PerformanceRecord(PerformanceRecorder.genAll, PerformanceRecorder.genAlways,
+                PerformanceRecorder.globalNumberOfViews,
+                PerformanceRecorder.gloNumIter, "Server", "No Path",
+                PerformanceRecorder.detectionTime,
+                0, PerformanceTestType.DETECTION_TIME);
+            PerformanceRecorder.record(r);
+          }
+
           /** loop through the content promises of rules **/
           // System.out.println("\nGENERATING VIEWS: ");
-          if (!PictoApplication.getModelModificationRegeneratesAllViews()) {
-            toBeProcessedPaths.addAll(accessRecordResource.getToBeProcessedPaths(promises, (EgxModule) module));
-          }
-//
+          // generate view for each promises
           for (IncrementalLazyGenerationRuleContentPromise promise : promises) {
 
             String pathString = IncrementalityUtil.getPath(promise);
@@ -226,18 +236,32 @@ public class WebEglPictoSource extends EglPictoSource {
 
             ViewTree viewTree = generateViewTree(rootViewTree, promise);
 
-            // Replace the old promises with the new ones.
+            // Replace the old promises with the new ones. Replacement is required to ensure
+            // the same instances of resources, egx, and templates across the promises.
             PromiseView promiseView = new PromiseView(pictoFilePath, pictoView, viewTree);
-            viewContentCache.putPromiseView(promiseView);
+            PromiseView oldPromiseView = viewContentCache.putPromiseView(promiseView);
+
+            // if the generation is selective, copy the old contents to the new ones
+            // because we don't want to regenerate the views as they are same.
+            // although the promise views
+            if (!PictoApplication.isViewsGenerationGreedy() && oldPromiseView != null) {
+              promiseView.setHasBeenGenerated(oldPromiseView.hasBeenGenerated());
+              promiseView.setEmptyViewContent(oldPromiseView.getEmptyViewContent());
+              promiseView.setViewContent(oldPromiseView.getViewContent());
+            }
 
             // Check if the path should be processed to generated new view.
-            // Skip to next promise if path is not in the the toBeProcessedPaths.
-            if (!generateAll1stTime && !PictoApplication.getModelModificationRegeneratesAllViews()) {
-              if (!toBeProcessedPaths.contains(pathString)) {
+            // Skip to next promise if path is not in the invalidatedViewPaths.
+            if (!generateAll1stTime && !PictoApplication.isViewsGenerationGreedy()) {
+              if (!invalidatedViewPaths.contains(pathString)) {
                 System.out.println("SKIP");
                 continue;
               }
             }
+
+            // set the setHasBeenGenerated to false so that the invalidated view should be
+            // (re)generated when requested or the view is created for the first time
+            promiseView.setHasBeenGenerated(false);
 
             // Immediately generates the final view of a new, recently added view
             // into the modified contents to help construct accessresource which is used
@@ -251,8 +275,8 @@ public class WebEglPictoSource extends EglPictoSource {
             System.out.println("PROCESSED");
           }
 
-//          accessRecordResource.printIncrementalRecords();
-          accessRecordResource.updateStatusToProcessed(toBeProcessedPaths);
+//        accessRecordResource.printIncrementalRecords();
+          accessRecordResource.updateStatusToProcessed(invalidatedViewPaths);
           generateAll1stTime = false;
 
           // System.out.println();
@@ -299,24 +323,10 @@ public class WebEglPictoSource extends EglPictoSource {
         modifiedViewContents.add(promiseView.getPath());
       }
 
-//      if (fromFileWatcher) {
-//        for (IModel model : models) {
-//          model.dispose();
-//        }
-//      }
     } catch (Exception ex) {
       ex.printStackTrace();
     }
 
-    /** Calculate the detection time of invalidated views **/
-    PerformanceRecorder.detectionTime = System.currentTimeMillis() - PerformanceRecorder.startTime - PerformanceRecorder.loadingTime;
-    PerformanceRecord record = new PerformanceRecord(PerformanceRecorder.genAll, PerformanceRecorder.genAlways,
-        PerformanceRecorder.gloNumViews,
-        PerformanceRecorder.gloNumIter, "Server", "No Path",
-        PerformanceRecorder.detectionTime,
-        0, PerformanceTestType.DETECTION_TIME);
-    PerformanceRecorder.record(record);
-    
     // Returning the modifiedViewContents to external components
     PictoApplication.getPromisesGenerationListener().onGenerated(modifiedViewContents);
 

@@ -30,3 +30,4 @@ workspace/performance/data
 workspace/performance/backup
 workspace/performance/graph.model
 *.gz
+workspace/performance/graph - Copy.model

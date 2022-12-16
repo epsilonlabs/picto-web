@@ -19,7 +19,7 @@ public class SubscribeEventListener implements ApplicationListener<ApplicationEv
 //      System.out.println(headerAccessor.getSessionAttributes().get("sessionId").toString());
     } else if (event instanceof SessionDisconnectEvent) {
 //      SessionDisconnectEvent e = (SessionDisconnectEvent) event;
-//      System.console();
+//      System.out.println(event);
     }
 
   }

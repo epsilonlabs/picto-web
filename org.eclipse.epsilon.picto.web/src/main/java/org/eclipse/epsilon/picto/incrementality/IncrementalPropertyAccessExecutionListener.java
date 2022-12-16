@@ -9,11 +9,8 @@ import java.util.Map;
 import java.util.Set;
 import java.util.WeakHashMap;
 
-import org.eclipse.emf.ecore.EClass;
 import org.eclipse.emf.ecore.EObject;
-import org.eclipse.emf.ecore.EReference;
 import org.eclipse.emf.ecore.EStructuralFeature;
-import org.eclipse.emf.ecore.impl.DynamicEObjectImpl;
 import org.eclipse.epsilon.common.module.ModuleElement;
 import org.eclipse.epsilon.eol.dom.AssignmentStatement;
 import org.eclipse.epsilon.eol.dom.ExecutableBlock;
@@ -104,7 +101,6 @@ public class IncrementalPropertyAccessExecutionListener extends PropertyAccessEx
     else if (ast instanceof OperationCallExpression) {
       OperationCallExpression operationCallExpression = (OperationCallExpression) ast;
 
-      final Object modelElement = operationCallExpression.getTargetExpression();
       final String operationName = operationCallExpression.getNameExpression().getName();
 
       if (operationName.equals("add")) {

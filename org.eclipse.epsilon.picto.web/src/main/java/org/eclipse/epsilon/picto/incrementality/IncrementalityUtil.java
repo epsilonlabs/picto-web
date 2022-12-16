@@ -1,7 +1,6 @@
 package org.eclipse.epsilon.picto.incrementality;
 
 import java.security.MessageDigest;
-import java.security.NoSuchAlgorithmException;
 import java.util.Collection;
 
 import org.eclipse.epsilon.eol.execute.context.Variable;

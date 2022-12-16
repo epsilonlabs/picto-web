@@ -26,7 +26,6 @@ import org.eclipse.epsilon.picto.XmlHelper;
 import org.eclipse.epsilon.picto.transformers.elements.AbsoluteLinkElementTransformer;
 import org.eclipse.epsilon.picto.transformers.elements.AbsolutePathElementTransformer;
 import org.eclipse.epsilon.picto.transformers.elements.HtmlElementTransformer;
-import org.eclipse.epsilon.picto.transformers.elements.HtmlElementTransformerExtensionPointManager;
 import org.eclipse.epsilon.picto.transformers.elements.MermaidRendererHeadAppender;
 import org.eclipse.epsilon.picto.transformers.elements.MetroHeadAppender;
 import org.eclipse.epsilon.picto.transformers.elements.PictoViewElementTransformer;
@@ -77,7 +76,6 @@ public class HtmlContentTransformer implements ViewContentTransformer {
 		try {
 		    XmlHelper xmlHelper = new XmlHelper();
 			Document document = xmlHelper.parse(text);
-			String temp = xmlHelper.getXml(document);
 			
 			addZoom(document);
 			
