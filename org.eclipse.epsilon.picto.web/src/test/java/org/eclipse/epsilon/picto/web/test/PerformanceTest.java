@@ -81,8 +81,8 @@ import com.fasterxml.jackson.databind.ObjectMapper;
  */
 public class PerformanceTest {
 
-  static final String PICTO_WEB_ADDRESS = "http://localhost:8080/pictojson/picto?";
-  public static final String WEB_SOCKET_ADDRESS = "ws://localhost:8080/picto-web";
+  static final String PICTO_WEB_ADDRESS = "http://localhost:8081/pictojson/picto?";
+  public static final String WEB_SOCKET_ADDRESS = "ws://localhost:8081/picto-web";
   public static final String PICTO_FILE = "/performance/graph.picto";
   private static final String GRAPH_METAMODEL = "/performance/graph.ecore";
   private static final String GRAPH_MODEL = "/performance/graph.model";
