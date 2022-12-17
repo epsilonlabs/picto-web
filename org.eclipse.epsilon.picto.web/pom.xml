@@ -12,7 +12,7 @@
 
 	<groupId>epsilon.web</groupId>
 	<artifactId>picto</artifactId>
-	<version>0.0.1</version>
+	<version>0.1.1</version>
 	<name>picto</name>
 
 	<description>Picto Web</description>
