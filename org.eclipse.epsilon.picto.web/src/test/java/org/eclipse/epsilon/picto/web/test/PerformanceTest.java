@@ -246,7 +246,7 @@ public class PerformanceTest {
       // saving data to a file
       File outputFile = new File("data/cached.csv");
       if (!outputFile.getParentFile().exists())
-        outputFile.getParentFile().delete();
+        outputFile.getParentFile().mkdir();
       if (outputFile.exists())
         outputFile.delete();
       outputFile.createNewFile();
@@ -432,7 +432,7 @@ public class PerformanceTest {
       // saving data to a file
       File outputFile = new File("data/selective.csv");
       if (!outputFile.getParentFile().exists())
-        outputFile.getParentFile().delete();
+        outputFile.getParentFile().mkdir();
       if (outputFile.exists())
         outputFile.delete();
       outputFile.createNewFile();
