@@ -3,4 +3,5 @@
   <people xmi:id="1" name="Alice" likes="2"/>
   <people xmi:id="2" name="Bob"/>
   <people xmi:id="3" name="Charlie"/>
+  <people xmi:id="4" name="Dan"/>
 </SocialNetwork>

@@ -10,10 +10,9 @@
 		<relativePath /> <!-- lookup parent from repository -->
 	</parent>
 
-	<groupId>epsilon.web</groupId>
-	<artifactId>picto</artifactId>
-	<version>0.1.1</version>
-	<name>picto</name>
+	<groupId>epsilon.picto.web</groupId>
+	<version>0.1.1-alpha</version>
+	<name>Picto Web</name>
 
 	<description>Picto Web</description>
 	<properties>
@@ -245,4 +244,10 @@
 		</plugins>
 	</build>
 
+	<url>https://github.com/epsilonlabs/picto-web</url>
+	<artifactId>picto-web</artifactId>
+	<organization>
+		<name>EpsilonLabs, University of York</name>
+		<url>https://github.com/epsilonlabs/</url>
+	</organization>
 </project>
