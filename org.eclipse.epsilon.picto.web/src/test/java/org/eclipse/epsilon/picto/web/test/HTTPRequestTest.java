@@ -275,8 +275,13 @@ public class HTTPRequestTest {
 
     assertThat(actualNames).isSubsetOf(expectedNames);
 
-//  delete the modified model and restore the backup model
+//  close all connections, stop monitoring files, delete the modified model, and restore the backup model
+    session.disconnect();
+    sockJsClient.stop();
+    stompClient.stop();
+    
     FileWatcher.stopWatching();
+    
     modelFile.delete();
     Files.copy(modelFileBackup, modelFile);
     modelFileBackup.delete();
