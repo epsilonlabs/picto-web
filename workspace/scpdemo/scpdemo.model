@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="ASCII"?>
+<SocialNetwork xmlns="socialnetwork" xmi:id="0">
+  <people xmi:id="1" name="Abbey" likes="2 3" dislikes="4"/>
+  <people xmi:id="2" name="Bella" likes="1 3" dislikes="4"/>
+  <people xmi:id="3" name="Celine" likes="4"/>
+  <people xmi:id="4" name="Dan" dislikes="2 3"/>
+  <people xmi:id="5" name="Erin"/>
+</SocialNetwork>

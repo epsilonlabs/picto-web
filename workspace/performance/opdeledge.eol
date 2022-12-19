@@ -1,0 +1,18 @@
+var numOfAffectedViews = 5;  
+
+// add edges
+var graph = Graph.all().first();
+
+// get left node
+var leftNode = graph.nodes.at(0);
+
+var affectedNodes = Set{};
+affectedNodes.add(leftNode.name);
+
+while (leftNode.edges.size() > 0){
+    var edge = leftNode.edges.at(0);
+    affectedNodes.addAll(edge.nodes.collect(n | n.name));
+    delete edge;
+}
+
+return affectedNodes;

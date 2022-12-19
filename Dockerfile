@@ -4,12 +4,12 @@
 # docker push alfayohannisyorkacuk/picto-web:latest
 
 ### HOW TO RUN ON WINDOWS ###
-# docker run --rm -i -t -v %cd%:/workspace --hostname=picto -p 8080:8080 --name=picto picto-web
-# docker run --rm -i -t -v %cd%:/workspace --hostname=picto -p 8080:8080 --name=picto alfayohannisyorkacuk/picto-web
+# docker run --rm -i -t -v %cd%:/workspace --hostname=picto -p 8081:8081 --name=picto picto-web
+# docker run --rm -i -t -v %cd%:/workspace --hostname=picto -p 8081:8081 --name=picto alfayohannisyorkacuk/picto-web
 
 ### HOW TO RUN ON LINUX ###
-# docker run --rm -i -t -v $PWD:/workspace --hostname=picto -p 8080:8080 --name=picto picto-web
-# docker run --rm -i -t -v $PWD:/workspace --hostname=picto -p 8080:8080 --name=picto alfayohannisyorkacuk/picto-web
+# docker run --rm -i -t -v $PWD:/workspace --hostname=picto -p 8081:8081 --name=picto picto-web
+# docker run --rm -i -t -v $PWD:/workspace --hostname=picto -p 8081:8081 --name=picto alfayohannisyorkacuk/picto-web
 
 FROM maven:3-openjdk-11 AS build
 

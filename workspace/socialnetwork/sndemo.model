@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="ASCII"?>
+<SocialNetwork xmi:version="2.0" xmlns:xmi="http://www.omg.org/XMI" xmlns="socialnetwork" xmi:id="0">
+  <people xmi:id="1" name="Alice" likes="2 3"/>
+  <people xmi:id="2" name="Bob" likes="1" dislikes="3"/>
+  <people xmi:id="3" name="Charlie" likes="1" dislikes="_kPYmwH7YEe2QxrrzAnU4pg"/>
+  <people xmi:id="_kPYmwH7YEe2QxrrzAnU4pg" name="Dawn" likes="1"/>
+</SocialNetwork>

@@ -1,11 +1,9 @@
 package org.eclipse.epsilon.picto.web;
 
-import java.sql.Timestamp;
-import java.time.Instant;
-
 public class PictoResponse {
 
-  private String timestamp = Timestamp.from(Instant.now()).toString();
+//  private String hash;
+  private String timestamp;
   private String filename;
   private String path;
   private String type;
@@ -13,7 +11,11 @@ public class PictoResponse {
 
   public PictoResponse() {
   }
-  
+
+  public void setTimestamp(String timestamp) {
+    this.timestamp = timestamp;
+  }
+
   public String getTimestamp() {
     return timestamp;
   }
@@ -53,5 +55,13 @@ public class PictoResponse {
   public void setType(String type) {
     this.type = type;
   }
+
+//  public String getHash() {
+//    return hash;
+//  }
+//
+//  public void setHash(String hash) {
+//    this.hash = hash;
+//  }
 
 }

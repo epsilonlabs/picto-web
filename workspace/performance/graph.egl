@@ -1,0 +1,13 @@
+digraph G {
+  node[shape=circle, width=0.5, fixedsize=true, fontname=Tahoma, fontsize=8, style="filled", fillcolor="#dddddd"]
+  edge[penwidth=2 arrowhead=none, fontname=Tahoma, fontsize=10 ]
+[% for (node in nodes) { %]
+  [%=node.name%] [label=<<table border="0"><tr><td href="javascript:top.showView([ 'Graph', '[%=node.name%]' ])" tooltip="Go to [%=node.name%]">[%=node.name%]</td></tr></table>>]
+[% } %]
+
+[% for (edge in edges) { %]
+[%   if (edge.nodes.size() == 2) { %]
+  [%=edge.nodes.get(0).name%] -> [%=edge.nodes.get(1).name%] [label="[%=edge.nodes.get(0).name%]-[%=edge.nodes.get(1).name%]", fontname=Tahoma, fontsize=8]
+[%   } %]
+[% } %]
+}

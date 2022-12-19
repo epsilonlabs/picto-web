@@ -13,12 +13,10 @@ import java.nio.file.WatchEvent;
 import java.nio.file.WatchKey;
 import java.nio.file.WatchService;
 import java.util.HashMap;
-
-import javax.annotation.PreDestroy;
+import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.messaging.handler.annotation.MessageMapping;
-import org.springframework.stereotype.Component;
 
 /***
  * Monitor file changes.
@@ -27,7 +25,6 @@ import org.springframework.stereotype.Component;
  *
  */
 
-@Component
 public class FileWatcher extends Thread {
 
   public static FileWatcher FILE_WATCHER;
@@ -36,7 +33,6 @@ public class FileWatcher extends Thread {
   public PictoJsonController pictoJsonController;
 
   private boolean isRunning = false;
-  private boolean isPaused = false;
 
   private WatchService watcher;
 
@@ -50,17 +46,9 @@ public class FileWatcher extends Thread {
   }
 
   public void terminate() throws IOException {
+    isRunning = false;
     if (watcher != null)
       watcher.close();
-    isRunning = false;
-  }
-
-  private void pause() {
-    isPaused = true;
-  }
-
-  private void unpause() {
-    isPaused = false;
   }
 
   @MessageMapping("/gs-guide-websocket")
@@ -68,13 +56,14 @@ public class FileWatcher extends Thread {
     if (this.pictoJsonController != null) {
       this.pictoJsonController.sendChangesToBroker(modifiedFile);
     } else {
-      System.out.println("No PictoJsonController attached");
+      // System.out.println("No PictoJsonController attached");
     }
   }
 
   @Override
   public void run() {
     try {
+//      // System.out.println("YYYYY");
       HashMap<WatchKey, Path> keys = new HashMap<WatchKey, Path>();
       watcher = FileSystems.getDefault().newWatchService();
       registerDirectory(watcher, PictoApplication.WORKSPACE, keys);
@@ -83,45 +72,48 @@ public class FileWatcher extends Thread {
 
       while (isRunning) {
 
-        if (isPaused) {
-          continue;
-        }
-
         WatchKey key;
         Path path;
         try {
           key = watcher.take();
+          Thread.sleep(100);
           path = keys.get(key);
+//          // System.out.println("XXX: " + path);
           if (path == null) {
             System.err.println("WatchKey not recognized!!");
             continue;
           }
-        } catch (InterruptedException ex) {
+        } catch (Exception ex) {
+          // ex.printStackTrace();
           return;
         }
 
-        for (WatchEvent<?> event : key.pollEvents()) {
-//					WatchEvent.Kind<?> kind = event.kind();
-//					System.out.println(kind);
-
+        List<WatchEvent<?>> events = key.pollEvents();
+        for (WatchEvent<?> event : events) {
+          
           @SuppressWarnings("unchecked")
           WatchEvent<Path> ev = (WatchEvent<Path>) event;
           Path filePath = ev.context();
 
-          if (filePath.toString().endsWith(".picto") || filePath.toString().endsWith(".egx")
-              || filePath.toString().endsWith(".egl") || filePath.toString().endsWith(".flexmi")
+          if (filePath.toString().endsWith(".picto")
+//              || filePath.toString().endsWith(".egx")
+//              || filePath.toString().endsWith(".egl") 
+              || filePath.toString().endsWith(".flexmi")
               || filePath.toString().endsWith(".model") || filePath.toString().endsWith(".emf")
               || filePath.toString().endsWith(".xmi")) {
-            System.out.println("Picto: " + filePath + " has changed!!!");
+            // // System.out.println("Picto: " + filePath + " has changed!!!");
 
+            
             File modifiedFile = new File(path.toString() + File.separator + filePath.toString());
+            
+//            // System.out.println("Modified file: " + modifiedFile.getAbsolutePath());
             this.notifyFileChange(modifiedFile);
           }
         }
 
         boolean valid = key.reset();
         if (!valid) {
-          System.out.println("Picto: FileWatcher is not valid anymore!");
+          // System.out.println("Picto: FileWatcher is not valid anymore!");
           break;
         }
 
@@ -137,14 +129,28 @@ public class FileWatcher extends Thread {
     Path dir = Paths.get(directory).toAbsolutePath();
     WatchKey key = dir.register(watcher, ENTRY_CREATE, ENTRY_DELETE, ENTRY_MODIFY);
     keys.put(key, dir);
-    System.out.println("PICTO: Watch Service registered for dir: " + dir);
+    // System.out.println("PICTO: Watch Service registered for dir: " + dir);
 
     File file = new File(directory);
     for (File f : file.listFiles()) {
       if (f.isDirectory()) {
         registerDirectory(watcher, f.getAbsolutePath(), keys);
       }
+    }
+  }
+
+  public static void scanPictoFiles() throws Exception {
+    scanPictoFiles(PictoApplication.WORKSPACE);
+  }
+
+  private static void scanPictoFiles(String directory) throws Exception {
+    File file = new File(directory);
+    for (File f : file.listFiles()) {
+      if (f.isDirectory()) {
+        scanPictoFiles(f.getAbsolutePath());
+      }
       if (f.isFile() && f.getName().endsWith(".picto")) {
+        // System.out.println("PICTO: Found Picto file: " + file.getAbsolutePath());
         PictoProject.createPictoProject(f);
       }
     }
@@ -176,34 +182,10 @@ public class FileWatcher extends Thread {
     FILE_WATCHER.start();
   }
 
-  public static void pauseWatching() {
-    if (FILE_WATCHER == null)
-      FILE_WATCHER = new FileWatcher();
-    FILE_WATCHER.pause();
-  }
-
-  public static void resumeWatching() {
-    if (FILE_WATCHER == null)
-      FILE_WATCHER = new FileWatcher();
-    FILE_WATCHER.unpause();
-  }
-
-  public static void stopWatching() throws IOException {
-    if (FILE_WATCHER != null)
+  public static void stopWatching() throws IOException, InterruptedException {
+    if (FILE_WATCHER != null) {
       FILE_WATCHER.terminate();
-  }
-
-  @PreDestroy
-  public void destroy() {
-
-    try {
-      System.out.println("Terminating FileWatcher ...");
-      FileWatcher.stopWatching();
-      System.out.println("FileWatcher stopped.");
-    } catch (IOException e) {
-      System.out.println("Error while stopping FileWacher.");
-      e.printStackTrace();
+      FILE_WATCHER = null;
     }
-
   }
 }

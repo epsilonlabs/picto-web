@@ -9,7 +9,6 @@
 **********************************************************************/
 package org.eclipse.epsilon.picto.transformers.elements;
 
-import org.eclipse.core.runtime.IConfigurationElement;
 //import org.eclipse.epsilon.common.dt.extensions.ExtensionPointManager;
 
 public class HtmlElementTransformerExtensionPointManager /*extends ExtensionPointManager<HtmlElementTransformer>*/ {

@@ -13,13 +13,11 @@ import java.util.stream.Collectors;
 import org.eclipse.emf.ecore.EObject;
 import org.eclipse.emf.ecore.EStructuralFeature;
 import org.eclipse.emf.ecore.resource.Resource;
-import org.eclipse.emf.ecore.util.EcoreUtil;
 import org.eclipse.epsilon.egl.EgxModule;
 import org.eclipse.epsilon.emc.emf.AbstractEmfModel;
 import org.eclipse.epsilon.emc.emf.EmfModel;
-import org.eclipse.epsilon.eol.execute.context.Variable;
-import org.eclipse.epsilon.eol.models.IModel;
-import org.eclipse.epsilon.picto.LazyEgxModule.LazyGenerationRuleContentPromise;
+import org.eclipse.epsilon.picto.incrementality.IncrementalLazyEgxModule.IncrementalLazyGenerationRuleContentPromise;
+import org.eclipse.epsilon.picto.pictograph.State;
 
 public class AccessTableResource implements AccessRecordResource {
 
@@ -34,25 +32,25 @@ public class AccessTableResource implements AccessRecordResource {
 	public void updatePath(String modulePath, String ruleName, String contextResourceUri, String contextObjectId,
 			String path) {
 		propertyAccessRecords.stream()
-				.filter(r -> Util.equals(r.getModulePath(), modulePath)
-						&& Util.equals(r.getGenerationRuleName(), ruleName)
-						&& Util.equals(r.getContextResourceUri(), contextResourceUri)
-						&& Util.equals(r.getContextObjectId(), contextObjectId))
+				.filter(r -> IncrementalityUtil.equals(r.getModulePath(), modulePath)
+						&& IncrementalityUtil.equals(r.getGenerationRuleName(), ruleName)
+						&& IncrementalityUtil.equals(r.getContextResourceUri(), contextResourceUri)
+						&& IncrementalityUtil.equals(r.getContextObjectId(), contextObjectId))
 				.forEach(r -> r.setPath(path));
 	}
 
 	@Override
 	public void add(AccessRecord propertyAccessRecord) {
 		List<AccessRecord> records = propertyAccessRecords.stream()
-				.filter(r -> Util.equals(r.getModulePath(), propertyAccessRecord.getModulePath())
-						&& Util.equals(r.getTemplatePath(), propertyAccessRecord.getTemplatePath())
-						&& Util.equals(r.getGenerationRuleName(), propertyAccessRecord.getGenerationRuleName())
-						&& Util.equals(r.getContextResourceUri(), propertyAccessRecord.getContextResourceUri())
-						&& Util.equals(r.getContextObjectId(), propertyAccessRecord.getContextObjectId())
-						&& Util.equals(r.getElementResourceUri(), propertyAccessRecord.getElementResourceUri())
-						&& Util.equals(r.getElementObjectId(), propertyAccessRecord.getElementObjectId())
-						&& Util.equals(r.getPropertyName(), propertyAccessRecord.getPropertyName())
-						&& Util.equals(r.getPath(), propertyAccessRecord.getPath()))
+				.filter(r -> IncrementalityUtil.equals(r.getModulePath(), propertyAccessRecord.getModulePath())
+						&& IncrementalityUtil.equals(r.getTemplatePath(), propertyAccessRecord.getTemplatePath())
+						&& IncrementalityUtil.equals(r.getGenerationRuleName(), propertyAccessRecord.getGenerationRuleName())
+						&& IncrementalityUtil.equals(r.getContextResourceUri(), propertyAccessRecord.getContextResourceUri())
+						&& IncrementalityUtil.equals(r.getContextObjectId(), propertyAccessRecord.getContextObjectId())
+						&& IncrementalityUtil.equals(r.getElementResourceUri(), propertyAccessRecord.getElementResourceUri())
+						&& IncrementalityUtil.equals(r.getElementObjectId(), propertyAccessRecord.getElementObjectId())
+						&& IncrementalityUtil.equals(r.getPropertyName(), propertyAccessRecord.getPropertyName())
+						&& IncrementalityUtil.equals(r.getPath(), propertyAccessRecord.getPath()))
 				.collect(Collectors.toList());
 		if (records.size() > 0) {
 			for (AccessRecord record : records) {
@@ -82,12 +80,12 @@ public class AccessTableResource implements AccessRecordResource {
 	}
 
 	@Override
-	public Set<String> getToBeProcessedPaths(List<LazyGenerationRuleContentPromise> inProcessingPromises,
+	public Set<String> getInvalidatedViewPaths(List<IncrementalLazyGenerationRuleContentPromise> inProcessingPromises,
 			EgxModule module) {
 		Set<String> toBeProcessedPaths = new HashSet<String>();
 
-		for (LazyGenerationRuleContentPromise promise : inProcessingPromises) {
-			String checkedPath = Util.getPath(promise);
+		for (IncrementalLazyGenerationRuleContentPromise promise : inProcessingPromises) {
+			String checkedPath = IncrementalityUtil.getPath(promise);
 			System.out.println(checkedPath);
 
 			if (checkedPath.equals("/Social Network/Alice")) {
@@ -161,7 +159,7 @@ public class AccessTableResource implements AccessRecordResource {
 
 						// check if the view of the path contains object with a changed property
 						String currentValue = AccessRecord.convertValueToString(currentValueObject);
-						if (!Util.equals(previousValue, currentValue)) {
+						if (!IncrementalityUtil.equals(previousValue, currentValue)) {
 							toBeProcessedPaths.add(checkedPath);
 						}
 					}
@@ -197,13 +195,11 @@ public class AccessTableResource implements AccessRecordResource {
 		});
 	}
 
-//	@Override
-//	public void updateStatusToProcessed(String path) {
-//		for (Access r : propertyAccessRecords.stream().filter(r -> path.equals(r.getPath()))
-//				.collect(Collectors.toList())) {
-//			r.setState(AccessState.PROCESSED);
-//		}
-//		System.console();
-//	}
+  @Override
+  public State getPathStatus(String pathString) {
+    // TODO Auto-generated method stub
+    return null;
+  }
+
 
 }

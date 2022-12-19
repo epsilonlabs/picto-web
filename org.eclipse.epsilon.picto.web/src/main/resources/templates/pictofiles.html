@@ -1,6 +1,14 @@
 <!DOCTYPE HTML>
-<html xmlns:th="http://www.thymeleaf.org">
+<!--
+Copyright (c) 2008 The University of York.
 
+This program and the accompanying materials are made
+available under the terms of the Eclipse Public License 2.0
+which is available at https://www.eclipse.org/legal/epl-2.0/
+
+SPDX-License-Identifier: EPL-2.0
+-->
+<html xmlns:th="http://www.thymeleaf.org">
 <head>
   <title>Picto Web Workspace</title>
   <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
@@ -23,22 +31,8 @@
 
   <script th:inline="javascript">
     var pictofiles = [[${pictofiles}]];
-    console.log(pictofiles);
+    // console.log(pictofiles);
     var workspace = Picto.listToJsTreeData(pictofiles);
-
-    /*var workspace = [
-      {
-        "text": "egldoc", "children": [
-          {"text": "egldoc-standalone.picto"},
-        ],
-      },
-      {
-        "text": "socialnetwork", "children": [
-          {"text": "socialnetwork.model.picto"},
-          {"text": "socialnetwork-standalone.picto"}
-        ],
-      }
-    ];*/
 
     /** JsTree **/
     var jsTreeConfig = {
@@ -69,9 +63,9 @@
       if (data.selected.length) {
         var path = Picto.getSelectedViewPath(data);
         if (path.endsWith(".picto")) {
-          console.log(path);
+          // console.log(path);
           var url = 'picto?file=' + path;
-          console.log(url);
+          // console.log(url);
           window.open(url, '_blank');
         }
       }
@@ -82,27 +76,19 @@
       if (to) {clearTimeout(to);}
       to = setTimeout(function () {
         var v = $('#searchTree').val();
-        console.log(v);
+        // console.log(v);
         $('#tree').jstree(true).search(v, false, true);
       }, 250);
     });
 
     $('#tree').on("show_contextmenu.jstree", function (event, data) {
-      console.log(event);
-      console.log(data);
+      // console.log(event);
+      // console.log(data);
     });
 
 
 
   </script>
-  <!-- <h1>Picto Files</h1>
-  <ol>
-    <span th:each="pictofile: ${pictofiles}">
-      <li>
-        <a th:text="${pictofile}" target="_blank" th:href="'picto?file=' + ${pictofile}"></a>
-      </li>
-      </span>
-  </ol>-->
 </body>
 
 </html>

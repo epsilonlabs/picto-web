@@ -1,13 +1,28 @@
+/*********************************************************************
+* Copyright (c) 2008 The University of York.
+*
+* This program and the accompanying materials are made
+* available under the terms of the Eclipse Public License 2.0
+* which is available at https://www.eclipse.org/legal/epl-2.0/
+*
+* SPDX-License-Identifier: EPL-2.0
+**********************************************************************/
+
 package org.eclipse.epsilon.picto.web;
 
 import java.io.File;
+import java.io.IOException;
 import java.util.ArrayList;
-import java.util.HashSet;
 import java.util.List;
-import java.util.Set;
 
+import org.eclipse.epsilon.picto.dom.PictoFactory;
+import org.eclipse.epsilon.picto.dom.PictoPackage;
+import org.springframework.boot.ExitCodeGenerator;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
+import org.springframework.context.ApplicationListener;
+import org.springframework.context.ConfigurableApplicationContext;
+import org.springframework.context.event.ApplicationContextEvent;
 
 /***
  * The main class for Picto Web Application
@@ -16,7 +31,7 @@ import org.springframework.boot.autoconfigure.SpringBootApplication;
  *
  */
 @SpringBootApplication
-public class PictoApplication {
+public class PictoApplication implements ApplicationListener<ApplicationContextEvent> {
 
   /***
    * Define the relative workspace target
@@ -33,9 +48,27 @@ public class PictoApplication {
    */
   public static String[] args;
 
-  private Set<File> modelFiles = new HashSet<File>();
+  private static boolean isViewsGenerationGreedy = false;
+
+  private static boolean eachRequestAlwaysRegeneratesView = false;
 
   private static List<PictoProject> pictoProjects = new ArrayList<PictoProject>();
+
+  private static ConfigurableApplicationContext context;
+
+  private static PictoWebOnLoadedListener pictoWebOnLoadedListener = new PictoWebOnLoadedListener() {
+    @Override
+    public void onLoaded() {
+    }
+  };
+
+  private static PromisesGenerationListener promisesGenerationListener = new PromisesGenerationListener() {
+    @Override
+    public void onGenerated(java.util.Set<String> invalidatedViews) {
+    };
+  };
+
+
 
   /***
    * Initialise Picto Application
@@ -53,13 +86,16 @@ public class PictoApplication {
    * Main program launcher
    * 
    * @param args
+   * @throws Exception
    */
-  public static void main(String[] args) {
+  public static void main(String[] args) throws Exception {
     PictoApplication.args = args;
-    
-    // run the Spring application
-    SpringApplication.run(PictoApplication.class, args);
+    context = SpringApplication.run(PictoApplication.class, args);
+    PictoFactory.eINSTANCE.eClass();
+    PictoPackage.eINSTANCE.eClass();
+    FileWatcher.scanPictoFiles();
     FileWatcher.startWatching();
+    pictoWebOnLoadedListener.onLoaded();
   }
 
   /**
@@ -68,5 +104,57 @@ public class PictoApplication {
   public static List<PictoProject> getPictoProjects() {
     return pictoProjects;
   }
+
+  public static void exit() throws IOException, InterruptedException {
+    FileWatcher.stopWatching();
+    SpringApplication.exit(context, new ExitCodeGenerator() {
+      @Override
+      public int getExitCode() {
+        return 0;
+      }
+    });
+  }
+
+  public static void setPictoWebOnLoadedListener(PictoWebOnLoadedListener listener) {
+    PictoApplication.pictoWebOnLoadedListener = listener;
+  }
+
+  @Override
+  public void onApplicationEvent(ApplicationContextEvent event) {
+//    if (event instanceof ContextStartedEvent) {
+//      System.out.println("PICTO: started - " + Timestamp.from(Instant.now()).toString());
+//    } else if (event instanceof ContextRefreshedEvent) {
+//      System.out.println("PICTO: loaded - " + Timestamp.from(Instant.now()).toString());
+//    } else if (event instanceof ContextStoppedEvent) {
+//      System.out.println("PICTO: stopped - " + Timestamp.from(Instant.now()).toString());
+//    } else if (event instanceof ContextClosedEvent) {
+//      System.out.println("PICTO: context closed - " + Timestamp.from(Instant.now()).toString());
+//    }
+  }
+
+  public static boolean isViewsGenerationGreedy() {
+    return isViewsGenerationGreedy;
+  }
+
+  public static void setViewsGenerationGreedy(boolean viewsGenerationIsGreedy) {
+    PictoApplication.isViewsGenerationGreedy = viewsGenerationIsGreedy;
+  }
+
+  public static boolean getEachRequestAlwaysRegeneratesView() {
+    return eachRequestAlwaysRegeneratesView;
+  }
+
+  public static void setEachRequestAlwaysRegeneratesView(boolean eachRequestAlwaysRegeneratesView) {
+    PictoApplication.eachRequestAlwaysRegeneratesView = eachRequestAlwaysRegeneratesView;
+  }
+
+  public static PromisesGenerationListener getPromisesGenerationListener() {
+    return promisesGenerationListener;
+  }
+
+  public static void setPromisesGenerationListener(PromisesGenerationListener promisesGenerationListener) {
+    PictoApplication.promisesGenerationListener = promisesGenerationListener;
+  }
+
 
 }

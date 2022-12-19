@@ -1,6 +1,14 @@
 <!DOCTYPE HTML>
-<html xmlns:th="http://www.thymeleaf.org">
+<!--
+Copyright (c) 2008 The University of York.
 
+This program and the accompanying materials are made
+available under the terms of the Eclipse Public License 2.0
+which is available at https://www.eclipse.org/legal/epl-2.0/
+
+SPDX-License-Identifier: EPL-2.0
+-->
+<html xmlns:th="http://www.thymeleaf.org">
 <head>
   <title th:text="'Picto: ' + ${pictoName}"></title>
   <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
@@ -89,7 +97,8 @@
     myLayout.registerComponent('Visualisation', function (container,
       componentState) {
       container.getElement()
-        .html('<div id="visualisation" class="visualisation"></div>');
+        .html('<div id="visualisationLoader" class="loader"></div>'  +
+        '<div id="visualisation" class="visualisation"></div>');
 
       var layoutSettings = container.layoutManager.config.settings;
       layoutSettings.showMaximiseIcon = false;
@@ -157,17 +166,13 @@
           Picto.selectedPath = path;
           console.log(path);
           var label = pictoName + '#' + path;
-          var url = '/picto?file=' + pictoName + '&path=' + path + '&name=' + data.node.text;
+          var url = '/picto?file=' + pictoName + '&path=' + path + '&name=' + data.node.text ;
           Picto.draw(label, url);
         }
       });
 
       $('#tree').on("refresh.jstree", function (event, data) {
-        if (Picto.tempSelectedNode == null) {
-          return;
-        }
-        console.log(Picto.tempSelectedNode);
-        Picto.selectJsTreeNode(Picto.tempSelectedPath);
+        Picto.selectJsTreeNode(Picto.selectedPath);
       });
 
       var to = false;

@@ -12,7 +12,10 @@ import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
 
 /***
- * Receive Requests and send back Responses
+ * This controller class receives requests from clients and send back responses
+ * to display the main pages of Picto Web. This controller is only used when a
+ * client make a request from the browser's url bar. The class doesn't handle
+ * requests from clicking TreeView node.
  * 
  * @author Alfa Yohannis
  *
@@ -21,6 +24,16 @@ import org.springframework.web.bind.annotation.GetMapping;
 @Controller
 public class PictoController {
 
+  /***
+   * A controller method to display the page that shows the Picto files under
+   * Workspace. It uses the 'pictofiles' template under 'resource/templates' for
+   * the page.
+   * 
+   * @param information
+   * @param model
+   * @return
+   * @throws IOException
+   */
   @GetMapping(value = "/")
   public String getPictoFiles(String information, Model model) throws IOException {
     List<String> pictoFiles = ProjectTreeToJson.getPictoFiles(PictoApplication.WORKSPACE).stream()
@@ -29,8 +42,21 @@ public class PictoController {
     return "pictofiles";
   }
 
+  /***
+   * This controller method displays Picto Web's main page consists of two panels:
+   * the tree view panel on the left side and the view panel on the right side.
+   * It uses the 'picto' template under 'resource/templates' for the page.
+   * 
+   * @param file
+   * @param path
+   * @param name
+   * @param timestamp
+   * @param model
+   * @return
+   * @throws Exception
+   */
   @GetMapping(value = "/picto")
-  public String getPicto(String file, String path, String name, Model model) throws Exception {
+  public String getPicto(String file, String path, String timestamp, Model model) throws Exception {
     model.addAttribute("pictoName", file);
 
     if (FileViewContentCache.getViewContentCache(file) == null) {
@@ -43,86 +69,34 @@ public class PictoController {
       }
       for (PictoProject pictoProject : affectedPictoProjects) {
         WebEglPictoSource source = new WebEglPictoSource();
-        source.transform(file, pictoProject);
+        source.generatePromises(file, pictoProject);
       }
     }
+    
     if (path == null) {
-      String treeResult = FileViewContentCache.getViewContentCache(file)
-          .getViewContentCache(FileViewContentCache.PICTO_TREE);
+      PromiseView treePromiseView = FileViewContentCache.getViewContentCache(file)
+          .getPromiseView(FileViewContentCache.PICTO_TREE);
+      String treeResult = (timestamp == null) ? treePromiseView.getViewContent()
+          : treePromiseView.getViewContent(timestamp);
       model.addAttribute("treeResponse", treeResult);
     } else {
-      String treeResult = FileViewContentCache.getViewContentCache(file)
-          .getViewContentCache(FileViewContentCache.PICTO_TREE);
-      String viewResult = FileViewContentCache.getViewContentCache(file).getViewContentCache(path);
+      PromiseView treePromiseView = FileViewContentCache.getViewContentCache(file)
+          .getPromiseView(FileViewContentCache.PICTO_TREE);
+      String treeResult = (timestamp == null) ? treePromiseView.getViewContent()
+          : treePromiseView.getViewContent(timestamp);
       model.addAttribute("treeResponse", treeResult);
-      model.addAttribute("viewResponse", viewResult);
+
+      String viewResult = null;
+      PromiseView promiseView = FileViewContentCache.getViewContentCache(file).getPromiseView(path);
+      if (promiseView != null) {
+//        System.out.println("FROM URL BAR");
+        viewResult = promiseView.getViewContent(timestamp);
+        model.addAttribute("viewResponse", viewResult);
+      }
       model.addAttribute("selectedUri", path);
     }
 
     return "picto";
   }
 
-//	@MessageMapping("/treeview")
-//	@SendTo("/topic/picto")
-//	public PictoResponse getTreeView(PictoRequest message) throws Exception {
-//		WebEglPictoSource source = new WebEglPictoSource();
-//		File pictoFile = new File((new File(PictoApplication.WORKSPACE + message.getPictoFile())).getAbsolutePath());
-//		source.transform(pictoFile);
-//		String filename = pictoFile.getAbsolutePath()
-//				.replace(new File(PictoApplication.WORKSPACE).getAbsolutePath() + File.separator, "")
-//				.replace("\\", "/");
-//		Object x = FileViewContentCache.getMap();
-//		String result = FileViewContentCache.getElementViewContentMap(filename)
-//				.getElementViewTree(FileViewContentCache.PICTO_TREE);
-//		PictoResponse pictoResponse = new PictoResponse(result);
-//		pictoResponse.setType("TreeView");
-//
-//		MessageChannel brokerChannel = context.getBean("brokerChannel", MessageChannel.class);
-//		SimpMessagingTemplate messaging = new SimpMessagingTemplate(brokerChannel);
-//		messaging.setMessageConverter(new MappingJackson2MessageConverter());
-//		messaging.convertAndSend("/topic/picto/" + message.getPictoFile(), pictoResponse);
-//
-//		return pictoResponse;
-//	}
-
-//	@MessageMapping("/picto-web")
-//	@SendTo("/topic/picto")
-//	public PictoResponse sendBackFileUpdate(File modifiedFile) throws Exception {
-//		WebEglPictoSource source = new WebEglPictoSource();
-//		source.transform(modifiedFile);
-//		String filename = modifiedFile.getAbsolutePath()
-//				.replace(new File(PictoApplication.WORKSPACE).getAbsolutePath() + File.separator, "")
-//				.replace("\\", "/");
-//		String result = FileViewContentCache.getElementViewContentMap(filename)
-//				.getElementViewTree(FileViewContentCache.PICTO_TREE);
-//		PictoResponse pictoResponse = new PictoResponse(result);
-//		pictoResponse.setType("TreeView");
-//
-//		MessageChannel brokerChannel = context.getBean("brokerChannel", MessageChannel.class);
-//		SimpMessagingTemplate messaging = new SimpMessagingTemplate(brokerChannel);
-//		messaging.setMessageConverter(new MappingJackson2MessageConverter());
-//		messaging.convertAndSend("/topic/picto/" + modifiedFile.getName(), pictoResponse);
-//
-//		return pictoResponse;
-//	}
-
-//	@MessageMapping("/projecttree")
-//	@SendTo("/topic/picto")
-//	public PictoResponse getProjectTree(PictoRequest message) throws Exception {
-//
-//		String temp = ProjectTreeToJson.convert(PictoApplication.WORKSPACE);
-//		PictoResponse pictoResponse = new PictoResponse(temp);
-//		pictoResponse.setType("ProjectTree");
-//		return pictoResponse;
-//	}
-//
-//	@MessageMapping("/openfile")
-//	@SendTo("/topic/picto")
-//	public PictoResponse openFile(PictoRequest message) throws Exception {
-//
-//		String temp = Files.readString(Paths.get(PictoApplication.WORKSPACE + message.getCode()));
-//		PictoResponse pictoResponse = new PictoResponse(temp);
-//		pictoResponse.setType("OpenFile");
-//		return pictoResponse;
-//	}
 }
