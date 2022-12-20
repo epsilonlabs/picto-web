@@ -21,8 +21,6 @@ import java.util.Map.Entry;
 import java.util.Set;
 import java.util.stream.Collectors;
 
-import javax.annotation.Nonnull;
-
 import org.eclipse.emf.common.util.EList;
 import org.eclipse.emf.ecore.EObject;
 import org.eclipse.emf.ecore.EStructuralFeature;
@@ -99,7 +97,6 @@ public class AccessGraphResource implements AccessRecordResource {
         addAffectedPath((InputEntity) rule, path);
 
         // template
-        @Nonnull
         Template template = null;
         if (access.getTemplatePath() != null) {
           String templateName = access.getTemplatePath();

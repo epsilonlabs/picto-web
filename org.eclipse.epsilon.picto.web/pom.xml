@@ -113,12 +113,6 @@
 			<groupId>junit</groupId>
 			<artifactId>junit</artifactId>
 		</dependency>
-		<!-- https://mvnrepository.com/artifact/org.eclipse.platform/org.eclipse.swt -->
-		<dependency>
-			<groupId>org.eclipse.platform</groupId>
-			<artifactId>org.eclipse.swt</artifactId>
-			<version>3.117.0</version>
-		</dependency>
 		<!-- https://mvnrepository.com/artifact/org.eclipse.platform/org.eclipse.core.resources -->
 		<dependency>
 			<groupId>org.eclipse.platform</groupId>
