@@ -173,7 +173,7 @@ public class PerformanceTest {
 //      int numberOfClients = 3; // number of clients subscribed to Picto Web's STOMP server.
 //      int numberOfIteration = 12; // Number of requests per client
 
-      boolean[] isAlwaysGenerated = {true, false };
+      boolean[] isAlwaysGenerated = { true, false };
 
       // create the initial model
       AssignmentStatement as = (AssignmentStatement) eolModule.getChildren().get(0).getChildren().get(0);
@@ -211,12 +211,12 @@ public class PerformanceTest {
             }
           }
         });
-        
+
         // just save again to trigger 1st-time generation of promises
         fos = new FileOutputStream(modelFile);
         emfModel.store(fos);
         fos.close();
-        
+
         // wait until the 1st-time generation of promises finished
         synchronized (invalidatedViewsWaiter) {
           invalidatedViewsWaiter.wait();
@@ -227,12 +227,12 @@ public class PerformanceTest {
         emfModel.dispose();
         emfModel.load();
         System.out.println("Done");
-        
+
         // modify again to generate invalidated views
         eolModule.getChildren().clear();
         eolModule.clearCache();
         eolModule.parse(opAddEdgeFile);
-        
+
         // update the numOfAffectedViews in the oppaddedge.eol
         as = (AssignmentStatement) eolModule.getChildren().get(eolModule.getChildren().size() - 1).getChildren().get(0);
         il = (IntegerLiteral) as.getValueExpression();
@@ -243,8 +243,8 @@ public class PerformanceTest {
         fos = new FileOutputStream(modelFile);
         emfModel.store(fos);
         fos.close();
-        
-        // wait until all promises are processed 
+
+        // wait until all promises are processed
         synchronized (invalidatedViewsWaiter) {
           invalidatedViewsWaiter.wait();
         }
@@ -252,7 +252,7 @@ public class PerformanceTest {
         PerformanceRecorder.genAlways = temp;
         PictoApplication.setEachRequestAlwaysRegeneratesView(PerformanceRecorder.genAlways);
 
-        //get the repetitive tasks from all clients
+        // get the repetitive tasks from all clients
         List<Thread> tasks = clients.stream().map(c -> {
           try {
             return c.sendMultipleRequests(numberOfIteration, numberOfNodes);
@@ -367,12 +367,11 @@ public class PerformanceTest {
           PerformanceRecorder.globalNumberOfViews = numViews;
           for (int iterationIndex = 1; iterationIndex <= numberOfIteration; iterationIndex++) {
 
-            Set<String> affectedNodes = new HashSet<>();
             PictoApplication.setPromisesGenerationListener(new PromisesGenerationListener() {
               @Override
               public void onGenerated(Set<String> invalidatedViews) {
                 synchronized (invalidatedViewsWaiter) {
-                  affectedNodes.addAll(invalidatedViews);
+                  expectedViews.addAll(invalidatedViews);
                   // notify the main thread to continue iteration
                   invalidatedViewsWaiter.notify();
                 }
@@ -388,13 +387,13 @@ public class PerformanceTest {
             Set<String> set = clients.stream().map(c -> c.getName()).collect(Collectors.toSet());
             clientWaitingList.addAll(set);
 //        // System.out.println("Initial waitlist size = " + waitList.size());
-            
+
 //            // reload model
 //            System.out.print("Reload the model ... ");
 //            emfModel.dispose();
 //            emfModel.load();
 //            System.out.println("Done");
-            
+
             eolModule.getChildren().clear();
             eolModule.clearCache();
 
@@ -426,18 +425,12 @@ public class PerformanceTest {
                 for (int a = 0; a < numberOfNodes; a++) {
                   expectedViews.add("/Graph/N" + a);
                 }
-              } else { // otherwise check only the affected views
-                for (String item : affectedNodes) {
-                  expectedViews.add(item);
-                }
-              }
+              } 
             } else { // if generate all views
               for (int a = 0; a < numberOfNodes; a++) {
                 expectedViews.add("/Graph/N" + a);
               }
             }
-
-            System.out.println("Expected Views : " + expectedViews);
 
             fos = new FileOutputStream(modelFile);
             emfModel.store(fos);
@@ -448,6 +441,7 @@ public class PerformanceTest {
             // wait until we get the paths of invalidated views
             synchronized (invalidatedViewsWaiter) {
               invalidatedViewsWaiter.wait();
+              System.out.println("Expected Views : " + expectedViews);
             }
 
             synchronized (clientWaitingList) {
