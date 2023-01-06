@@ -321,9 +321,10 @@ public class PerformanceTest {
 //    int numberOfClients = 3; // number of clients subscribed to Picto Web's STOMP server.
 //    int numberOfIteration = 8; // Number of iteration measuring for each number of affected views
 //    int[] numbersOfAffectedViews = { 12, 8, 4 };
-////    int[] numbersOfAffectedViews = { 999,  1000, 700, 400, 100, 50, 10, 5, 1 };
+////    int[] numbersOfAffectedViews = { 100000 };
 ////    int[] numbersOfAffectedViews = { 10, 9, 8, 7, 5, 4, 3, 2, 1 };
 //    boolean[] genAllViews = { true, false };
+////    boolean[] genAllViews = { true };
 
     PerformanceRecorder.globalNumberOfNodes = numberOfNodes;
 
@@ -425,7 +426,7 @@ public class PerformanceTest {
                 for (int a = 0; a < numberOfNodes; a++) {
                   expectedViews.add("/Graph/N" + a);
                 }
-              } 
+              }
             } else { // if generate all views
               for (int a = 0; a < numberOfNodes; a++) {
                 expectedViews.add("/Graph/N" + a);
