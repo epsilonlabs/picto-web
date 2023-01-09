@@ -9,7 +9,7 @@ import org.eclipse.epsilon.egl.EglFileGeneratingTemplateFactory;
 import org.eclipse.epsilon.egl.EglTemplate;
 import org.eclipse.epsilon.egl.EglTemplateFactory;
 import org.eclipse.epsilon.egl.dom.GenerationRule;
-import org.eclipse.epsilon.egl.execute.context.IEgxContext;
+import org.eclipse.epsilon.egl.execute.context.concurrent.IEgxContextParallel;
 import org.eclipse.epsilon.egl.spec.EglTemplateSpecification;
 import org.eclipse.epsilon.eol.exceptions.EolRuntimeException;
 import org.eclipse.epsilon.eol.execute.context.IEolContext;
@@ -95,6 +95,12 @@ public class IncrementalLazyEgxModule extends LazyEgxModule {
     return (GenerationRule) new IncrementalLazyGenerationRule();
   }
 
+  
+  /**
+   * 
+   * @author Alfa Yohannis
+   *
+   */
   public class IncrementalLazyGenerationRule extends LazyGenerationRule {
     String path = null;
 
@@ -118,7 +124,7 @@ public class IncrementalLazyEgxModule extends LazyEgxModule {
           element);
       // after executing parent class
 
-      IEgxContext context = (IEgxContext) context_;
+      IEgxContextParallel context = (IEgxContextParallel) context_;
       URI templateUri = null;
       String templateName = (templateBlock == null) ? null : templateBlock.execute(context, false);
       if (templateName != null) {

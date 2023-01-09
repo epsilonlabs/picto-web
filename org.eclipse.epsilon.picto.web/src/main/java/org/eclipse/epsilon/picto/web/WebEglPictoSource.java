@@ -134,6 +134,7 @@ public class WebEglPictoSource extends EglPictoSource {
           picto.setFormat("egx");
         if ("egx".equals(picto.getFormat())) {
           module = new IncrementalLazyEgxModule(accessRecordResource);
+          ((IncrementalLazyEgxModule) module).getContext().setParallelism(32);
         } else {
           module = new EglTemplateFactoryModuleAdapter(new EglFileGeneratingTemplateFactory());
         }
@@ -264,7 +265,15 @@ public class WebEglPictoSource extends EglPictoSource {
             // to identify views affected by the last change.
             State isNew = accessRecordResource.getPathStatus(pathString);
             if (State.NEW.equals(isNew)) {
-              promiseView.getViewContent(null);
+//              Thread t = new Thread() {
+//                public void run() {
+//                  try {
+                    promiseView.getViewContent(null);
+//                  } catch (Exception e) {
+//                  }
+//                }
+//              };
+//              t.start();
             }
             modifiedViewContents.add(pathString);
 
@@ -319,7 +328,9 @@ public class WebEglPictoSource extends EglPictoSource {
         modifiedViewContents.add(promiseView.getPath());
       }
 
-    } catch (Exception ex) {
+    } catch (
+
+    Exception ex) {
       ex.printStackTrace();
     }
 
@@ -540,7 +551,6 @@ public class WebEglPictoSource extends EglPictoSource {
     cache.clear();
     if (modelFile.getName().endsWith(".model") || modelFile.getName().endsWith(".xmi")) {
       newModel = new EmfModel();
-      newModel.setModelFile(modelFile.getAbsolutePath());
     } else {
       newModel = new InMemoryEmfModel(modelName, getResource(modelFile));
     }
@@ -548,13 +558,19 @@ public class WebEglPictoSource extends EglPictoSource {
     newModel.setExpand(true);
     newModel.setName(modelName);
 
+    if (modelFile != null)
+      newModel.setModelFile(modelFile.getAbsolutePath());
     if (metamodelUri != null)
       newModel.setMetamodelUri(metamodelUri);
     if (metamodelFile != null)
       newModel.setMetamodelFile(metamodelFile.getAbsolutePath());
     if (uri != null)
       newModel.setMetamodelFileUri(uri);
-    newModel.load();
+
+    if (modelFile.getName().endsWith(".model") || modelFile.getName().endsWith(".xmi")) {
+      newModel.load();
+    }
+
     return newModel;
 
   }

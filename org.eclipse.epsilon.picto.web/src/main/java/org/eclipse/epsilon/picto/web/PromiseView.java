@@ -31,6 +31,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 
 public class PromiseView {
 
+//  private static final ExecutorService promiseExecutor = Executors.newFixedThreadPool(1);
 	private static final ExecutorService promiseExecutor = Executors.newSingleThreadExecutor();
 
 	private PictoView pictoView;
@@ -116,9 +117,9 @@ public class PromiseView {
 			viewContent = new ObjectMapper().writerWithDefaultPrettyPrinter().writeValueAsString(pictoResponse);
 
 			this.hasBeenGenerated = true;
-			System.out.println("(re)generated");
+			System.out.println(path + " (re)generated");
 		} else {
-			System.out.println("cache returned");
+			System.out.println(path + " cache returned");
 		}
 
 		if (clientTimestamp != null && timestamp.compareTo(clientTimestamp) <= 0) {

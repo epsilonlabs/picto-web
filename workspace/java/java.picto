@@ -1,0 +1,9 @@
+<?nsuri picto?>
+<picto format="egx" transformation="java.egx">
+    <model type="EMF">
+        <parameter name="name" value="M"/>
+        <parameter name="metamodelUri" value="java"/>
+        <parameter name="metamodelFile" file="java.ecore"/>
+        <parameter name="modelFile" file="big.xmi"/>
+    </model>        
+</picto>

@@ -107,6 +107,12 @@
 			<artifactId>org.eclipse.emfatic.core</artifactId>
 			<version>1.0.0</version>
 		</dependency>
+    <!-- https://mvnrepository.com/artifact/org.atlanmod.zoo/emf.java -->
+    <dependency>
+      <groupId>org.atlanmod.zoo</groupId>
+      <artifactId>emf.java</artifactId>
+      <version>1.0.5</version>
+    </dependency>
 
 		<!-- https://mvnrepository.com/artifact/junit/junit -->
 		<dependency>

@@ -16,6 +16,7 @@ import java.util.stream.Collectors;
 import org.eclipse.epsilon.egl.patch.Line;
 import org.eclipse.epsilon.egl.patch.TextBlock;
 import org.eclipse.epsilon.eol.EolModule;
+import org.eclipse.epsilon.eol.concurrent.EolModuleParallel;
 import org.eclipse.epsilon.picto.Layer;
 import org.eclipse.epsilon.picto.PictoView;
 import org.eclipse.epsilon.picto.ViewContent;
@@ -66,7 +67,7 @@ public class PatchContentTransformer implements ViewContentTransformer {
 		if (patch.getApplies() == null) return true;
 		
 		try {
-			EolModule module = new EolModule();
+			EolModuleParallel module = new EolModuleParallel();
 			module.parse("return " + patch.getApplies() + ";");
 			module.getContext().getFrameStack().put(
 				content.getLayers().stream()
