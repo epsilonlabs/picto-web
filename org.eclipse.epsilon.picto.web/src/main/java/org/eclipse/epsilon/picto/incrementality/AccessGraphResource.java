@@ -56,11 +56,16 @@ public class AccessGraphResource implements AccessRecordResource {
   @Override
   public void add(AccessRecord access) {
 
+//    System.out.println(access.toString());
+    if (access.getPath().equals("/XMLResourceImpl") && access.getElementObjectId().equals("e821")) {
+      System.console();
+    }
+   
     // path
     if (access.getPath() == null) {
       return;
     }
-
+   
     String pathName = access.getPath();
     Path path = (Path) traceIndex.getPath(pathName);
 //		Path path = (Path) graph.getPaths().get(pathName);
@@ -137,8 +142,7 @@ public class AccessGraphResource implements AccessRecordResource {
             contextElement.setState(State.NEW);
             contextElement.setName(access.getContextObjectId());
             rule.getContextElements().add(contextElement);
-            traceIndex.putElement(access.getContextResourceUri(), access.getContextObjectId(),
-                contextElement);
+            traceIndex.putElement(access.getContextResourceUri(), access.getContextObjectId(), contextElement);
           }
           contextElement.setResource(contextResource);
           addAffectedPath((InputEntity) contextElement, path);
@@ -179,18 +183,15 @@ public class AccessGraphResource implements AccessRecordResource {
 
           // property
           if (access.getPropertyName() != null) {
-//						if (access.getValue().equals("Dan#java.lang.String")) {
-//							System.console();
-//						}
-
+            
             Property property = (Property) traceIndex.getProperty(access.getElementResourceUri(),
                 access.getElementObjectId(), access.getPropertyName());
             if (property == null) {
               property = factory.createProperty();
               property.setState(State.NEW);
               property.setName(access.getPropertyName());
-              traceIndex.putProperty(access.getElementResourceUri(),
-                  access.getElementObjectId(), access.getPropertyName(), property);
+              traceIndex.putProperty(access.getElementResourceUri(), access.getElementObjectId(),
+                  access.getPropertyName(), property);
             }
             property.setElement(element);
             property.setValue(access.getValue());
@@ -218,7 +219,8 @@ public class AccessGraphResource implements AccessRecordResource {
       checkPath(module, invalidatedViewPaths, toBeDeletedKeys, toBeDeletedElements, checkedPath);
     }
 
-    // run a new thread in the background to remove deleted elements from the indices and graph
+    // run a new thread in the background to remove deleted elements from the
+    // indices and graph
     new Thread() {
       public void run() {
         // first, remove all the entries of the deleted elements
@@ -236,23 +238,24 @@ public class AccessGraphResource implements AccessRecordResource {
             InputEntity ie = (InputEntity) element;
             EList<Path> paths = ie.getAffects();
             for (Path path : paths) {
-              while(path.getAffectedBy().remove(ie));
+              while (path.getAffectedBy().remove(ie))
+                ;
             }
             EcoreUtil.delete(element, true);
           } catch (Exception e) {
           }
         }
-        
+
         Iterator<Entry<String, Path>> iterator = traceIndex.getPathIndex().entrySet().iterator();
-        while(iterator.hasNext()) {
+        while (iterator.hasNext()) {
           Path p = iterator.next().getValue();
-          if(p.getAffectedBy().size() == 0) {
+          if (p.getAffectedBy().size() == 0) {
             iterator.remove();
           }
         }
       }
     }.start();
-    
+
     return invalidatedViewPaths;
   }
 
@@ -261,6 +264,11 @@ public class AccessGraphResource implements AccessRecordResource {
       Set<EObject> toBeDeletedElements, String checkedPath) {
 
     Path path = (Path) traceIndex.getPath(checkedPath);
+
+    if (checkedPath.equals("/XMLResourceImpl")) {
+      System.console();
+    }
+
     // check if the path is a new view
     if (path == null) {
       toBeProcessedPaths.add(checkedPath);
@@ -291,8 +299,8 @@ public class AccessGraphResource implements AccessRecordResource {
             continue;
           }
           String resourcePath = resource.getName();
-          EmfModel model = (EmfModel) module.getContext().getModelRepository().getModels().stream().filter(
-              m -> ((AbstractEmfModel) m).getResource().getURI().toFileString().equals(resourcePath))
+          EmfModel model = (EmfModel) module.getContext().getModelRepository().getModels().stream()
+              .filter(m -> ((AbstractEmfModel) m).getResource().getURI().toFileString().equals(resourcePath))
               .findFirst().orElse(null);
 
           // if the resource has been deleted
@@ -314,10 +322,8 @@ public class AccessGraphResource implements AccessRecordResource {
               toBeDeletedKeys.add(resource.getName() + "#" + element.getName());
               toBeDeletedElements.add(element);
             } else {
-              EStructuralFeature currentProperty = currentEObject.eClass()
-                  .getEStructuralFeature(property.getName());
-              Object currentValueObject = (currentProperty != null) ? currentEObject.eGet(currentProperty)
-                  : null;
+              EStructuralFeature currentProperty = currentEObject.eClass().getEStructuralFeature(property.getName());
+              Object currentValueObject = (currentProperty != null) ? currentEObject.eGet(currentProperty) : null;
 
               // check if the property has been changed
               String currentValue = AccessRecord.convertValueToString(currentValueObject);
@@ -382,12 +388,19 @@ public class AccessGraphResource implements AccessRecordResource {
     for (Entry<String, Path> entry : traceIndex.getPathIndex().entrySet()) {
       Path p = (Path) entry.getValue();
       p.setState(State.PROCESSED);
+      if (p.getName().equals("/XMLResourceImpl")) {
+        System.console();
+      }
       if (paths.contains(p.getName())) {
-        for (int i = 0; i < p.getAffectedBy().size();i++) {
+        for (int i = 0; i < p.getAffectedBy().size(); i++) {
           Entity entity = p.getAffectedBy().get(i);
+          if (entity.getName().equals("name")) {
+            System.console();
+          }
           entity.setState(State.PROCESSED);
           if (entity instanceof Property) {
             ((Property) entity).setPreviousValue(((Property) entity).getValue());
+            System.console();
           }
         }
       }

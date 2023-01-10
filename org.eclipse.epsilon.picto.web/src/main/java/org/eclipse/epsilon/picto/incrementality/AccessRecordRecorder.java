@@ -34,16 +34,14 @@ public class AccessRecordRecorder extends PropertyAccessRecorder {
   }
 
   public void updateCurrentPropertyAccessesPath(String path) {
-    for (int i = 0; i < currentPropertyAccesses.size(); i++) {
-      AccessRecord r = currentPropertyAccesses.get(i);
+    for (AccessRecord r : currentPropertyAccesses) {
       r.setPath(path);
       r.setTemplatePath(new File(templateUri).getAbsolutePath());
     }
   }
 
   public void saveToAccessRecordResource() {
-    for (int i = 0; i < currentPropertyAccesses.size(); i++) {
-      AccessRecord r = currentPropertyAccesses.get(i);
+    for (AccessRecord r : currentPropertyAccesses) {
       accessRecordResource.add(r);
     }
     currentPropertyAccesses.clear();

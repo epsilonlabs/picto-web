@@ -50,13 +50,13 @@ public class PerformanceRecorder {
     return performanceRecords;
   }
 
-  public static boolean genAlways;
-  public static boolean genAll;
-  public static int gloNumIter;
-  public static int globalNumberOfViews;
+  public static boolean generateAlways;
+  public static boolean genenerateAll;
+  public static int globalNumberIteration;
+  public static int globalNumberOfAffectedViews;
   public static long startTime;
   public static long detectionTime;
   public static long loadingTime;
-  public static int globalNumberOfNodes;
+  public static int globalNumberOfViews;
 
 }

@@ -137,7 +137,7 @@ public class PromiseView {
 		return path;
 	}
 
-	public static ExecutorService getPromiseexecutor() {
+	public static ExecutorService getPromiseExecutor() {
 		return promiseExecutor;
 	}
 

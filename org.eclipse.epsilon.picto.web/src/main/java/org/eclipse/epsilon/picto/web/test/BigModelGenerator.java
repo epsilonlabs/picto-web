@@ -68,7 +68,7 @@ public class BigModelGenerator {
       Resource resource = resourceSet
           .getResource(org.eclipse.emf.common.util.URI.createFileURI(modelFile.getAbsolutePath()), true);
 
-      File bigModelFile = new File(PictoApplication.WORKSPACE + "/java/java.xmi");
+      File bigModelFile = new File(PictoApplication.WORKSPACE + "/java/java.big.xmi");
       if (!bigModelFile.exists())
         bigModelFile.createNewFile();
       XMIResource bigResource = new XMIResourceImpl();
@@ -121,11 +121,6 @@ public class BigModelGenerator {
         }
         if (eObject instanceof MethodDeclaration) {
           methodList.add((MethodDeclaration) eObject);
-          
-          MethodDeclaration m = (MethodDeclaration) eObject;
-          m.getReturnType();
-          SingleVariableDeclaration type = m.getParameters().get(0);
-
         }
 
         eObjectCounter += 1;
@@ -137,23 +132,7 @@ public class BigModelGenerator {
       System.out.println("Number of fields: " + fieldList.size());
       System.out.println("Number of methods: " + methodList.size());
 
-//      bigResource.save(options);
-
-      
-//      JavaFactory factory = JavaFactory.eINSTANCE;
-//      FieldDeclaration x = factory.createFieldDeclaration();
-//      VisibilityKind c = x.getModifier().getVisibility();
-      
-      
-      // move a class, interface to another package
-
-      // update methods', variables, parameters' names
-
-      // remove elements,
-
-      // delete a class, interface
-
-      // copy another class, interface
+      bigResource.save(options);
 
 //      List<?> list = new ArrayList<>(types);
 //      list.sort(null);

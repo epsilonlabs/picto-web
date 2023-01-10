@@ -14,7 +14,6 @@ import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.concurrent.ExecutorService;
 
 import org.eclipse.epsilon.picto.dom.PictoFactory;
 import org.eclipse.epsilon.picto.dom.PictoPackage;
@@ -108,6 +107,7 @@ public class PictoApplication implements ApplicationListener<ApplicationContextE
 //		PromiseView.getPromiseexecutor().shutdown();
 		FileWatcher.stopWatching();
 		FileViewContentCache.clear();
+		PromiseView.getPromiseExecutor().shutdownNow();
 		SpringApplication.exit(context, new ExitCodeGenerator() {
 			@Override
 			public int getExitCode() {

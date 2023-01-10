@@ -249,8 +249,8 @@ public class PerformanceTest {
           invalidatedViewsWaiter.wait();
         }
 
-        PerformanceRecorder.genAlways = temp;
-        PictoApplication.setEachRequestAlwaysRegeneratesView(PerformanceRecorder.genAlways);
+        PerformanceRecorder.generateAlways = temp;
+        PictoApplication.setEachRequestAlwaysRegeneratesView(PerformanceRecorder.generateAlways);
 
         // get the repetitive tasks from all clients
         List<Thread> tasks = clients.stream().map(c -> {
@@ -326,7 +326,7 @@ public class PerformanceTest {
 //    boolean[] genAllViews = { true, false };
 ////    boolean[] genAllViews = { true };
 
-    PerformanceRecorder.globalNumberOfNodes = numberOfNodes;
+    PerformanceRecorder.globalNumberOfViews = numberOfNodes;
 
     // create the initial model
     AssignmentStatement as = (AssignmentStatement) eolModule.getChildren().get(0).getChildren().get(0);
@@ -360,12 +360,12 @@ public class PerformanceTest {
     try {
 
       for (boolean temp : genAllViews) {
-        PerformanceRecorder.genAll = temp;
-        PictoApplication.setViewsGenerationGreedy(PerformanceRecorder.genAll);
+        PerformanceRecorder.genenerateAll = temp;
+        PictoApplication.setViewsGenerationGreedy(PerformanceRecorder.genenerateAll);
 
         // iterate for each number of affected views
         for (int numViews : numbersOfAffectedViews) {
-          PerformanceRecorder.globalNumberOfViews = numViews;
+          PerformanceRecorder.globalNumberOfAffectedViews = numViews;
           for (int iterationIndex = 1; iterationIndex <= numberOfIteration; iterationIndex++) {
 
             PictoApplication.setPromisesGenerationListener(new PromisesGenerationListener() {
@@ -379,9 +379,9 @@ public class PerformanceTest {
               }
             });
 
-            PerformanceRecorder.gloNumIter = iterationIndex;
+            PerformanceRecorder.globalNumberIteration = iterationIndex;
 
-            System.out.println("\n## GEN ALL: " + PerformanceRecorder.genAll + " AFFECTED VIEWS: " + numViews
+            System.out.println("\n## GEN ALL: " + PerformanceRecorder.genenerateAll + " AFFECTED VIEWS: " + numViews
                 + ", ITERATION: " + iterationIndex + " ##");
 
             clientWaitingList.clear();
@@ -420,7 +420,7 @@ public class PerformanceTest {
             expectedViews.add("/Graph/I0");
 
             // if it's selective view generation
-            if (!PerformanceRecorder.genAll) {
+            if (!PerformanceRecorder.genenerateAll) {
               // when the test is run for the first time, expect to receive all views
               if (iterationIndex == 1 && numViews == numbersOfAffectedViews[0]) {
                 for (int a = 0; a < numberOfNodes; a++) {
@@ -560,7 +560,7 @@ public class PerformanceTest {
                   });
 
               // randomly select the view to be requested
-              String invalidatedView = "/Graph/N" + random.nextInt(PerformanceRecorder.globalNumberOfNodes);
+              String invalidatedView = "/Graph/N" + random.nextInt(PerformanceRecorder.globalNumberOfViews);
 
               // request the content
               String expectedPath = invalidatedView;
@@ -587,15 +587,15 @@ public class PerformanceTest {
               String path = contentNode.get("path").textValue();
 
               // record the response time, from requesting a view to receiving the view
-              PerformanceRecord record = new PerformanceRecord(PerformanceRecorder.genAll,
-                  PerformanceRecorder.genAlways, PerformanceRecorder.globalNumberOfViews,
-                  PerformanceRecorder.gloNumIter, Client.this.getName(), path, responseTime, viewBytes.length,
+              PerformanceRecord record = new PerformanceRecord(PerformanceRecorder.genenerateAll,
+                  PerformanceRecorder.generateAlways, PerformanceRecorder.globalNumberOfAffectedViews,
+                  PerformanceRecorder.globalNumberIteration, Client.this.getName(), path, responseTime, viewBytes.length,
                   PerformanceTestType.RESPONSE_TIME);
               PerformanceRecorder.getPerformanceRecords().add(record);
 
               // record the overall time from changing a model file to receiving the view
-              record = new PerformanceRecord(PerformanceRecorder.genAll, PerformanceRecorder.genAlways,
-                  PerformanceRecorder.globalNumberOfViews, PerformanceRecorder.gloNumIter, Client.this.getName(), path,
+              record = new PerformanceRecord(PerformanceRecorder.genenerateAll, PerformanceRecorder.generateAlways,
+                  PerformanceRecorder.globalNumberOfAffectedViews, PerformanceRecorder.globalNumberIteration, Client.this.getName(), path,
                   overallTime, viewBytes.length, PerformanceTestType.OVERALL_TIME);
               PerformanceRecorder.getPerformanceRecords().add(record);
 
@@ -603,8 +603,8 @@ public class PerformanceTest {
               assertThat(invalidatedViews).containsAll(expectedViews);
 
               System.out.println("PICTO: Type " + PerformanceTestType.OVERALL_TIME + ", GenAll "
-                  + PerformanceRecorder.genAll + ", N-views " + PerformanceRecorder.globalNumberOfViews + ", Iter "
-                  + PerformanceRecorder.gloNumIter + ", " + Client.this.getName() + " received, path " + "No Path"
+                  + PerformanceRecorder.genenerateAll + ", N-views " + PerformanceRecorder.globalNumberOfAffectedViews + ", Iter "
+                  + PerformanceRecorder.globalNumberIteration + ", " + Client.this.getName() + " received, path " + "No Path"
                   + ", time " + overallTime + " ms");
 
             } catch (IOException e) {
@@ -693,7 +693,7 @@ public class PerformanceTest {
                 assertThat(receivedPath).isEqualTo(receivedPath);
 
                 System.out.println("PICTO: Type " + PerformanceTestType.RESPONSE_TIME + ", GenAlways "
-                    + PerformanceRecorder.genAlways + ", N-views " + numberOfNodes + ", Iter " + (i + 1) + ", "
+                    + PerformanceRecorder.generateAlways + ", N-views " + numberOfNodes + ", Iter " + (i + 1) + ", "
                     + Client.this.getName() + " received, path " + receivedPath + ", time " + waitTime + " ms");
 
 //                System.out
@@ -703,8 +703,8 @@ public class PerformanceTest {
 //                        + " received, " + waitTime
 //                        + " ms");
 
-                PerformanceRecord record = new PerformanceRecord(PerformanceRecorder.genAll,
-                    PerformanceRecorder.genAlways, numberOfNodes, i + 1, Client.this.getName(), receivedPath, waitTime,
+                PerformanceRecord record = new PerformanceRecord(PerformanceRecorder.genenerateAll,
+                    PerformanceRecorder.generateAlways, numberOfNodes, i + 1, Client.this.getName(), receivedPath, waitTime,
                     size, PerformanceTestType.RESPONSE_TIME);
                 PerformanceRecorder.getPerformanceRecords().add(record);
               }

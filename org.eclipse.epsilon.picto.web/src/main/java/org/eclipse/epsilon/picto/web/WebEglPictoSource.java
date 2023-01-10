@@ -205,9 +205,10 @@ public class WebEglPictoSource extends EglPictoSource {
 
           /** Calculate the loading time from a change on a file to getting promises **/
           PerformanceRecorder.loadingTime = System.currentTimeMillis() - PerformanceRecorder.startTime;
-          PerformanceRecord record = new PerformanceRecord(PerformanceRecorder.genAll, PerformanceRecorder.genAlways,
-              PerformanceRecorder.globalNumberOfViews, PerformanceRecorder.gloNumIter, "Server", "No Path",
-              PerformanceRecorder.loadingTime, 0, PerformanceTestType.LOADING_TIME);
+          PerformanceRecord record = new PerformanceRecord(PerformanceRecorder.genenerateAll,
+              PerformanceRecorder.generateAlways, PerformanceRecorder.globalNumberOfAffectedViews,
+              PerformanceRecorder.globalNumberIteration, "Server", "No Path", PerformanceRecorder.loadingTime, 0,
+              PerformanceTestType.LOADING_TIME);
           PerformanceRecorder.record(record);
 
           // if picto generation is not greedy a.k.a. selective.
@@ -216,9 +217,10 @@ public class WebEglPictoSource extends EglPictoSource {
             invalidatedViewPaths.addAll(accessRecordResource.getInvalidatedViewPaths(promises, (EgxModule) module));
             /** Calculate the detection time of invalidated views **/
             PerformanceRecorder.detectionTime = System.currentTimeMillis() - startTime;
-            PerformanceRecord r = new PerformanceRecord(PerformanceRecorder.genAll, PerformanceRecorder.genAlways,
-                PerformanceRecorder.globalNumberOfViews, PerformanceRecorder.gloNumIter, "Server", "No Path",
-                PerformanceRecorder.detectionTime, 0, PerformanceTestType.DETECTION_TIME);
+            PerformanceRecord r = new PerformanceRecord(PerformanceRecorder.genenerateAll,
+                PerformanceRecorder.generateAlways, PerformanceRecorder.globalNumberOfAffectedViews,
+                PerformanceRecorder.globalNumberIteration, "Server", "No Path", PerformanceRecorder.detectionTime, 0,
+                PerformanceTestType.DETECTION_TIME);
             PerformanceRecorder.record(r);
           }
 
@@ -268,7 +270,7 @@ public class WebEglPictoSource extends EglPictoSource {
 //              Thread t = new Thread() {
 //                public void run() {
 //                  try {
-                    promiseView.getViewContent(null);
+              promiseView.getViewContent(null);
 //                  } catch (Exception e) {
 //                  }
 //                }
@@ -280,7 +282,7 @@ public class WebEglPictoSource extends EglPictoSource {
             System.out.println("PROCESSED");
           }
 
-//        accessRecordResource.printIncrementalRecords();
+//          accessRecordResource.printIncrementalRecords();
           accessRecordResource.updateStatusToProcessed(invalidatedViewPaths);
           generateAll1stTime = false;
 
