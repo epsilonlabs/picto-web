@@ -10,10 +10,7 @@
 * @author Alfa Yohannis
 **********************************************************************/
 
-/**
- * 
- */
-package org.eclipse.epsilon.picto.web.test;
+package org.eclipse.epsilon.picto.web.generator;
 
 import java.io.File;
 import java.io.IOException;
@@ -30,67 +27,54 @@ import org.eclipse.core.resources.ResourcesPlugin;
 import org.eclipse.core.runtime.NullProgressMonitor;
 import org.eclipse.core.runtime.Path;
 import org.eclipse.emf.common.util.TreeIterator;
-import org.eclipse.emf.ecore.EFactory;
 import org.eclipse.emf.ecore.EObject;
 import org.eclipse.emf.ecore.EcorePackage;
 import org.eclipse.emf.ecore.resource.Resource;
 import org.eclipse.emf.ecore.resource.ResourceSet;
 import org.eclipse.emf.ecore.resource.impl.ResourceSetImpl;
-import org.eclipse.emf.ecore.util.EcoreUtil;
 import org.eclipse.emf.ecore.xmi.XMIResource;
 import org.eclipse.emf.ecore.xmi.impl.XMIResourceFactoryImpl;
 import org.eclipse.emf.ecore.xmi.impl.XMIResourceImpl;
-import org.eclipse.epsilon.picto.web.PictoApplication;
-import org.eclipse.gmt.modisco.java.ClassDeclaration;
-import org.eclipse.gmt.modisco.java.FieldDeclaration;
-import org.eclipse.gmt.modisco.java.MethodDeclaration;
-import org.eclipse.gmt.modisco.java.Model;
-import org.eclipse.gmt.modisco.java.NamedElement;
-import org.eclipse.gmt.modisco.java.SingleVariableDeclaration;
-import org.eclipse.gmt.modisco.java.Type;
-import org.eclipse.gmt.modisco.java.TypeAccess;
-import org.eclipse.gmt.modisco.java.VisibilityKind;
-import org.eclipse.gmt.modisco.java.emf.meta.JavaFactory;
-import org.eclipse.gmt.modisco.java.emf.meta.JavaPackage;
 import org.eclipse.jdt.core.IJavaProject;
 import org.eclipse.jdt.core.JavaCore;
 import org.eclipse.jdt.core.JavaModelException;
+import org.eclipse.modisco.java.ClassDeclaration;
+import org.eclipse.modisco.java.FieldDeclaration;
+import org.eclipse.modisco.java.MethodDeclaration;
 import org.eclipse.modisco.java.discoverer.DiscoverJavaModelFromJavaProject;
+import org.eclipse.modisco.java.emf.JavaPackage;
 
 public class BigModelGenerator {
 
   static final int NUMBER_OF_ITERATION = 20;
 
-  /**
-   * @param args
-   */
-  public static void main(String[] args) {
+  public void generate() {
 
     try {
 
       JavaPackage.eINSTANCE.eClass();
 
-      File modelFile = new File(PictoApplication.WORKSPACE + "/java/eol.xmi");
+//      File modelFile = new File(PictoApplication.WORKSPACE + "/java/eol.xmi");
       ResourceSet resourceSet = new ResourceSetImpl();
       resourceSet.getPackageRegistry().put(EcorePackage.eNS_URI, EcorePackage.eINSTANCE);
       resourceSet.getResourceFactoryRegistry().getExtensionToFactoryMap().put("xmi", new XMIResourceFactoryImpl());
-      Resource resourceOriginal = resourceSet
-          .getResource(org.eclipse.emf.common.util.URI.createFileURI(modelFile.getAbsolutePath()), true);
-      
-      File bigModelFile = new File(PictoApplication.WORKSPACE + "/java/java.big.xmi");
+
+      File bigModelFile = new File("java.big.xmi");
       if (!bigModelFile.exists())
         bigModelFile.createNewFile();
       XMIResource bigResource = new XMIResourceImpl();
       bigResource.setURI(org.eclipse.emf.common.util.URI.createFileURI(bigModelFile.getAbsolutePath()));
       resourceSet.getResources().add(bigResource);
 
-
       String sourcePath = "D:\\PROJECTS\\epsilon\\plugins\\";
 
-      System.out.println("Get all projects' paths ...");
+      System.out.println("Get all projects under " + sourcePath);
+      System.out.println();
       List<File> projectFiles = getAllProjectFiles(sourcePath);
 
       System.out.println("Found " + projectFiles.size() + " project files");
+      System.out.println();
+      
       int i = 0;
       for (File projectFile : projectFiles) {
         i++;
@@ -100,6 +84,7 @@ public class BigModelGenerator {
         // initialise project description, create one if none existed
         String projectFileName = projectFile.getAbsolutePath();
         Path path = new Path(projectFileName);
+//        Path path = new Path("D:\\PROJECTS\\epsilon\\plugins\\org.eclipse.epsilon.eol.engine\\.project");
         IProjectDescription description;
         if (path.toFile().exists()) {
           try {
@@ -159,7 +144,7 @@ public class BigModelGenerator {
         IJavaProject javaProject = JavaCore.create(project);
         try {
           javaProject.open(null);
-          System.out.println("This is a Java project ...");
+          System.out.println("This is a Java project. Generating Java Model ... ");
 
           DiscoverJavaModelFromJavaProject javaDiscoverer = new DiscoverJavaModelFromJavaProject();
           javaDiscoverer.setDeepAnalysis(false);
@@ -175,40 +160,20 @@ public class BigModelGenerator {
             exe.printStackTrace();
           }
         } catch (JavaModelException e1) {
-          // e1.printStackTrace();
+          e1.printStackTrace();
+          System.out.println("This is not a (valid) Java project");
         }
 
         // close and delete the project
         try {
-          System.out.println("Closing the project ...");
+          System.out.print("Closing the project ... ");
           project.close(null);
           project.delete(false, null);
+          System.out.println("Done");
         } catch (Exception ex) {
           ex.printStackTrace();
         }
-      }
-
-     
-      // loop n times and copy accumulate the models in one big resource
-      for (int it = 1; it <= NUMBER_OF_ITERATION; it++) {
-        System.out.println("Iteration " + it);
-        resourceOriginal.load(null);
-
-        // rename namedElements by adding postfix which the iterator number
-        TreeIterator<EObject> iterator = resourceOriginal.getAllContents();
-        while (iterator.hasNext()) {
-          EObject eObject = iterator.next();
-          if (eObject instanceof Model) {
-            String name = ((Model) eObject).getName();
-            ((Model) eObject).setName(name + it);
-          } else if (eObject instanceof NamedElement) {
-            String name = ((NamedElement) eObject).getName();
-            ((NamedElement) eObject).setName(name + it);
-          }
-        }
-        bigResource.getContents().addAll(EcoreUtil.copyAll(resourceOriginal.getContents()));
-
-        resourceOriginal.unload();
+        System.out.println();
       }
 
       Map<Object, Object> options = new HashMap<>();
@@ -221,7 +186,9 @@ public class BigModelGenerator {
       List<MethodDeclaration> methodList = new ArrayList<>();
 
       Set<String> types = new HashSet<>();
-
+      
+      System.out.println("Assigning IDs to every element");
+      System.out.println();
       TreeIterator<EObject> iterator = bigResource.getAllContents();
       while (iterator.hasNext()) {
         EObject eObject = iterator.next();
@@ -241,12 +208,16 @@ public class BigModelGenerator {
         bigResource.setID(eObject, "e" + eObjectCounter);
       }
 
+      System.out.print("Saving model ... ");
+      bigResource.save(options);
+      System.out.println("SAVED");
+      System.out.println();
+      
       System.out.println("Number of objects: " + eObjectCounter);
       System.out.println("Number of classes: " + classList.size());
       System.out.println("Number of fields: " + fieldList.size());
       System.out.println("Number of methods: " + methodList.size());
-
-      bigResource.save(options);
+      System.out.println();      
 
 //      List<?> list = new ArrayList<>(types);
 //      list.sort(null);
@@ -255,7 +226,7 @@ public class BigModelGenerator {
     } catch (IOException e) {
       e.printStackTrace();
     }
-
+    System.out.println("FINISHED!");
   }
 
   private static void listFiles(String path, List<File> files) {
