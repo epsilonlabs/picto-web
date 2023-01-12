@@ -35,6 +35,7 @@ import java.util.stream.Collectors;
 import org.eclipse.emf.common.util.TreeIterator;
 import org.eclipse.emf.common.util.URI;
 import org.eclipse.emf.ecore.EObject;
+import org.eclipse.emf.ecore.resource.impl.ResourceImpl;
 import org.eclipse.emf.ecore.util.EcoreUtil;
 import org.eclipse.emf.ecore.xmi.XMIResource;
 import org.eclipse.emf.ecore.xmi.impl.XMIResourceImpl;
@@ -112,7 +113,7 @@ public class JavaPerformanceTest {
     PerformanceRecorder.startRecording();
 
     Object invalidatedViewsWaiter = new Object();
-    int numberOfMeasurementPoints = 5;
+    final int numberOfMeasurementPoints = 5;
 
 //    // configuration for larger experiment
 //    int numberOfViews = 10000; // Number of nodes the graph model.
@@ -133,13 +134,16 @@ public class JavaPerformanceTest {
     boolean[] genAllViews = { true, false };
 //    boolean[] genAllViews = { true };
 
-    Map<Object, Object> options = new HashMap<>();
-    options.put(XMIResource.OPTION_DEFER_IDREF_RESOLUTION, Boolean.TRUE);
-    options.put(XMIResource.OPTION_PROCESS_DANGLING_HREF, XMIResource.OPTION_PROCESS_DANGLING_HREF_DISCARD);
+    Map<Object, Object> loadOptions = ((XMIResourceImpl)resource).getDefaultLoadOptions();
+    loadOptions.put(XMIResource.OPTION_DEFER_IDREF_RESOLUTION, Boolean.TRUE);
+
+    Map<Object, Object> saveOptions = ((XMIResourceImpl)resource).getDefaultSaveOptions();
+    saveOptions.put(XMIResource.OPTION_DEFER_IDREF_RESOLUTION, Boolean.TRUE);
+    saveOptions.put(XMIResource.OPTION_PROCESS_DANGLING_HREF, XMIResource.OPTION_PROCESS_DANGLING_HREF_DISCARD);
 
     JavaPackage.eINSTANCE.eClass();
     System.out.print("Loading the original model ... ");
-    resourceOriginal.load(options);
+    resourceOriginal.load(loadOptions);
     System.out.println("Done");
     System.out.print("Copy the original model ... ");
     resource.getContents().addAll(EcoreUtil.copyAll(resourceOriginal.getContents()));
@@ -186,7 +190,7 @@ public class JavaPerformanceTest {
 
       counter += 1;
     }
-    resource.save(options);
+    resource.save(saveOptions);
 //    resource.unload();
 
     numberOfViews = classList.size();
@@ -221,7 +225,7 @@ public class JavaPerformanceTest {
 
       for (boolean temp : genAllViews) {
         PerformanceRecorder.genenerateAll = temp;
-        PictoApplication.setViewsGenerationGreedy(PerformanceRecorder.genenerateAll);
+        PictoApplication.setGreedyGeneration(PerformanceRecorder.genenerateAll);
 
         // iterate for each number of affected views
         for (int numViews : numbersOfAffectedViews) {
@@ -273,31 +277,31 @@ public class JavaPerformanceTest {
                 variable.setName(variable.getName() + "_" + numViews);
               }
 
-//              // move methods
-//              id1 = classList.get(i);
-//              class1 = (ClassDeclaration) resource.getEObject(id1);
-//              List<BodyDeclaration> fieldsAndmethods = class1.getBodyDeclarations().stream()
-//                  .filter(b -> b instanceof FieldDeclaration || b instanceof MethodDeclaration).toList();
-//
-//              if (fieldsAndmethods.size() > 0) {
-//                String id2 = (i == numViews - 1) ? classList.get(0) : classList.get(i + 1);
-//                ClassDeclaration class2 = (ClassDeclaration) resource.getEObject(id2);
-//                temp2.add(class1.getName());
-//                temp2.add(class2.getName());
-//                BodyDeclaration movedElement = null;
-////                while (/*
-////                        * !(movedElement instanceof MethodDeclaration || movedElement instanceof
-////                        * FieldDeclaration) ||
-////                        */previousMovedElement.equals(movedElement)) {
-//                movedElement = fieldsAndmethods.get(random.nextInt(fieldsAndmethods.size()));
-////                }
-//                class2.getBodyDeclarations().add(movedElement);
-//                previousMovedElement = movedElement;
-//              }
+              // move methods
+              id1 = classList.get(i);
+              class1 = (ClassDeclaration) resource.getEObject(id1);
+              List<BodyDeclaration> fieldsAndmethods = class1.getBodyDeclarations().stream()
+                  .filter(b -> b instanceof FieldDeclaration).toList();
+
+              if (fieldsAndmethods.size() > 0) {
+                String id2 = (i == numViews - 1) ? classList.get(0) : classList.get(i + 1);
+                ClassDeclaration class2 = (ClassDeclaration) resource.getEObject(id2);
+                temp2.add(class1.getName());
+                temp2.add(class2.getName());
+                BodyDeclaration movedElement = null;
+//                while (/*
+//                        * !(movedElement instanceof MethodDeclaration || movedElement instanceof
+//                        * FieldDeclaration) ||
+//                        */previousMovedElement.equals(movedElement)) {
+                movedElement = fieldsAndmethods.get(0);
+//                }
+                class2.getBodyDeclarations().add(movedElement);
+                previousMovedElement = movedElement;
+              }
 
             }
 
-            resource.save(options);
+            resource.save(saveOptions);
 
 //          Thread.sleep(100);
             PerformanceRecorder.startTime = System.currentTimeMillis();

@@ -50,7 +50,7 @@ import org.eclipse.gmt.modisco.java.emf.meta.JavaPackage;
 
 public class BigModelGenerator {
 
-  static final int NUMBER_OF_ITERATION = 1;
+  static final int NUMBER_OF_ITERATION = 20;
 
   /**
    * @param args

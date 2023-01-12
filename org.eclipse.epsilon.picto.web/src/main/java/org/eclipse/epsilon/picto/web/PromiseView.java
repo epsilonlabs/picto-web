@@ -80,7 +80,7 @@ public class PromiseView {
 
 		@Nonnull
 		ViewContent vc = null;
-		if (hasBeenGenerated == false || PictoApplication.getEachRequestAlwaysRegeneratesView()) {
+		if (hasBeenGenerated == false || PictoApplication.isNoCache()) {
 
 			if (viewTree.getPromise() instanceof StaticContentPromise) {
 

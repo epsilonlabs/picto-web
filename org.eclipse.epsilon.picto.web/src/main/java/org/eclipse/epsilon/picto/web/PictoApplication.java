@@ -54,10 +54,6 @@ public class PictoApplication implements ApplicationListener<ApplicationContextE
    */
   public static String[] args;
 
-  private static boolean isViewsGenerationGreedy = false;
-
-  private static boolean eachRequestAlwaysRegeneratesView = false;
-
   private static List<PictoProject> pictoProjects = new ArrayList<PictoProject>();
 
   private static ConfigurableApplicationContext context;
@@ -74,6 +70,46 @@ public class PictoApplication implements ApplicationListener<ApplicationContextE
     };
   };
 
+  private static CommandLine commandLine;
+
+  @Option(names = { "-ni", "--non-incremental" }, description = "Use no incrementality: false (default), true.")
+  private static boolean nonIncremental = false;
+
+  @Option(names = { "-gg", "--greedy-generation" }, description = "Every change on models always generates all views. "
+      + "If the mode is in '--non-incremental' the greedy-generation is automatically set to 'true': false (default), true.")
+  private static boolean isGreedyGeneration = false;
+
+  @Option(names = { "-nc",
+      "--no-cache" }, description = "No-cache, every request always (re)generates a view: false (default), true.")
+  private static boolean isNoCache = false;
+
+  /***
+   * Main program launcher
+   * 
+   * @param args
+   * @throws Exception
+   */
+  @Command(name = "Picto-Web", mixinStandardHelpOptions = true, version = "0.1.2-alpha", //
+      description = "A High-performance Tool for Complex Model Exploration.")
+  public static void main(String... args) throws Exception {
+
+    PictoApplication.args = args;
+
+    commandLine = new CommandLine(new PictoApplication());
+    commandLine.execute(args);
+
+    if (nonIncremental) {
+      isGreedyGeneration = true;
+    }
+
+    context = SpringApplication.run(PictoApplication.class, args);
+    PictoFactory.eINSTANCE.eClass();
+    PictoPackage.eINSTANCE.eClass();
+    FileWatcher.scanPictoFiles();
+    FileWatcher.startWatching();
+    pictoWebOnLoadedListener.onLoaded();
+  }
+
   /***
    * Initialise Picto Application
    * 
@@ -86,37 +122,9 @@ public class PictoApplication implements ApplicationListener<ApplicationContextE
     System.out.println("PICTO - Workspace directory: " + (new File(WORKSPACE)).getAbsolutePath());
   }
 
-  /***
-   * Main program launcher
-   * 
-   * @param args
-   * @throws Exception
-   */
-  @Command(name = "Picto-Web", mixinStandardHelpOptions = true, //
-      version = "0.1.2-alpha", //
-      description = "A High-performance Tool for Complex Model Exploration.")
-  public static void main(String... args) throws Exception {
-    PictoApplication.args = args;
-
-    commandLine = new CommandLine(new PictoApplication());
-    commandLine.execute(args);
-
-    context = SpringApplication.run(PictoApplication.class, args);
-    PictoFactory.eINSTANCE.eClass();
-    PictoPackage.eINSTANCE.eClass();
-    FileWatcher.scanPictoFiles();
-    FileWatcher.startWatching();
-    pictoWebOnLoadedListener.onLoaded();
-  }
-
   public Integer call() throws Exception {
     return 0;
   }
-
-  private static CommandLine commandLine;
-
-  @Option(names = { "-ni", "--non-incremental" }, description = "Use no incrementality (false, true).")
-  private static boolean nonIncremental = false;
 
   /**
    * @return the pictoProjects
@@ -155,20 +163,28 @@ public class PictoApplication implements ApplicationListener<ApplicationContextE
 //    }
   }
 
-  public static boolean isViewsGenerationGreedy() {
-    return isViewsGenerationGreedy;
+  public static boolean isGreedyGeneration() {
+    return isGreedyGeneration;
   }
 
-  public static void setViewsGenerationGreedy(boolean viewsGenerationIsGreedy) {
-    PictoApplication.isViewsGenerationGreedy = viewsGenerationIsGreedy;
+  public static void setGreedyGeneration(boolean isGreedyGeneration) {
+    PictoApplication.isGreedyGeneration = isGreedyGeneration;
   }
 
-  public static boolean getEachRequestAlwaysRegeneratesView() {
-    return eachRequestAlwaysRegeneratesView;
+  public static boolean isNoCache() {
+    return isNoCache;
   }
 
-  public static void setEachRequestAlwaysRegeneratesView(boolean eachRequestAlwaysRegeneratesView) {
-    PictoApplication.eachRequestAlwaysRegeneratesView = eachRequestAlwaysRegeneratesView;
+  public static void setNoCache(boolean isNoCache) {
+    PictoApplication.isNoCache = isNoCache;
+  }
+
+  public static boolean isNonIncremental() {
+    return nonIncremental;
+  }
+
+  public static void setNonIncremental(boolean nonIncremental) {
+    PictoApplication.nonIncremental = nonIncremental;
   }
 
   public static PromisesGenerationListener getPromisesGenerationListener() {

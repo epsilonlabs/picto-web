@@ -11,6 +11,7 @@ import org.eclipse.epsilon.egl.EgxModule;
 import org.eclipse.epsilon.egl.dom.GenerationRule;
 import org.eclipse.epsilon.eol.dom.NameExpression;
 import org.eclipse.epsilon.eol.execute.introspection.recording.PropertyAccessRecorder;
+import org.eclipse.epsilon.picto.web.PictoApplication;
 
 public class AccessRecordRecorder extends PropertyAccessRecorder {
 
@@ -137,14 +138,18 @@ public class AccessRecordRecorder extends PropertyAccessRecorder {
 
   @Override
   public void record(Object modelElement, String propertyName) {
-    if (recording) {
-      currentPropertyAccesses.add(createPropertyAccess(modelElement, propertyName));
+    if (!PictoApplication.isNonIncremental() || !PictoApplication.isGreedyGeneration()) {
+      if (recording) {
+        currentPropertyAccesses.add(createPropertyAccess(modelElement, propertyName));
+      }
     }
   }
 
   public void record(Object modelElement, String propertyName, Object result) {
-    if (recording) {
-      currentPropertyAccesses.add(createPropertyAccess(modelElement, propertyName, result));
+    if (!PictoApplication.isNonIncremental() || !PictoApplication.isGreedyGeneration()) {
+      if (recording) {
+        currentPropertyAccesses.add(createPropertyAccess(modelElement, propertyName, result));
+      }
     }
   }
 

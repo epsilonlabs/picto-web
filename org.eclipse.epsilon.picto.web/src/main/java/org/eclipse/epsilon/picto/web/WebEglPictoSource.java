@@ -211,8 +211,8 @@ public class WebEglPictoSource extends EglPictoSource {
               PerformanceTestType.LOADING_TIME);
           PerformanceRecorder.record(record);
 
-          // if picto generation is not greedy a.k.a. selective.
-          if (!PictoApplication.isViewsGenerationGreedy()) {
+          // if picto generation is not greedy a.k.a. selective (re)generation.
+          if (!PictoApplication.isNonIncremental() || !PictoApplication.isGreedyGeneration()) {
             long startTime = System.currentTimeMillis();
             invalidatedViewPaths.addAll(accessRecordResource.getInvalidatedViewPaths(promises, (EgxModule) module));
             /** Calculate the detection time of invalidated views **/
@@ -243,7 +243,7 @@ public class WebEglPictoSource extends EglPictoSource {
             // if the generation is selective, copy the old contents to the new ones
             // because we don't want to regenerate the views as they are same.
             // although the promise views
-            if (!PictoApplication.isViewsGenerationGreedy() && oldPromiseView != null) {
+            if (!PictoApplication.isGreedyGeneration() && oldPromiseView != null) {
               promiseView.setHasBeenGenerated(oldPromiseView.hasBeenGenerated());
               promiseView.setEmptyViewContent(oldPromiseView.getEmptyViewContent());
               promiseView.setViewContent(oldPromiseView.getViewContent());
@@ -251,7 +251,7 @@ public class WebEglPictoSource extends EglPictoSource {
 
             // Check if the path should be processed to generated new view.
             // Skip to next promise if path is not in the invalidatedViewPaths.
-            if (!generateAll1stTime && !PictoApplication.isViewsGenerationGreedy()) {
+            if (!generateAll1stTime && !PictoApplication.isGreedyGeneration()) {
               if (!invalidatedViewPaths.contains(pathString)) {
                 System.out.println("SKIP");
                 continue;
@@ -267,15 +267,7 @@ public class WebEglPictoSource extends EglPictoSource {
             // to identify views affected by the last change.
             State isNew = accessRecordResource.getPathStatus(pathString);
             if (State.NEW.equals(isNew)) {
-//              Thread t = new Thread() {
-//                public void run() {
-//                  try {
               promiseView.getViewContent(null);
-//                  } catch (Exception e) {
-//                  }
-//                }
-//              };
-//              t.start();
             }
             modifiedViewContents.add(pathString);
 

@@ -53,6 +53,7 @@ public class PerformanceRecorder {
   public static boolean generateAlways;
   public static boolean genenerateAll;
   public static int globalNumberIteration;
+  public static int globalActualAffectedViews;
   public static int globalNumberOfAffectedViews;
   public static long startTime;
   public static long detectionTime;
