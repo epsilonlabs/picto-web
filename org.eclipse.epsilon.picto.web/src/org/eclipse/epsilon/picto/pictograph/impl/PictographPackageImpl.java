@@ -233,28 +233,8 @@ public class PictographPackageImpl extends EPackageImpl implements PictographPac
    * @generated
    */
   @Override
-  public EAttribute getEntity_CheckCount() {
-    return (EAttribute)entityEClass.getEStructuralFeatures().get(4);
-  }
-
-  /**
-   * <!-- begin-user-doc -->
-   * <!-- end-user-doc -->
-   * @generated
-   */
-  @Override
   public EAttribute getEntity_CheckingTime() {
-    return (EAttribute)entityEClass.getEStructuralFeatures().get(5);
-  }
-
-  /**
-   * <!-- begin-user-doc -->
-   * <!-- end-user-doc -->
-   * @generated
-   */
-  @Override
-  public EAttribute getEntity_AvgCheckTime() {
-    return (EAttribute)entityEClass.getEStructuralFeatures().get(6);
+    return (EAttribute)entityEClass.getEStructuralFeatures().get(4);
   }
 
   /**
@@ -315,16 +295,6 @@ public class PictographPackageImpl extends EPackageImpl implements PictographPac
   @Override
   public EAttribute getPath_GenerationTime() {
     return (EAttribute)pathEClass.getEStructuralFeatures().get(2);
-  }
-
-  /**
-   * <!-- begin-user-doc -->
-   * <!-- end-user-doc -->
-   * @generated
-   */
-  @Override
-  public EAttribute getPath_AvgGenTime() {
-    return (EAttribute)pathEClass.getEStructuralFeatures().get(3);
   }
 
   /**
@@ -563,9 +533,7 @@ public class PictographPackageImpl extends EPackageImpl implements PictographPac
     createEAttribute(entityEClass, ENTITY__STATE);
     createEAttribute(entityEClass, ENTITY__HASH);
     createEAttribute(entityEClass, ENTITY__ACCESS_COUNT);
-    createEAttribute(entityEClass, ENTITY__CHECK_COUNT);
     createEAttribute(entityEClass, ENTITY__CHECKING_TIME);
-    createEAttribute(entityEClass, ENTITY__AVG_CHECK_TIME);
 
     inputEntityEClass = createEClass(INPUT_ENTITY);
     createEReference(inputEntityEClass, INPUT_ENTITY__AFFECTS);
@@ -574,7 +542,6 @@ public class PictographPackageImpl extends EPackageImpl implements PictographPac
     createEReference(pathEClass, PATH__AFFECTED_BY);
     createEAttribute(pathEClass, PATH__GENERATION_COUNT);
     createEAttribute(pathEClass, PATH__GENERATION_TIME);
-    createEAttribute(pathEClass, PATH__AVG_GEN_TIME);
 
     moduleEClass = createEClass(MODULE);
     createEReference(moduleEClass, MODULE__RULES);
@@ -650,9 +617,7 @@ public class PictographPackageImpl extends EPackageImpl implements PictographPac
     initEAttribute(getEntity_State(), this.getState(), "state", null, 0, 1, Entity.class, !IS_TRANSIENT, !IS_VOLATILE, IS_CHANGEABLE, !IS_UNSETTABLE, !IS_ID, IS_UNIQUE, !IS_DERIVED, IS_ORDERED);
     initEAttribute(getEntity_Hash(), ecorePackage.getEString(), "hash", null, 0, 1, Entity.class, !IS_TRANSIENT, !IS_VOLATILE, IS_CHANGEABLE, !IS_UNSETTABLE, !IS_ID, IS_UNIQUE, !IS_DERIVED, IS_ORDERED);
     initEAttribute(getEntity_AccessCount(), ecorePackage.getEInt(), "accessCount", null, 0, 1, Entity.class, !IS_TRANSIENT, !IS_VOLATILE, IS_CHANGEABLE, !IS_UNSETTABLE, !IS_ID, IS_UNIQUE, !IS_DERIVED, IS_ORDERED);
-    initEAttribute(getEntity_CheckCount(), ecorePackage.getEInt(), "checkCount", null, 0, 1, Entity.class, !IS_TRANSIENT, !IS_VOLATILE, IS_CHANGEABLE, !IS_UNSETTABLE, !IS_ID, IS_UNIQUE, !IS_DERIVED, IS_ORDERED);
     initEAttribute(getEntity_CheckingTime(), ecorePackage.getELong(), "checkingTime", null, 0, 1, Entity.class, !IS_TRANSIENT, !IS_VOLATILE, IS_CHANGEABLE, !IS_UNSETTABLE, !IS_ID, IS_UNIQUE, !IS_DERIVED, IS_ORDERED);
-    initEAttribute(getEntity_AvgCheckTime(), ecorePackage.getEDouble(), "avgCheckTime", null, 0, 1, Entity.class, !IS_TRANSIENT, !IS_VOLATILE, IS_CHANGEABLE, !IS_UNSETTABLE, !IS_ID, IS_UNIQUE, !IS_DERIVED, IS_ORDERED);
 
     initEClass(inputEntityEClass, InputEntity.class, "InputEntity", IS_ABSTRACT, !IS_INTERFACE, IS_GENERATED_INSTANCE_CLASS);
     initEReference(getInputEntity_Affects(), this.getPath(), this.getPath_AffectedBy(), "affects", null, 0, -1, InputEntity.class, !IS_TRANSIENT, !IS_VOLATILE, IS_CHANGEABLE, !IS_COMPOSITE, IS_RESOLVE_PROXIES, !IS_UNSETTABLE, IS_UNIQUE, !IS_DERIVED, IS_ORDERED);
@@ -661,7 +626,6 @@ public class PictographPackageImpl extends EPackageImpl implements PictographPac
     initEReference(getPath_AffectedBy(), this.getInputEntity(), this.getInputEntity_Affects(), "affectedBy", null, 0, -1, Path.class, !IS_TRANSIENT, !IS_VOLATILE, IS_CHANGEABLE, !IS_COMPOSITE, IS_RESOLVE_PROXIES, !IS_UNSETTABLE, IS_UNIQUE, !IS_DERIVED, IS_ORDERED);
     initEAttribute(getPath_GenerationCount(), ecorePackage.getEInt(), "generationCount", null, 0, 1, Path.class, !IS_TRANSIENT, !IS_VOLATILE, IS_CHANGEABLE, !IS_UNSETTABLE, !IS_ID, IS_UNIQUE, !IS_DERIVED, IS_ORDERED);
     initEAttribute(getPath_GenerationTime(), ecorePackage.getELong(), "generationTime", null, 0, 1, Path.class, !IS_TRANSIENT, !IS_VOLATILE, IS_CHANGEABLE, !IS_UNSETTABLE, !IS_ID, IS_UNIQUE, !IS_DERIVED, IS_ORDERED);
-    initEAttribute(getPath_AvgGenTime(), ecorePackage.getEDouble(), "avgGenTime", null, 0, 1, Path.class, !IS_TRANSIENT, !IS_VOLATILE, IS_CHANGEABLE, !IS_UNSETTABLE, !IS_ID, IS_UNIQUE, !IS_DERIVED, IS_ORDERED);
 
     initEClass(moduleEClass, org.eclipse.epsilon.picto.pictograph.Module.class, "Module", !IS_ABSTRACT, !IS_INTERFACE, IS_GENERATED_INSTANCE_CLASS);
     initEReference(getModule_Rules(), this.getRule(), this.getRule_Module(), "rules", null, 0, -1, org.eclipse.epsilon.picto.pictograph.Module.class, !IS_TRANSIENT, !IS_VOLATILE, IS_CHANGEABLE, IS_COMPOSITE, !IS_RESOLVE_PROXIES, !IS_UNSETTABLE, IS_UNIQUE, !IS_DERIVED, IS_ORDERED);

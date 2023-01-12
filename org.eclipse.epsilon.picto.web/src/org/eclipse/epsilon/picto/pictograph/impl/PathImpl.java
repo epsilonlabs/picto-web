@@ -32,7 +32,6 @@ import org.eclipse.epsilon.picto.pictograph.PictographPackage;
  *   <li>{@link org.eclipse.epsilon.picto.pictograph.impl.PathImpl#getAffectedBy <em>Affected By</em>}</li>
  *   <li>{@link org.eclipse.epsilon.picto.pictograph.impl.PathImpl#getGenerationCount <em>Generation Count</em>}</li>
  *   <li>{@link org.eclipse.epsilon.picto.pictograph.impl.PathImpl#getGenerationTime <em>Generation Time</em>}</li>
- *   <li>{@link org.eclipse.epsilon.picto.pictograph.impl.PathImpl#getAvgGenTime <em>Avg Gen Time</em>}</li>
  * </ul>
  *
  * @generated
@@ -87,26 +86,6 @@ public class PathImpl extends EntityImpl implements Path {
    * @ordered
    */
   protected long generationTime = GENERATION_TIME_EDEFAULT;
-
-  /**
-   * The default value of the '{@link #getAvgGenTime() <em>Avg Gen Time</em>}' attribute.
-   * <!-- begin-user-doc -->
-   * <!-- end-user-doc -->
-   * @see #getAvgGenTime()
-   * @generated
-   * @ordered
-   */
-  protected static final double AVG_GEN_TIME_EDEFAULT = 0.0;
-
-  /**
-   * The cached value of the '{@link #getAvgGenTime() <em>Avg Gen Time</em>}' attribute.
-   * <!-- begin-user-doc -->
-   * <!-- end-user-doc -->
-   * @see #getAvgGenTime()
-   * @generated
-   * @ordered
-   */
-  protected double avgGenTime = AVG_GEN_TIME_EDEFAULT;
 
   /**
    * <!-- begin-user-doc -->
@@ -191,29 +170,6 @@ public class PathImpl extends EntityImpl implements Path {
    * <!-- end-user-doc -->
    * @generated
    */
-  @Override
-  public double getAvgGenTime() {
-    return avgGenTime;
-  }
-
-  /**
-   * <!-- begin-user-doc -->
-   * <!-- end-user-doc -->
-   * @generated
-   */
-  @Override
-  public void setAvgGenTime(double newAvgGenTime) {
-    double oldAvgGenTime = avgGenTime;
-    avgGenTime = newAvgGenTime;
-    if (eNotificationRequired())
-      eNotify(new ENotificationImpl(this, Notification.SET, PictographPackage.PATH__AVG_GEN_TIME, oldAvgGenTime, avgGenTime));
-  }
-
-  /**
-   * <!-- begin-user-doc -->
-   * <!-- end-user-doc -->
-   * @generated
-   */
   @SuppressWarnings("unchecked")
   @Override
   public NotificationChain eInverseAdd(InternalEObject otherEnd, int featureID, NotificationChain msgs) {
@@ -252,8 +208,6 @@ public class PathImpl extends EntityImpl implements Path {
         return getGenerationCount();
       case PictographPackage.PATH__GENERATION_TIME:
         return getGenerationTime();
-      case PictographPackage.PATH__AVG_GEN_TIME:
-        return getAvgGenTime();
     }
     return super.eGet(featureID, resolve, coreType);
   }
@@ -277,9 +231,6 @@ public class PathImpl extends EntityImpl implements Path {
       case PictographPackage.PATH__GENERATION_TIME:
         setGenerationTime((Long)newValue);
         return;
-      case PictographPackage.PATH__AVG_GEN_TIME:
-        setAvgGenTime((Double)newValue);
-        return;
     }
     super.eSet(featureID, newValue);
   }
@@ -301,9 +252,6 @@ public class PathImpl extends EntityImpl implements Path {
       case PictographPackage.PATH__GENERATION_TIME:
         setGenerationTime(GENERATION_TIME_EDEFAULT);
         return;
-      case PictographPackage.PATH__AVG_GEN_TIME:
-        setAvgGenTime(AVG_GEN_TIME_EDEFAULT);
-        return;
     }
     super.eUnset(featureID);
   }
@@ -322,8 +270,6 @@ public class PathImpl extends EntityImpl implements Path {
         return generationCount != GENERATION_COUNT_EDEFAULT;
       case PictographPackage.PATH__GENERATION_TIME:
         return generationTime != GENERATION_TIME_EDEFAULT;
-      case PictographPackage.PATH__AVG_GEN_TIME:
-        return avgGenTime != AVG_GEN_TIME_EDEFAULT;
     }
     return super.eIsSet(featureID);
   }
@@ -342,8 +288,6 @@ public class PathImpl extends EntityImpl implements Path {
     result.append(generationCount);
     result.append(", generationTime: ");
     result.append(generationTime);
-    result.append(", avgGenTime: ");
-    result.append(avgGenTime);
     result.append(')');
     return result.toString();
   }

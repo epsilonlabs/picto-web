@@ -16,7 +16,6 @@ import org.eclipse.emf.common.util.EList;
  *   <li>{@link org.eclipse.epsilon.picto.pictograph.Path#getAffectedBy <em>Affected By</em>}</li>
  *   <li>{@link org.eclipse.epsilon.picto.pictograph.Path#getGenerationCount <em>Generation Count</em>}</li>
  *   <li>{@link org.eclipse.epsilon.picto.pictograph.Path#getGenerationTime <em>Generation Time</em>}</li>
- *   <li>{@link org.eclipse.epsilon.picto.pictograph.Path#getAvgGenTime <em>Avg Gen Time</em>}</li>
  * </ul>
  *
  * @see org.eclipse.epsilon.picto.pictograph.PictographPackage#getPath()
@@ -81,27 +80,5 @@ public interface Path extends Entity {
    * @generated
    */
   void setGenerationTime(long value);
-
-  /**
-   * Returns the value of the '<em><b>Avg Gen Time</b></em>' attribute.
-   * <!-- begin-user-doc -->
-   * <!-- end-user-doc -->
-   * @return the value of the '<em>Avg Gen Time</em>' attribute.
-   * @see #setAvgGenTime(double)
-   * @see org.eclipse.epsilon.picto.pictograph.PictographPackage#getPath_AvgGenTime()
-   * @model
-   * @generated
-   */
-  double getAvgGenTime();
-
-  /**
-   * Sets the value of the '{@link org.eclipse.epsilon.picto.pictograph.Path#getAvgGenTime <em>Avg Gen Time</em>}' attribute.
-   * <!-- begin-user-doc -->
-   * <!-- end-user-doc -->
-   * @param value the new value of the '<em>Avg Gen Time</em>' attribute.
-   * @see #getAvgGenTime()
-   * @generated
-   */
-  void setAvgGenTime(double value);
 
 } // Path

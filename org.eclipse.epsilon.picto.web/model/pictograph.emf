@@ -23,6 +23,10 @@ abstract class Entity {
 	attr String name;
 	attr State state;
 	attr String hash; 
+	attr int accessCount;
+	attr int checkCount;
+	attr long checkingTime;
+	attr double avgCheckTime;
 }
 
 abstract class InputEntity extends Entity {
@@ -31,6 +35,9 @@ abstract class InputEntity extends Entity {
 
 class Path extends Entity {
 	ref InputEntity[*]#affects affectedBy;
+	attr int generationCount;
+	attr long generationTime; 
+	attr double avgGenTime;
 }
 
 class Module extends InputEntity {
@@ -43,7 +50,7 @@ class Resource extends InputEntity {
 
 class Property extends InputEntity {
 	ref Element#properties element;
-	attr String previousValue;
+	//attr String previousValue;
 	attr String value;
 }
 

@@ -327,8 +327,9 @@ public class AccessGraphResource implements AccessRecordResource {
 
               // check if the property has been changed
               String currentValue = AccessRecord.convertValueToString(currentValueObject);
-              if (!IncrementalityUtil.equals(property.getPreviousValue(), currentValue)) {
+              if (!IncrementalityUtil.equals(property.getValue(), currentValue)) {
                 toBeProcessedPaths.add(checkedPath);
+                property.setValue(currentValue);
 //                property.getAffects().forEach(p -> toBeProcessedPaths.add(p.getName()));
                 return;
               }
@@ -398,10 +399,10 @@ public class AccessGraphResource implements AccessRecordResource {
             System.console();
           }
           entity.setState(State.PROCESSED);
-          if (entity instanceof Property) {
-            ((Property) entity).setPreviousValue(((Property) entity).getValue());
-            System.console();
-          }
+//          if (entity instanceof Property) {
+//            ((Property) entity).setPreviousValue(((Property) entity).getValue());
+//            System.console();
+//          }
         }
       }
     }
