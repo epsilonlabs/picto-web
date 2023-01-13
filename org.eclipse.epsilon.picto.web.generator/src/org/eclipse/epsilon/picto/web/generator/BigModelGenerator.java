@@ -41,6 +41,7 @@ import org.eclipse.jdt.core.JavaModelException;
 import org.eclipse.modisco.java.ClassDeclaration;
 import org.eclipse.modisco.java.FieldDeclaration;
 import org.eclipse.modisco.java.MethodDeclaration;
+import org.eclipse.modisco.java.Model;
 import org.eclipse.modisco.java.discoverer.DiscoverJavaModelFromJavaProject;
 import org.eclipse.modisco.java.emf.JavaPackage;
 
@@ -66,7 +67,7 @@ public class BigModelGenerator {
       bigResource.setURI(org.eclipse.emf.common.util.URI.createFileURI(bigModelFile.getAbsolutePath()));
       resourceSet.getResources().add(bigResource);
 
-      String sourcePath = "D:\\PROJECTS\\epsilon\\plugins\\";
+      String sourcePath = "D:\\PROJECTS\\epsilon\\";
 
       System.out.println("Get all projects under " + sourcePath);
       System.out.println();
@@ -151,6 +152,8 @@ public class BigModelGenerator {
           try {
             javaDiscoverer.discoverElement(javaProject, new NullProgressMonitor());
             Resource javaResource = javaDiscoverer.getTargetModel();
+            Model model = (Model) javaResource.getContents().get(0);
+            model.setName("M" + (i - 1));
             bigResource.getContents().addAll(javaResource.getContents());
             System.out.println("SUCCESS!!!");
             javaResource.getContents().clear();
@@ -204,7 +207,7 @@ public class BigModelGenerator {
           methodList.add((MethodDeclaration) eObject);
         }
 
-        eObjectCounter += 1;
+        eObjectCounter++;
         bigResource.setID(eObject, "e" + eObjectCounter);
       }
 

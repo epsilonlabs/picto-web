@@ -212,7 +212,7 @@ public class WebEglPictoSource extends EglPictoSource {
           PerformanceRecorder.record(record);
 
           // if picto generation is not greedy a.k.a. selective (re)generation.
-          if (!PictoApplication.isNonIncremental() || !PictoApplication.isGreedyGeneration()) {
+          if (!PictoApplication.isNonIncremental()) {
             long startTime = System.currentTimeMillis();
             invalidatedViewPaths.addAll(accessRecordResource.getInvalidatedViewPaths(promises, (EgxModule) module));
             /** Calculate the detection time of invalidated views **/
@@ -227,11 +227,13 @@ public class WebEglPictoSource extends EglPictoSource {
           /** loop through the content promises of rules **/
           // System.out.println("\nGENERATING VIEWS: ");
           // generate view for each promises
+          System.out.println("Total " + promises.size() + " promises are to be processed");
+          int num = 0;
           for (IncrementalLazyGenerationRuleContentPromise promise : promises) {
 
             String pathString = IncrementalityUtil.getPath(promise);
 
-            System.out.print("Processing " + pathString + " ... ");
+            System.out.print("Processing " + ++num + " of " + promises.size() + " - " + pathString + " ... ");
 
             ViewTree viewTree = generateViewTree(rootViewTree, promise);
 
@@ -243,7 +245,7 @@ public class WebEglPictoSource extends EglPictoSource {
             // if the generation is selective, copy the old contents to the new ones
             // because we don't want to regenerate the views as they are same.
             // although the promise views
-            if (!PictoApplication.isGreedyGeneration() && oldPromiseView != null) {
+            if (!PictoApplication.isNonIncremental() && oldPromiseView != null) {
               promiseView.setHasBeenGenerated(oldPromiseView.hasBeenGenerated());
               promiseView.setEmptyViewContent(oldPromiseView.getEmptyViewContent());
               promiseView.setViewContent(oldPromiseView.getViewContent());
@@ -251,7 +253,7 @@ public class WebEglPictoSource extends EglPictoSource {
 
             // Check if the path should be processed to generated new view.
             // Skip to next promise if path is not in the invalidatedViewPaths.
-            if (!generateAll1stTime && !PictoApplication.isGreedyGeneration()) {
+            if (!generateAll1stTime && !PictoApplication.isNonIncremental()) {
               if (!invalidatedViewPaths.contains(pathString)) {
                 System.out.println("SKIP");
                 continue;

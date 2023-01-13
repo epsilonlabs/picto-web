@@ -138,7 +138,7 @@ public class AccessRecordRecorder extends PropertyAccessRecorder {
 
   @Override
   public void record(Object modelElement, String propertyName) {
-    if (!PictoApplication.isNonIncremental() || !PictoApplication.isGreedyGeneration()) {
+    if (!PictoApplication.isNonIncremental()) {
       if (recording) {
         currentPropertyAccesses.add(createPropertyAccess(modelElement, propertyName));
       }
@@ -146,7 +146,7 @@ public class AccessRecordRecorder extends PropertyAccessRecorder {
   }
 
   public void record(Object modelElement, String propertyName, Object result) {
-    if (!PictoApplication.isNonIncremental() || !PictoApplication.isGreedyGeneration()) {
+    if (!PictoApplication.isNonIncremental()) {
       if (recording) {
         currentPropertyAccesses.add(createPropertyAccess(modelElement, propertyName, result));
       }

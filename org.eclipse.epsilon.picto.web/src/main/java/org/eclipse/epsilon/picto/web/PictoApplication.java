@@ -72,15 +72,13 @@ public class PictoApplication implements ApplicationListener<ApplicationContextE
 
   private static CommandLine commandLine;
 
-  @Option(names = { "-ni", "--non-incremental" }, description = "Use no incrementality: false (default), true.")
+  @Option(names = { "-ni",
+      "--non-incremental" }, description = "Use no incrementality. It implies that views generation "
+          + "would be greedy. All views are (re)generated when a change happened. Options: false (default), true.")
   private static boolean nonIncremental = false;
 
-  @Option(names = { "-gg", "--greedy-generation" }, description = "Every change on models always generates all views. "
-      + "If the mode is in '--non-incremental' the greedy-generation is automatically set to 'true': false (default), true.")
-  private static boolean isGreedyGeneration = false;
-
   @Option(names = { "-nc",
-      "--no-cache" }, description = "No-cache, every request always (re)generates a view: false (default), true.")
+      "--no-cache" }, description = "No-cache, every request always (re)generates a view. Options: false (default), true.")
   private static boolean isNoCache = false;
 
   /***
@@ -97,10 +95,6 @@ public class PictoApplication implements ApplicationListener<ApplicationContextE
 
     commandLine = new CommandLine(new PictoApplication());
     commandLine.execute(args);
-
-    if (nonIncremental) {
-      isGreedyGeneration = true;
-    }
 
     context = SpringApplication.run(PictoApplication.class, args);
     PictoFactory.eINSTANCE.eClass();
@@ -161,14 +155,6 @@ public class PictoApplication implements ApplicationListener<ApplicationContextE
 //    } else if (event instanceof ContextClosedEvent) {
 //      System.out.println("PICTO: context closed - " + Timestamp.from(Instant.now()).toString());
 //    }
-  }
-
-  public static boolean isGreedyGeneration() {
-    return isGreedyGeneration;
-  }
-
-  public static void setGreedyGeneration(boolean isGreedyGeneration) {
-    PictoApplication.isGreedyGeneration = isGreedyGeneration;
   }
 
   public static boolean isNoCache() {

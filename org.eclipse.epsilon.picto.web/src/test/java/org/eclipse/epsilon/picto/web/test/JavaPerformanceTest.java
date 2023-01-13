@@ -35,7 +35,6 @@ import java.util.stream.Collectors;
 import org.eclipse.emf.common.util.TreeIterator;
 import org.eclipse.emf.common.util.URI;
 import org.eclipse.emf.ecore.EObject;
-import org.eclipse.emf.ecore.resource.impl.ResourceImpl;
 import org.eclipse.emf.ecore.util.EcoreUtil;
 import org.eclipse.emf.ecore.xmi.XMIResource;
 import org.eclipse.emf.ecore.xmi.impl.XMIResourceImpl;
@@ -46,11 +45,11 @@ import org.eclipse.epsilon.picto.web.component.TestUtil;
 import org.eclipse.gmt.modisco.java.BodyDeclaration;
 import org.eclipse.gmt.modisco.java.ClassDeclaration;
 import org.eclipse.gmt.modisco.java.FieldDeclaration;
-import org.eclipse.gmt.modisco.java.Modifier;
-import org.eclipse.gmt.modisco.java.TypeAccess;
+import org.eclipse.gmt.modisco.java.InterfaceDeclaration;
+import org.eclipse.gmt.modisco.java.MethodDeclaration;
+import org.eclipse.gmt.modisco.java.Model;
+import org.eclipse.gmt.modisco.java.Package;
 import org.eclipse.gmt.modisco.java.VariableDeclarationFragment;
-import org.eclipse.gmt.modisco.java.VisibilityKind;
-import org.eclipse.gmt.modisco.java.emf.meta.JavaFactory;
 import org.eclipse.gmt.modisco.java.emf.meta.JavaPackage;
 import org.eclipse.jetty.client.HttpClient;
 import org.eclipse.jetty.util.thread.QueuedThreadPool;
@@ -84,7 +83,8 @@ public class JavaPerformanceTest {
   static final String PICTO_WEB_ADDRESS = "http://localhost:8081/pictojson/picto?";
   public static final String WEB_SOCKET_ADDRESS = "ws://localhost:8081/picto-web";
   public static final String PICTO_FILE = "/java/java.picto";
-  private static final String MODEL_ORIGINAL = "/java/java.big.xmi";
+//  private static final String MODEL_ORIGINAL = "/java/java.big.xmi";
+  private static final String MODEL_ORIGINAL = "/java/java.small.xmi";
   private static final String MODEL = "/java/java.xmi";
   public static final String PICTO_TOPIC = "/topic/picto";
   private static final File modelFileOriginal = new File(PictoApplication.WORKSPACE + File.separator + MODEL_ORIGINAL);
@@ -105,7 +105,7 @@ public class JavaPerformanceTest {
 
   /**
    * @param args
-   * @throws Exception 
+   * @throws Exception
    */
   @Test
   public void testInvalidatedViewsPerformance() throws Exception {
@@ -113,7 +113,7 @@ public class JavaPerformanceTest {
     PerformanceRecorder.startRecording();
 
     Object invalidatedViewsWaiter = new Object();
-    final int numberOfMeasurementPoints = 5;
+    final int numberOfMeasurementPoints = 3;
 
 //    // configuration for larger experiment
 //    int numberOfViews = 10000; // Number of nodes the graph model.
@@ -125,20 +125,21 @@ public class JavaPerformanceTest {
 //    boolean[] genAllViews = { true, false };
 
 //     configuration for smaller experiment
-    int numberOfViews = 12; // Number of nodes the graph model
-    int numberOfClients = 100; // number of clients subscribed to Picto Web's STOMP server.
-    int numberOfIteration = 8; // Number of iteration measuring for each number of affected views
-    int[] numbersOfAffectedViews = { 12, 8, 4 };
+//    int numberOfViews = 12; // Number of nodes the graph model
+    int numberOfViews; // Number of nodes the graph model
+    int numberOfClients = 3; // number of clients subscribed to Picto Web's STOMP server.
+    int numberOfIteration = 13; // Number of iteration measuring for each number of affected views
+    int[] numbersOfAffectedViews = null;
+//    int[] numbersOfAffectedViews = { 12, 8, 4 };
 //    int[] numbersOfAffectedViews = { 100000 };
 //    int[] numbersOfAffectedViews = { 10, 9, 8, 7, 5, 4, 3, 2, 1 };
-    boolean[] genAllViews = { true, false };
+    boolean[] genAllViews = { false, true };
 //    boolean[] genAllViews = { true };
 
-    Map<Object, Object> loadOptions = ((XMIResourceImpl)resource).getDefaultLoadOptions();
+    Map<Object, Object> loadOptions = ((XMIResourceImpl) resource).getDefaultLoadOptions();
     loadOptions.put(XMIResource.OPTION_DEFER_IDREF_RESOLUTION, Boolean.TRUE);
 
-    Map<Object, Object> saveOptions = ((XMIResourceImpl)resource).getDefaultSaveOptions();
-    saveOptions.put(XMIResource.OPTION_DEFER_IDREF_RESOLUTION, Boolean.TRUE);
+    Map<Object, Object> saveOptions = ((XMIResourceImpl) resource).getDefaultSaveOptions();
     saveOptions.put(XMIResource.OPTION_PROCESS_DANGLING_HREF, XMIResource.OPTION_PROCESS_DANGLING_HREF_DISCARD);
 
     JavaPackage.eINSTANCE.eClass();
@@ -154,54 +155,48 @@ public class JavaPerformanceTest {
 
     List<String> classList = new ArrayList<>();
     classNames.clear();
-    int counter = 0;
     TreeIterator<EObject> treeIterator = resource.getAllContents();
+    int count = 0;
     while (treeIterator.hasNext()) {
       EObject eObject = treeIterator.next();
-      resource.setID(eObject, "e" + counter);
-
+      resource.setID(eObject, "e" + count);
       if (eObject instanceof ClassDeclaration) {
-        ClassDeclaration cd = (ClassDeclaration) eObject;
-        classNames.add(cd.getName());
-
-        FieldDeclaration fd = JavaFactory.eINSTANCE.createFieldDeclaration();
-        Modifier modifier = JavaFactory.eINSTANCE.createModifier();
-        modifier.setVisibility(VisibilityKind.PRIVATE);
-        fd.setModifier(modifier);
-        TypeAccess typeAccess = JavaFactory.eINSTANCE.createTypeAccess();
-        typeAccess.setType(cd);
-        fd.setType(typeAccess);
-        VariableDeclarationFragment vd = JavaFactory.eINSTANCE.createVariableDeclarationFragment();
-        vd.setName("dummy");
-        fd.getFragments().add(0, (VariableDeclarationFragment) vd);
-        cd.getBodyDeclarations().add(0, fd);
-
-        counter++;
-        resource.setID(modifier, "e" + counter);
-        counter++;
-        resource.setID(typeAccess, "e" + counter);
-        counter++;
-        resource.setID(vd, "e" + counter);
-        counter++;
-        resource.setID(fd, "e" + counter);
-
-        classList.add(resource.getID(eObject));
+        ClassDeclaration c = (ClassDeclaration) eObject;
+        EObject eContainer = c.eContainer();
+        List<String> segments = new ArrayList<>();
+        segments.add(c.getName());
+        Model model = null;
+        while (eContainer != null) {
+          if (eContainer instanceof ClassDeclaration) {
+            segments.add(0, ((ClassDeclaration) eContainer).getName());
+          } else if (eContainer instanceof InterfaceDeclaration) {
+            segments.add(0, ((InterfaceDeclaration) eContainer).getName());
+          } else if (eContainer instanceof Package) {
+            segments.add(0, ((Package) eContainer).getName());
+          } else if (eContainer instanceof Model) {
+            model = (Model) eContainer;
+            segments.add(0, model.getName());
+          }
+          eContainer = eContainer.eContainer();
+        }
+        classNames.add(String.join(".", segments));
+        String id = resource.getID(eObject);
+        classList.add(id);
       }
-
-      counter += 1;
+      count++;
     }
     resource.save(saveOptions);
-//    resource.unload();
 
     numberOfViews = classList.size();
     PerformanceRecorder.globalNumberOfViews = numberOfViews;
 
-    numbersOfAffectedViews = new int[numberOfMeasurementPoints];
+    numbersOfAffectedViews = new int[numberOfMeasurementPoints + 1];
     for (
 
         int i = 0; i < numberOfMeasurementPoints; i++) {
-      numbersOfAffectedViews[i] = numberOfViews - (numberOfViews / numberOfMeasurementPoints) * i;
+      numbersOfAffectedViews[i + 1] = numberOfViews - (numberOfViews / numberOfMeasurementPoints) * i;
     }
+    numbersOfAffectedViews[0] = numbersOfAffectedViews[1] - 1;
     System.out.println("Iteration = " + Arrays.toString(numbersOfAffectedViews));
 
     // start Picto Web server
@@ -225,7 +220,7 @@ public class JavaPerformanceTest {
 
       for (boolean temp : genAllViews) {
         PerformanceRecorder.genenerateAll = temp;
-        PictoApplication.setGreedyGeneration(PerformanceRecorder.genenerateAll);
+        PictoApplication.setNonIncremental(PerformanceRecorder.genenerateAll);
 
         // iterate for each number of affected views
         for (int numViews : numbersOfAffectedViews) {
@@ -260,44 +255,34 @@ public class JavaPerformanceTest {
             Set<String> temp2 = new HashSet<>();
             for (int i = 0; i < numViews; i++) {
 
-              // update the names of variables
+              /** update the names of fields **/
               String id1 = classList.get(i);
               ClassDeclaration class1 = (ClassDeclaration) resource.getEObject(id1);
               List<BodyDeclaration> fields = class1.getBodyDeclarations().stream()
                   .filter(b -> b instanceof FieldDeclaration).toList();
               if (fields.size() > 0) {
                 BodyDeclaration element = null;
-//              FieldDeclaration element = (FieldDeclaration) class1.getBodyDeclarations().get(0);
-//                while (!(/* element instanceof MethodDeclaration || */ element instanceof FieldDeclaration)
-//                    || previousMovedElement.equals(element)) {
-//                  element = fields.get(random.nextInt(fields.size()));
                 element = fields.get(0);
-//                }
                 VariableDeclarationFragment variable = ((FieldDeclaration) element).getFragments().get(0);
                 variable.setName(variable.getName() + "_" + numViews);
               }
 
-              // move methods
-              id1 = classList.get(i);
-              class1 = (ClassDeclaration) resource.getEObject(id1);
-              List<BodyDeclaration> fieldsAndmethods = class1.getBodyDeclarations().stream()
-                  .filter(b -> b instanceof FieldDeclaration).toList();
-
-              if (fieldsAndmethods.size() > 0) {
-                String id2 = (i == numViews - 1) ? classList.get(0) : classList.get(i + 1);
-                ClassDeclaration class2 = (ClassDeclaration) resource.getEObject(id2);
-                temp2.add(class1.getName());
-                temp2.add(class2.getName());
-                BodyDeclaration movedElement = null;
-//                while (/*
-//                        * !(movedElement instanceof MethodDeclaration || movedElement instanceof
-//                        * FieldDeclaration) ||
-//                        */previousMovedElement.equals(movedElement)) {
-                movedElement = fieldsAndmethods.get(0);
-//                }
-                class2.getBodyDeclarations().add(movedElement);
-                previousMovedElement = movedElement;
-              }
+//              /** move fields and methods **/
+//              id1 = classList.get(i);
+//              class1 = (ClassDeclaration) resource.getEObject(id1);
+//              List<BodyDeclaration> fieldsAndmethods = class1.getBodyDeclarations().stream()
+//                  .filter(b -> b instanceof FieldDeclaration || b instanceof MethodDeclaration).toList();
+//
+//              if (fieldsAndmethods.size() > 0) {
+//                String id2 = (i == numViews - 1) ? classList.get(0) : classList.get(i + 1);
+//                ClassDeclaration class2 = (ClassDeclaration) resource.getEObject(id2);
+//                temp2.add(class1.getName());
+//                temp2.add(class2.getName());
+//                BodyDeclaration movedElement = null;
+//                movedElement = fieldsAndmethods.get(0);
+//                class2.getBodyDeclarations().add(movedElement);
+//                previousMovedElement = movedElement;
+//              }
 
             }
 
@@ -351,7 +336,7 @@ public class JavaPerformanceTest {
     for (Client client : clients) {
       client.shutdown();
     }
-    
+
     PerformanceRecorder.stopRecording();
     server.stop();
 //    System.exit(0);
@@ -369,14 +354,13 @@ public class JavaPerformanceTest {
     private StompSession session;
     private HttpClient jettyHttpClient;
 
-    
     public void shutdown() throws Exception {
       session.disconnect();
       stompClient.stop();
       jettyHttpClient.stop();
       jettyHttpClient.destroy();
     }
-    
+
     /***
      * The methods connects the client to the STOMP server provided by Picto Web and
      * starts retrieving messages.
