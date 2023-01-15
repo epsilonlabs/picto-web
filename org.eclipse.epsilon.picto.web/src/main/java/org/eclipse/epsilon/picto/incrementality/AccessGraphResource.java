@@ -269,7 +269,7 @@ public class AccessGraphResource implements AccessRecordResource {
 
     Path path = (Path) traceIndex.getPath(checkedPath);
 
-    System.out.println("\nPATH: " + checkedPath);
+//    System.out.println("\nPATH: " + checkedPath);
 
     // check if the path is a new view
     if (path == null) {
@@ -332,7 +332,7 @@ public class AccessGraphResource implements AccessRecordResource {
               String previousValue = property.getValue();
               
               if (!IncrementalityUtil.equals(previousValue, currentValue)) {
-                System.out.println(currentEObject.eClass().getName() + " - " + property.getName() + ": " + previousValue + " vs. " + currentValue);
+//                System.out.println(currentEObject.eClass().getName() + " - " + property.getName() + ": " + previousValue + " vs. " + currentValue);
                 toBeProcessedPaths.add(checkedPath);
                 property.setValue(currentValue);
 //                property.getAffects().forEach(p -> toBeProcessedPaths.add(p.getName()));

@@ -366,10 +366,12 @@ public class JavaPerformanceTest {
           ("genall,views,iteration,client,path,waittime,bytes,type" + System.lineSeparator()).getBytes(),
           StandardOpenOption.APPEND);
 
-      for (PerformanceRecord record : PerformanceRecorder.getPerformanceRecords()) {
+      while (PerformanceRecorder.getPerformanceRecords().size() > 0) {
+        PerformanceRecord record = PerformanceRecorder.getPerformanceRecords().remove(0);
         String line = ((record.isGenAll()) ? "all" : "N") + "," + record.getNumOfInvalidatedViews() + ","
             + record.getIteration() + "," + record.getClient() + "," + record.getPath() + "," + record.getDuration()
             + "," + record.getPayloadSize() + "," + record.getType() + System.lineSeparator();
+        System.out.println("Save " + line);
         Files.write(Path.of(outputFile.toURI()), line.getBytes(), StandardOpenOption.APPEND);
       }
 
