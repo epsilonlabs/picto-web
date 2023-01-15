@@ -60,12 +60,12 @@ public class AccessGraphResource implements AccessRecordResource {
     if (access.getPath().equals("/XMLResourceImpl") && access.getElementObjectId().equals("e821")) {
       System.console();
     }
-   
+
     // path
     if (access.getPath() == null) {
       return;
     }
-   
+
     String pathName = access.getPath();
     Path path = (Path) traceIndex.getPath(pathName);
 //		Path path = (Path) graph.getPaths().get(pathName);
@@ -183,7 +183,7 @@ public class AccessGraphResource implements AccessRecordResource {
 
           // property
           if (access.getPropertyName() != null) {
-            
+
             Property property = (Property) traceIndex.getProperty(access.getElementResourceUri(),
                 access.getElementObjectId(), access.getPropertyName());
             if (property == null) {
@@ -204,12 +204,9 @@ public class AccessGraphResource implements AccessRecordResource {
 
   }
 
-  /***
-   * 
-   */
+
   @Override
-  public Set<String> getInvalidatedViewPaths(List<IncrementalLazyGenerationRuleContentPromise> inProcessingPromises,
-      EgxModule module) {
+  public Set<String> getInvalidatedViewPaths(List<IncrementalLazyGenerationRuleContentPromise> inProcessingPromises, EgxModule module) {
     Set<String> invalidatedViewPaths = new HashSet<String>();
     Set<String> toBeDeletedKeys = new HashSet<String>();
     Set<EObject> toBeDeletedElements = new HashSet<EObject>();
@@ -259,15 +256,20 @@ public class AccessGraphResource implements AccessRecordResource {
     return invalidatedViewPaths;
   }
 
-  // check if a path is affected by changes
+  /**
+   * check if a path is affected by changes
+   * @param module
+   * @param toBeProcessedPaths
+   * @param toBeDeletedKeys
+   * @param toBeDeletedElements
+   * @param checkedPath
+   */
   private void checkPath(EgxModule module, Set<String> toBeProcessedPaths, Set<String> toBeDeletedKeys,
       Set<EObject> toBeDeletedElements, String checkedPath) {
 
     Path path = (Path) traceIndex.getPath(checkedPath);
 
-    if (checkedPath.equals("/XMLResourceImpl")) {
-      System.console();
-    }
+    System.out.println("\nPATH: " + checkedPath);
 
     // check if the path is a new view
     if (path == null) {
@@ -327,7 +329,10 @@ public class AccessGraphResource implements AccessRecordResource {
 
               // check if the property has been changed
               String currentValue = AccessRecord.convertValueToString(currentValueObject);
-              if (!IncrementalityUtil.equals(property.getValue(), currentValue)) {
+              String previousValue = property.getValue();
+              
+              if (!IncrementalityUtil.equals(previousValue, currentValue)) {
+                System.out.println(currentEObject.eClass().getName() + " - " + property.getName() + ": " + previousValue + " vs. " + currentValue);
                 toBeProcessedPaths.add(checkedPath);
                 property.setValue(currentValue);
 //                property.getAffects().forEach(p -> toBeProcessedPaths.add(p.getName()));
@@ -342,6 +347,11 @@ public class AccessGraphResource implements AccessRecordResource {
     }
   }
 
+  /***
+   * Add the affected path to the affecting module.
+   * @param module
+   * @param path
+   */
   private void addAffectedPath(InputEntity module, final Path path) {
     if (!module.getAffects().stream().anyMatch(p -> p.getName().equals(path.getName()))) {
       module.getAffects().add(path);

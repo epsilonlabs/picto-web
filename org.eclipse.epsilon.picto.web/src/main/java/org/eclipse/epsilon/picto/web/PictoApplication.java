@@ -14,7 +14,10 @@ import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Set;
 import java.util.concurrent.Callable;
+import java.util.concurrent.ExecutorService;
+import java.util.stream.Collectors;
 
 import org.eclipse.epsilon.picto.dom.PictoFactory;
 import org.eclipse.epsilon.picto.dom.PictoPackage;
@@ -128,16 +131,39 @@ public class PictoApplication implements ApplicationListener<ApplicationContextE
   }
 
   public static void exit() throws IOException, InterruptedException {
-//		PromiseView.getPromiseexecutor().shutdown();
+//    Set<Thread> threads = Thread
+//        .getAllStackTraces().keySet().stream().filter(t -> t.isAlive() && (t.getName().startsWith("MessageBroker-")
+//            || t.getName().startsWith("clientInboundChannel-") || t.getName().startsWith("clientOutboundChannel-")))
+//        .collect(Collectors.toSet());
+//    while (threads.size() > 0) {
+//      for (Thread thread : threads) {
+//        try {
+//            thread.stop();
+//        } catch (Exception e) {
+////          e.printStackTrace();
+//        }
+//        try {
+//          thread.interrupt();
+//        } catch (Exception e) {
+////          e.printStackTrace();
+//        }
+//      }
+//      threads = Thread
+//          .getAllStackTraces().keySet().stream().filter(t -> t.isAlive() && (t.getName().startsWith("MessageBroker-")
+//              || t.getName().startsWith("clientInboundChannel-") || t.getName().startsWith("clientOutboundChannel-")))
+//          .collect(Collectors.toSet());
+//    }
     FileWatcher.stopWatching();
     FileViewContentCache.clear();
-    PromiseView.getPromiseExecutor().shutdownNow();
-    SpringApplication.exit(context, new ExitCodeGenerator() {
-      @Override
-      public int getExitCode() {
-        return 0;
-      }
-    });
+    ExecutorService px = PromiseView.getPromiseExecutor();
+    px.shutdown();
+//    context.close();
+//    SpringApplication.exit(context, new ExitCodeGenerator() {
+//      @Override
+//      public int getExitCode() {
+//        return 0;
+//      }
+//    });
   }
 
   public static void setPictoWebOnLoadedListener(PictoWebOnLoadedListener listener) {

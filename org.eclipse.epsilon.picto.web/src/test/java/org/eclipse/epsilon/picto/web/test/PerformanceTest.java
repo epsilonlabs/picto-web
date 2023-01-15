@@ -361,7 +361,7 @@ public class PerformanceTest {
 
       for (boolean temp : genAllViews) {
         PerformanceRecorder.genenerateAll = temp;
-        PictoApplication.setGreedyGeneration(PerformanceRecorder.genenerateAll);
+        PictoApplication.setNonIncremental(PerformanceRecorder.genenerateAll);
 
         // iterate for each number of affected views
         for (int numViews : numbersOfAffectedViews) {
