@@ -17,6 +17,9 @@ import org.eclipse.emf.common.util.EList;
  *   <li>{@link org.eclipse.epsilon.picto.pictograph.Path#getGenerationCount <em>Generation Count</em>}</li>
  *   <li>{@link org.eclipse.epsilon.picto.pictograph.Path#getGenerationTime <em>Generation Time</em>}</li>
  *   <li>{@link org.eclipse.epsilon.picto.pictograph.Path#getAvgGenTime <em>Avg Gen Time</em>}</li>
+ *   <li>{@link org.eclipse.epsilon.picto.pictograph.Path#getCheckCount <em>Check Count</em>}</li>
+ *   <li>{@link org.eclipse.epsilon.picto.pictograph.Path#getCheckingTime <em>Checking Time</em>}</li>
+ *   <li>{@link org.eclipse.epsilon.picto.pictograph.Path#getAvgCheckTime <em>Avg Check Time</em>}</li>
  * </ul>
  *
  * @see org.eclipse.epsilon.picto.pictograph.PictographPackage#getPath()
@@ -103,5 +106,71 @@ public interface Path extends Entity {
    * @generated
    */
   void setAvgGenTime(double value);
+
+  /**
+   * Returns the value of the '<em><b>Check Count</b></em>' attribute.
+   * <!-- begin-user-doc -->
+   * <!-- end-user-doc -->
+   * @return the value of the '<em>Check Count</em>' attribute.
+   * @see #setCheckCount(int)
+   * @see org.eclipse.epsilon.picto.pictograph.PictographPackage#getPath_CheckCount()
+   * @model
+   * @generated
+   */
+  int getCheckCount();
+
+  /**
+   * Sets the value of the '{@link org.eclipse.epsilon.picto.pictograph.Path#getCheckCount <em>Check Count</em>}' attribute.
+   * <!-- begin-user-doc -->
+   * <!-- end-user-doc -->
+   * @param value the new value of the '<em>Check Count</em>' attribute.
+   * @see #getCheckCount()
+   * @generated
+   */
+  void setCheckCount(int value);
+
+  /**
+   * Returns the value of the '<em><b>Checking Time</b></em>' attribute.
+   * <!-- begin-user-doc -->
+   * <!-- end-user-doc -->
+   * @return the value of the '<em>Checking Time</em>' attribute.
+   * @see #setCheckingTime(long)
+   * @see org.eclipse.epsilon.picto.pictograph.PictographPackage#getPath_CheckingTime()
+   * @model
+   * @generated
+   */
+  long getCheckingTime();
+
+  /**
+   * Sets the value of the '{@link org.eclipse.epsilon.picto.pictograph.Path#getCheckingTime <em>Checking Time</em>}' attribute.
+   * <!-- begin-user-doc -->
+   * <!-- end-user-doc -->
+   * @param value the new value of the '<em>Checking Time</em>' attribute.
+   * @see #getCheckingTime()
+   * @generated
+   */
+  void setCheckingTime(long value);
+
+  /**
+   * Returns the value of the '<em><b>Avg Check Time</b></em>' attribute.
+   * <!-- begin-user-doc -->
+   * <!-- end-user-doc -->
+   * @return the value of the '<em>Avg Check Time</em>' attribute.
+   * @see #setAvgCheckTime(double)
+   * @see org.eclipse.epsilon.picto.pictograph.PictographPackage#getPath_AvgCheckTime()
+   * @model
+   * @generated
+   */
+  double getAvgCheckTime();
+
+  /**
+   * Sets the value of the '{@link org.eclipse.epsilon.picto.pictograph.Path#getAvgCheckTime <em>Avg Check Time</em>}' attribute.
+   * <!-- begin-user-doc -->
+   * <!-- end-user-doc -->
+   * @param value the new value of the '<em>Avg Check Time</em>' attribute.
+   * @see #getAvgCheckTime()
+   * @generated
+   */
+  void setAvgCheckTime(double value);
 
 } // Path

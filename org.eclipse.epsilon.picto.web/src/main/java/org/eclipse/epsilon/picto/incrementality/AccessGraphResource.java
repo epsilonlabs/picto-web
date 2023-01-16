@@ -57,9 +57,9 @@ public class AccessGraphResource implements AccessRecordResource {
   public void add(AccessRecord access) {
 
 //    System.out.println(access.toString());
-    if (access.getPath().equals("/XMLResourceImpl") && access.getElementObjectId().equals("e821")) {
-      System.console();
-    }
+//    if (access.getPath().equals("/XMLResourceImpl") && access.getElementObjectId().equals("e821")) {
+//      System.console();
+//    }
 
     // path
     if (access.getPath() == null) {
@@ -75,6 +75,7 @@ public class AccessGraphResource implements AccessRecordResource {
       path.setName(access.getPath());
       traceIndex.putPath(pathName, path);
     }
+    path.setAccessCount(path.getAccessCount() + 1);
 
     // module
     if (access.getModulePath() != null) {
@@ -86,6 +87,7 @@ public class AccessGraphResource implements AccessRecordResource {
         module.setName(access.getModulePath());
         traceIndex.putModule(moduleName, module);
       }
+      module.setAccessCount(module.getAccessCount() + 1);
       addAffectedPath((InputEntity) module, path);
 
       // rule
@@ -98,6 +100,7 @@ public class AccessGraphResource implements AccessRecordResource {
           rule.setName(access.getGenerationRuleName());
           traceIndex.putRule(moduleName, ruleName, rule);
         }
+        rule.setAccessCount(rule.getAccessCount() + 1);
         rule.setModule(module);
         addAffectedPath((InputEntity) rule, path);
 
@@ -112,9 +115,11 @@ public class AccessGraphResource implements AccessRecordResource {
             template.setName(access.getTemplatePath());
             traceIndex.putTemplate(moduleName, ruleName, templateName, template);
           }
+          template.setAccessCount(template.getAccessCount() + 1);
           template.getModules().add(module);
           rule.setTemplate(template);
           addAffectedPath((InputEntity) template, path);
+
         }
 
         // context element
@@ -131,6 +136,7 @@ public class AccessGraphResource implements AccessRecordResource {
               contextResource.setName(access.getContextResourceUri());
               traceIndex.putResource(fullname, contextResource);
             }
+            contextResource.setAccessCount(contextResource.getAccessCount() + 1);
             addAffectedPath((InputEntity) contextResource, path);
           }
 
@@ -144,6 +150,7 @@ public class AccessGraphResource implements AccessRecordResource {
             rule.getContextElements().add(contextElement);
             traceIndex.putElement(access.getContextResourceUri(), access.getContextObjectId(), contextElement);
           }
+          contextElement.setAccessCount(contextElement.getAccessCount() + 1);
           contextElement.setResource(contextResource);
           addAffectedPath((InputEntity) contextElement, path);
 
@@ -163,11 +170,11 @@ public class AccessGraphResource implements AccessRecordResource {
               elementResource.setName(access.getElementResourceUri());
               traceIndex.putResource(fullname, elementResource);
             }
+            elementResource.setAccessCount(elementResource.getAccessCount() + 1);
             addAffectedPath((InputEntity) elementResource, path);
           }
 
           // element
-
           Element element = (Element) traceIndex.getElement(access.getElementResourceUri(),
               access.getElementObjectId());
           if (element == null) {
@@ -177,6 +184,7 @@ public class AccessGraphResource implements AccessRecordResource {
             rule.getElements().add(element);
             traceIndex.putElement(access.getElementResourceUri(), access.getElementObjectId(), element);
           }
+          element.setAccessCount(element.getAccessCount() + 1);
           template.getElements().add(element);
           element.setResource(elementResource);
           addAffectedPath((InputEntity) element, path);
@@ -193,6 +201,7 @@ public class AccessGraphResource implements AccessRecordResource {
               traceIndex.putProperty(access.getElementResourceUri(), access.getElementObjectId(),
                   access.getPropertyName(), property);
             }
+            property.setAccessCount(property.getAccessCount() + 1);
             property.setElement(element);
             property.setValue(access.getValue());
             addAffectedPath((InputEntity) property, path);
@@ -204,9 +213,9 @@ public class AccessGraphResource implements AccessRecordResource {
 
   }
 
-
   @Override
-  public Set<String> getInvalidatedViewPaths(List<IncrementalLazyGenerationRuleContentPromise> inProcessingPromises, EgxModule module) {
+  public Set<String> getInvalidatedViewPaths(List<IncrementalLazyGenerationRuleContentPromise> inProcessingPromises,
+      EgxModule module) {
     Set<String> invalidatedViewPaths = new HashSet<String>();
     Set<String> toBeDeletedKeys = new HashSet<String>();
     Set<EObject> toBeDeletedElements = new HashSet<EObject>();
@@ -258,6 +267,7 @@ public class AccessGraphResource implements AccessRecordResource {
 
   /**
    * check if a path is affected by changes
+   * 
    * @param module
    * @param toBeProcessedPaths
    * @param toBeDeletedKeys
@@ -267,8 +277,8 @@ public class AccessGraphResource implements AccessRecordResource {
   private void checkPath(EgxModule module, Set<String> toBeProcessedPaths, Set<String> toBeDeletedKeys,
       Set<EObject> toBeDeletedElements, String checkedPath) {
 
+    long start = System.currentTimeMillis();
     Path path = (Path) traceIndex.getPath(checkedPath);
-
 //    System.out.println("\nPATH: " + checkedPath);
 
     // check if the path is a new view
@@ -276,9 +286,13 @@ public class AccessGraphResource implements AccessRecordResource {
       toBeProcessedPaths.add(checkedPath);
       return;
     } else {
+      path.setCheckCount(path.getCheckCount() + 1);
 
       if (path.getState().equals(State.NEW)) {
         toBeProcessedPaths.add(checkedPath);
+        long time = System.currentTimeMillis() - start;
+        path.setCheckingTime(path.getCheckingTime() + time);
+        path.setAvgCheckTime(path.getCheckingTime() / path.getCheckCount());
         return;
       }
 
@@ -288,6 +302,9 @@ public class AccessGraphResource implements AccessRecordResource {
         if (entity instanceof Element) {
           if (entity.getState().equals(State.NEW)) {
             toBeProcessedPaths.add(checkedPath);
+            long time = System.currentTimeMillis() - start;
+            path.setCheckingTime(path.getCheckingTime() + time);
+            path.setAvgCheckTime(path.getCheckingTime() / path.getCheckCount());
             return;
           }
         } else if (entity instanceof Property) {
@@ -310,6 +327,10 @@ public class AccessGraphResource implements AccessRecordResource {
             toBeProcessedPaths.add(checkedPath);
             toBeDeletedKeys.add(resource.getName());
             toBeDeletedElements.add(resource);
+            long time = System.currentTimeMillis() - start;
+            path.setCheckingTime(path.getCheckingTime() + time);
+            path.setAvgCheckTime(path.getCheckingTime() / path.getCheckCount());
+            return;
           } else if (model != null) {
             org.eclipse.emf.ecore.resource.Resource currentResource = model.getResource();
             EObject currentEObject = currentResource.getEObject(element.getName());
@@ -317,12 +338,17 @@ public class AccessGraphResource implements AccessRecordResource {
             // if the element has been deleted
             if (currentEObject == null) {
               toBeProcessedPaths.add(checkedPath);
+              long time = System.currentTimeMillis() - start;
+              path.setCheckingTime(path.getCheckingTime() + time);
+              path.setAvgCheckTime(path.getCheckingTime() / path.getCheckCount());
+              
               for (Property p : element.getProperties()) {
                 toBeDeletedKeys.add(resource.getName() + "#" + element.getName() + "#" + p.getName());
                 toBeDeletedElements.add(p);
               }
               toBeDeletedKeys.add(resource.getName() + "#" + element.getName());
               toBeDeletedElements.add(element);
+              return;
             } else {
               EStructuralFeature currentProperty = currentEObject.eClass().getEStructuralFeature(property.getName());
               Object currentValueObject = (currentProperty != null) ? currentEObject.eGet(currentProperty) : null;
@@ -330,11 +356,14 @@ public class AccessGraphResource implements AccessRecordResource {
               // check if the property has been changed
               String currentValue = AccessRecord.convertValueToString(currentValueObject);
               String previousValue = property.getValue();
-              
+
               if (!IncrementalityUtil.equals(previousValue, currentValue)) {
 //                System.out.println(currentEObject.eClass().getName() + " - " + property.getName() + ": " + previousValue + " vs. " + currentValue);
                 toBeProcessedPaths.add(checkedPath);
                 property.setValue(currentValue);
+                long time = System.currentTimeMillis() - start;
+                path.setCheckingTime(path.getCheckingTime() + time);
+                path.setAvgCheckTime(path.getCheckingTime() / path.getCheckCount());
 //                property.getAffects().forEach(p -> toBeProcessedPaths.add(p.getName()));
                 return;
               }
@@ -343,12 +372,16 @@ public class AccessGraphResource implements AccessRecordResource {
           }
         }
       }
-
+      
+      long time = System.currentTimeMillis() - start;
+      path.setCheckingTime(path.getCheckingTime() + time);
+      path.setAvgCheckTime(path.getCheckingTime() / path.getCheckCount());
     }
   }
 
   /***
    * Add the affected path to the affecting module.
+   * 
    * @param module
    * @param path
    */

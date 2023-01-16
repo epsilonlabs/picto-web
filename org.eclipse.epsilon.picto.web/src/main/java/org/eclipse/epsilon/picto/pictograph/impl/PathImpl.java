@@ -33,6 +33,9 @@ import org.eclipse.epsilon.picto.pictograph.PictographPackage;
  *   <li>{@link org.eclipse.epsilon.picto.pictograph.impl.PathImpl#getGenerationCount <em>Generation Count</em>}</li>
  *   <li>{@link org.eclipse.epsilon.picto.pictograph.impl.PathImpl#getGenerationTime <em>Generation Time</em>}</li>
  *   <li>{@link org.eclipse.epsilon.picto.pictograph.impl.PathImpl#getAvgGenTime <em>Avg Gen Time</em>}</li>
+ *   <li>{@link org.eclipse.epsilon.picto.pictograph.impl.PathImpl#getCheckCount <em>Check Count</em>}</li>
+ *   <li>{@link org.eclipse.epsilon.picto.pictograph.impl.PathImpl#getCheckingTime <em>Checking Time</em>}</li>
+ *   <li>{@link org.eclipse.epsilon.picto.pictograph.impl.PathImpl#getAvgCheckTime <em>Avg Check Time</em>}</li>
  * </ul>
  *
  * @generated
@@ -107,6 +110,66 @@ public class PathImpl extends EntityImpl implements Path {
    * @ordered
    */
   protected double avgGenTime = AVG_GEN_TIME_EDEFAULT;
+
+  /**
+   * The default value of the '{@link #getCheckCount() <em>Check Count</em>}' attribute.
+   * <!-- begin-user-doc -->
+   * <!-- end-user-doc -->
+   * @see #getCheckCount()
+   * @generated
+   * @ordered
+   */
+  protected static final int CHECK_COUNT_EDEFAULT = 0;
+
+  /**
+   * The cached value of the '{@link #getCheckCount() <em>Check Count</em>}' attribute.
+   * <!-- begin-user-doc -->
+   * <!-- end-user-doc -->
+   * @see #getCheckCount()
+   * @generated
+   * @ordered
+   */
+  protected int checkCount = CHECK_COUNT_EDEFAULT;
+
+  /**
+   * The default value of the '{@link #getCheckingTime() <em>Checking Time</em>}' attribute.
+   * <!-- begin-user-doc -->
+   * <!-- end-user-doc -->
+   * @see #getCheckingTime()
+   * @generated
+   * @ordered
+   */
+  protected static final long CHECKING_TIME_EDEFAULT = 0L;
+
+  /**
+   * The cached value of the '{@link #getCheckingTime() <em>Checking Time</em>}' attribute.
+   * <!-- begin-user-doc -->
+   * <!-- end-user-doc -->
+   * @see #getCheckingTime()
+   * @generated
+   * @ordered
+   */
+  protected long checkingTime = CHECKING_TIME_EDEFAULT;
+
+  /**
+   * The default value of the '{@link #getAvgCheckTime() <em>Avg Check Time</em>}' attribute.
+   * <!-- begin-user-doc -->
+   * <!-- end-user-doc -->
+   * @see #getAvgCheckTime()
+   * @generated
+   * @ordered
+   */
+  protected static final double AVG_CHECK_TIME_EDEFAULT = 0.0;
+
+  /**
+   * The cached value of the '{@link #getAvgCheckTime() <em>Avg Check Time</em>}' attribute.
+   * <!-- begin-user-doc -->
+   * <!-- end-user-doc -->
+   * @see #getAvgCheckTime()
+   * @generated
+   * @ordered
+   */
+  protected double avgCheckTime = AVG_CHECK_TIME_EDEFAULT;
 
   /**
    * <!-- begin-user-doc -->
@@ -214,6 +277,75 @@ public class PathImpl extends EntityImpl implements Path {
    * <!-- end-user-doc -->
    * @generated
    */
+  @Override
+  public int getCheckCount() {
+    return checkCount;
+  }
+
+  /**
+   * <!-- begin-user-doc -->
+   * <!-- end-user-doc -->
+   * @generated
+   */
+  @Override
+  public void setCheckCount(int newCheckCount) {
+    int oldCheckCount = checkCount;
+    checkCount = newCheckCount;
+    if (eNotificationRequired())
+      eNotify(new ENotificationImpl(this, Notification.SET, PictographPackage.PATH__CHECK_COUNT, oldCheckCount, checkCount));
+  }
+
+  /**
+   * <!-- begin-user-doc -->
+   * <!-- end-user-doc -->
+   * @generated
+   */
+  @Override
+  public long getCheckingTime() {
+    return checkingTime;
+  }
+
+  /**
+   * <!-- begin-user-doc -->
+   * <!-- end-user-doc -->
+   * @generated
+   */
+  @Override
+  public void setCheckingTime(long newCheckingTime) {
+    long oldCheckingTime = checkingTime;
+    checkingTime = newCheckingTime;
+    if (eNotificationRequired())
+      eNotify(new ENotificationImpl(this, Notification.SET, PictographPackage.PATH__CHECKING_TIME, oldCheckingTime, checkingTime));
+  }
+
+  /**
+   * <!-- begin-user-doc -->
+   * <!-- end-user-doc -->
+   * @generated
+   */
+  @Override
+  public double getAvgCheckTime() {
+    return avgCheckTime;
+  }
+
+  /**
+   * <!-- begin-user-doc -->
+   * <!-- end-user-doc -->
+   * @generated
+   */
+  @Override
+  public void setAvgCheckTime(double newAvgCheckTime) {
+    double oldAvgCheckTime = avgCheckTime;
+    avgCheckTime = newAvgCheckTime;
+    if (eNotificationRequired())
+      eNotify(new ENotificationImpl(this, Notification.SET, PictographPackage.PATH__AVG_CHECK_TIME, oldAvgCheckTime, avgCheckTime));
+  }
+
+  /**
+   * <!-- begin-user-doc -->
+   * <!-- end-user-doc -->
+   * @generated
+   */
   @SuppressWarnings("unchecked")
   @Override
   public NotificationChain eInverseAdd(InternalEObject otherEnd, int featureID, NotificationChain msgs) {
@@ -254,6 +386,12 @@ public class PathImpl extends EntityImpl implements Path {
         return getGenerationTime();
       case PictographPackage.PATH__AVG_GEN_TIME:
         return getAvgGenTime();
+      case PictographPackage.PATH__CHECK_COUNT:
+        return getCheckCount();
+      case PictographPackage.PATH__CHECKING_TIME:
+        return getCheckingTime();
+      case PictographPackage.PATH__AVG_CHECK_TIME:
+        return getAvgCheckTime();
     }
     return super.eGet(featureID, resolve, coreType);
   }
@@ -280,6 +418,15 @@ public class PathImpl extends EntityImpl implements Path {
       case PictographPackage.PATH__AVG_GEN_TIME:
         setAvgGenTime((Double)newValue);
         return;
+      case PictographPackage.PATH__CHECK_COUNT:
+        setCheckCount((Integer)newValue);
+        return;
+      case PictographPackage.PATH__CHECKING_TIME:
+        setCheckingTime((Long)newValue);
+        return;
+      case PictographPackage.PATH__AVG_CHECK_TIME:
+        setAvgCheckTime((Double)newValue);
+        return;
     }
     super.eSet(featureID, newValue);
   }
@@ -304,6 +451,15 @@ public class PathImpl extends EntityImpl implements Path {
       case PictographPackage.PATH__AVG_GEN_TIME:
         setAvgGenTime(AVG_GEN_TIME_EDEFAULT);
         return;
+      case PictographPackage.PATH__CHECK_COUNT:
+        setCheckCount(CHECK_COUNT_EDEFAULT);
+        return;
+      case PictographPackage.PATH__CHECKING_TIME:
+        setCheckingTime(CHECKING_TIME_EDEFAULT);
+        return;
+      case PictographPackage.PATH__AVG_CHECK_TIME:
+        setAvgCheckTime(AVG_CHECK_TIME_EDEFAULT);
+        return;
     }
     super.eUnset(featureID);
   }
@@ -324,6 +480,12 @@ public class PathImpl extends EntityImpl implements Path {
         return generationTime != GENERATION_TIME_EDEFAULT;
       case PictographPackage.PATH__AVG_GEN_TIME:
         return avgGenTime != AVG_GEN_TIME_EDEFAULT;
+      case PictographPackage.PATH__CHECK_COUNT:
+        return checkCount != CHECK_COUNT_EDEFAULT;
+      case PictographPackage.PATH__CHECKING_TIME:
+        return checkingTime != CHECKING_TIME_EDEFAULT;
+      case PictographPackage.PATH__AVG_CHECK_TIME:
+        return avgCheckTime != AVG_CHECK_TIME_EDEFAULT;
     }
     return super.eIsSet(featureID);
   }
@@ -344,6 +506,12 @@ public class PathImpl extends EntityImpl implements Path {
     result.append(generationTime);
     result.append(", avgGenTime: ");
     result.append(avgGenTime);
+    result.append(", checkCount: ");
+    result.append(checkCount);
+    result.append(", checkingTime: ");
+    result.append(checkingTime);
+    result.append(", avgCheckTime: ");
+    result.append(avgCheckTime);
     result.append(')');
     return result.toString();
   }

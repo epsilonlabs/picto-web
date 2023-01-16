@@ -1,5 +1,5 @@
 /*********************************************************************
-* Copyright (c) 2008 The University of York.
+* Copyright (c) 2023 The University of York.
 *
 * This program and the accompanying materials are made
 * available under the terms of the Eclipse Public License 2.0
@@ -48,6 +48,7 @@ public class PerformanceRecorder {
   public static long detectionTime;
   public static long loadingTime;
   public static int globalNumberOfViews;
+  public static int numberOfAffectingEntities;
 
   public static void record(PerformanceRecord record) {
     if (isRecording)

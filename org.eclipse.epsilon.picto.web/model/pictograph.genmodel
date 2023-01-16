@@ -17,9 +17,6 @@
       <genFeatures createChild="false" ecoreFeature="ecore:EAttribute pictograph.ecore#//Entity/state"/>
       <genFeatures createChild="false" ecoreFeature="ecore:EAttribute pictograph.ecore#//Entity/hash"/>
       <genFeatures createChild="false" ecoreFeature="ecore:EAttribute pictograph.ecore#//Entity/accessCount"/>
-      <genFeatures createChild="false" ecoreFeature="ecore:EAttribute pictograph.ecore#//Entity/checkCount"/>
-      <genFeatures createChild="false" ecoreFeature="ecore:EAttribute pictograph.ecore#//Entity/checkingTime"/>
-      <genFeatures createChild="false" ecoreFeature="ecore:EAttribute pictograph.ecore#//Entity/avgCheckTime"/>
     </genClasses>
     <genClasses image="false" ecoreClass="pictograph.ecore#//InputEntity">
       <genFeatures notify="false" createChild="false" propertySortChoices="true" ecoreFeature="ecore:EReference pictograph.ecore#//InputEntity/affects"/>
@@ -29,6 +26,9 @@
       <genFeatures createChild="false" ecoreFeature="ecore:EAttribute pictograph.ecore#//Path/generationCount"/>
       <genFeatures createChild="false" ecoreFeature="ecore:EAttribute pictograph.ecore#//Path/generationTime"/>
       <genFeatures createChild="false" ecoreFeature="ecore:EAttribute pictograph.ecore#//Path/avgGenTime"/>
+      <genFeatures createChild="false" ecoreFeature="ecore:EAttribute pictograph.ecore#//Path/checkCount"/>
+      <genFeatures createChild="false" ecoreFeature="ecore:EAttribute pictograph.ecore#//Path/checkingTime"/>
+      <genFeatures createChild="false" ecoreFeature="ecore:EAttribute pictograph.ecore#//Path/avgCheckTime"/>
     </genClasses>
     <genClasses ecoreClass="pictograph.ecore#//Module">
       <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference pictograph.ecore#//Module/rules"/>

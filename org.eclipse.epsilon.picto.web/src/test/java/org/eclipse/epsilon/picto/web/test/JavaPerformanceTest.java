@@ -219,12 +219,19 @@ public class JavaPerformanceTest {
     PerformanceRecorder.globalNumberOfViews = numberOfViews;
 
     numbersOfAffectedViews = new int[numberOfMeasurementPoints + 1];
-    for (
 
-        int i = 0; i < numberOfMeasurementPoints; i++) {
-      numbersOfAffectedViews[i + 1] = numberOfViews - (numberOfViews / numberOfMeasurementPoints) * i;
+//    // order from high to low
+//    for (int i = 0; i < numberOfMeasurementPoints; i++) {
+//      numbersOfAffectedViews[i + 1] = numberOfViews - (numberOfViews / numberOfMeasurementPoints) * i;
+//    }
+//    numbersOfAffectedViews[0] = numbersOfAffectedViews[1] - 1;
+
+    // order from low to high
+    for (int i = 0; i < numberOfMeasurementPoints; i++) {
+      numbersOfAffectedViews[i + 1] = 0 + (numberOfViews / numberOfMeasurementPoints) * (i + 1);
     }
-    numbersOfAffectedViews[0] = numbersOfAffectedViews[1] - 1;
+    numbersOfAffectedViews[0] = numbersOfAffectedViews[numbersOfAffectedViews.length - 1] - 1;
+
     System.out.println("Iteration = " + Arrays.toString(numbersOfAffectedViews));
 
     // start Picto Web server
@@ -284,7 +291,8 @@ public class JavaPerformanceTest {
               String id1 = classList.get(i);
               ClassDeclaration class1 = (ClassDeclaration) resource.getEObject(id1);
               List<BodyDeclaration> elementList1 = class1.getBodyDeclarations().stream()
-                  .filter(b -> b instanceof FieldDeclaration /* || b instanceof MethodDeclaration */).toList();
+                  .filter(b -> b instanceof FieldDeclaration /* || b instanceof MethodDeclaration */)
+                  .collect(Collectors.toList());
 
               /** update the names of fields **/
               BodyDeclaration nameModifiedElement = null;

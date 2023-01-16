@@ -15,6 +15,7 @@ package org.eclipse.epsilon.picto.web.generator;
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -51,6 +52,8 @@ public class BigModelGenerator {
 
   public void generate() {
 
+    List<Record> records = new ArrayList<>();
+
     try {
 
       JavaPackage.eINSTANCE.eClass();
@@ -75,7 +78,7 @@ public class BigModelGenerator {
 
       System.out.println("Found " + projectFiles.size() + " project files");
       System.out.println();
-      
+
       int i = 0;
       for (File projectFile : projectFiles) {
         i++;
@@ -145,15 +148,19 @@ public class BigModelGenerator {
         IJavaProject javaProject = JavaCore.create(project);
         try {
           javaProject.open(null);
-          System.out.println("This is a Java project. Generating Java Model ... ");
+//          System.out.println("This is a Java project. Generating Java Model ... ");
 
           DiscoverJavaModelFromJavaProject javaDiscoverer = new DiscoverJavaModelFromJavaProject();
           javaDiscoverer.setDeepAnalysis(false);
           try {
-            javaDiscoverer.discoverElement(javaProject, new NullProgressMonitor());
+            long start = System.currentTimeMillis();
+            javaDiscoverer.discoverElement(javaProject, new NullProgressMonitor());            
             Resource javaResource = javaDiscoverer.getTargetModel();
+            long time = System.currentTimeMillis() - start;
             Model model = (Model) javaResource.getContents().get(0);
+            String name  = model.getName();
             model.setName("M" + (i - 1));
+            records.add(new Record(model.getName() + "." + name, time));
             bigResource.getContents().addAll(javaResource.getContents());
             System.out.println("SUCCESS!!!");
             javaResource.getContents().clear();
@@ -163,7 +170,7 @@ public class BigModelGenerator {
             exe.printStackTrace();
           }
         } catch (JavaModelException e1) {
-          e1.printStackTrace();
+//          e1.printStackTrace();
           System.out.println("This is not a (valid) Java project");
         }
 
@@ -176,6 +183,7 @@ public class BigModelGenerator {
         } catch (Exception ex) {
           ex.printStackTrace();
         }
+
         System.out.println();
       }
 
@@ -189,7 +197,7 @@ public class BigModelGenerator {
       List<MethodDeclaration> methodList = new ArrayList<>();
 
       Set<String> types = new HashSet<>();
-      
+
       System.out.println("Assigning IDs to every element");
       System.out.println();
       TreeIterator<EObject> iterator = bigResource.getAllContents();
@@ -215,12 +223,12 @@ public class BigModelGenerator {
       bigResource.save(options);
       System.out.println("SAVED");
       System.out.println();
-      
+
       System.out.println("Number of objects: " + eObjectCounter);
       System.out.println("Number of classes: " + classList.size());
       System.out.println("Number of fields: " + fieldList.size());
       System.out.println("Number of methods: " + methodList.size());
-      System.out.println();      
+      System.out.println();
 
 //      List<?> list = new ArrayList<>(types);
 //      list.sort(null);
@@ -230,6 +238,12 @@ public class BigModelGenerator {
       e.printStackTrace();
     }
     System.out.println("FINISHED!");
+    System.out.println();
+    System.out.println("Model,Time");
+    records.sort(Comparator.comparingLong(Record::getTime));
+    for (Record record : records) {
+      System.out.println(record.getModelName() + "," + record.getTime());
+    }
   }
 
   private static void listFiles(String path, List<File> files) {

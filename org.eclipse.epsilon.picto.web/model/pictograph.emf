@@ -24,9 +24,6 @@ abstract class Entity {
 	attr State state;
 	attr String hash; 
 	attr int accessCount;
-	attr int checkCount;
-	attr long checkingTime;
-	attr double avgCheckTime;
 }
 
 abstract class InputEntity extends Entity {
@@ -38,6 +35,9 @@ class Path extends Entity {
 	attr int generationCount;
 	attr long generationTime; 
 	attr double avgGenTime;
+	attr int checkCount;
+    attr long checkingTime;
+    attr double avgCheckTime;
 }
 
 class Module extends InputEntity {
