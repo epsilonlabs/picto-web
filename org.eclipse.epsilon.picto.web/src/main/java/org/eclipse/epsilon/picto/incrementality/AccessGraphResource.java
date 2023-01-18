@@ -46,10 +46,23 @@ public class AccessGraphResource implements AccessRecordResource {
 
   private PictographFactory factory = PictographFactory.eINSTANCE;
   private PictoGraph graph = factory.createPictoGraph();
+
+  public PictoGraph getGraph() {
+    return graph;
+  }
+
   private TraceIndex traceIndex = new TraceIndex();
 
   public AccessGraphResource() {
 
+  }
+
+  public int size() {
+    return traceIndex.size();
+  }
+
+  public TraceIndex getTraceIndex() {
+    return traceIndex;
   }
 
   @SuppressWarnings("null")
@@ -327,9 +340,11 @@ public class AccessGraphResource implements AccessRecordResource {
             toBeProcessedPaths.add(checkedPath);
             toBeDeletedKeys.add(resource.getName());
             toBeDeletedElements.add(resource);
+
             long time = System.currentTimeMillis() - start;
             path.setCheckingTime(path.getCheckingTime() + time);
             path.setAvgCheckTime(path.getCheckingTime() / path.getCheckCount());
+
             return;
           } else if (model != null) {
             org.eclipse.emf.ecore.resource.Resource currentResource = model.getResource();
@@ -338,16 +353,18 @@ public class AccessGraphResource implements AccessRecordResource {
             // if the element has been deleted
             if (currentEObject == null) {
               toBeProcessedPaths.add(checkedPath);
+
               long time = System.currentTimeMillis() - start;
               path.setCheckingTime(path.getCheckingTime() + time);
               path.setAvgCheckTime(path.getCheckingTime() / path.getCheckCount());
-              
+
               for (Property p : element.getProperties()) {
                 toBeDeletedKeys.add(resource.getName() + "#" + element.getName() + "#" + p.getName());
                 toBeDeletedElements.add(p);
               }
               toBeDeletedKeys.add(resource.getName() + "#" + element.getName());
               toBeDeletedElements.add(element);
+
               return;
             } else {
               EStructuralFeature currentProperty = currentEObject.eClass().getEStructuralFeature(property.getName());
@@ -357,14 +374,17 @@ public class AccessGraphResource implements AccessRecordResource {
               String currentValue = AccessRecord.convertValueToString(currentValueObject);
               String previousValue = property.getValue();
 
-              if (!IncrementalityUtil.equals(previousValue, currentValue)) {
+              if (!IncrementalityUtil.equals(property.getPreviousValue(), currentValue)) {
+//              if (!IncrementalityUtil.equals(previousValue, currentValue)) {
 //                System.out.println(currentEObject.eClass().getName() + " - " + property.getName() + ": " + previousValue + " vs. " + currentValue);
                 toBeProcessedPaths.add(checkedPath);
                 property.setValue(currentValue);
+
                 long time = System.currentTimeMillis() - start;
                 path.setCheckingTime(path.getCheckingTime() + time);
                 path.setAvgCheckTime(path.getCheckingTime() / path.getCheckCount());
 //                property.getAffects().forEach(p -> toBeProcessedPaths.add(p.getName()));
+
                 return;
               }
 
@@ -372,7 +392,7 @@ public class AccessGraphResource implements AccessRecordResource {
           }
         }
       }
-      
+
       long time = System.currentTimeMillis() - start;
       path.setCheckingTime(path.getCheckingTime() + time);
       path.setAvgCheckTime(path.getCheckingTime() / path.getCheckCount());
@@ -442,10 +462,10 @@ public class AccessGraphResource implements AccessRecordResource {
             System.console();
           }
           entity.setState(State.PROCESSED);
-//          if (entity instanceof Property) {
-//            ((Property) entity).setPreviousValue(((Property) entity).getValue());
-//            System.console();
-//          }
+          if (entity instanceof Property) {
+            ((Property) entity).setPreviousValue(((Property) entity).getValue());
+            System.console();
+          }
         }
       }
     }

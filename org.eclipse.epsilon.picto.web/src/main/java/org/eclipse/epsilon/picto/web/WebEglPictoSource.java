@@ -124,6 +124,8 @@ public class WebEglPictoSource extends EglPictoSource {
       PromiseViewCache viewContentCache = FileViewContentCache.addPictoFile(pictoFilePath);
       AccessRecordResource accessRecordResource = FileViewContentCache.createAccessRecordResource(pictoFilePath);
 
+      PerformanceRecorder.accessRecordResource = accessRecordResource;
+
       Picto picto = this.getRenderingMetadata(pictoFile);
 
       if (picto != null) {
@@ -190,10 +192,22 @@ public class WebEglPictoSource extends EglPictoSource {
 
           /** PROPERTY ACCESS RECORDS **/
           System.out.print("Creating Promises ... ");
+
+          long promiseStart = System.currentTimeMillis();
+
           ((IncrementalLazyEgxModule) module).startRecording();
           List<IncrementalLazyGenerationRuleContentPromise> promises = (List<IncrementalLazyGenerationRuleContentPromise>) module
               .execute();
           ((IncrementalLazyEgxModule) module).stopRecording();
+
+          PerformanceRecorder.promiseTime = System.currentTimeMillis() - promiseStart;
+
+          PerformanceRecord record = new PerformanceRecord(PerformanceRecorder.genenerateAll,
+              PerformanceRecorder.generateAlways, PerformanceRecorder.globalNumberOfAffectedViews,
+              PerformanceRecorder.globalNumberIteration, "Server", "No Path", PerformanceRecorder.promiseTime, 0,
+              PerformanceTestType.PROMISE_TIME, PerformanceRecorder.accessRecordResourceSize());
+          PerformanceRecorder.record(record);
+
           System.out.println(" Done");
 //          accessRecordResource.printIncrementalRecords();
 //
@@ -205,10 +219,10 @@ public class WebEglPictoSource extends EglPictoSource {
 
           /** Calculate the loading time from a change on a file to getting promises **/
           PerformanceRecorder.loadingTime = System.currentTimeMillis() - PerformanceRecorder.startTime;
-          PerformanceRecord record = new PerformanceRecord(PerformanceRecorder.genenerateAll,
-              PerformanceRecorder.generateAlways, PerformanceRecorder.globalNumberOfAffectedViews,
-              PerformanceRecorder.globalNumberIteration, "Server", "No Path", PerformanceRecorder.loadingTime, 0,
-              PerformanceTestType.LOADING_TIME);
+          record = new PerformanceRecord(PerformanceRecorder.genenerateAll, PerformanceRecorder.generateAlways,
+              PerformanceRecorder.globalNumberOfAffectedViews, PerformanceRecorder.globalNumberIteration, "Server",
+              "No Path", PerformanceRecorder.loadingTime, 0, PerformanceTestType.LOADING_TIME,
+              PerformanceRecorder.accessRecordResourceSize());
           PerformanceRecorder.record(record);
 
           // if picto generation is not greedy a.k.a. selective (re)generation.
@@ -220,7 +234,7 @@ public class WebEglPictoSource extends EglPictoSource {
             PerformanceRecord r = new PerformanceRecord(PerformanceRecorder.genenerateAll,
                 PerformanceRecorder.generateAlways, PerformanceRecorder.globalNumberOfAffectedViews,
                 PerformanceRecorder.globalNumberIteration, "Server", "No Path", PerformanceRecorder.detectionTime, 0,
-                PerformanceTestType.DETECTION_TIME);
+                PerformanceTestType.DETECTION_TIME, PerformanceRecorder.accessRecordResourceSize());
             PerformanceRecorder.record(r);
           }
 
@@ -231,9 +245,12 @@ public class WebEglPictoSource extends EglPictoSource {
           int num = 0;
           for (IncrementalLazyGenerationRuleContentPromise promise : promises) {
 
-            String pathString = IncrementalityUtil.getPath(promise);
+            long start = System.currentTimeMillis();
 
-            System.out.print("Processing " + ++num + " of " + promises.size() + " - " + pathString + " ... ");
+            String pathString = IncrementalityUtil.getPath(promise);
+            System.out.print(++num + "," + promises.size() + "," + pathString);
+
+//            System.out.print("Processing " + ++num + " of " + promises.size() + " - " + pathString + " ... ");
 
             ViewTree viewTree = generateViewTree(rootViewTree, promise);
 
@@ -273,7 +290,8 @@ public class WebEglPictoSource extends EglPictoSource {
             }
             modifiedViewContents.add(pathString);
 
-            System.out.println("PROCESSED");
+            System.out.println("," + (System.currentTimeMillis() - start));
+//            System.out.println("PROCESSED");
           }
 
 //          accessRecordResource.printIncrementalRecords();

@@ -27,11 +27,10 @@ public class PerformanceRecord {
   long duration;
   int payloadSize;
   String type;
+  int accessRecordResourceSize;
 
-  public PerformanceRecord(boolean genAll, boolean alwaysGenerate, int numOfInvalidatedViews, int iteration, String client,
-      String path,
-      long duration,
-      int payloadSize, String type) {
+  public PerformanceRecord(boolean genAll, boolean alwaysGenerate, int numOfInvalidatedViews, int iteration,
+      String client, String path, long duration, int payloadSize, String type, int accessRecordResourceSize) {
     this.genAll = genAll;
     this.numOfInvalidatedViews = numOfInvalidatedViews;
     this.iteration = iteration;
@@ -41,6 +40,7 @@ public class PerformanceRecord {
     this.payloadSize = payloadSize;
     this.type = type;
     this.alwaysGenerate = alwaysGenerate;
+    this.accessRecordResourceSize = accessRecordResourceSize;
   }
 
   public boolean isGenAll() {
@@ -71,9 +71,6 @@ public class PerformanceRecord {
     return payloadSize;
   }
 
-  /**
-   * @return
-   */
   public boolean isAlwaysGenerated() {
     return alwaysGenerate;
   }
@@ -82,4 +79,13 @@ public class PerformanceRecord {
     return type;
   }
 
+  public int getAccessRecordResourceSize() {
+    return accessRecordResourceSize;
+  }
+
+  public void setAccessRecordResourceSize(int accessRecordResourceSize) {
+    this.accessRecordResourceSize = accessRecordResourceSize;
+  }
+
+  
 }

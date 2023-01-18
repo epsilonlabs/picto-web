@@ -20,7 +20,10 @@ import org.eclipse.epsilon.common.parse.AST;
 import org.eclipse.epsilon.egl.EglTemplate;
 import org.eclipse.epsilon.egl.EglTemplateFactory;
 import org.eclipse.epsilon.egl.concurrent.EgxModuleParallel;
+import org.eclipse.epsilon.egl.concurrent.EgxModuleParallelAnnotation;
+import org.eclipse.epsilon.egl.concurrent.EgxModuleParallelGenerationRuleAtoms;
 import org.eclipse.epsilon.egl.dom.GenerationRule;
+import org.eclipse.epsilon.egl.execute.atoms.GenerationRuleAtom;
 import org.eclipse.epsilon.egl.execute.context.IEgxContext;
 import org.eclipse.epsilon.egl.execute.context.concurrent.IEgxContextParallel;
 import org.eclipse.epsilon.eol.dom.Parameter;
@@ -32,10 +35,12 @@ import org.eclipse.epsilon.eol.execute.context.IEolContext;
 import org.eclipse.epsilon.eol.execute.context.Variable;
 import org.eclipse.epsilon.eol.types.EolAnyType;
 import org.eclipse.epsilon.eol.types.EolMap;
+import org.eclipse.epsilon.erl.execute.context.concurrent.ErlContextParallel;
 import org.eclipse.epsilon.pinset.DatasetRule;
 import org.eclipse.epsilon.pinset.PinsetModule;
 
-public class LazyEgxModule extends EgxModuleParallel {
+public class LazyEgxModule extends EgxModuleParallelGenerationRuleAtoms {
+//public class LazyEgxModule extends EgxModuleParallelAnnotation {
 
   public LazyEgxModule() {
     super();
@@ -54,9 +59,26 @@ public class LazyEgxModule extends EgxModuleParallel {
       return ast;
   }
 
+  public List<? extends GenerationRuleAtom> allJobs() throws EolRuntimeException {
+    if (jobsCache == null) {
+      jobsCache = getAllJobsImpl();
+    }
+    return jobsCache;
+  }
+
   @SuppressWarnings("unchecked")
   @Override
   protected Object processRules() throws EolRuntimeException {
+
+    Object result = null;
+//    if (context instanceof ErlContextParallel) {
+//      result = ((ErlContextParallel) context).executeJob(allJobs());
+//    } else {
+//      result = getContext().executeAll(this, allJobs());
+//    }
+
+//    return result;
+
     IEgxContext context = getContext();
     ExecutorFactory ef = context.getExecutorFactory();
     context.getOperationContributorRegistry().add(new PictoOperationContributor(this));
@@ -74,7 +96,8 @@ public class LazyEgxModule extends EgxModuleParallel {
 
     @Override
     public Object execute(IEolContext context_, Object element) throws EolRuntimeException {
-      IEgxContextParallel context = (IEgxContextParallel) context_;
+//      IEgxContextParallel context = (IEgxContextParallel) context_;
+      IEgxContext context = (IEgxContext) context_;
       FrameStack frameStack = context.getFrameStack();
 
       if (sourceParameter != null) {
@@ -95,7 +118,7 @@ public class LazyEgxModule extends EgxModuleParallel {
 
       final String templateName = (templateBlock == null) ? null : templateBlock.execute(context, false);
       final EglTemplateFactory templateFactory = context.getTemplateFactory();
-			final Map<URI, EglTemplate> templateCache = context.getTemplateCache();
+      final Map<URI, EglTemplate> templateCache = context.getTemplateCache();
 //      final Map<URI, EglTemplate> templateCache = new HashMap<>();
       List<Variable> variables = new ArrayList<>();
       URI templateUri = null;

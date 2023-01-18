@@ -50,7 +50,7 @@ class Resource extends InputEntity {
 
 class Property extends InputEntity {
 	ref Element#properties element;
-	//attr String previousValue;
+	attr String previousValue;
 	attr String value;
 }
 

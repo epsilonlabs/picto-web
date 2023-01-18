@@ -23,4 +23,6 @@ public class PerformanceTestType {
   public static final String NOTIFICATION_TIME = "notification time"; 
   public static final String RESPONSE_TIME = "response time"; 
   public static final String OVERALL_TIME = "overall time";
+  public static final String PROMISE_TIME = "promise time";
+  public static final String GENERATION_TIME = "generation time";
 }

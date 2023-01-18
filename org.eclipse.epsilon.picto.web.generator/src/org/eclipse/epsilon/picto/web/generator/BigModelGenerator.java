@@ -12,15 +12,21 @@
 
 package org.eclipse.epsilon.picto.web.generator;
 
+import static org.hamcrest.CoreMatchers.containsString;
+
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Comparator;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.stream.Collector;
+import java.util.stream.Collectors;
 
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.IProjectDescription;
@@ -33,6 +39,7 @@ import org.eclipse.emf.ecore.EcorePackage;
 import org.eclipse.emf.ecore.resource.Resource;
 import org.eclipse.emf.ecore.resource.ResourceSet;
 import org.eclipse.emf.ecore.resource.impl.ResourceSetImpl;
+import org.eclipse.emf.ecore.util.EcoreUtil;
 import org.eclipse.emf.ecore.xmi.XMIResource;
 import org.eclipse.emf.ecore.xmi.impl.XMIResourceFactoryImpl;
 import org.eclipse.emf.ecore.xmi.impl.XMIResourceImpl;
@@ -154,11 +161,11 @@ public class BigModelGenerator {
           javaDiscoverer.setDeepAnalysis(false);
           try {
             long start = System.currentTimeMillis();
-            javaDiscoverer.discoverElement(javaProject, new NullProgressMonitor());            
+            javaDiscoverer.discoverElement(javaProject, new NullProgressMonitor());
             Resource javaResource = javaDiscoverer.getTargetModel();
             long time = System.currentTimeMillis() - start;
             Model model = (Model) javaResource.getContents().get(0);
-            String name  = model.getName();
+            String name = model.getName();
             model.setName("M" + (i - 1));
             records.add(new Record(model.getName() + "." + name, time));
             bigResource.getContents().addAll(javaResource.getContents());
@@ -187,9 +194,34 @@ public class BigModelGenerator {
         System.out.println();
       }
 
-      Map<Object, Object> options = new HashMap<>();
-      options.put(XMIResource.OPTION_DEFER_IDREF_RESOLUTION, Boolean.TRUE);
-      options.put(XMIResource.OPTION_PROCESS_DANGLING_HREF, XMIResource.OPTION_PROCESS_DANGLING_HREF_DISCARD);
+      System.out.println("Model,Time");
+      records.sort(Comparator.comparingLong(Record::getTime));
+      for (Record record : records) {
+        System.out.println(record.getModelName() + "," + record.getTime());
+      }
+
+      Set<String> modelNames = new HashSet<>(Arrays.asList(new String[] { "M294", "M330", "M296", "M311", "M317" }));
+
+      bigResource.getContents().removeIf(m -> m instanceof Model && !modelNames.contains(((Model) m).getName()));
+
+//      List<EObject> temp = new ArrayList<>();
+//      temp.addAll(bigResource.getContents());
+//      temp.remove(temp.size()- 1);
+//      bigResource.getContents().removeAll(temp);
+
+//      List<String> subList = records.subList(0, (records.size() * 9/ 10) - 1).stream()
+//          .map(r -> r.getModelName()).collect(Collectors.toList());
+//      
+//      for (String modelName : subList) {
+//        Iterator<EObject> iter = bigResource.getContents().iterator();
+//        while(iter.hasNext()) {
+//          Model model = (Model) iter.next();
+//          String[] names = modelName.split("\\.");
+//          if (names.length > 0 && names[0].equals(model.getName())) {
+//            iter.remove();
+//          }
+//        }
+//      }
 
       int eObjectCounter = 0;
       List<ClassDeclaration> classList = new ArrayList<>();
@@ -219,7 +251,13 @@ public class BigModelGenerator {
         bigResource.setID(eObject, "e" + eObjectCounter);
       }
 
+      System.out.println("FINISHED!");
+      System.out.println();
+
       System.out.print("Saving model ... ");
+      Map<Object, Object> options = new HashMap<>();
+      options.put(XMIResource.OPTION_DEFER_IDREF_RESOLUTION, Boolean.TRUE);
+      options.put(XMIResource.OPTION_PROCESS_DANGLING_HREF, XMIResource.OPTION_PROCESS_DANGLING_HREF_DISCARD);
       bigResource.save(options);
       System.out.println("SAVED");
       System.out.println();
@@ -236,13 +274,6 @@ public class BigModelGenerator {
 
     } catch (IOException e) {
       e.printStackTrace();
-    }
-    System.out.println("FINISHED!");
-    System.out.println();
-    System.out.println("Model,Time");
-    records.sort(Comparator.comparingLong(Record::getTime));
-    for (Record record : records) {
-      System.out.println(record.getModelName() + "," + record.getTime());
     }
   }
 

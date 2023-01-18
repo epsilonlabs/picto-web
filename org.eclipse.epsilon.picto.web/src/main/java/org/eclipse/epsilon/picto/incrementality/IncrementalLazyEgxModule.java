@@ -9,11 +9,13 @@ import org.eclipse.epsilon.egl.EglFileGeneratingTemplateFactory;
 import org.eclipse.epsilon.egl.EglTemplate;
 import org.eclipse.epsilon.egl.EglTemplateFactory;
 import org.eclipse.epsilon.egl.dom.GenerationRule;
+import org.eclipse.epsilon.egl.execute.context.EgxContext;
 import org.eclipse.epsilon.egl.execute.context.concurrent.IEgxContextParallel;
 import org.eclipse.epsilon.egl.spec.EglTemplateSpecification;
 import org.eclipse.epsilon.eol.exceptions.EolRuntimeException;
 import org.eclipse.epsilon.eol.execute.context.IEolContext;
 import org.eclipse.epsilon.eol.execute.context.Variable;
+import org.eclipse.epsilon.erl.execute.context.concurrent.ErlContextParallel;
 import org.eclipse.epsilon.picto.LazyEgxModule;
 
 /***
@@ -61,8 +63,7 @@ public class IncrementalLazyEgxModule extends LazyEgxModule {
         // Every time the factory creates a template, attach a listener to it
         // to record property accesses to our custom recorder
 //				template.getModule().getContext().setExecutorFactory(new IncrementalTemplateExecutorFactory());
-        if (!template.getModule().getContext().getExecutorFactory()
-            .getExecutionListeners().stream()
+        if (!template.getModule().getContext().getExecutorFactory().getExecutionListeners().stream()
             .anyMatch(e -> e.getClass().equals(IncrementalPropertyAccessExecutionListener.class))) {
           template.getModule().getContext().getExecutorFactory()
               .addExecutionListener(new IncrementalPropertyAccessExecutionListener(propertyAccessRecorder));
@@ -95,7 +96,6 @@ public class IncrementalLazyEgxModule extends LazyEgxModule {
     return (GenerationRule) new IncrementalLazyGenerationRule();
   }
 
-  
   /**
    * 
    * @author Alfa Yohannis
@@ -124,13 +124,24 @@ public class IncrementalLazyEgxModule extends LazyEgxModule {
           element);
       // after executing parent class
 
-      IEgxContextParallel context = (IEgxContextParallel) context_;
+      EglTemplateFactory templateFactory = null;
       URI templateUri = null;
-      String templateName = (templateBlock == null) ? null : templateBlock.execute(context, false);
-      if (templateName != null) {
-        templateUri = context.getTemplateFactory().resolveTemplate(templateName);
+      if (context_ instanceof EgxContext) {
+//      IEgxContextParallel  context = (IEgxContextParallel) context_;
+        EgxContext serialContext = (EgxContext) context_;
+        String templateName = (templateBlock == null) ? null : templateBlock.execute(serialContext, false);
+        if (templateName != null) {
+          templateUri = serialContext.getTemplateFactory().resolveTemplate(templateName);
+        }
+        templateFactory = serialContext.getTemplateFactory();
+      } else if (context_ instanceof IEgxContextParallel) {
+        IEgxContextParallel parallelContext = (IEgxContextParallel) context_;
+        String templateName = (templateBlock == null) ? null : templateBlock.execute(parallelContext, false);
+        if (templateName != null) {
+          templateUri = parallelContext.getTemplateFactory().resolveTemplate(templateName);
+        }
+        templateFactory = parallelContext.getTemplateFactory();
       }
-      EglTemplateFactory templateFactory = context.getTemplateFactory();
 
       propertyAccessRecorder.setTemplateUri(templateUri);
       this.path = (propertyAccessRecorder.getPath() == null) ? null
@@ -141,8 +152,7 @@ public class IncrementalLazyEgxModule extends LazyEgxModule {
 //			PictoWeb.ACCESS_RECORD_RESOURCE.printIncrementalRecords();
 
       IncrementalLazyGenerationRuleContentPromise wrappingPromise = new IncrementalLazyGenerationRuleContentPromise(
-          wrappedPromise, element, this, this.path, templateFactory,
-          templateUri);
+          wrappedPromise, element, this, this.path, templateFactory, templateUri);
 
       propertyAccessRecorder.setContextElement(null);
       propertyAccessRecorder.setRule(null);
@@ -209,6 +219,6 @@ public class IncrementalLazyEgxModule extends LazyEgxModule {
     public Collection<Variable> getVariables() {
       return wrappedPromise.getVariables();
     }
-
   }
+
 }

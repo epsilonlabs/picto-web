@@ -394,8 +394,18 @@ public class PictographPackageImpl extends EPackageImpl implements PictographPac
    * @generated
    */
   @Override
-  public EAttribute getProperty_Value() {
+  public EAttribute getProperty_PreviousValue() {
     return (EAttribute)propertyEClass.getEStructuralFeatures().get(1);
+  }
+
+  /**
+   * <!-- begin-user-doc -->
+   * <!-- end-user-doc -->
+   * @generated
+   */
+  @Override
+  public EAttribute getProperty_Value() {
+    return (EAttribute)propertyEClass.getEStructuralFeatures().get(2);
   }
 
   /**
@@ -585,6 +595,7 @@ public class PictographPackageImpl extends EPackageImpl implements PictographPac
 
     propertyEClass = createEClass(PROPERTY);
     createEReference(propertyEClass, PROPERTY__ELEMENT);
+    createEAttribute(propertyEClass, PROPERTY__PREVIOUS_VALUE);
     createEAttribute(propertyEClass, PROPERTY__VALUE);
 
     elementEClass = createEClass(ELEMENT);
@@ -672,6 +683,7 @@ public class PictographPackageImpl extends EPackageImpl implements PictographPac
 
     initEClass(propertyEClass, Property.class, "Property", !IS_ABSTRACT, !IS_INTERFACE, IS_GENERATED_INSTANCE_CLASS);
     initEReference(getProperty_Element(), this.getElement(), this.getElement_Properties(), "element", null, 0, 1, Property.class, !IS_TRANSIENT, !IS_VOLATILE, IS_CHANGEABLE, !IS_COMPOSITE, !IS_RESOLVE_PROXIES, !IS_UNSETTABLE, IS_UNIQUE, !IS_DERIVED, IS_ORDERED);
+    initEAttribute(getProperty_PreviousValue(), ecorePackage.getEString(), "previousValue", null, 0, 1, Property.class, !IS_TRANSIENT, !IS_VOLATILE, IS_CHANGEABLE, !IS_UNSETTABLE, !IS_ID, IS_UNIQUE, !IS_DERIVED, IS_ORDERED);
     initEAttribute(getProperty_Value(), ecorePackage.getEString(), "value", null, 0, 1, Property.class, !IS_TRANSIENT, !IS_VOLATILE, IS_CHANGEABLE, !IS_UNSETTABLE, !IS_ID, IS_UNIQUE, !IS_DERIVED, IS_ORDERED);
 
     initEClass(elementEClass, Element.class, "Element", !IS_ABSTRACT, !IS_INTERFACE, IS_GENERATED_INSTANCE_CLASS);

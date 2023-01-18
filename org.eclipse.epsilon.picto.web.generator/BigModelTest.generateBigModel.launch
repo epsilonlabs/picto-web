@@ -464,6 +464,7 @@
     </setAttribute>
     <setAttribute key="selected_workspace_bundles">
         <setEntry value="org.eclipse.epsilon.picto.web.generator@default:default"/>
+        <setEntry value="org.eclipse.epsilon.picto.web@default:default"/>
     </setAttribute>
     <booleanAttribute key="show_selected_only" value="false"/>
     <booleanAttribute key="tracing" value="false"/>

@@ -530,13 +530,22 @@ public interface PictographPackage extends EPackage {
   int PROPERTY__ELEMENT = INPUT_ENTITY_FEATURE_COUNT + 0;
 
   /**
+   * The feature id for the '<em><b>Previous Value</b></em>' attribute.
+   * <!-- begin-user-doc -->
+   * <!-- end-user-doc -->
+   * @generated
+   * @ordered
+   */
+  int PROPERTY__PREVIOUS_VALUE = INPUT_ENTITY_FEATURE_COUNT + 1;
+
+  /**
    * The feature id for the '<em><b>Value</b></em>' attribute.
    * <!-- begin-user-doc -->
    * <!-- end-user-doc -->
    * @generated
    * @ordered
    */
-  int PROPERTY__VALUE = INPUT_ENTITY_FEATURE_COUNT + 1;
+  int PROPERTY__VALUE = INPUT_ENTITY_FEATURE_COUNT + 2;
 
   /**
    * The number of structural features of the '<em>Property</em>' class.
@@ -545,7 +554,7 @@ public interface PictographPackage extends EPackage {
    * @generated
    * @ordered
    */
-  int PROPERTY_FEATURE_COUNT = INPUT_ENTITY_FEATURE_COUNT + 2;
+  int PROPERTY_FEATURE_COUNT = INPUT_ENTITY_FEATURE_COUNT + 3;
 
   /**
    * The meta object id for the '{@link org.eclipse.epsilon.picto.pictograph.impl.ElementImpl <em>Element</em>}' class.
@@ -1067,6 +1076,17 @@ public interface PictographPackage extends EPackage {
   EReference getProperty_Element();
 
   /**
+   * Returns the meta object for the attribute '{@link org.eclipse.epsilon.picto.pictograph.Property#getPreviousValue <em>Previous Value</em>}'.
+   * <!-- begin-user-doc -->
+   * <!-- end-user-doc -->
+   * @return the meta object for the attribute '<em>Previous Value</em>'.
+   * @see org.eclipse.epsilon.picto.pictograph.Property#getPreviousValue()
+   * @see #getProperty()
+   * @generated
+   */
+  EAttribute getProperty_PreviousValue();
+
+  /**
    * Returns the meta object for the attribute '{@link org.eclipse.epsilon.picto.pictograph.Property#getValue <em>Value</em>}'.
    * <!-- begin-user-doc -->
    * <!-- end-user-doc -->
@@ -1427,6 +1447,14 @@ public interface PictographPackage extends EPackage {
      * @generated
      */
     EReference PROPERTY__ELEMENT = eINSTANCE.getProperty_Element();
+
+    /**
+     * The meta object literal for the '<em><b>Previous Value</b></em>' attribute feature.
+     * <!-- begin-user-doc -->
+     * <!-- end-user-doc -->
+     * @generated
+     */
+    EAttribute PROPERTY__PREVIOUS_VALUE = eINSTANCE.getProperty_PreviousValue();
 
     /**
      * The meta object literal for the '<em><b>Value</b></em>' attribute feature.

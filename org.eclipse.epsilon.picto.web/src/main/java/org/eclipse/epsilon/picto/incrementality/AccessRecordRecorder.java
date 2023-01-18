@@ -35,17 +35,21 @@ public class AccessRecordRecorder extends PropertyAccessRecorder {
   }
 
   public void updateCurrentPropertyAccessesPath(String path) {
-    for (AccessRecord r : currentPropertyAccesses) {
+//  for (AccessRecord r : currentPropertyAccesses) {
+    for (int i = 0; i < currentPropertyAccesses.size(); i++) {
+      AccessRecord r = currentPropertyAccesses.get(i);
       r.setPath(path);
       r.setTemplatePath(new File(templateUri).getAbsolutePath());
     }
   }
 
   public void saveToAccessRecordResource() {
-    for (AccessRecord r : currentPropertyAccesses) {
+//    for (AccessRecord r : currentPropertyAccesses) {
+    while (currentPropertyAccesses.size() > 0) {
+      AccessRecord r = currentPropertyAccesses.remove(0);
       accessRecordResource.add(r);
     }
-    currentPropertyAccesses.clear();
+//    currentPropertyAccesses.clear();
   }
 
   public Object getContextElement() {

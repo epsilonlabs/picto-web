@@ -38,6 +38,7 @@
     </genClasses>
     <genClasses ecoreClass="pictograph.ecore#//Property">
       <genFeatures property="None" notify="false" createChild="false" ecoreFeature="ecore:EReference pictograph.ecore#//Property/element"/>
+      <genFeatures createChild="false" ecoreFeature="ecore:EAttribute pictograph.ecore#//Property/previousValue"/>
       <genFeatures createChild="false" ecoreFeature="ecore:EAttribute pictograph.ecore#//Property/value"/>
     </genClasses>
     <genClasses ecoreClass="pictograph.ecore#//Element">

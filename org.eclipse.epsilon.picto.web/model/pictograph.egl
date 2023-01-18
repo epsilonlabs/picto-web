@@ -35,6 +35,14 @@ class TraceIndex {
 [% } %]
     protected List<Map<String, ?>> allIndices = new ArrayList<>(Arrays.asList([%=allIndecies.concat(", ")%]));
     
+    public int size() {
+	    int total = 0;
+	    for (int i = 0; i < allIndices.size(); i++) {
+	      total = total + allIndices.get(i).size();
+	    }
+	    return total;
+    }
+    
     public List<Map<String, ?>> getAllIndices() {
         return allIndices;
     }

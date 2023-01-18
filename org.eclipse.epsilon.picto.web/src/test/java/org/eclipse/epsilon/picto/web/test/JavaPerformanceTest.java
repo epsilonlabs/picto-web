@@ -17,9 +17,6 @@ import java.lang.reflect.Type;
 import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
 import java.net.URL;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.StandardOpenOption;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -114,7 +111,9 @@ public class JavaPerformanceTest {
   @Test
   public void testInvalidatedViewsPerformance() throws Exception {
 
+    PerformanceRecorder.setOutputFile(new File("data/selective.csv"));
     PerformanceRecorder.startRecording();
+    PerformanceRecorder.record("genall,views,iteration,client,path,waittime,bytes,type");
 
     Object invalidatedViewsWaiter = new Object();
     final int numberOfMeasurementPoints = 5;
@@ -357,31 +356,8 @@ public class JavaPerformanceTest {
         } // for (int numViews : numbersOfAffectedViews) {
       }
 
-      Thread.sleep(1000);
       System.out.println("FINISHED!");
-
-      // saving data to a file
-      File outputFile = new File("data/selective.csv");
-      if (!outputFile.getParentFile().exists())
-        outputFile.getParentFile().mkdir();
-      if (outputFile.exists())
-        outputFile.delete();
-      outputFile.createNewFile();
-
       Thread.sleep(1000);
-
-      Files.write(Path.of(outputFile.toURI()),
-          ("genall,views,iteration,client,path,waittime,bytes,type" + System.lineSeparator()).getBytes(),
-          StandardOpenOption.APPEND);
-
-      while (PerformanceRecorder.getPerformanceRecords().size() > 0) {
-        PerformanceRecord record = PerformanceRecorder.getPerformanceRecords().remove(0);
-        String line = ((record.isGenAll()) ? "all" : "N") + "," + record.getNumOfInvalidatedViews() + ","
-            + record.getIteration() + "," + record.getClient() + "," + record.getPath() + "," + record.getDuration()
-            + "," + record.getPayloadSize() + "," + record.getType() + System.lineSeparator();
-        System.out.println("Save " + line);
-        Files.write(Path.of(outputFile.toURI()), line.getBytes(), StandardOpenOption.APPEND);
-      }
 
     } catch (Exception e) {
       e.printStackTrace();
@@ -510,19 +486,20 @@ public class JavaPerformanceTest {
               PerformanceRecord record = new PerformanceRecord(PerformanceRecorder.genenerateAll,
                   PerformanceRecorder.generateAlways, PerformanceRecorder.globalNumberOfAffectedViews,
                   PerformanceRecorder.globalNumberIteration, Client.this.getName(), path, responseTime,
-                  viewBytes.length, PerformanceTestType.RESPONSE_TIME);
-              PerformanceRecorder.getPerformanceRecords().add(record);
+                  viewBytes.length, PerformanceTestType.RESPONSE_TIME, PerformanceRecorder.accessRecordResourceSize());
+              PerformanceRecorder.record(record);
 
               // record the overall time from changing a model file to receiving the view
               record = new PerformanceRecord(PerformanceRecorder.genenerateAll, PerformanceRecorder.generateAlways,
                   PerformanceRecorder.globalNumberOfAffectedViews, PerformanceRecorder.globalNumberIteration,
-                  Client.this.getName(), path, overallTime, viewBytes.length, PerformanceTestType.OVERALL_TIME);
-              PerformanceRecorder.getPerformanceRecords().add(record);
+                  Client.this.getName(), path, overallTime, viewBytes.length, PerformanceTestType.OVERALL_TIME,
+                  PerformanceRecorder.accessRecordResourceSize());
+              PerformanceRecorder.record(record);
 
               System.out.println("PICTO: Type " + PerformanceTestType.OVERALL_TIME + ", GenAll "
                   + PerformanceRecorder.genenerateAll + ", N-views " + PerformanceRecorder.globalNumberOfAffectedViews
                   + ", Iter " + PerformanceRecorder.globalNumberIteration + ", " + Client.this.getName()
-                  + " received, path " + "No Path" + ", time " + overallTime + " ms");
+                  + " received, path " + path + ", time " + overallTime + " ms");
 
             } catch (IOException e) {
               e.printStackTrace();
@@ -612,17 +589,10 @@ public class JavaPerformanceTest {
                     + PerformanceRecorder.generateAlways + ", N-views " + numberOfNodes + ", Iter " + (i + 1) + ", "
                     + Client.this.getName() + " received, path " + receivedPath + ", time " + waitTime + " ms");
 
-//                System.out
-//                    .println("PICTO: always generate " + genAlways + ", " + Client.this.getName()
-//                        + ",  request "
-//                        + (i + 1) + ", " + receivedPath + " "
-//                        + " received, " + waitTime
-//                        + " ms");
-
                 PerformanceRecord record = new PerformanceRecord(PerformanceRecorder.genenerateAll,
                     PerformanceRecorder.generateAlways, numberOfNodes, i + 1, Client.this.getName(), receivedPath,
-                    waitTime, size, PerformanceTestType.RESPONSE_TIME);
-                PerformanceRecorder.getPerformanceRecords().add(record);
+                    waitTime, size, PerformanceTestType.RESPONSE_TIME, PerformanceRecorder.accessRecordResourceSize());
+                PerformanceRecorder.record(record);
               }
 
             }

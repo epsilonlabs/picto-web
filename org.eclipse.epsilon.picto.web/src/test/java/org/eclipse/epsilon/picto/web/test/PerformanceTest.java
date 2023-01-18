@@ -20,9 +20,6 @@ import java.lang.reflect.Type;
 import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
 import java.net.URL;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.StandardOpenOption;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
@@ -160,7 +157,12 @@ public class PerformanceTest {
    */
   @Test
   public void testGeneratedVsCachedViewRequests() throws Exception {
+
+    PerformanceRecorder.setOutputFile(new File("data/cached.csv"));
+    PerformanceRecorder.startRecording();
+
     try {
+
       Object invalidatedViewsWaiter = new Object();
 
 //      // a configuration for a larger scale test
@@ -279,19 +281,12 @@ public class PerformanceTest {
         outputFile.delete();
       outputFile.createNewFile();
 
-      Files.write(Path.of(outputFile.toURI()),
-          ("always,iteration,client,path,waittime,bytes" + System.lineSeparator()).getBytes(),
-          StandardOpenOption.APPEND);
-
-      for (PerformanceRecord record : PerformanceRecorder.getPerformanceRecords()) {
-        String line = record.isAlwaysGenerated() + "," + record.getIteration() + "," + record.getClient() + ","
-            + record.getPath() + "," + record.getDuration() + "," + record.getPayloadSize() + System.lineSeparator();
-        Files.write(Path.of(outputFile.toURI()), line.getBytes(), StandardOpenOption.APPEND);
-      }
       System.out.println("FINISHED!");
     } catch (Exception e) {
       e.printStackTrace();
     }
+
+    PerformanceRecorder.stopRecording();
   }
 
   /***
@@ -304,6 +299,9 @@ public class PerformanceTest {
    */
   @Test
   public void testGreedyVsSelectiveGenerations() throws Exception {
+
+    PerformanceRecorder.setOutputFile(new File("data/selective.csv"));
+    PerformanceRecorder.startRecording();
 
     Object invalidatedViewsWaiter = new Object();
 
@@ -466,20 +464,11 @@ public class PerformanceTest {
 
       Thread.sleep(1000);
 
-      Files.write(Path.of(outputFile.toURI()),
-          ("genall,views,iteration,client,path,waittime,bytes,type" + System.lineSeparator()).getBytes(),
-          StandardOpenOption.APPEND);
-
-      for (PerformanceRecord record : PerformanceRecorder.getPerformanceRecords()) {
-        String line = ((record.isGenAll()) ? "all" : "N") + "," + record.getNumOfInvalidatedViews() + ","
-            + record.getIteration() + "," + record.getClient() + "," + record.getPath() + "," + record.getDuration()
-            + "," + record.getPayloadSize() + "," + record.getType() + System.lineSeparator();
-        Files.write(Path.of(outputFile.toURI()), line.getBytes(), StandardOpenOption.APPEND);
-      }
-
     } catch (Exception e) {
       e.printStackTrace();
     }
+
+    PerformanceRecorder.stopRecording();
   }
 
   /***
@@ -589,23 +578,24 @@ public class PerformanceTest {
               // record the response time, from requesting a view to receiving the view
               PerformanceRecord record = new PerformanceRecord(PerformanceRecorder.genenerateAll,
                   PerformanceRecorder.generateAlways, PerformanceRecorder.globalNumberOfAffectedViews,
-                  PerformanceRecorder.globalNumberIteration, Client.this.getName(), path, responseTime, viewBytes.length,
-                  PerformanceTestType.RESPONSE_TIME);
-              PerformanceRecorder.getPerformanceRecords().add(record);
+                  PerformanceRecorder.globalNumberIteration, Client.this.getName(), path, responseTime,
+                  viewBytes.length, PerformanceTestType.RESPONSE_TIME, PerformanceRecorder.accessRecordResourceSize());
+              PerformanceRecorder.record(record);
 
               // record the overall time from changing a model file to receiving the view
               record = new PerformanceRecord(PerformanceRecorder.genenerateAll, PerformanceRecorder.generateAlways,
-                  PerformanceRecorder.globalNumberOfAffectedViews, PerformanceRecorder.globalNumberIteration, Client.this.getName(), path,
-                  overallTime, viewBytes.length, PerformanceTestType.OVERALL_TIME);
-              PerformanceRecorder.getPerformanceRecords().add(record);
+                  PerformanceRecorder.globalNumberOfAffectedViews, PerformanceRecorder.globalNumberIteration,
+                  Client.this.getName(), path, overallTime, viewBytes.length, PerformanceTestType.OVERALL_TIME,
+                  PerformanceRecorder.accessRecordResourceSize());
+              PerformanceRecorder.record(record);
 
               assertThat(path).isEqualTo(expectedPath);
               assertThat(invalidatedViews).containsAll(expectedViews);
 
               System.out.println("PICTO: Type " + PerformanceTestType.OVERALL_TIME + ", GenAll "
-                  + PerformanceRecorder.genenerateAll + ", N-views " + PerformanceRecorder.globalNumberOfAffectedViews + ", Iter "
-                  + PerformanceRecorder.globalNumberIteration + ", " + Client.this.getName() + " received, path " + "No Path"
-                  + ", time " + overallTime + " ms");
+                  + PerformanceRecorder.genenerateAll + ", N-views " + PerformanceRecorder.globalNumberOfAffectedViews
+                  + ", Iter " + PerformanceRecorder.globalNumberIteration + ", " + Client.this.getName()
+                  + " received, path " + "No Path" + ", time " + overallTime + " ms");
 
             } catch (IOException e) {
               e.printStackTrace();
@@ -704,9 +694,9 @@ public class PerformanceTest {
 //                        + " ms");
 
                 PerformanceRecord record = new PerformanceRecord(PerformanceRecorder.genenerateAll,
-                    PerformanceRecorder.generateAlways, numberOfNodes, i + 1, Client.this.getName(), receivedPath, waitTime,
-                    size, PerformanceTestType.RESPONSE_TIME);
-                PerformanceRecorder.getPerformanceRecords().add(record);
+                    PerformanceRecorder.generateAlways, numberOfNodes, i + 1, Client.this.getName(), receivedPath,
+                    waitTime, size, PerformanceTestType.RESPONSE_TIME, PerformanceRecorder.accessRecordResourceSize());
+                PerformanceRecorder.record(record);
               }
 
             }
