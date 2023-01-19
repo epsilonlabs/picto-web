@@ -195,10 +195,10 @@ public class WebEglPictoSource extends EglPictoSource {
 
           long promiseStart = System.currentTimeMillis();
 
-          ((IncrementalLazyEgxModule) module).startRecording();
+//          ((IncrementalLazyEgxModule) module).startRecording();
           List<IncrementalLazyGenerationRuleContentPromise> promises = (List<IncrementalLazyGenerationRuleContentPromise>) module
               .execute();
-          ((IncrementalLazyEgxModule) module).stopRecording();
+//          ((IncrementalLazyEgxModule) module).stopRecording();
 
           PerformanceRecorder.promiseTime = System.currentTimeMillis() - promiseStart;
 
@@ -472,10 +472,10 @@ public class WebEglPictoSource extends EglPictoSource {
           fs.put(new Variable(customViewParameter.getName(), getValue(customViewParameter), EolAnyType.Instance));
         }
 
-        ((IncrementalLazyEgxModule) module).stopRecording();
+//        ((IncrementalLazyEgxModule) module).stopRecording();
         IncrementalLazyGenerationRuleContentPromise contentPromise = (IncrementalLazyGenerationRuleContentPromise) generationRule
             .execute(context, source);
-        ((IncrementalLazyEgxModule) module).stopRecording();
+//        ((IncrementalLazyEgxModule) module).stopRecording();
 //				WebEglPictoSource.updateIncrementalResource(module, "/" + String.join("/", customView.getPath()));
 
         Collection<Variable> variables = contentPromise.getVariables();

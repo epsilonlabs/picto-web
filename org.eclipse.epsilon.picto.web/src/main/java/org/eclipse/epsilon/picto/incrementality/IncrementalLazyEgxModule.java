@@ -15,6 +15,7 @@ import org.eclipse.epsilon.egl.spec.EglTemplateSpecification;
 import org.eclipse.epsilon.eol.exceptions.EolRuntimeException;
 import org.eclipse.epsilon.eol.execute.context.IEolContext;
 import org.eclipse.epsilon.eol.execute.context.Variable;
+import org.eclipse.epsilon.eol.execute.introspection.recording.PropertyAccessRecorder;
 import org.eclipse.epsilon.erl.execute.context.concurrent.ErlContextParallel;
 import org.eclipse.epsilon.picto.LazyEgxModule;
 
@@ -28,57 +29,57 @@ import org.eclipse.epsilon.picto.LazyEgxModule;
 public class IncrementalLazyEgxModule extends LazyEgxModule {
 
   protected AccessRecordResource accessRecordResource;
-  protected AccessRecordRecorder propertyAccessRecorder;
+//  protected AccessRecordRecorder propertyAccessRecorder;
 
-  public AccessRecordRecorder getPropertyAccessRecorder() {
-    return propertyAccessRecorder;
-  }
+//  public AccessRecordRecorder getPropertyAccessRecorder() {
+//    return propertyAccessRecorder;
+//  }
 
   public AccessRecordResource getIncrementalResource() {
     return accessRecordResource;
   }
 
-  public void startRecording() {
-    propertyAccessRecorder.startRecording();
-  }
+//  public void startRecording() {
+//    propertyAccessRecorder.startRecording();
+//  }
 
-  public void stopRecording() {
-    propertyAccessRecorder.stopRecording();
-  }
+//  public void stopRecording() {
+//    propertyAccessRecorder.stopRecording();
+//  }
 
   public IncrementalLazyEgxModule(AccessRecordResource accessRecordResource) {
 
     this.accessRecordResource = accessRecordResource;
 
-    // Create the property access recorder that will record
-    // all the property access events in the EGX transformation
-    propertyAccessRecorder = new AccessRecordRecorder(accessRecordResource);
-
-    // Create a custom template factory so that we can monitor property
-    // access events during template execution too
-    this.setTemplateFactory(new EglFileGeneratingTemplateFactory() {
-      @Override
-      protected EglTemplate createTemplate(EglTemplateSpecification spec) throws Exception {
-        EglTemplate template = super.createTemplate(spec);
-        // Every time the factory creates a template, attach a listener to it
-        // to record property accesses to our custom recorder
-//				template.getModule().getContext().setExecutorFactory(new IncrementalTemplateExecutorFactory());
-        if (!template.getModule().getContext().getExecutorFactory().getExecutionListeners().stream()
-            .anyMatch(e -> e.getClass().equals(IncrementalPropertyAccessExecutionListener.class))) {
-          template.getModule().getContext().getExecutorFactory()
-              .addExecutionListener(new IncrementalPropertyAccessExecutionListener(propertyAccessRecorder));
-        }
-        return template;
-      }
-    });
-
-    // Add a listener to record property access events during
-    // the execution of the EGX program
-    if (!this.getContext().getExecutorFactory().getExecutionListeners().stream()
-        .anyMatch(e -> e.getClass().equals(IncrementalPropertyAccessExecutionListener.class))) {
-      this.getContext().getExecutorFactory()
-          .addExecutionListener(new IncrementalPropertyAccessExecutionListener(propertyAccessRecorder));
-    }
+//    // Create the property access recorder that will record
+//    // all the property access events in the EGX transformation
+//    propertyAccessRecorder = new AccessRecordRecorder(accessRecordResource);
+//
+//    // Create a custom template factory so that we can monitor property
+//    // access events during template execution too
+//    this.setTemplateFactory(new EglFileGeneratingTemplateFactory() {
+//      @Override
+//      protected EglTemplate createTemplate(EglTemplateSpecification spec) throws Exception {
+//        EglTemplate template = super.createTemplate(spec);
+//        // Every time the factory creates a template, attach a listener to it
+//        // to record property accesses to our custom recorder
+////				template.getModule().getContext().setExecutorFactory(new IncrementalTemplateExecutorFactory());
+//        if (!template.getModule().getContext().getExecutorFactory().getExecutionListeners().stream()
+//            .anyMatch(e -> e.getClass().equals(IncrementalPropertyAccessExecutionListener.class))) {
+//          template.getModule().getContext().getExecutorFactory()
+//              .addExecutionListener(new IncrementalPropertyAccessExecutionListener(propertyAccessRecorder));
+//        }
+//        return template;
+//      }
+//    });
+//
+//    // Add a listener to record property access events during
+//    // the execution of the EGX program
+//    if (!this.getContext().getExecutorFactory().getExecutionListeners().stream()
+//        .anyMatch(e -> e.getClass().equals(IncrementalPropertyAccessExecutionListener.class))) {
+//      this.getContext().getExecutorFactory()
+//          .addExecutionListener(new IncrementalPropertyAccessExecutionListener(propertyAccessRecorder));
+//    }
   }
 
   @Override
@@ -114,11 +115,17 @@ public class IncrementalLazyEgxModule extends LazyEgxModule {
 
     @Override
     public Object execute(IEolContext context_, Object element) throws EolRuntimeException {
+
+      AccessRecordRecorder accessRecorder = new AccessRecordRecorder(accessRecordResource);
+      IncrementalPropertyAccessExecutionListener listener = new IncrementalPropertyAccessExecutionListener(
+          accessRecorder);
+      IncrementalLazyEgxModule.this.getContext().getExecutorFactory().addExecutionListener(listener);
+      accessRecorder.startRecording();
+
       // Before executing a generation rule against an contextElement
       // update the rule and contextElement fields of the property change recorder
-
-      propertyAccessRecorder.setContextElement(element);
-      propertyAccessRecorder.setRule(this);
+      accessRecorder.setContextElement(element);
+      accessRecorder.setRule(this);
       // execute parent class
       LazyGenerationRuleContentPromise wrappedPromise = (LazyGenerationRuleContentPromise) super.execute(context_,
           element);
@@ -143,22 +150,26 @@ public class IncrementalLazyEgxModule extends LazyEgxModule {
         templateFactory = parallelContext.getTemplateFactory();
       }
 
-      propertyAccessRecorder.setTemplateUri(templateUri);
-      this.path = (propertyAccessRecorder.getPath() == null) ? null
-          : new StringBuffer(propertyAccessRecorder.getPath()).toString();
+      accessRecorder.setTemplateUri(templateUri);
+      this.path = (accessRecorder.getPath() == null) ? null
+          : new StringBuffer(accessRecorder.getPath()).toString();
 
-      propertyAccessRecorder.updateCurrentPropertyAccessesPath(this.path);
-      propertyAccessRecorder.saveToAccessRecordResource();
+      accessRecorder.updateCurrentPropertyAccessesPath(this.path);
+      accessRecorder.saveToAccessRecordResource();
 //			PictoWeb.ACCESS_RECORD_RESOURCE.printIncrementalRecords();
 
       IncrementalLazyGenerationRuleContentPromise wrappingPromise = new IncrementalLazyGenerationRuleContentPromise(
           wrappedPromise, element, this, this.path, templateFactory, templateUri);
 
-      propertyAccessRecorder.setContextElement(null);
-      propertyAccessRecorder.setRule(null);
-      propertyAccessRecorder.setPath(null);
-      propertyAccessRecorder.setTemplateUri(null);
+      accessRecorder.setContextElement(null);
+      accessRecorder.setRule(null);
+      accessRecorder.setPath(null);
+      accessRecorder.setTemplateUri(null);
 
+      accessRecorder.stopRecording();
+      listener.removeRecorder(accessRecorder);
+      IncrementalLazyEgxModule.this.getContext().getExecutorFactory().removeExecutionListener(listener);
+      
       return wrappingPromise;
     }
   }
@@ -199,19 +210,42 @@ public class IncrementalLazyEgxModule extends LazyEgxModule {
 
     @Override
     public String getContent() throws Exception {
-      IncrementalLazyEgxModule.this.getPropertyAccessRecorder().setTemplateUri(templateUri);
-      IncrementalLazyEgxModule.this.getPropertyAccessRecorder().setContextElement(contextObject);
-      IncrementalLazyEgxModule.this.getPropertyAccessRecorder().setRule(generationRule);
-      IncrementalLazyEgxModule.this.getPropertyAccessRecorder().setPath(path);
+
+//      if (!this.getContext().getExecutorFactory().getExecutionListeners().stream()
+//        .anyMatch(e -> e.getClass().equals(IncrementalPropertyAccessExecutionListener.class))) {
+//      this.getContext().getExecutorFactory()
+//          .addExecutionListener(new IncrementalPropertyAccessExecutionListener(propertyAccessRecorder));
+//    }
+
+      AccessRecordRecorder accessRecorder = new AccessRecordRecorder(accessRecordResource);
+      IncrementalPropertyAccessExecutionListener listener = new IncrementalPropertyAccessExecutionListener(
+          accessRecorder);
+      EglTemplateFactory tf = (EglTemplateFactory) IncrementalLazyEgxModule.this
+          .getTemplateFactory();
+      tf.getContext().getExecutorFactory().addExecutionListener(listener);
+      accessRecorder.startRecording();
+
+      // init
+      accessRecorder.setTemplateUri(templateUri);
+      accessRecorder.setContextElement(contextObject);
+      accessRecorder.setRule(generationRule);
+      accessRecorder.setPath(path);
+
+      // gen and save
       String content = wrappedPromise.getContent();
-      propertyAccessRecorder.updateCurrentPropertyAccessesPath(path);
+      accessRecorder.updateCurrentPropertyAccessesPath(path);
+      accessRecorder.saveToAccessRecordResource();
 
-      propertyAccessRecorder.saveToAccessRecordResource();
+      // clean
+      accessRecorder.setTemplateUri(null);
+      accessRecorder.setContextElement(null);
+      accessRecorder.setRule(null);
+      accessRecorder.setPath(null);
 
-      IncrementalLazyEgxModule.this.getPropertyAccessRecorder().setTemplateUri(null);
-      IncrementalLazyEgxModule.this.getPropertyAccessRecorder().setContextElement(null);
-      IncrementalLazyEgxModule.this.getPropertyAccessRecorder().setRule(null);
-      IncrementalLazyEgxModule.this.getPropertyAccessRecorder().setPath(null);
+      accessRecorder.stopRecording();
+      listener.removeRecorder(accessRecorder);
+      tf.getContext().getExecutorFactory().removeExecutionListener(listener);
+
       return content;
     }
 

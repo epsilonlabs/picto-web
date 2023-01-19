@@ -98,12 +98,12 @@ public class PromiseView {
 
         long genStart = System.currentTimeMillis();
 
-        Future<ViewContent> result = promiseExecutor.submit(new GetViewContentTask(module, pictoView, viewTree));
-        vc = result.get();
+//        Future<ViewContent> result = promiseExecutor.submit(new GetViewContentTask(module, pictoView, viewTree));
+//        vc = result.get();
 
 //        module.startRecording();
-//        pictoView.renderView(viewTree);
-//        vc = viewTree.getContent().getFinal(pictoView);
+        pictoView.renderView(viewTree);
+        vc = viewTree.getContent().getFinal(pictoView);
 //        module.stopRecording();
 
         PerformanceRecorder.generationTime = System.currentTimeMillis() - genStart;
@@ -168,10 +168,10 @@ public class PromiseView {
 
     public ViewContent call() throws Exception {
 
-      module.startRecording();
+//      module.startRecording();
       pictoView.renderView(viewTree);
       ViewContent vc = viewTree.getContent().getFinal(pictoView);
-      module.stopRecording();
+//      module.stopRecording();
 
       return vc;
     }
