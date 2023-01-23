@@ -1,5 +1,5 @@
 /*********************************************************************
-* Copyright (c) 2008 The University of York.
+* Copyright (c) 2022 The University of York.
 *
 * This program and the accompanying materials are made
 * available under the terms of the Eclipse Public License 2.0
@@ -65,6 +65,7 @@ import org.eclipse.epsilon.picto.dom.PictoPackage;
 import org.eclipse.epsilon.picto.dummy.IEditorPart;
 import org.eclipse.epsilon.picto.incrementality.AccessRecordResource;
 import org.eclipse.epsilon.picto.incrementality.IncrementalLazyEgxModule;
+import org.eclipse.epsilon.picto.incrementality.IncrementalLazyEgxModule.IncrementalLazyGenerationRule;
 import org.eclipse.epsilon.picto.incrementality.IncrementalLazyEgxModule.IncrementalLazyGenerationRuleContentPromise;
 import org.eclipse.epsilon.picto.incrementality.IncrementalityUtil;
 import org.eclipse.epsilon.picto.pictograph.State;
@@ -272,7 +273,8 @@ public class WebEglPictoSource extends EglPictoSource {
             // Skip to next promise if path is not in the invalidatedViewPaths.
             if (!generateAll1stTime && !PictoApplication.isNonIncremental()) {
               if (!invalidatedViewPaths.contains(pathString)) {
-                System.out.println("SKIP");
+                System.out.print(",SKIP");
+                System.out.println("," + (System.currentTimeMillis() - start));
                 continue;
               }
             }
@@ -290,8 +292,8 @@ public class WebEglPictoSource extends EglPictoSource {
             }
             modifiedViewContents.add(pathString);
 
+            System.out.print(",PROCESSED");
             System.out.println("," + (System.currentTimeMillis() - start));
-//            System.out.println("PROCESSED");
           }
 
 //          accessRecordResource.printIncrementalRecords();
@@ -439,9 +441,9 @@ public class WebEglPictoSource extends EglPictoSource {
         .collect(Collectors.toList());
     for (CustomView customView : customViews) {
 
-      LazyGenerationRule generationRule = ((LazyEgxModule) module).getGenerationRules().stream()
-          .filter(r -> r.getName().equals(customView.getType()) && r instanceof LazyGenerationRule)
-          .map(LazyGenerationRule.class::cast).findFirst().orElse(null);
+      IncrementalLazyGenerationRule generationRule = ((IncrementalLazyEgxModule) module).getGenerationRules().stream()
+          .filter(r -> r.getName().equals(customView.getType()) && r instanceof IncrementalLazyGenerationRule)
+          .map(IncrementalLazyGenerationRule.class::cast).findFirst().orElse(null);
 
       if (generationRule != null) {
         Object source = null;
@@ -652,11 +654,11 @@ public class WebEglPictoSource extends EglPictoSource {
    * panel.
    * 
    * @param rootViewTree
-   * @param instance
+   * @param promise
    * @return
    */
   @SuppressWarnings("unchecked")
-  public static ViewTree generateViewTree(ViewTree rootViewTree, LazyGenerationRuleContentPromise instance) {
+  public static ViewTree generateViewTree(ViewTree rootViewTree, IncrementalLazyGenerationRuleContentPromise promise) {
     String format = getDefaultFormat();
     String icon = getDefaultIcon();
     List<Patch> patches = new ArrayList<>(1);
@@ -665,7 +667,7 @@ public class WebEglPictoSource extends EglPictoSource {
     Variable layersVariable = null;
     Integer position = null;
 
-    Collection<Variable> instanceVariables = instance.getVariables();
+    Collection<Variable> instanceVariables = promise.getVariables();
 
     for (Variable variable : instanceVariables) {
       Object varValue = variable.getValue();
@@ -739,7 +741,7 @@ public class WebEglPictoSource extends EglPictoSource {
     }
     instanceVariables.add(Variable.createReadOnlyVariable("layers", layers));
 
-    ViewTree vt = new ViewTree(instance, format, icon, position, patches, layers);
+    ViewTree vt = new ViewTree(promise, format, icon, position, patches, layers);
     rootViewTree.add(new ArrayList<>(path), vt);
 
     return vt;

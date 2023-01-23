@@ -69,6 +69,7 @@ public class AccessGraphResource implements AccessRecordResource {
   @Override
   public void add(AccessRecord access) {
 
+    System.out.println(access.toString());
 //    System.out.println(access.toString());
 //    if (access.getPath().equals("/XMLResourceImpl") && access.getElementObjectId().equals("e821")) {
 //      System.console();

@@ -122,6 +122,8 @@ public class AccessRecordRecorder extends PropertyAccessRecorder {
 
     AccessRecord access = null;
     try {
+     
+      
       access = new AccessRecord(modulePath, templatePath, ruleName, contextResourceUri, contextElementId,
           elementResourceUri, modelElementId, propertyName, (Object) result, path);
     } catch (Exception e) {

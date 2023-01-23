@@ -1,23 +1,37 @@
 package org.eclipse.epsilon.picto.incrementality;
 
 import java.net.URI;
+import java.util.ArrayList;
 import java.util.Collection;
+import java.util.List;
+import java.util.Map;
 
 import org.eclipse.epsilon.common.module.ModuleElement;
 import org.eclipse.epsilon.common.parse.AST;
 import org.eclipse.epsilon.egl.EglFileGeneratingTemplateFactory;
 import org.eclipse.epsilon.egl.EglTemplate;
 import org.eclipse.epsilon.egl.EglTemplateFactory;
+import org.eclipse.epsilon.egl.concurrent.EgxModuleParallelGenerationRuleAtoms;
 import org.eclipse.epsilon.egl.dom.GenerationRule;
 import org.eclipse.epsilon.egl.execute.context.EgxContext;
+import org.eclipse.epsilon.egl.execute.context.IEgxContext;
 import org.eclipse.epsilon.egl.execute.context.concurrent.IEgxContextParallel;
 import org.eclipse.epsilon.egl.spec.EglTemplateSpecification;
+import org.eclipse.epsilon.eol.dom.Parameter;
 import org.eclipse.epsilon.eol.exceptions.EolRuntimeException;
+import org.eclipse.epsilon.eol.execute.ExecutorFactory;
+import org.eclipse.epsilon.eol.execute.context.FrameStack;
+import org.eclipse.epsilon.eol.execute.context.FrameType;
 import org.eclipse.epsilon.eol.execute.context.IEolContext;
 import org.eclipse.epsilon.eol.execute.context.Variable;
-import org.eclipse.epsilon.eol.execute.introspection.recording.PropertyAccessRecorder;
-import org.eclipse.epsilon.erl.execute.context.concurrent.ErlContextParallel;
+import org.eclipse.epsilon.eol.types.EolAnyType;
+import org.eclipse.epsilon.eol.types.EolMap;
 import org.eclipse.epsilon.picto.LazyEgxModule;
+import org.eclipse.epsilon.picto.PictoOperationContributor;
+import org.eclipse.epsilon.picto.LazyEgxModule.LazyGenerationRuleContentPromise;
+import org.eclipse.epsilon.pinset.DatasetRule;
+import org.eclipse.epsilon.pinset.PinsetModule;
+import org.eclipse.epsilon.picto.ContentPromise;
 
 /***
  * Picto's EglModule to record the execution of an EGX transformation to record
@@ -26,49 +40,48 @@ import org.eclipse.epsilon.picto.LazyEgxModule;
  * can be used to record contextElement property accesses in other Epsilon
  * languages. too.
  */
-public class IncrementalLazyEgxModule extends LazyEgxModule {
+public class IncrementalLazyEgxModule extends EgxModuleParallelGenerationRuleAtoms {
 
   protected AccessRecordResource accessRecordResource;
-//  protected AccessRecordRecorder propertyAccessRecorder;
-
-//  public AccessRecordRecorder getPropertyAccessRecorder() {
-//    return propertyAccessRecorder;
-//  }
+  private EglFileGeneratingTemplateFactory templateFactory;
+  protected EglTemplate template;
 
   public AccessRecordResource getIncrementalResource() {
     return accessRecordResource;
   }
 
-//  public void startRecording() {
-//    propertyAccessRecorder.startRecording();
-//  }
-
-//  public void stopRecording() {
-//    propertyAccessRecorder.stopRecording();
-//  }
-
   public IncrementalLazyEgxModule(AccessRecordResource accessRecordResource) {
 
     this.accessRecordResource = accessRecordResource;
 
-//    // Create the property access recorder that will record
-//    // all the property access events in the EGX transformation
+    templateFactory = new EglFileGeneratingTemplateFactory() {
+      @Override
+      protected EglTemplate createTemplate(EglTemplateSpecification spec) throws Exception {
+        EglTemplate template = super.createTemplate(spec);
+        IncrementalLazyEgxModule.this.template = template;
+        return template;
+      }
+    };
+    this.setTemplateFactory(templateFactory);
+
+    // Create the property access recorder that will record
+    // all the property access events in the EGX transformation
 //    propertyAccessRecorder = new AccessRecordRecorder(accessRecordResource);
-//
-//    // Create a custom template factory so that we can monitor property
-//    // access events during template execution too
+
+    // Create a custom template factory so that we can monitor property
+    // access events during template execution too
 //    this.setTemplateFactory(new EglFileGeneratingTemplateFactory() {
 //      @Override
 //      protected EglTemplate createTemplate(EglTemplateSpecification spec) throws Exception {
 //        EglTemplate template = super.createTemplate(spec);
 //        // Every time the factory creates a template, attach a listener to it
 //        // to record property accesses to our custom recorder
-////				template.getModule().getContext().setExecutorFactory(new IncrementalTemplateExecutorFactory());
-//        if (!template.getModule().getContext().getExecutorFactory().getExecutionListeners().stream()
-//            .anyMatch(e -> e.getClass().equals(IncrementalPropertyAccessExecutionListener.class))) {
-//          template.getModule().getContext().getExecutorFactory()
-//              .addExecutionListener(new IncrementalPropertyAccessExecutionListener(propertyAccessRecorder));
-//        }
+//////				template.getModule().getContext().setExecutorFactory(new IncrementalTemplateExecutorFactory());
+////        if (!template.getModule().getContext().getExecutorFactory().getExecutionListeners().stream()
+////            .anyMatch(e -> e.getClass().equals(IncrementalPropertyAccessExecutionListener.class))) {
+////          template.getModule().getContext().getExecutorFactory()
+////              .addExecutionListener(new IncrementalPropertyAccessExecutionListener(propertyAccessRecorder));
+////        }
 //        return template;
 //      }
 //    });
@@ -97,103 +110,149 @@ public class IncrementalLazyEgxModule extends LazyEgxModule {
     return (GenerationRule) new IncrementalLazyGenerationRule();
   }
 
+  @SuppressWarnings("unchecked")
+  @Override
+  protected Object processRules() throws EolRuntimeException {
+    IEgxContext context = getContext();
+    ExecutorFactory ef = context.getExecutorFactory();
+    context.getOperationContributorRegistry().add(new PictoOperationContributor(this));
+    Collection<? extends GenerationRule> rules = getGenerationRules();
+    Collection<LazyGenerationRuleContentPromise> promises = new ArrayList<>(rules.size());
+    for (GenerationRule rule : rules) {
+      if (!rule.isLazy(context)) {
+        promises.addAll((Collection<? extends LazyGenerationRuleContentPromise>) ef.execute(rule, context));
+      }
+    }
+    return promises;
+  }
+
   /**
+   * The generation rule of Picto's incremental approach.
    * 
    * @author Alfa Yohannis
    *
    */
-  public class IncrementalLazyGenerationRule extends LazyGenerationRule {
-    String path = null;
-
-    public String getPath() {
-      return path;
-    }
-
-    public void setPath(String path) {
-      this.path = path;
-    }
+  public class IncrementalLazyGenerationRule extends GenerationRule {
 
     @Override
-    public Object execute(IEolContext context_, Object element) throws EolRuntimeException {
+    public Object execute(IEolContext context_, Object contextObject) throws EolRuntimeException {
 
       AccessRecordRecorder accessRecorder = new AccessRecordRecorder(accessRecordResource);
+      accessRecorder.setContextElement(contextObject);
+      accessRecorder.setRule(this);
+      
       IncrementalPropertyAccessExecutionListener listener = new IncrementalPropertyAccessExecutionListener(
           accessRecorder);
       IncrementalLazyEgxModule.this.getContext().getExecutorFactory().addExecutionListener(listener);
       accessRecorder.startRecording();
 
-      // Before executing a generation rule against an contextElement
-      // update the rule and contextElement fields of the property change recorder
-      accessRecorder.setContextElement(element);
-      accessRecorder.setRule(this);
-      // execute parent class
-      LazyGenerationRuleContentPromise wrappedPromise = (LazyGenerationRuleContentPromise) super.execute(context_,
-          element);
-      // after executing parent class
 
-      EglTemplateFactory templateFactory = null;
-      URI templateUri = null;
-      if (context_ instanceof EgxContext) {
-//      IEgxContextParallel  context = (IEgxContextParallel) context_;
-        EgxContext serialContext = (EgxContext) context_;
-        String templateName = (templateBlock == null) ? null : templateBlock.execute(serialContext, false);
-        if (templateName != null) {
-          templateUri = serialContext.getTemplateFactory().resolveTemplate(templateName);
-        }
-        templateFactory = serialContext.getTemplateFactory();
-      } else if (context_ instanceof IEgxContextParallel) {
-        IEgxContextParallel parallelContext = (IEgxContextParallel) context_;
-        String templateName = (templateBlock == null) ? null : templateBlock.execute(parallelContext, false);
-        if (templateName != null) {
-          templateUri = parallelContext.getTemplateFactory().resolveTemplate(templateName);
-        }
-        templateFactory = parallelContext.getTemplateFactory();
+      /** START: Execute what LazyEgxModule performs **/
+      IEgxContextParallel context = (IEgxContextParallel) context_;
+      FrameStack frameStack = context.getFrameStack();
+
+      if (sourceParameter != null) {
+        frameStack.enterLocal(FrameType.PROTECTED, this,
+            Variable.createReadOnlyVariable(sourceParameter.getName(), contextObject));
+      } else {
+        frameStack.enterLocal(FrameType.PROTECTED, this);
       }
 
-      accessRecorder.setTemplateUri(templateUri);
-      this.path = (accessRecorder.getPath() == null) ? null
-          : new StringBuffer(accessRecorder.getPath()).toString();
+      if (guardBlock != null && !guardBlock.execute(context, false)) {
+        frameStack.leaveLocal(this);
+        return null;
+      }
 
-      accessRecorder.updateCurrentPropertyAccessesPath(this.path);
+      if (preBlock != null) {
+        preBlock.execute(context, false);
+      }
+
+      String templateName = (templateBlock == null) ? null : templateBlock.execute(context, false);
+      EglTemplateFactory templateFactory = context.getTemplateFactory();
+      Map<URI, EglTemplate> templateCache = context.getTemplateCache();
+      List<Variable> variables = new ArrayList<>();
+      URI templateUri = null;
+
+      if (templateName != null) {
+        templateUri = templateFactory.resolveTemplate(templateName);
+        accessRecorder.setTemplateUri(templateUri);
+      }
+
+      if (sourceParameter != null) {
+        variables.add(Variable.createReadOnlyVariable(sourceParameter.getName(), contextObject));
+      }
+
+      if (parametersBlock != null) {
+        EolMap<String, ?> x = parametersBlock.execute(context, false);
+        for (Map.Entry<String, ?> entry : x.entrySet()) {
+          variables.add(new Variable(entry.getKey(), entry.getValue(), EolAnyType.Instance, false));
+        }
+      }
+
+      frameStack.leaveLocal(this);
+      /** END **/
+      
+      //-----
+      String path = (accessRecorder.getPath() == null) ? null : new StringBuffer(accessRecorder.getPath()).toString();
+
+      accessRecorder.updateCurrentPropertyAccessesPath(path);
       accessRecorder.saveToAccessRecordResource();
-//			PictoWeb.ACCESS_RECORD_RESOURCE.printIncrementalRecords();
-
-      IncrementalLazyGenerationRuleContentPromise wrappingPromise = new IncrementalLazyGenerationRuleContentPromise(
-          wrappedPromise, element, this, this.path, templateFactory, templateUri);
-
-      accessRecorder.setContextElement(null);
-      accessRecorder.setRule(null);
-      accessRecorder.setPath(null);
-      accessRecorder.setTemplateUri(null);
 
       accessRecorder.stopRecording();
       listener.removeRecorder(accessRecorder);
       IncrementalLazyEgxModule.this.getContext().getExecutorFactory().removeExecutionListener(listener);
       
-      return wrappingPromise;
+      IncrementalLazyGenerationRuleContentPromise promise = new IncrementalLazyGenerationRuleContentPromise(
+          contextObject, this, path, templateFactory, templateUri, variables, templateCache);
+
+      return promise;
     }
+
+    @Override
+    public Object execute(IEolContext context) throws EolRuntimeException {
+      Collection<IncrementalLazyGenerationRuleContentPromise> promises = new ArrayList<>();
+      ExecutorFactory ef = context.getExecutorFactory();
+      for (Object element : getAllElements(context)) {
+        Object result = ef.execute(this, context, element);
+        if (result instanceof IncrementalLazyGenerationRuleContentPromise) {
+          promises.add((IncrementalLazyGenerationRuleContentPromise) result);
+        }
+      }
+      return promises;
+    }
+
+    public Parameter getSourceParameter() {
+      return sourceParameter;
+    }
+
   }
 
-  public class IncrementalLazyGenerationRuleContentPromise extends LazyGenerationRuleContentPromise {
+  /***
+   * The Content Promise of the Picto's incremental approach.
+   * 
+   * @author Alfa Yohannis
+   *
+   */
+  public class IncrementalLazyGenerationRuleContentPromise implements ContentPromise {
 
-    LazyGenerationRuleContentPromise wrappedPromise = null;
-    String path = null;
-    GenerationRule generationRule = null;
-    Object contextObject = null;
+    protected EglTemplateFactory templateFactory;
+    protected Map<URI, EglTemplate> templateCache;
+    protected URI templateUri;
+    protected Collection<Variable> variables;
+    protected String path;
+    protected GenerationRule generationRule;
+    protected Object contextObject;
 
-    public IncrementalLazyGenerationRuleContentPromise(LazyGenerationRuleContentPromise wrappedPromise,
-        Object contextObject, GenerationRule generationRule, String path, EglTemplateFactory templateFactory,
-        URI templateUri) {
-      this.wrappedPromise = wrappedPromise;
+    public IncrementalLazyGenerationRuleContentPromise(Object contextObject, GenerationRule generationRule, String path,
+        EglTemplateFactory templateFactory, URI templateUri, List<Variable> variables,
+        Map<URI, EglTemplate> templateCache) {
       this.generationRule = generationRule;
       this.path = path;
       this.contextObject = contextObject;
       this.templateFactory = templateFactory;
+      this.variables = variables;
       this.templateUri = templateUri;
-    }
-
-    public LazyGenerationRuleContentPromise getWrappedPromise() {
-      return wrappedPromise;
+      this.templateCache = templateCache;
     }
 
     public String getPath() {
@@ -211,47 +270,90 @@ public class IncrementalLazyEgxModule extends LazyEgxModule {
     @Override
     public String getContent() throws Exception {
 
-//      if (!this.getContext().getExecutorFactory().getExecutionListeners().stream()
-//        .anyMatch(e -> e.getClass().equals(IncrementalPropertyAccessExecutionListener.class))) {
-//      this.getContext().getExecutorFactory()
-//          .addExecutionListener(new IncrementalPropertyAccessExecutionListener(propertyAccessRecorder));
-//    }
+      if (templateUri == null)
+        return "";
 
+      // handle pinset
+      if (templateUri.toString().endsWith(".pinset")) {
+        PinsetModule module = new PinsetModule();
+        module.setContext(context);
+        module.persistDatasets(false);
+        module.parse(templateUri);
+
+        String ruleName = null;
+        for (Variable variable : variables) {
+          if (variable.getName().equalsIgnoreCase("pinsetrule")) {
+            ruleName = "" + variable.getValue();
+            break;
+          }
+        }
+
+        DatasetRule rule = null;
+        if (ruleName != null) {
+          rule = module.getDatasetRule(ruleName);
+          if (rule == null) {
+            throw new RuntimeException("Pinset rule \"" + ruleName + "\" not found");
+          }
+        } else {
+          rule = module.getDatasetRules().get(0);
+        }
+
+        context.getFrameStack().enterLocal(FrameType.PROTECTED, module,
+            variables.toArray(new Variable[variables.size()]));
+
+        module.preExecution();
+        rule.execute(module.getContext());
+
+        context.getFrameStack().leaveLocal(module);
+
+        String content = rule.getDataset().toString();
+        rule.dispose();
+
+        return content;
+      }
+
+      // handle common template
+      EglTemplate template = null;
+      if (templateCache == null || (template = templateCache.get(templateUri)) == null) {
+        template = templateFactory.load(templateUri);
+        if (templateCache != null) {
+          templateCache.put(templateUri, template);
+        }
+      }
+
+      for (Variable variable : variables) {
+        template.populate(variable.getName(), variable.getValue());
+      }
+
+      // initialise access recorder
       AccessRecordRecorder accessRecorder = new AccessRecordRecorder(accessRecordResource);
-      IncrementalPropertyAccessExecutionListener listener = new IncrementalPropertyAccessExecutionListener(
-          accessRecorder);
-      EglTemplateFactory tf = (EglTemplateFactory) IncrementalLazyEgxModule.this
-          .getTemplateFactory();
-      tf.getContext().getExecutorFactory().addExecutionListener(listener);
-      accessRecorder.startRecording();
-
-      // init
       accessRecorder.setTemplateUri(templateUri);
       accessRecorder.setContextElement(contextObject);
       accessRecorder.setRule(generationRule);
       accessRecorder.setPath(path);
 
-      // gen and save
-      String content = wrappedPromise.getContent();
+      IncrementalPropertyAccessExecutionListener listener = new IncrementalPropertyAccessExecutionListener(
+          accessRecorder);
+      template.getModule().getContext().getExecutorFactory().addExecutionListener(listener);
+      accessRecorder.startRecording();
+
+      // process templace
+      String content = template.process();
+      template.reset();
+
       accessRecorder.updateCurrentPropertyAccessesPath(path);
       accessRecorder.saveToAccessRecordResource();
 
-      // clean
-      accessRecorder.setTemplateUri(null);
-      accessRecorder.setContextElement(null);
-      accessRecorder.setRule(null);
-      accessRecorder.setPath(null);
-
       accessRecorder.stopRecording();
       listener.removeRecorder(accessRecorder);
-      tf.getContext().getExecutorFactory().removeExecutionListener(listener);
+      template.getModule().getContext().getExecutorFactory().addExecutionListener(listener);
 
       return content;
     }
 
-    @Override
     public Collection<Variable> getVariables() {
-      return wrappedPromise.getVariables();
+      return variables;
+//      return wrappedPromise.getVariables();
     }
   }
 
