@@ -46,6 +46,7 @@ public class PictoApplication implements ApplicationListener<ApplicationContextE
    * Define the relative workspace target
    */
   public static final String WORKSPACE = ".." + File.separator + "workspace" + File.separator;
+  public static final String TEMP = ".." + File.separator + "temp" + File.separator;
 
   /***
    * This contains the visualised Picto file's target

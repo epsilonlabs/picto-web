@@ -275,6 +275,19 @@ public class IncrementalLazyEgxModule extends EgxModuleParallelGenerationRuleAto
 
       // handle pinset
       if (templateUri.toString().endsWith(".pinset")) {
+        
+        // start recording
+        AccessRecordRecorder accessRecorder = new AccessRecordRecorder(accessRecordResource);
+        accessRecorder.setContextElement(contextObject);
+        accessRecorder.setRule(generationRule);
+        accessRecorder.setTemplateUri(templateUri);
+        
+        IncrementalPropertyAccessExecutionListener listener = new IncrementalPropertyAccessExecutionListener(
+            accessRecorder);
+        IncrementalLazyEgxModule.this.getContext().getExecutorFactory().addExecutionListener(listener);
+        accessRecorder.startRecording();
+        //--
+        
         PinsetModule module = new PinsetModule();
         module.setContext(context);
         module.persistDatasets(false);
@@ -301,12 +314,24 @@ public class IncrementalLazyEgxModule extends EgxModuleParallelGenerationRuleAto
         context.getFrameStack().enterLocal(FrameType.PROTECTED, module,
             variables.toArray(new Variable[variables.size()]));
 
+        // execute model
         module.preExecution();
         rule.execute(module.getContext());
-
+        
         context.getFrameStack().leaveLocal(module);
 
         String content = rule.getDataset().toString();
+        
+        // save record
+        accessRecorder.updateCurrentPropertyAccessesPath(path);
+        accessRecorder.saveToAccessRecordResource();
+
+        // stop recording
+        accessRecorder.stopRecording();
+        listener.removeRecorder(accessRecorder);
+        IncrementalLazyEgxModule.this.getContext().getExecutorFactory().removeExecutionListener(listener);
+        // --
+        
         rule.dispose();
 
         return content;
@@ -337,16 +362,19 @@ public class IncrementalLazyEgxModule extends EgxModuleParallelGenerationRuleAto
       template.getModule().getContext().getExecutorFactory().addExecutionListener(listener);
       accessRecorder.startRecording();
 
-      // process templace
+      // process template
       String content = template.process();
       template.reset();
 
+      // save records
       accessRecorder.updateCurrentPropertyAccessesPath(path);
       accessRecorder.saveToAccessRecordResource();
 
+      // stop recording
       accessRecorder.stopRecording();
       listener.removeRecorder(accessRecorder);
       template.getModule().getContext().getExecutorFactory().addExecutionListener(listener);
+      // ----
 
       return content;
     }

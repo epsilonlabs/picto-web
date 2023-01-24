@@ -31,178 +31,170 @@ import org.eclipse.epsilon.picto.transformers.ViewContentTransformer;
 
 public class ViewContent {
 
-	protected static final List<ViewContentTransformer> TRANSFORMERS = new ArrayList<>(
-			Arrays.asList(
-					new GraphvizContentTransformer(), 
-					new SvgContentTransformer(), 
-					new TextContentTransformer(),
-					new CsvContentTransformer(), 
-					new HtmlContentTransformer(), 
-					new MarkdownContentTransformer(),
-					new PlantUmlContentTransformer()
-					)
-			);
-	
-	protected String format;
-	protected String text;
-	protected List<Layer> layers;
-	protected boolean active;
-	protected String label;
-	protected List<Patch> patches;
-	protected Set<java.net.URI> baseUris;
-	protected ViewContent next = undefined;
-	protected ViewContent previous = null;
-	protected File file;
-	protected static final ViewContent undefined = new ViewContent("We shouldn't be here", "xxx", null,
-			Collections.emptyList(), Collections.emptyList(), Collections.emptySet());
-	
+  protected static final List<ViewContentTransformer> TRANSFORMERS = new ArrayList<>(
+      Arrays.asList(new GraphvizContentTransformer(), new SvgContentTransformer(), new TextContentTransformer(),
+          new CsvContentTransformer(), new HtmlContentTransformer(), new MarkdownContentTransformer(),
+          new PlantUmlContentTransformer()));
 
-	protected static List<ViewContentTransformer> viewContentTransformers;
+  protected String format;
+  protected String text;
+  protected List<Layer> layers;
+  protected boolean active;
+  protected String label;
+  protected List<Patch> patches;
+  protected Set<java.net.URI> baseUris;
+  protected ViewContent next = undefined;
+  protected ViewContent previous = null;
+  protected File file;
+  protected static final ViewContent undefined = new ViewContent("We shouldn't be here", "xxx", null,
+      Collections.emptyList(), Collections.emptyList(), Collections.emptySet());
 
-	public static List<ViewContentTransformer> getViewContentTransformers() {
-		if (viewContentTransformers == null) {
-			viewContentTransformers = new ArrayList<>();
-			viewContentTransformers.add(new PatchContentTransformer());
-			viewContentTransformers.addAll(TRANSFORMERS);
-		}
-		return viewContentTransformers;
-	}
+  protected static List<ViewContentTransformer> viewContentTransformers;
 
-	/**
-	 * 
-	 * @param format
-	 * @param text
-	 * @param other
-	 * @since 2.2
-	 */
-	public ViewContent(String format, String text, ViewContent other) {
-		this(format, text, other != null ? other.getFile() : null,
-				other != null ? other.getLayers() : new ArrayList<>(),
-				other != null ? other.getPatches() : new ArrayList<>(),
-				other != null ? other.getBaseUris() : new LinkedHashSet<>());
-	}
+  public static List<ViewContentTransformer> getViewContentTransformers() {
+    if (viewContentTransformers == null) {
+      viewContentTransformers = new ArrayList<>();
+      viewContentTransformers.add(new PatchContentTransformer());
+      viewContentTransformers.addAll(TRANSFORMERS);
+    }
+    return viewContentTransformers;
+  }
 
-	public ViewContent(String format, String text) {
-		this(format, text, null, Collections.emptyList(), Collections.emptyList(), Collections.emptySet());
-	}
+  /**
+   * 
+   * @param format
+   * @param text
+   * @param other
+   * @since 2.2
+   */
+  public ViewContent(String format, String text, ViewContent other) {
+    this(format, text, other != null ? other.getFile() : null, other != null ? other.getLayers() : new ArrayList<>(),
+        other != null ? other.getPatches() : new ArrayList<>(),
+        other != null ? other.getBaseUris() : new LinkedHashSet<>());
+  }
 
-	public ViewContent(String format, String text, File file, List<Layer> layers, List<Patch> patches,
-			Set<java.net.URI> baseUris) {
-		this.format = format;
-		this.text = text;
-		this.patches = patches;
-		this.layers = layers;
-		this.file = file;
-		this.baseUris = baseUris;
-		setLabel();
-	}
+  public ViewContent(String format, String text) {
+    this(format, text, null, Collections.emptyList(), Collections.emptyList(), Collections.emptySet());
+  }
 
-	protected void setLabel() {
-		getViewContentTransformers().stream()
-				.filter(vct -> vct.canTransform(this) && !(vct instanceof PatchContentTransformer)).findAny()
-				.ifPresent(vct -> this.label = vct.getLabel(this));
-	}
+  public ViewContent(String format, String text, File file, List<Layer> layers, List<Patch> patches,
+      Set<java.net.URI> baseUris) {
+    this.format = format;
+    this.text = text;
+    this.patches = patches;
+    this.layers = layers;
+    this.file = file;
+    this.baseUris = baseUris;
+    setLabel();
+  }
 
-	public String getFormat() {
-		return format;
-	}
+  protected void setLabel() {
+    getViewContentTransformers().stream()
+        .filter(vct -> vct.canTransform(this) && !(vct instanceof PatchContentTransformer)).findAny()
+        .ifPresent(vct -> this.label = vct.getLabel(this));
+  }
 
-	public String getText() {
-		return text;
-	}
+  public String getFormat() {
+    return format;
+  }
 
-	public ViewContent getFinal(PictoView pictoView) {
-		ViewContent finalView = this;
-		for (ViewContent temp; (temp = finalView.getNext(pictoView)) != null; finalView = temp)
-			;
-		return finalView;
-	}
+  public String getText() {
+    return text;
+  }
 
-	public ViewContent getNext(PictoView pictoView) {
-		if (next == undefined) {
-			for (ViewContentTransformer viewContentTransformer : getViewContentTransformers()) {
-				if (viewContentTransformer.canTransform(this)) {
-					try {
-						next = viewContentTransformer.transform(this, pictoView);
-						if (next != null)
-							next.setPrevious(this);
-					} catch (Exception e) {
-						next = new ExceptionContentTransformer().getViewContent(e, pictoView);
-					}
-					break;
-				}
-			}
-		}
-		if (next == undefined)
-			next = null;
-		return next;
-	}
+  public ViewContent getFinal(PictoView pictoView) {
+    ViewContent finalView = this;
+    for (ViewContent temp; (temp = finalView.getNext(pictoView)) != null; finalView = temp)
+      ;
+    return finalView;
+  }
 
-	public void setPrevious(ViewContent previous) {
-		this.previous = previous;
-	}
+  public ViewContent getNext(PictoView pictoView) {
+    if (next == undefined) {
+      for (ViewContentTransformer viewContentTransformer : getViewContentTransformers()) {
+        if (viewContentTransformer.canTransform(this)) {
+          try {
+            next = viewContentTransformer.transform(this, pictoView);
+            if (next != null)
+              next.setPrevious(this);
+          } catch (Exception e) {
+            e.printStackTrace();
+            next = new ExceptionContentTransformer().getViewContent(e, pictoView);
+          }
+          break;
+        }
+      }
+    }
+    if (next == undefined)
+      next = null;
+    return next;
+  }
 
-	public ViewContent getPrevious() {
-		return previous;
-	}
+  public void setPrevious(ViewContent previous) {
+    this.previous = previous;
+  }
 
-	public List<ViewContent> getAllPrevious() {
-		List<ViewContent> allPrevious = new ArrayList<>();
-		ViewContent p = previous;
-		while (p != null) {
-			allPrevious.add(previous);
-			p = p.getPrevious();
-		}
-		return allPrevious;
-	}
+  public ViewContent getPrevious() {
+    return previous;
+  }
 
-	public boolean isActive() {
-		return active;
-	}
+  public List<ViewContent> getAllPrevious() {
+    List<ViewContent> allPrevious = new ArrayList<>();
+    ViewContent p = previous;
+    while (p != null) {
+      allPrevious.add(previous);
+      p = p.getPrevious();
+    }
+    return allPrevious;
+  }
 
-	public void setActive(boolean active) {
-		this.active = active;
-	}
+  public boolean isActive() {
+    return active;
+  }
 
-	public String getLabel() {
-		return label;
-	}
+  public void setActive(boolean active) {
+    this.active = active;
+  }
 
-	public List<Patch> getPatches() {
-		return patches;
-	}
+  public String getLabel() {
+    return label;
+  }
 
-	public List<Layer> getLayers() {
-		return layers;
-	}
+  public List<Patch> getPatches() {
+    return patches;
+  }
 
-	public Set<java.net.URI> getBaseUris() {
-		return baseUris;
-	}
+  public List<Layer> getLayers() {
+    return layers;
+  }
 
-	public File getFile() {
-		return file;
-	}
+  public Set<java.net.URI> getBaseUris() {
+    return baseUris;
+  }
 
-	@Override
-	public String toString() {
-		return text;
-	}
+  public File getFile() {
+    return file;
+  }
 
-	public void setNext(ViewContent newContent) {
-		next = newContent;
-	}
+  @Override
+  public String toString() {
+    return text;
+  }
 
-	public ViewContent getSourceContent(PictoView pictoView) {
-		return new ViewContent("text", text, file, layers, patches, baseUris).getNext(pictoView);
-	}
+  public void setNext(ViewContent newContent) {
+    next = newContent;
+  }
 
-	/**
-	 * 
-	 * @return
-	 * @since 2.2
-	 */
-	public boolean isImage() {
-		return StringUtil.isOneOf(getFormat().toLowerCase(), "svg", "png", "bmp", "gif", "jpg", "tif", "jpeg", "tiff");
-	}
+  public ViewContent getSourceContent(PictoView pictoView) {
+    return new ViewContent("text", text, file, layers, patches, baseUris).getNext(pictoView);
+  }
+
+  /**
+   * 
+   * @return
+   * @since 2.2
+   */
+  public boolean isImage() {
+    return StringUtil.isOneOf(getFormat().toLowerCase(), "svg", "png", "bmp", "gif", "jpg", "tif", "jpeg", "tiff");
+  }
 }

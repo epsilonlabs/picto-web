@@ -7,6 +7,7 @@ import static java.nio.file.StandardWatchEventKinds.ENTRY_MODIFY;
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.FileSystems;
+import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.nio.file.WatchEvent;
@@ -15,7 +16,12 @@ import java.nio.file.WatchService;
 import java.util.HashMap;
 import java.util.List;
 
+import javax.xml.parsers.DocumentBuilder;
+import javax.xml.parsers.DocumentBuilderFactory;
+
 import org.springframework.beans.factory.annotation.Autowired;
+import org.w3c.dom.Document;
+import org.xml.sax.InputSource;
 
 /***
  * Monitor file changes.
@@ -103,19 +109,41 @@ public class FileWatcher extends Thread {
 
             File modifiedFile = new File(path.toString() + File.separator + filePath.toString());
 
-//            // System.out.println("Modified file: " + modifiedFile.getAbsolutePath());
-
-            
-            long size  = 0;
-            System.out.print("Wait until model is fully stored .");
+            // System.out.println("Modified file: " + modifiedFile.getAbsolutePath());
+//
+            long size = 0;
+            System.out.print("Wait until model is fully stored ");
+            while (! modifiedFile.exists() || !modifiedFile.canRead() || !modifiedFile.canWrite()) {
+              Thread.sleep(100);
+              System.out.print(".");
+            }
             while (size != modifiedFile.length() || size == 0) {
               size = modifiedFile.length();
               Thread.sleep(100);
               System.out.print(".");
             }
-            System.out.println(" Done");
-            
-            this.notifyFileChange(modifiedFile);
+//
+//            boolean isWellFormed = false;
+//            while (!isWellFormed) {
+//              try {
+//                DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
+//                DocumentBuilder builder = factory.newDocumentBuilder();
+//                Document document = builder.parse(modifiedFile);
+//                isWellFormed = true;
+//              } catch (Exception e) {
+////                e.printStackTrace();
+//                isWellFormed = false;
+//              }
+//            }
+
+//            System.out.println(" Done");
+
+            try {
+              this.notifyFileChange(modifiedFile);
+            } catch (Exception e) {
+              e.printStackTrace();
+              System.console();
+            }
           }
         }
 

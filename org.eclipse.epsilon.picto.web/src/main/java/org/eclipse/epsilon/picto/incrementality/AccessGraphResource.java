@@ -69,7 +69,7 @@ public class AccessGraphResource implements AccessRecordResource {
   @Override
   public void add(AccessRecord access) {
 
-    System.out.println(access.toString());
+//    System.out.println(access.toString());
 //    System.out.println(access.toString());
 //    if (access.getPath().equals("/XMLResourceImpl") && access.getElementObjectId().equals("e821")) {
 //      System.console();
@@ -200,6 +200,9 @@ public class AccessGraphResource implements AccessRecordResource {
           }
           element.setAccessCount(element.getAccessCount() + 1);
           template.getElements().add(element);
+          if (element == null || elementResource == null) {
+            System.console();
+          }
           element.setResource(elementResource);
           addAffectedPath((InputEntity) element, path);
 
@@ -407,9 +410,15 @@ public class AccessGraphResource implements AccessRecordResource {
    * @param path
    */
   private void addAffectedPath(InputEntity module, final Path path) {
-    if (!module.getAffects().stream().anyMatch(p -> p.getName().equals(path.getName()))) {
-      module.getAffects().add(path);
+    for (int i = 0; i < module.getAffects().size(); i++) {
+      Path affectedPath = module.getAffects().get(i);
+      if (path.getName().equals(affectedPath.getName()))
+        return;
     }
+    module.getAffects().add(path);
+//    if (!module.getAffects().stream().anyMatch(p -> p.getName().equals(path.getName()))) {
+//      module.getAffects().add(path);
+//    }
   }
 
   @Override

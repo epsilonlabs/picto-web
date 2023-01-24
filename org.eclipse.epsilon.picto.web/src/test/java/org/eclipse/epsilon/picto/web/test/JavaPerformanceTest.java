@@ -17,6 +17,9 @@ import java.lang.reflect.Type;
 import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.nio.file.CopyOption;
+import java.nio.file.Files;
+import java.nio.file.StandardCopyOption;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -85,14 +88,16 @@ public class JavaPerformanceTest {
   public static final String WEB_SOCKET_ADDRESS = "ws://localhost:8081/picto-web";
   public static final String PICTO_FILE = "/java/java.picto";
   private static final String MODEL_ORIGINAL = "/java/java.big.xmi";
+  private static final String MODEL_TMP = "/java.xmi";
 //  private static final String MODEL_ORIGINAL = "/java/java.small.xmi";
   private static final String MODEL = "/java/java.xmi";
   public static final String PICTO_TOPIC = "/topic/picto";
   private static final File modelFileOriginal = new File(PictoApplication.WORKSPACE + File.separator + MODEL_ORIGINAL);
   private static final File modelFile = new File(PictoApplication.WORKSPACE + File.separator + MODEL);
+  private static final File modelFileTmp = new File(PictoApplication.TEMP + File.separator + MODEL_TMP);
   private static final XMIResource resourceOriginal = new XMIResourceImpl(
       URI.createFileURI(modelFileOriginal.getAbsolutePath()));
-  private static final XMIResource resource = new XMIResourceImpl(URI.createFileURI(modelFile.getAbsolutePath()));
+  private static final XMIResource resource = new XMIResourceImpl(URI.createFileURI(modelFileTmp.getAbsolutePath()));
 
   static final Random random = new Random();
 
@@ -110,6 +115,11 @@ public class JavaPerformanceTest {
    */
   @Test
   public void testInvalidatedViewsPerformance() throws Exception {
+
+    File tempDir = new File(PictoApplication.TEMP);
+    if (!tempDir.exists()) {
+      tempDir.mkdir();
+    }
 
     PerformanceRecorder.setOutputFile(new File("data/selective.csv"));
     PerformanceRecorder.startRecording();
@@ -338,6 +348,25 @@ public class JavaPerformanceTest {
             }
 
             resource.save(saveOptions);
+//            System.out.print("Waiting for the target file can be written ");
+//            while (!Files.exists(modelFileTmp.toPath()) || !Files.isReadable(modelFileTmp.toPath())
+//                || !Files.isWritable(modelFileTmp.toPath()) || !Files.exists(modelFile.toPath())
+//                || !Files.isReadable(modelFile.toPath()) || !Files.isWritable(modelFile.toPath())) {
+//              Thread.sleep(100);
+//              System.out.print(".");
+//            }
+            boolean isCopySuccess = false;
+            while (!isCopySuccess) {
+              try {
+                Files.move(modelFileTmp.toPath(), modelFile.toPath(), StandardCopyOption.REPLACE_EXISTING);
+                isCopySuccess = true;
+              } catch (Exception e) {
+                Thread.sleep(100);
+                System.out.print(".");
+                isCopySuccess = false;
+              }
+            }
+            System.out.println(" Done");
 
 //          Thread.sleep(100);
             PerformanceRecorder.startTime = System.currentTimeMillis();
@@ -351,6 +380,8 @@ public class JavaPerformanceTest {
             synchronized (clientWaitingList) {
               clientWaitingList.wait(5 * 60 * 1000);
             }
+//            System.out.println("Wait 1 seconds");
+            Thread.sleep(2000);
             // ----
           } // for (int i = 1; i <= numberOfIteration; i++) {
         } // for (int numViews : numbersOfAffectedViews) {

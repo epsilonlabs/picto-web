@@ -72,7 +72,6 @@ public class HtmlContentTransformer implements ViewContentTransformer {
 		if (content instanceof FinalViewContent) return null;
 		
 		String text = content.getText().trim();
-		
 		try {
 		    XmlHelper xmlHelper = new XmlHelper();
 			Document document = xmlHelper.parse(text);
@@ -100,6 +99,7 @@ public class HtmlContentTransformer implements ViewContentTransformer {
 		}
 		catch (Exception ex) {
 			ex.printStackTrace();
+			System.out.println(text);
 			return null;
 		}
 	}
