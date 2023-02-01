@@ -14,30 +14,30 @@ import org.eclipse.epsilon.picto.ViewContent;
 import org.eclipse.epsilon.picto.XmlHelper;
 
 public class SvgContentTransformer implements ViewContentTransformer {
-	
-	protected XmlHelper xmlHelper = new XmlHelper();
-	
-	@Override
-	public boolean canTransform(ViewContent content) {
-		return "svg".equalsIgnoreCase(content.getFormat());
-	}
 
-	@Override
-	public ViewContent transform(ViewContent content, PictoView pictoView) throws Exception {
-		return new ViewContent("html", pictoView.getViewRenderer().getHtml(removeXmlDeclaration(content.getText())), content);
-	}
-	
-	@Override
-	public String getLabel(ViewContent content) {
-		return "SVG";
-	}
-	
-	public String removeXmlDeclaration(String xml) {
-		try {
-			return xmlHelper.getXml(xmlHelper.parse(xml));
-		}
-		catch (Exception ex) {
-			return xml;
-		}
-	}
+  @Override
+  public boolean canTransform(ViewContent content) {
+    return "svg".equalsIgnoreCase(content.getFormat());
+  }
+
+  @Override
+  public ViewContent transform(ViewContent content, PictoView pictoView) throws Exception {
+    return new ViewContent("html", pictoView.getViewRenderer().getHtml(removeXmlDeclaration(content.getText())),
+        content);
+  }
+
+  @Override
+  public String getLabel(ViewContent content) {
+    return "SVG";
+  }
+
+  public String removeXmlDeclaration(String xml) {
+    try {
+      XmlHelper xmlHelper = new XmlHelper();
+      String cleanedString = xmlHelper.getXml(xmlHelper.parse(xml));
+      return cleanedString;
+    } catch (Exception ex) {
+      return xml;
+    }
+  }
 }

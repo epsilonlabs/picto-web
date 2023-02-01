@@ -114,6 +114,7 @@ public class ViewContent {
       for (ViewContentTransformer viewContentTransformer : getViewContentTransformers()) {
         if (viewContentTransformer.canTransform(this)) {
           try {
+//            System.out.println(viewContentTransformer.getClass().getName());
             next = viewContentTransformer.transform(this, pictoView);
             if (next != null)
               next.setPrevious(this);

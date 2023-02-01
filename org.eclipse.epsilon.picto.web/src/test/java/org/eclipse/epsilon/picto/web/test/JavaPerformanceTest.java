@@ -17,7 +17,6 @@ import java.lang.reflect.Type;
 import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
 import java.net.URL;
-import java.nio.file.CopyOption;
 import java.nio.file.Files;
 import java.nio.file.StandardCopyOption;
 import java.util.ArrayList;
@@ -362,11 +361,11 @@ public class JavaPerformanceTest {
                 isCopySuccess = true;
               } catch (Exception e) {
                 Thread.sleep(100);
-                System.out.print(".");
+//                System.out.print(".");
                 isCopySuccess = false;
               }
             }
-            System.out.println(" Done");
+//            System.out.println(" Done");
 
 //          Thread.sleep(100);
             PerformanceRecorder.startTime = System.currentTimeMillis();

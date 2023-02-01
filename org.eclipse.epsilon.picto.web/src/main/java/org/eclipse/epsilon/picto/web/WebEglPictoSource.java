@@ -226,7 +226,7 @@ public class WebEglPictoSource extends EglPictoSource {
               PerformanceRecorder.accessRecordResourceSize());
           PerformanceRecorder.record(record);
 
-          // if picto generation is not greedy a.k.a. selective (re)generation.
+          // if picto generation is not non-incremental = selective (re)generation.
           if (!PictoApplication.isNonIncremental()) {
             long startTime = System.currentTimeMillis();
             invalidatedViewPaths.addAll(accessRecordResource.getInvalidatedViewPaths(promises, (EgxModule) module));
@@ -288,7 +288,16 @@ public class WebEglPictoSource extends EglPictoSource {
             // to identify views affected by the last change.
             State isNew = accessRecordResource.getPathStatus(pathString);
             if (State.NEW.equals(isNew)) {
-              promiseView.getViewContent(null);
+              Thread t = new Thread() {
+                public void run() {
+                  try {
+                    promiseView.getViewContent(null);
+                  } catch (Exception e) {
+                    e.printStackTrace();
+                  }
+                }
+              };
+              t.start();
             }
             modifiedViewContents.add(pathString);
 

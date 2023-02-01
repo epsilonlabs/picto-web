@@ -36,214 +36,201 @@ import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 
 public class HtmlContentTransformer implements ViewContentTransformer {
-	
-	protected List<HtmlElementTransformer> htmlElementTransformers;
-	
-	public HtmlContentTransformer() {
-		htmlElementTransformers = new ArrayList<>();
-		htmlElementTransformers.addAll(Arrays.asList(
-			new AbsolutePathElementTransformer("img",  "src"),
-			new AbsolutePathElementTransformer("link",  "href"),
-			new AbsolutePathElementTransformer("script",  "src"),
-			new AbsoluteLinkElementTransformer("a",  "href"),
-			new PictoViewElementTransformer(), 
-			new RenderCodeElementTransformer(),
-			new MermaidRendererHeadAppender(),
-			new MetroHeadAppender()
-		));
+
+  protected List<HtmlElementTransformer> htmlElementTransformers;
+
+  public HtmlContentTransformer() {
+    htmlElementTransformers = new ArrayList<>();
+    htmlElementTransformers.addAll(Arrays.asList(new AbsolutePathElementTransformer("img", "src"),
+        new AbsolutePathElementTransformer("link", "href"), new AbsolutePathElementTransformer("script", "src"),
+        new AbsoluteLinkElementTransformer("a", "href"), new PictoViewElementTransformer(),
+        new RenderCodeElementTransformer(), new MermaidRendererHeadAppender(), new MetroHeadAppender()));
 //		htmlElementTransformers.addAll(new HtmlElementTransformerExtensionPointManager().getExtensions());
-	}
-	
-	
-	
-	@Override
-	public boolean canTransform(ViewContent content) {
-		return StringUtil.isOneOf(content.getFormat().toLowerCase(), "html", "htm");
-	}
+  }
 
-	@Override
-	public String getLabel(ViewContent content) {
-		return "HTML";
-	}
+  @Override
+  public boolean canTransform(ViewContent content) {
+    return StringUtil.isOneOf(content.getFormat().toLowerCase(), "html", "htm");
+  }
 
-	@Override
-	public ViewContent transform(ViewContent content, PictoView pictoView) throws Exception {
-		
-		if (content instanceof FinalViewContent) return null;
-		
-		String text = content.getText().trim();
-		try {
-		    XmlHelper xmlHelper = new XmlHelper();
-			Document document = xmlHelper.parse(text);
-			
-			addZoom(document);
-			
-			for (HtmlElementTransformer htmlElementTransformer : htmlElementTransformers) {
-				
-				htmlElementTransformer.setPictoView(pictoView);
-				htmlElementTransformer.setViewContent(content);
-				
-				NodeList nodeList = getElements(document, htmlElementTransformer.getXPath());
-				int length = nodeList.getLength();
-				for (int i = 0; i < length; i++) {
-//					Element x = (Element) nodeList.item(i);
-//					System.out.println(x.toString());
-//					if (x.getTagName().equals("code")) {
-//						System.console();
-//					}
-					htmlElementTransformer.transform((Element) nodeList.item(i));
-				}
-			}
-			
-			return new FinalViewContent("html", "<!DOCTYPE html>"+xmlHelper.getXml(document), content);
-		}
-		catch (Exception ex) {
-			ex.printStackTrace();
-			System.out.println(text);
-			return null;
-		}
-	}
-	
-	protected void addZoom(Document document) {
-		Element html, body;
-		Element root = document.getDocumentElement();
-		
-		// Create/get the html contextElement
-		if (root.getNodeName().equalsIgnoreCase("html")) html = root;
-		else {
-			html = document.createElement("html");
-		}
-		
-		// Create/get the body contextElement
-		body = getElementByName(html, "body");
-		if (body == null) {
-			body = document.createElement("body");
-			html.appendChild(body);
-		}
-		
-		body.setAttribute("style", "zoom:${picto-zoom};" + body.getAttribute("style"));
-	}
-	
-	protected Element getElementByName(Element parent, String name) {
-		NodeList nodeList = parent.getChildNodes();
-		for (int i = 0; i < nodeList.getLength(); i++) {
-			Node node = nodeList.item(i);
-			if (node.getNodeName().equalsIgnoreCase(name)) return (Element) node;
-		}
-		return null;
-	}
-	
-	protected NodeList getElements(Document document, String xpath) throws Exception {
-		XPath xPath = XPathFactory.newInstance().newXPath();
-		return (NodeList) xPath.compile(xpath).evaluate(document, XPathConstants.NODESET);
+  @Override
+  public String getLabel(ViewContent content) {
+    return "HTML";
+  }
 
-	}
-	
-	static final class FinalViewContent extends ViewContent {
-		public FinalViewContent(String format, String text, ViewContent content) {
-			super(format, text, content);
-		}
-	}
-	
-	
-	/**
-	 * Converts the HTML to the desired format using Pandoc.
-	 * 
-	 * @param html The raw HTML text.
-	 * @param outputExt The output file format.
-	 * @param additionalArgs Other arguments to pass to Pandoc.
-	 * @return The raw output of the file as a String.
-	 * @throws IOException If invoking Pandoc fails.
-	 */
-	public static String pandocRaw(String html, String outputExt, Object... additionalArgs) throws IOException {
-		Path htmlDocument = ExternalContentTransformation.createTempFile("html", html.getBytes());
-		ExternalContentTransformation ect = invokePandoc(htmlDocument, outputExt, additionalArgs);
-		return new String(ect.call());
-	}
-	
-	/**
-	 * Converts the HTML to the desired format using Pandoc.
-	 * 
-	 * @param html The raw HTML text.
-	 * @param outputExt The output file format.
-	 * @param additionalArgs Other arguments to pass to Pandoc.
-	 * @return The output file.
-	 * @throws IOException If invoking Pandoc fails.
-	 */
-	public static Path pandoc(String html, String outputExt, Object... additionalArgs) throws IOException {
-		return pandoc(ExternalContentTransformation.createTempFile("html", html.getBytes()), outputExt, additionalArgs);
-	}
-	
-	/**
-	 * Converts the HTML to the desired format using Pandoc.
-	 * 
-	 * @param document The HTML file.
-	 * @param outputExt The output file format.
-	 * @param additionalArgs Other arguments to pass to Pandoc.
-	 * @return The output file.
-	 * @throws IOException If invoking Pandoc fails.
-	 */
-	public static Path pandoc(Path document, String outputExt, Object... additionalArgs) throws IOException {
-		ExternalContentTransformation ect = invokePandoc(document, outputExt, additionalArgs);
-		ect.call();
-		return ect.getOutputFile();
-	}
-	
-	/**
-	 * Converts the HTML to the desired format using Pandoc.
-	 * 
-	 * @param html The HTML file.
-	 * @param outputExt The output file format.
-	 * @param additionalArgs Other arguments to pass to Pandoc.
-	 * @return The transformation, prior to running it.
-	 * @throws IOException If invoking Pandoc fails.
-	 */
-	protected static ExternalContentTransformation invokePandoc(Path document, String outputExt, Object... additionalArgs) throws IOException {
-		Path htmlAbsolute = document.toAbsolutePath();
-		String fileName = htmlAbsolute.getFileName().toString();
-		fileName = fileName.substring(0, fileName.lastIndexOf('.')+1);
-		Path outputLocation = htmlAbsolute.getParent().resolve(fileName + outputExt);
-		Object[] basicArgs = {"-o", outputLocation, htmlAbsolute}, allArgs;
-		if (additionalArgs != null && additionalArgs.length > 0) {
-			allArgs = new Object[basicArgs.length + additionalArgs.length];
-			for (int i = 0; i < allArgs.length; i++) {
-				allArgs[i] = i < basicArgs.length ? basicArgs[i] : additionalArgs[i - basicArgs.length];
-			}
-		}
-		else {
-			allArgs = basicArgs;
-		}
-		
-		return new ExternalContentTransformation(outputLocation, "pandoc", allArgs);
-	}
-	
-	/**
-	 * Converts HTML to PDF using wkhtmltopdf.
-	 * 
-	 * @param html The raw HTML text.
-	 * @return The output PDF file.
-	 * @throws IOException If invoking wkhtmltopdf fails.
-	 */
-	public static Path wkhtmltopdf(String html) throws IOException {
-		return wkhtmltopdf(ExternalContentTransformation.createTempFile("html", html.getBytes()));
-	}
-	
-	/**
-	 * Converts HTML to PDF using wkhtmltopdf.
-	 * 
-	 * @param html The HTML file.
-	 * @return The output PDF file.
-	 * @throws IOException If invoking wkhtmltopdf fails.
-	 */
-	public static Path wkhtmltopdf(Path document) throws IOException {
-		Path htmlAbsolute = document.toAbsolutePath();
-		String fileName = htmlAbsolute.getFileName().toString();
-		fileName = fileName.substring(0, fileName.lastIndexOf('.')+1);
-		Path pdfLocation = htmlAbsolute.getParent().resolve(fileName + "pdf");
-		ExternalContentTransformation ect = new ExternalContentTransformation(
-			pdfLocation, "wkhtmltopdf", "--enable-local-file-access", document, pdfLocation
-		);
-		ect.call();
-		return pdfLocation;
-	}
+  @Override
+  public ViewContent transform(ViewContent content, PictoView pictoView) throws Exception {
+
+    if (content instanceof FinalViewContent)
+      return null;
+
+    String text = content.getText().trim();
+    try {
+      XmlHelper xmlHelper = new XmlHelper();
+      Document document = xmlHelper.parse(text);
+
+      addZoom(document);
+
+      for (HtmlElementTransformer htmlElementTransformer : htmlElementTransformers) {
+
+        htmlElementTransformer.setPictoView(pictoView);
+        htmlElementTransformer.setViewContent(content);
+
+        NodeList nodeList = getElements(document, htmlElementTransformer.getXPath());
+        int length = nodeList.getLength();
+        for (int i = 0; i < length; i++) {
+          htmlElementTransformer.transform((Element) nodeList.item(i));
+        }
+      }
+
+      return new FinalViewContent("html", "<!DOCTYPE html>" + xmlHelper.getXml(document), content);
+    } catch (Exception ex) {
+      ex.printStackTrace();
+      System.out.println(text);
+      return null;
+    }
+  }
+
+  protected void addZoom(Document document) {
+    Element html, body;
+    Element root = document.getDocumentElement();
+
+    // Create/get the html contextElement
+    if (root.getNodeName().equalsIgnoreCase("html"))
+      html = root;
+    else {
+      html = document.createElement("html");
+    }
+
+    // Create/get the body contextElement
+    body = getElementByName(html, "body");
+    if (body == null) {
+      body = document.createElement("body");
+      html.appendChild(body);
+    }
+
+    body.setAttribute("style", "zoom:${picto-zoom};" + body.getAttribute("style"));
+  }
+
+  protected Element getElementByName(Element parent, String name) {
+    NodeList nodeList = parent.getChildNodes();
+    for (int i = 0; i < nodeList.getLength(); i++) {
+      Node node = nodeList.item(i);
+      if (node.getNodeName().equalsIgnoreCase(name))
+        return (Element) node;
+    }
+    return null;
+  }
+
+  protected NodeList getElements(Document document, String xpath) throws Exception {
+    XPath xPath = XPathFactory.newInstance().newXPath();
+    return (NodeList) xPath.compile(xpath).evaluate(document, XPathConstants.NODESET);
+
+  }
+
+  static final class FinalViewContent extends ViewContent {
+    public FinalViewContent(String format, String text, ViewContent content) {
+      super(format, text, content);
+    }
+  }
+
+  /**
+   * Converts the HTML to the desired format using Pandoc.
+   * 
+   * @param html           The raw HTML text.
+   * @param outputExt      The output file format.
+   * @param additionalArgs Other arguments to pass to Pandoc.
+   * @return The raw output of the file as a String.
+   * @throws IOException If invoking Pandoc fails.
+   */
+  public static String pandocRaw(String html, String outputExt, Object... additionalArgs) throws IOException {
+    Path htmlDocument = ExternalContentTransformation.createTempFile("html", html.getBytes());
+    ExternalContentTransformation ect = invokePandoc(htmlDocument, outputExt, additionalArgs);
+    return new String(ect.call());
+  }
+
+  /**
+   * Converts the HTML to the desired format using Pandoc.
+   * 
+   * @param html           The raw HTML text.
+   * @param outputExt      The output file format.
+   * @param additionalArgs Other arguments to pass to Pandoc.
+   * @return The output file.
+   * @throws IOException If invoking Pandoc fails.
+   */
+  public static Path pandoc(String html, String outputExt, Object... additionalArgs) throws IOException {
+    return pandoc(ExternalContentTransformation.createTempFile("html", html.getBytes()), outputExt, additionalArgs);
+  }
+
+  /**
+   * Converts the HTML to the desired format using Pandoc.
+   * 
+   * @param document       The HTML file.
+   * @param outputExt      The output file format.
+   * @param additionalArgs Other arguments to pass to Pandoc.
+   * @return The output file.
+   * @throws IOException If invoking Pandoc fails.
+   */
+  public static Path pandoc(Path document, String outputExt, Object... additionalArgs) throws IOException {
+    ExternalContentTransformation ect = invokePandoc(document, outputExt, additionalArgs);
+    ect.call();
+    return ect.getOutputFile();
+  }
+
+  /**
+   * Converts the HTML to the desired format using Pandoc.
+   * 
+   * @param html           The HTML file.
+   * @param outputExt      The output file format.
+   * @param additionalArgs Other arguments to pass to Pandoc.
+   * @return The transformation, prior to running it.
+   * @throws IOException If invoking Pandoc fails.
+   */
+  protected static ExternalContentTransformation invokePandoc(Path document, String outputExt, Object... additionalArgs)
+      throws IOException {
+    Path htmlAbsolute = document.toAbsolutePath();
+    String fileName = htmlAbsolute.getFileName().toString();
+    fileName = fileName.substring(0, fileName.lastIndexOf('.') + 1);
+    Path outputLocation = htmlAbsolute.getParent().resolve(fileName + outputExt);
+    Object[] basicArgs = { "-o", outputLocation, htmlAbsolute }, allArgs;
+    if (additionalArgs != null && additionalArgs.length > 0) {
+      allArgs = new Object[basicArgs.length + additionalArgs.length];
+      for (int i = 0; i < allArgs.length; i++) {
+        allArgs[i] = i < basicArgs.length ? basicArgs[i] : additionalArgs[i - basicArgs.length];
+      }
+    } else {
+      allArgs = basicArgs;
+    }
+
+    return new ExternalContentTransformation(outputLocation, "pandoc", allArgs);
+  }
+
+  /**
+   * Converts HTML to PDF using wkhtmltopdf.
+   * 
+   * @param html The raw HTML text.
+   * @return The output PDF file.
+   * @throws IOException If invoking wkhtmltopdf fails.
+   */
+  public static Path wkhtmltopdf(String html) throws IOException {
+    return wkhtmltopdf(ExternalContentTransformation.createTempFile("html", html.getBytes()));
+  }
+
+  /**
+   * Converts HTML to PDF using wkhtmltopdf.
+   * 
+   * @param html The HTML file.
+   * @return The output PDF file.
+   * @throws IOException If invoking wkhtmltopdf fails.
+   */
+  public static Path wkhtmltopdf(Path document) throws IOException {
+    Path htmlAbsolute = document.toAbsolutePath();
+    String fileName = htmlAbsolute.getFileName().toString();
+    fileName = fileName.substring(0, fileName.lastIndexOf('.') + 1);
+    Path pdfLocation = htmlAbsolute.getParent().resolve(fileName + "pdf");
+    ExternalContentTransformation ect = new ExternalContentTransformation(pdfLocation, "wkhtmltopdf",
+        "--enable-local-file-access", document, pdfLocation);
+    ect.call();
+    return pdfLocation;
+  }
 }

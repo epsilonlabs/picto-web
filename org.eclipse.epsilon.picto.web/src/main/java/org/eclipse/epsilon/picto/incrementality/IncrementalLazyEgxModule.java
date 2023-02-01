@@ -5,6 +5,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 import org.eclipse.epsilon.common.module.ModuleElement;
 import org.eclipse.epsilon.common.parse.AST;
@@ -26,6 +27,7 @@ import org.eclipse.epsilon.eol.execute.context.IEolContext;
 import org.eclipse.epsilon.eol.execute.context.Variable;
 import org.eclipse.epsilon.eol.types.EolAnyType;
 import org.eclipse.epsilon.eol.types.EolMap;
+import org.eclipse.epsilon.erl.execute.context.concurrent.ErlContextParallel;
 import org.eclipse.epsilon.picto.LazyEgxModule;
 import org.eclipse.epsilon.picto.PictoOperationContributor;
 import org.eclipse.epsilon.picto.LazyEgxModule.LazyGenerationRuleContentPromise;
@@ -43,8 +45,8 @@ import org.eclipse.epsilon.picto.ContentPromise;
 public class IncrementalLazyEgxModule extends EgxModuleParallelGenerationRuleAtoms {
 
   protected AccessRecordResource accessRecordResource;
-  private EglFileGeneratingTemplateFactory templateFactory;
-  protected EglTemplate template;
+//  private EglFileGeneratingTemplateFactory templateFactory;
+//  protected EglTemplate template;
 
   public AccessRecordResource getIncrementalResource() {
     return accessRecordResource;
@@ -54,45 +56,15 @@ public class IncrementalLazyEgxModule extends EgxModuleParallelGenerationRuleAto
 
     this.accessRecordResource = accessRecordResource;
 
-    templateFactory = new EglFileGeneratingTemplateFactory() {
-      @Override
-      protected EglTemplate createTemplate(EglTemplateSpecification spec) throws Exception {
-        EglTemplate template = super.createTemplate(spec);
-        IncrementalLazyEgxModule.this.template = template;
-        return template;
-      }
-    };
-    this.setTemplateFactory(templateFactory);
-
-    // Create the property access recorder that will record
-    // all the property access events in the EGX transformation
-//    propertyAccessRecorder = new AccessRecordRecorder(accessRecordResource);
-
-    // Create a custom template factory so that we can monitor property
-    // access events during template execution too
-//    this.setTemplateFactory(new EglFileGeneratingTemplateFactory() {
+//    templateFactory = new EglFileGeneratingTemplateFactory() {
 //      @Override
 //      protected EglTemplate createTemplate(EglTemplateSpecification spec) throws Exception {
 //        EglTemplate template = super.createTemplate(spec);
-//        // Every time the factory creates a template, attach a listener to it
-//        // to record property accesses to our custom recorder
-//////				template.getModule().getContext().setExecutorFactory(new IncrementalTemplateExecutorFactory());
-////        if (!template.getModule().getContext().getExecutorFactory().getExecutionListeners().stream()
-////            .anyMatch(e -> e.getClass().equals(IncrementalPropertyAccessExecutionListener.class))) {
-////          template.getModule().getContext().getExecutorFactory()
-////              .addExecutionListener(new IncrementalPropertyAccessExecutionListener(propertyAccessRecorder));
-////        }
+//        IncrementalLazyEgxModule.this.template = template;
 //        return template;
 //      }
-//    });
-//
-//    // Add a listener to record property access events during
-//    // the execution of the EGX program
-//    if (!this.getContext().getExecutorFactory().getExecutionListeners().stream()
-//        .anyMatch(e -> e.getClass().equals(IncrementalPropertyAccessExecutionListener.class))) {
-//      this.getContext().getExecutorFactory()
-//          .addExecutionListener(new IncrementalPropertyAccessExecutionListener(propertyAccessRecorder));
-//    }
+//    };
+//    this.setTemplateFactory(templateFactory);
   }
 
   @Override
@@ -113,16 +85,56 @@ public class IncrementalLazyEgxModule extends EgxModuleParallelGenerationRuleAto
   @SuppressWarnings("unchecked")
   @Override
   protected Object processRules() throws EolRuntimeException {
+
+//    if (getContext() instanceof ErlContextParallel) {
+//      Collection<IncrementalLazyGenerationRuleContentPromise> parallelPromises = (Collection<IncrementalLazyGenerationRuleContentPromise>) ((ErlContextParallel) getContext())
+//          .executeJob(getAllJobs());
+//      parallelPromises = parallelPromises.parallelStream().filter(p -> {
+//        try {
+//          return !p.getGenerationRule().isLazy(context);
+//        } catch (EolRuntimeException e) {
+//          e.printStackTrace();
+//        }
+//        return false;
+//      }).collect(Collectors.toList());
+//      return parallelPromises;
+//    }
+    
+//    else return getContext().executeAll(this, getAllJobs());
+
     IEgxContext context = getContext();
     ExecutorFactory ef = context.getExecutorFactory();
     context.getOperationContributorRegistry().add(new PictoOperationContributor(this));
     Collection<? extends GenerationRule> rules = getGenerationRules();
+//
+//    Collection<LazyGenerationRuleContentPromise> promises = rules.parallelStream()
+//        .filter(rule -> {
+//          
+//      boolean result = false;
+//      try {
+//        result = !rule.isLazy(context);
+//      } catch (EolRuntimeException e) {
+//        e.printStackTrace();
+//      }
+//      return result;
+//    })
+//        .map(rule -> {
+//      Collection<? extends LazyGenerationRuleContentPromise> result = null;
+//      try {
+//        result = (Collection<? extends LazyGenerationRuleContentPromise>) ef.execute(rule, context);
+//      } catch (EolRuntimeException e) {
+//        e.printStackTrace();
+//      }
+//      return result;
+//    }).flatMap(l -> l.stream()).collect(Collectors.toList());
+
     Collection<LazyGenerationRuleContentPromise> promises = new ArrayList<>(rules.size());
     for (GenerationRule rule : rules) {
       if (!rule.isLazy(context)) {
         promises.addAll((Collection<? extends LazyGenerationRuleContentPromise>) ef.execute(rule, context));
       }
     }
+
     return promises;
   }
 
@@ -137,18 +149,19 @@ public class IncrementalLazyEgxModule extends EgxModuleParallelGenerationRuleAto
     @Override
     public Object execute(IEolContext context_, Object contextObject) throws EolRuntimeException {
 
+      // initialise recording
       AccessRecordRecorder accessRecorder = new AccessRecordRecorder(accessRecordResource);
       accessRecorder.setContextElement(contextObject);
       accessRecorder.setRule(this);
-      
+
       IncrementalPropertyAccessExecutionListener listener = new IncrementalPropertyAccessExecutionListener(
           accessRecorder);
       IncrementalLazyEgxModule.this.getContext().getExecutorFactory().addExecutionListener(listener);
       accessRecorder.startRecording();
 
-
       /** START: Execute what LazyEgxModule performs **/
-      IEgxContextParallel context = (IEgxContextParallel) context_;
+      IEgxContext context = (IEgxContext) context_;
+//      IEgxContextParallel context = (IEgxContextParallel) context_;
       FrameStack frameStack = context.getFrameStack();
 
       if (sourceParameter != null) {
@@ -191,8 +204,8 @@ public class IncrementalLazyEgxModule extends EgxModuleParallelGenerationRuleAto
 
       frameStack.leaveLocal(this);
       /** END **/
-      
-      //-----
+
+      // -----
       String path = (accessRecorder.getPath() == null) ? null : new StringBuffer(accessRecorder.getPath()).toString();
 
       accessRecorder.updateCurrentPropertyAccessesPath(path);
@@ -201,7 +214,7 @@ public class IncrementalLazyEgxModule extends EgxModuleParallelGenerationRuleAto
       accessRecorder.stopRecording();
       listener.removeRecorder(accessRecorder);
       IncrementalLazyEgxModule.this.getContext().getExecutorFactory().removeExecutionListener(listener);
-      
+
       IncrementalLazyGenerationRuleContentPromise promise = new IncrementalLazyGenerationRuleContentPromise(
           contextObject, this, path, templateFactory, templateUri, variables, templateCache);
 
@@ -212,7 +225,9 @@ public class IncrementalLazyEgxModule extends EgxModuleParallelGenerationRuleAto
     public Object execute(IEolContext context) throws EolRuntimeException {
       Collection<IncrementalLazyGenerationRuleContentPromise> promises = new ArrayList<>();
       ExecutorFactory ef = context.getExecutorFactory();
-      for (Object element : getAllElements(context)) {
+      Collection<?> elements = getAllElements(context);
+      for (Object element : elements) {
+//      for (Object element : getAllElements(context)) {
         Object result = ef.execute(this, context, element);
         if (result instanceof IncrementalLazyGenerationRuleContentPromise) {
           promises.add((IncrementalLazyGenerationRuleContentPromise) result);
@@ -275,19 +290,19 @@ public class IncrementalLazyEgxModule extends EgxModuleParallelGenerationRuleAto
 
       // handle pinset
       if (templateUri.toString().endsWith(".pinset")) {
-        
+
         // start recording
         AccessRecordRecorder accessRecorder = new AccessRecordRecorder(accessRecordResource);
         accessRecorder.setContextElement(contextObject);
         accessRecorder.setRule(generationRule);
         accessRecorder.setTemplateUri(templateUri);
-        
+
         IncrementalPropertyAccessExecutionListener listener = new IncrementalPropertyAccessExecutionListener(
             accessRecorder);
         IncrementalLazyEgxModule.this.getContext().getExecutorFactory().addExecutionListener(listener);
         accessRecorder.startRecording();
-        //--
-        
+        // --
+
         PinsetModule module = new PinsetModule();
         module.setContext(context);
         module.persistDatasets(false);
@@ -317,11 +332,11 @@ public class IncrementalLazyEgxModule extends EgxModuleParallelGenerationRuleAto
         // execute model
         module.preExecution();
         rule.execute(module.getContext());
-        
+
         context.getFrameStack().leaveLocal(module);
 
         String content = rule.getDataset().toString();
-        
+
         // save record
         accessRecorder.updateCurrentPropertyAccessesPath(path);
         accessRecorder.saveToAccessRecordResource();
@@ -331,7 +346,7 @@ public class IncrementalLazyEgxModule extends EgxModuleParallelGenerationRuleAto
         listener.removeRecorder(accessRecorder);
         IncrementalLazyEgxModule.this.getContext().getExecutorFactory().removeExecutionListener(listener);
         // --
-        
+
         rule.dispose();
 
         return content;
