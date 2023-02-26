@@ -26,8 +26,8 @@ public interface AccessRecordResource {
   public void updatePath(String modulePath, String ruleName, String contextResourceUri, String contextObjectId,
       String path);
 
-  State getPathStatus(String pathString);
+  public State getPathStatus(String pathString);
 
-
+  public int size();
 
 }

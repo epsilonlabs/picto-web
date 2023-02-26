@@ -206,7 +206,7 @@ public class ViewTree {
 
     content = cachedContent;
     // keep the cachedContent null to keep regenerate content
-    if (PictoApplication.getEachRequestAlwaysRegeneratesView()) {
+    if (PictoApplication.isNoCache()) {
       cachedContent = null;
     } 
     return content;

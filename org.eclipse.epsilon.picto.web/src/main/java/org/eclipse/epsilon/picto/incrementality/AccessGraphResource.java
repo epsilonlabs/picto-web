@@ -1,5 +1,5 @@
 /*********************************************************************
-* Copyright (c) 2008 The University of York.
+* Copyright (c) 2022 The University of York.
 *
 * This program and the accompanying materials are made
 * available under the terms of the Eclipse Public License 2.0
@@ -19,9 +19,11 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
+import java.util.concurrent.Callable;
+import java.util.concurrent.LinkedBlockingQueue;
+import java.util.concurrent.ThreadPoolExecutor;
+import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
-
-import javax.annotation.Nonnull;
 
 import org.eclipse.emf.common.util.EList;
 import org.eclipse.emf.ecore.EObject;
@@ -46,169 +48,199 @@ import org.eclipse.epsilon.picto.pictograph.Template;
 
 public class AccessGraphResource implements AccessRecordResource {
 
+//  private ExecutorService executorService = Executors.newSingleThreadExecutor();
+  private static ThreadPoolExecutor executorService = new ThreadPoolExecutor(1, 1, 0L, TimeUnit.MILLISECONDS,
+      new LinkedBlockingQueue<Runnable>());
+
+  // private ExecutorService executorService = Executors.newFixedThreadPool(2);
   private PictographFactory factory = PictographFactory.eINSTANCE;
   private PictoGraph graph = factory.createPictoGraph();
   private TraceIndex traceIndex = new TraceIndex();
 
-  public AccessGraphResource() {
+  public PictoGraph getGraph() {
+    return graph;
+  }
 
+  public static ThreadPoolExecutor getExecutorService() {
+    return executorService;
+  }
+
+  public int size() {
+    return traceIndex.size();
+  }
+
+  public TraceIndex getTraceIndex() {
+    return traceIndex;
   }
 
   @SuppressWarnings("null")
   @Override
   public void add(AccessRecord access) {
 
-    // path
-    if (access.getPath() == null) {
-      return;
-    }
+    Thread t = new Thread() { 
+      
+      @Override
+      public void run() {
+        
+        // path
+        if (access.getPath() == null) {
+          return;
+        }
 
-    String pathName = access.getPath();
-    Path path = (Path) traceIndex.getPath(pathName);
-//		Path path = (Path) graph.getPaths().get(pathName);
-    if (path == null) {
-      path = factory.createPath();
-      path.setState(State.NEW);
-      path.setName(access.getPath());
-      traceIndex.putPath(pathName, path);
-    }
+        String pathName = access.getPath();
+        Path path = (Path) traceIndex.getPath(pathName);
+//        Path path = (Path) graph.getPaths().get(pathName);
+        if (path == null) {
+          path = factory.createPath();
+          path.setState(org.eclipse.epsilon.picto.pictograph.State.NEW);
+          path.setName(access.getPath());
+          traceIndex.putPath(pathName, path);
+        }
+        path.setAccessCount(path.getAccessCount() + 1);
 
-    // module
-    if (access.getModulePath() != null) {
-      String moduleName = access.getModulePath();
-      Module module = (Module) traceIndex.getModule(moduleName);
-      if (module == null) {
-        module = factory.createModule();
-        module.setState(State.NEW);
-        module.setName(access.getModulePath());
-        traceIndex.putModule(moduleName, module);
+        // module
+        if (access.getModulePath() != null) {
+          String moduleName = access.getModulePath();
+          Module module = (Module) traceIndex.getModule(moduleName);
+          if (module == null) {
+            module = factory.createModule();
+            module.setState(org.eclipse.epsilon.picto.pictograph.State.NEW);
+            module.setName(access.getModulePath());
+            traceIndex.putModule(moduleName, module);
+          }
+          module.setAccessCount(module.getAccessCount() + 1);
+          addAffectedPath((InputEntity) module, path);
+
+          // rule
+          if (access.getGenerationRuleName() != null) {
+            String ruleName = access.getGenerationRuleName();
+            Rule rule = (Rule) traceIndex.getRule(moduleName, ruleName);
+            if (rule == null) {
+              rule = factory.createRule();
+              rule.setState(org.eclipse.epsilon.picto.pictograph.State.NEW);
+              rule.setName(access.getGenerationRuleName());
+              traceIndex.putRule(moduleName, ruleName, rule);
+            }
+            rule.setAccessCount(rule.getAccessCount() + 1);
+            rule.setModule(module);
+            addAffectedPath((InputEntity) rule, path);
+
+            // template
+            Template template = null;
+            if (access.getTemplatePath() != null) {
+              String templateName = access.getTemplatePath();
+              template = (Template) traceIndex.getTemplate(moduleName, ruleName, templateName);
+              if (template == null) {
+                template = factory.createTemplate();
+                template.setState(org.eclipse.epsilon.picto.pictograph.State.NEW);
+                template.setName(access.getTemplatePath());
+                traceIndex.putTemplate(moduleName, ruleName, templateName, template);
+              }
+              template.setAccessCount(template.getAccessCount() + 1);
+              template.getModules().add(module);
+              rule.setTemplate(template);
+              addAffectedPath((InputEntity) template, path);
+
+            }
+
+            // context element
+            if (access.getContextObjectId() != null) {
+
+              // element resource
+              Resource contextResource = null;
+              if (access.getContextResourceUri() != null) {
+                String fullname = access.getContextResourceUri();
+                contextResource = (Resource) traceIndex.getResource(fullname);
+                if (contextResource == null) {
+                  contextResource = factory.createResource();
+                  contextResource.setState(org.eclipse.epsilon.picto.pictograph.State.NEW);
+                  contextResource.setName(access.getContextResourceUri());
+                  traceIndex.putResource(fullname, contextResource);
+                }
+                contextResource.setAccessCount(contextResource.getAccessCount() + 1);
+                addAffectedPath((InputEntity) contextResource, path);
+              }
+
+              // context element
+              Element contextElement = (Element) traceIndex.getElement(access.getContextResourceUri(),
+                  access.getContextObjectId());
+              if (contextElement == null) {
+                contextElement = factory.createElement();
+                contextElement.setState(org.eclipse.epsilon.picto.pictograph.State.NEW);
+                contextElement.setName(access.getContextObjectId());
+                rule.getContextElements().add(contextElement);
+                traceIndex.putElement(access.getContextResourceUri(), access.getContextObjectId(), contextElement);
+              }
+              contextElement.setAccessCount(contextElement.getAccessCount() + 1);
+              contextElement.setResource(contextResource);
+              addAffectedPath((InputEntity) contextElement, path);
+
+            }
+
+            // element
+            if (access.getElementObjectId() != null) {
+
+              // element resource
+              Resource elementResource = null;
+              if (access.getElementResourceUri() != null) {
+                String fullname = access.getElementResourceUri();
+                elementResource = (Resource) traceIndex.getResource(fullname);
+                if (elementResource == null) {
+                  elementResource = factory.createResource();
+                  elementResource.setState(org.eclipse.epsilon.picto.pictograph.State.NEW);
+                  elementResource.setName(access.getElementResourceUri());
+                  traceIndex.putResource(fullname, elementResource);
+                }
+                elementResource.setAccessCount(elementResource.getAccessCount() + 1);
+                addAffectedPath((InputEntity) elementResource, path);
+              }
+
+              // element
+              Element element = (Element) traceIndex.getElement(access.getElementResourceUri(),
+                  access.getElementObjectId());
+              if (element == null) {
+                element = factory.createElement();
+                element.setState(org.eclipse.epsilon.picto.pictograph.State.NEW);
+                element.setName(access.getElementObjectId());
+                rule.getElements().add(element);
+                traceIndex.putElement(access.getElementResourceUri(), access.getElementObjectId(), element);
+              }
+              element.setAccessCount(element.getAccessCount() + 1);
+              template.getElements().add(element);
+              if (element == null || elementResource == null) {
+                System.console();
+              }
+              element.setResource(elementResource);
+              addAffectedPath((InputEntity) element, path);
+
+              // property
+              if (access.getPropertyName() != null) {
+
+                Property property = (Property) traceIndex.getProperty(access.getElementResourceUri(),
+                    access.getElementObjectId(), access.getPropertyName());
+                if (property == null) {
+                  property = factory.createProperty();
+                  property.setState(org.eclipse.epsilon.picto.pictograph.State.NEW);
+                  property.setName(access.getPropertyName());
+                  traceIndex.putProperty(access.getElementResourceUri(), access.getElementObjectId(),
+                      access.getPropertyName(), property);
+                }
+                property.setAccessCount(property.getAccessCount() + 1);
+                property.setElement(element);
+                property.setValue(access.getValue());
+                addAffectedPath((InputEntity) property, path);
+              }
+            }
+
+          }
+        }
+//        System.out.println(access.toString());
       }
-      addAffectedPath((InputEntity) module, path);
-
-      // rule
-      if (access.getGenerationRuleName() != null) {
-        String ruleName = access.getGenerationRuleName();
-        Rule rule = (Rule) traceIndex.getRule(moduleName, ruleName);
-        if (rule == null) {
-          rule = factory.createRule();
-          rule.setState(State.NEW);
-          rule.setName(access.getGenerationRuleName());
-          traceIndex.putRule(moduleName, ruleName, rule);
-        }
-        rule.setModule(module);
-        addAffectedPath((InputEntity) rule, path);
-
-        // template
-        @Nonnull
-        Template template = null;
-        if (access.getTemplatePath() != null) {
-          String templateName = access.getTemplatePath();
-          template = (Template) traceIndex.getTemplate(moduleName, ruleName, templateName);
-          if (template == null) {
-            template = factory.createTemplate();
-            template.setState(State.NEW);
-            template.setName(access.getTemplatePath());
-            traceIndex.putTemplate(moduleName, ruleName, templateName, template);
-          }
-          template.getModules().add(module);
-          rule.setTemplate(template);
-          addAffectedPath((InputEntity) template, path);
-        }
-
-        // context element
-        if (access.getContextObjectId() != null) {
-
-          // element resource
-          Resource contextResource = null;
-          if (access.getContextResourceUri() != null) {
-            String fullname = access.getContextResourceUri();
-            contextResource = (Resource) traceIndex.getResource(fullname);
-            if (contextResource == null) {
-              contextResource = factory.createResource();
-              contextResource.setState(State.NEW);
-              contextResource.setName(access.getContextResourceUri());
-              traceIndex.putResource(fullname, contextResource);
-            }
-            addAffectedPath((InputEntity) contextResource, path);
-          }
-
-          // context element
-          Element contextElement = (Element) traceIndex.getElement(access.getContextResourceUri(),
-              access.getContextObjectId());
-          if (contextElement == null) {
-            contextElement = factory.createElement();
-            contextElement.setState(State.NEW);
-            contextElement.setName(access.getContextObjectId());
-            rule.getContextElements().add(contextElement);
-            traceIndex.putElement(access.getContextResourceUri(), access.getContextObjectId(),
-                contextElement);
-          }
-          contextElement.setResource(contextResource);
-          addAffectedPath((InputEntity) contextElement, path);
-
-        }
-
-        // element
-        if (access.getElementObjectId() != null) {
-
-          // element resource
-          Resource elementResource = null;
-          if (access.getElementResourceUri() != null) {
-            String fullname = access.getElementResourceUri();
-            elementResource = (Resource) traceIndex.getResource(fullname);
-            if (elementResource == null) {
-              elementResource = factory.createResource();
-              elementResource.setState(State.NEW);
-              elementResource.setName(access.getElementResourceUri());
-              traceIndex.putResource(fullname, elementResource);
-            }
-            addAffectedPath((InputEntity) elementResource, path);
-          }
-
-          // element
-
-          Element element = (Element) traceIndex.getElement(access.getElementResourceUri(),
-              access.getElementObjectId());
-          if (element == null) {
-            element = factory.createElement();
-            element.setState(State.NEW);
-            element.setName(access.getElementObjectId());
-            rule.getElements().add(element);
-            traceIndex.putElement(access.getElementResourceUri(), access.getElementObjectId(), element);
-          }
-          template.getElements().add(element);
-          element.setResource(elementResource);
-          addAffectedPath((InputEntity) element, path);
-
-          // property
-          if (access.getPropertyName() != null) {
-//						if (access.getValue().equals("Dan#java.lang.String")) {
-//							System.console();
-//						}
-
-            Property property = (Property) traceIndex.getProperty(access.getElementResourceUri(),
-                access.getElementObjectId(), access.getPropertyName());
-            if (property == null) {
-              property = factory.createProperty();
-              property.setState(State.NEW);
-              property.setName(access.getPropertyName());
-              traceIndex.putProperty(access.getElementResourceUri(),
-                  access.getElementObjectId(), access.getPropertyName(), property);
-            }
-            property.setElement(element);
-            property.setValue(access.getValue());
-            addAffectedPath((InputEntity) property, path);
-          }
-        }
-
-      }
-    }
+    };
+    executorService.submit(t);
 
   }
 
-  /***
-   * 
-   */
   @Override
   public Set<String> getInvalidatedViewPaths(List<IncrementalLazyGenerationRuleContentPromise> inProcessingPromises,
       EgxModule module) {
@@ -221,7 +253,8 @@ public class AccessGraphResource implements AccessRecordResource {
       checkPath(module, invalidatedViewPaths, toBeDeletedKeys, toBeDeletedElements, checkedPath);
     }
 
-    // run a new thread in the background to remove deleted elements from the indices and graph
+    // run a new thread in the background to remove deleted elements from the
+    // indices and graph
     new Thread() {
       public void run() {
         // first, remove all the entries of the deleted elements
@@ -239,48 +272,71 @@ public class AccessGraphResource implements AccessRecordResource {
             InputEntity ie = (InputEntity) element;
             EList<Path> paths = ie.getAffects();
             for (Path path : paths) {
-              while(path.getAffectedBy().remove(ie));
+              while (path.getAffectedBy().remove(ie))
+                ;
             }
             EcoreUtil.delete(element, true);
           } catch (Exception e) {
           }
         }
-        
+
         Iterator<Entry<String, Path>> iterator = traceIndex.getPathIndex().entrySet().iterator();
-        while(iterator.hasNext()) {
+        while (iterator.hasNext()) {
           Path p = iterator.next().getValue();
-          if(p.getAffectedBy().size() == 0) {
+          if (p.getAffectedBy().size() == 0) {
             iterator.remove();
           }
         }
       }
     }.start();
-    
+
     return invalidatedViewPaths;
   }
 
-  // check if a path is affected by changes
+  /**
+   * check if a path is affected by changes
+   * 
+   * @param module
+   * @param toBeProcessedPaths
+   * @param toBeDeletedKeys
+   * @param toBeDeletedElements
+   * @param checkedPath
+   */
   private void checkPath(EgxModule module, Set<String> toBeProcessedPaths, Set<String> toBeDeletedKeys,
       Set<EObject> toBeDeletedElements, String checkedPath) {
 
+    long start = System.currentTimeMillis();
     Path path = (Path) traceIndex.getPath(checkedPath);
+//    System.out.println("\nPATH: " + checkedPath);
+
     // check if the path is a new view
     if (path == null) {
       toBeProcessedPaths.add(checkedPath);
       return;
     } else {
+      path.setCheckCount(path.getCheckCount() + 1);
 
       if (path.getState().equals(State.NEW)) {
         toBeProcessedPaths.add(checkedPath);
+        long time = System.currentTimeMillis() - start;
+        path.setCheckingTime(path.getCheckingTime() + time);
+        path.setAvgCheckTime(path.getCheckingTime() / path.getCheckCount());
         return;
       }
 
       // check if the new path is affected by a new object
-      for (InputEntity entity : path.getAffectedBy()) {
+      int i = 0;
+      while (i < path.getAffectedBy().size()) {
+        InputEntity entity = path.getAffectedBy().get(i);
+        i++;
+//      for (InputEntity entity : path.getAffectedBy()) {
 
         if (entity instanceof Element) {
           if (entity.getState().equals(State.NEW)) {
             toBeProcessedPaths.add(checkedPath);
+            long time = System.currentTimeMillis() - start;
+            path.setCheckingTime(path.getCheckingTime() + time);
+            path.setAvgCheckTime(path.getCheckingTime() / path.getCheckCount());
             return;
           }
         } else if (entity instanceof Property) {
@@ -294,8 +350,8 @@ public class AccessGraphResource implements AccessRecordResource {
             continue;
           }
           String resourcePath = resource.getName();
-          EmfModel model = (EmfModel) module.getContext().getModelRepository().getModels().stream().filter(
-              m -> ((AbstractEmfModel) m).getResource().getURI().toFileString().equals(resourcePath))
+          EmfModel model = (EmfModel) module.getContext().getModelRepository().getModels().stream()
+              .filter(m -> ((AbstractEmfModel) m).getResource().getURI().toFileString().equals(resourcePath))
               .findFirst().orElse(null);
 
           // if the resource has been deleted
@@ -303,6 +359,12 @@ public class AccessGraphResource implements AccessRecordResource {
             toBeProcessedPaths.add(checkedPath);
             toBeDeletedKeys.add(resource.getName());
             toBeDeletedElements.add(resource);
+
+            long time = System.currentTimeMillis() - start;
+            path.setCheckingTime(path.getCheckingTime() + time);
+            path.setAvgCheckTime(path.getCheckingTime() / path.getCheckCount());
+
+            return;
           } else if (model != null) {
             org.eclipse.emf.ecore.resource.Resource currentResource = model.getResource();
             EObject currentEObject = currentResource.getEObject(element.getName());
@@ -310,23 +372,38 @@ public class AccessGraphResource implements AccessRecordResource {
             // if the element has been deleted
             if (currentEObject == null) {
               toBeProcessedPaths.add(checkedPath);
+
+              long time = System.currentTimeMillis() - start;
+              path.setCheckingTime(path.getCheckingTime() + time);
+              path.setAvgCheckTime(path.getCheckingTime() / path.getCheckCount());
+
               for (Property p : element.getProperties()) {
                 toBeDeletedKeys.add(resource.getName() + "#" + element.getName() + "#" + p.getName());
                 toBeDeletedElements.add(p);
               }
               toBeDeletedKeys.add(resource.getName() + "#" + element.getName());
               toBeDeletedElements.add(element);
+
+              return;
             } else {
-              EStructuralFeature currentProperty = currentEObject.eClass()
-                  .getEStructuralFeature(property.getName());
-              Object currentValueObject = (currentProperty != null) ? currentEObject.eGet(currentProperty)
-                  : null;
+              EStructuralFeature currentProperty = currentEObject.eClass().getEStructuralFeature(property.getName());
+              Object currentValueObject = (currentProperty != null) ? currentEObject.eGet(currentProperty) : null;
 
               // check if the property has been changed
               String currentValue = AccessRecord.convertValueToString(currentValueObject);
+//              String previousValue = property.getValue();
+
               if (!IncrementalityUtil.equals(property.getPreviousValue(), currentValue)) {
+//              if (!IncrementalityUtil.equals(previousValue, currentValue)) {
+//                System.out.println(currentEObject.eClass().getName() + " - " + property.getName() + ": " + previousValue + " vs. " + currentValue);
                 toBeProcessedPaths.add(checkedPath);
+                property.setValue(currentValue);
+
+                long time = System.currentTimeMillis() - start;
+                path.setCheckingTime(path.getCheckingTime() + time);
+                path.setAvgCheckTime(path.getCheckingTime() / path.getCheckCount());
 //                property.getAffects().forEach(p -> toBeProcessedPaths.add(p.getName()));
+
                 return;
               }
 
@@ -335,13 +412,31 @@ public class AccessGraphResource implements AccessRecordResource {
         }
       }
 
+      long time = System.currentTimeMillis() - start;
+      path.setCheckingTime(path.getCheckingTime() + time);
+      path.setAvgCheckTime(path.getCheckingTime() / path.getCheckCount());
     }
   }
 
+  /***
+   * Add the affected path to the affecting module.
+   * 
+   * @param module
+   * @param path
+   */
   private void addAffectedPath(InputEntity module, final Path path) {
-    if (!module.getAffects().stream().anyMatch(p -> p.getName().equals(path.getName()))) {
-      module.getAffects().add(path);
+    EList<Path> affectedPaths = module.getAffects();
+    for (int i = 0; i < affectedPaths.size(); i++) {
+      if (i < affectedPaths.size()) {
+        Path affectedPath = affectedPaths.get(i);
+        if (path.getName().equals(affectedPath.getName()))
+          return;
+      }
     }
+    module.getAffects().add(path);
+//    if (!module.getAffects().stream().anyMatch(p -> p.getName().equals(path.getName()))) {
+//      module.getAffects().add(path);
+//    }
   }
 
   @Override
@@ -385,12 +480,19 @@ public class AccessGraphResource implements AccessRecordResource {
     for (Entry<String, Path> entry : traceIndex.getPathIndex().entrySet()) {
       Path p = (Path) entry.getValue();
       p.setState(State.PROCESSED);
+      if (p.getName().equals("/XMLResourceImpl")) {
+        System.console();
+      }
       if (paths.contains(p.getName())) {
-        for (int i = 0; i < p.getAffectedBy().size();i++) {
+        for (int i = 0; i < p.getAffectedBy().size(); i++) {
           Entity entity = p.getAffectedBy().get(i);
+          if (entity.getName().equals("name")) {
+            System.console();
+          }
           entity.setState(State.PROCESSED);
           if (entity instanceof Property) {
             ((Property) entity).setPreviousValue(((Property) entity).getValue());
+            System.console();
           }
         }
       }
@@ -426,4 +528,22 @@ public class AccessGraphResource implements AccessRecordResource {
     }
   }
 
+  class RecordTask implements Callable<Object> {
+
+    AccessRecord access;
+
+    /**
+     * 
+     */
+    public RecordTask(AccessRecord access) {
+      this.access = access;
+    }
+
+    @Override
+    public Object call() throws Exception {
+
+      return null;
+    }
+
+  }
 }

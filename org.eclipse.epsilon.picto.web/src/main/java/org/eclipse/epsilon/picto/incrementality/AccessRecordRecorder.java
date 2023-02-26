@@ -11,6 +11,7 @@ import org.eclipse.epsilon.egl.EgxModule;
 import org.eclipse.epsilon.egl.dom.GenerationRule;
 import org.eclipse.epsilon.eol.dom.NameExpression;
 import org.eclipse.epsilon.eol.execute.introspection.recording.PropertyAccessRecorder;
+import org.eclipse.epsilon.picto.web.PictoApplication;
 
 public class AccessRecordRecorder extends PropertyAccessRecorder {
 
@@ -34,17 +35,21 @@ public class AccessRecordRecorder extends PropertyAccessRecorder {
   }
 
   public void updateCurrentPropertyAccessesPath(String path) {
-    currentPropertyAccesses.stream().forEach(r -> {
+//  for (AccessRecord r : currentPropertyAccesses) {
+    for (int i = 0; i < currentPropertyAccesses.size(); i++) {
+      AccessRecord r = currentPropertyAccesses.get(i);
       r.setPath(path);
       r.setTemplatePath(new File(templateUri).getAbsolutePath());
-    });
+    }
   }
 
   public void saveToAccessRecordResource() {
-    for (AccessRecord r : currentPropertyAccesses) {
+//    for (AccessRecord r : currentPropertyAccesses) {
+    while (currentPropertyAccesses.size() > 0) {
+      AccessRecord r = currentPropertyAccesses.remove(0);
       accessRecordResource.add(r);
     }
-    currentPropertyAccesses.clear();
+//    currentPropertyAccesses.clear();
   }
 
   public Object getContextElement() {
@@ -117,6 +122,8 @@ public class AccessRecordRecorder extends PropertyAccessRecorder {
 
     AccessRecord access = null;
     try {
+     
+      
       access = new AccessRecord(modulePath, templatePath, ruleName, contextResourceUri, contextElementId,
           elementResourceUri, modelElementId, propertyName, (Object) result, path);
     } catch (Exception e) {
@@ -137,14 +144,18 @@ public class AccessRecordRecorder extends PropertyAccessRecorder {
 
   @Override
   public void record(Object modelElement, String propertyName) {
-    if (recording) {
-      currentPropertyAccesses.add(createPropertyAccess(modelElement, propertyName));
+    if (!PictoApplication.isNonIncremental()) {
+      if (recording) {
+        currentPropertyAccesses.add(createPropertyAccess(modelElement, propertyName));
+      }
     }
   }
 
   public void record(Object modelElement, String propertyName, Object result) {
-    if (recording) {
-      currentPropertyAccesses.add(createPropertyAccess(modelElement, propertyName, result));
+    if (!PictoApplication.isNonIncremental()) {
+      if (recording) {
+        currentPropertyAccesses.add(createPropertyAccess(modelElement, propertyName, result));
+      }
     }
   }
 

@@ -32,6 +32,10 @@ public class IncrementalPropertyAccessExecutionListener extends PropertyAccessEx
     this.recorders.addAll(Arrays.asList(recorders));
   }
 
+  public void removeRecorder(IPropertyAccessRecorder recorder) {
+    this.recorders.remove(recorder);
+  }
+
   @SuppressWarnings("unchecked")
   @Override
   public void finishedExecuting(ModuleElement ast, Object result, IEolContext context) {

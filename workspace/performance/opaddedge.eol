@@ -15,12 +15,15 @@ while( i < numOfAffectedViews){
     var rightNode = graph.nodes.at(i + 1);
     affectedNodes.add(rightNode.name);
     
+//    (leftNode.name +"-" + rightNode.name).println();
+    
     //add an edge between left and right nodes
     var edge = new Edge();
+    graph.edges.add(edge);
     edge.nodes.add(leftNode);
     edge.nodes.add(rightNode);
     edge.name = leftNode.name +"-" + rightNode.name;
-    graph.edges.add(edge);
+    
     i++;   
 }
 

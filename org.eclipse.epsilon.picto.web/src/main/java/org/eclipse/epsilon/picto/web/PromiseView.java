@@ -25,11 +25,17 @@ import org.eclipse.epsilon.picto.ViewContent;
 import org.eclipse.epsilon.picto.ViewTree;
 import org.eclipse.epsilon.picto.incrementality.IncrementalLazyEgxModule;
 import org.eclipse.epsilon.picto.incrementality.IncrementalLazyEgxModule.IncrementalLazyGenerationRuleContentPromise;
+import org.eclipse.epsilon.picto.web.test.PerformanceRecord;
+import org.eclipse.epsilon.picto.web.test.PerformanceRecorder;
+import org.eclipse.epsilon.picto.web.test.PerformanceTestType;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 public class PromiseView {
+
+//  private static final ExecutorService promiseExecutor = Executors.newFixedThreadPool(1);
+  private static final ExecutorService promiseExecutor = Executors.newSingleThreadExecutor();
 
   private PictoView pictoView;
   private String timestamp = Timestamp.from(Instant.now()).toString();
@@ -73,38 +79,47 @@ public class PromiseView {
       return viewContent;
     }
 
-    System.out.print("Request " + this.path + " ... ");
-    
+//		System.out.print("Request " + this.path + " ... ");
+
     @Nonnull
     ViewContent vc = null;
-    if (hasBeenGenerated == false || PictoApplication.getEachRequestAlwaysRegeneratesView()) {
+    if (hasBeenGenerated == false || PictoApplication.isNoCache()) {
 
       if (viewTree.getPromise() instanceof StaticContentPromise) {
 
         pictoView.renderView(viewTree);
         vc = this.viewTree.getContent().getFinal(pictoView);
-      } //
-      else if (viewTree.getPromise() instanceof IncrementalLazyGenerationRuleContentPromise) {
+
+      } else if (viewTree.getPromise() instanceof IncrementalLazyGenerationRuleContentPromise) {
+
 //        System.out.println("Generate " + path);
         IncrementalLazyEgxModule module = (IncrementalLazyEgxModule) ((IncrementalLazyGenerationRuleContentPromise) viewTree
-            .getPromise())
-            .getGenerationRule().getModule();
+            .getPromise()).getGenerationRule().getModule();
 
-        Future<ViewContent> result = promiseExecutor.submit(new GetViewContentTask(module, pictoView, viewTree));
-        vc = result.get();
+        long genStart = System.currentTimeMillis();
+
+//        Future<ViewContent> result = promiseExecutor.submit(new GetViewContentTask(module, pictoView, viewTree));
+//        vc = result.get();
 
 //        module.startRecording();
-//        pictoView.renderView(viewTree);
-//        vc = viewTree.getContent().getFinal(pictoView);
+        pictoView.renderView(viewTree);
+        vc = viewTree.getContent().getFinal(pictoView);
 //        module.stopRecording();
+
+        PerformanceRecorder.generationTime = System.currentTimeMillis() - genStart;
+        PerformanceRecord record = new PerformanceRecord(PerformanceRecorder.genenerateAll,
+            PerformanceRecorder.generateAlways, PerformanceRecorder.globalNumberOfAffectedViews,
+            PerformanceRecorder.globalNumberIteration, "Server", path, PerformanceRecorder.generationTime, 0,
+            PerformanceTestType.GENERATION_TIME, PerformanceRecorder.accessRecordResourceSize());
+        PerformanceRecorder.record(record);
+
       }
 
       PictoResponse pictoResponse = new PictoResponse();
       pictoResponse.setFilename(filename);
       pictoResponse.setPath(this.path);
       pictoResponse.setTimestamp(this.timestamp);
-      emptyViewContent = new ObjectMapper().writerWithDefaultPrettyPrinter()
-          .writeValueAsString(pictoResponse);
+      emptyViewContent = new ObjectMapper().writerWithDefaultPrettyPrinter().writeValueAsString(pictoResponse);
 
       pictoResponse = new PictoResponse();
       pictoResponse.setFilename(filename);
@@ -112,13 +127,12 @@ public class PromiseView {
       pictoResponse.setTimestamp(this.timestamp);
       pictoResponse.setType(vc.getFormat());
       pictoResponse.setContent(vc.getText());
-      viewContent = new ObjectMapper().writerWithDefaultPrettyPrinter()
-          .writeValueAsString(pictoResponse);
+      viewContent = new ObjectMapper().writerWithDefaultPrettyPrinter().writeValueAsString(pictoResponse);
 
       this.hasBeenGenerated = true;
-      System.out.println("(re)generated");
+//			System.out.println(path + " (re)generated");
     } else {
-      System.out.println("cache returned");
+//			System.out.println(path + " cache returned");
     }
 
     if (clientTimestamp != null && timestamp.compareTo(clientTimestamp) <= 0) {
@@ -136,7 +150,9 @@ public class PromiseView {
     return path;
   }
 
-  private static final ExecutorService promiseExecutor = Executors.newSingleThreadExecutor();
+  public static ExecutorService getPromiseExecutor() {
+    return promiseExecutor;
+  }
 
   public class GetViewContentTask implements Callable<ViewContent> {
 
@@ -151,10 +167,12 @@ public class PromiseView {
     }
 
     public ViewContent call() throws Exception {
-      module.startRecording();
+
+//      module.startRecording();
       pictoView.renderView(viewTree);
       ViewContent vc = viewTree.getContent().getFinal(pictoView);
-      module.stopRecording();
+//      module.stopRecording();
+
       return vc;
     }
 
@@ -175,6 +193,5 @@ public class PromiseView {
   public void setEmptyViewContent(String emptyViewContent) {
     this.emptyViewContent = emptyViewContent;
   }
-  
-  
+
 }

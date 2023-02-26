@@ -31,3 +31,12 @@ workspace/performance/backup
 workspace/performance/graph.model
 *.gz
 codeocean.sh
+workspace/java/output/*
+workspace/java/java.xmi
+workspace/java/java.big.xmi
+workspace/java/eol.xmi
+reproduce.sh
+
+org.eclipse.epsilon.picto.web.generator/.settings
+org.eclipse.epsilon.picto.web.generator/*.xmi
+temp/*

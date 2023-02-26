@@ -14,6 +14,10 @@ import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Set;
+import java.util.concurrent.Callable;
+import java.util.concurrent.ExecutorService;
+import java.util.stream.Collectors;
 
 import org.eclipse.epsilon.picto.dom.PictoFactory;
 import org.eclipse.epsilon.picto.dom.PictoPackage;
@@ -24,19 +28,25 @@ import org.springframework.context.ApplicationListener;
 import org.springframework.context.ConfigurableApplicationContext;
 import org.springframework.context.event.ApplicationContextEvent;
 
+import picocli.CommandLine;
+import picocli.CommandLine.Command;
+import picocli.CommandLine.Option;
+
 /***
  * The main class for Picto Web Application
  * 
  * @author Alfa Yohannis
  *
  */
+
 @SpringBootApplication
-public class PictoApplication implements ApplicationListener<ApplicationContextEvent> {
+public class PictoApplication implements ApplicationListener<ApplicationContextEvent>, Callable<Integer> {
 
   /***
    * Define the relative workspace target
    */
   public static final String WORKSPACE = ".." + File.separator + "workspace" + File.separator;
+  public static final String TEMP = ".." + File.separator + "temp" + File.separator;
 
   /***
    * This contains the visualised Picto file's target
@@ -47,10 +57,6 @@ public class PictoApplication implements ApplicationListener<ApplicationContextE
    * To keep the arguments accessible.
    */
   public static String[] args;
-
-  private static boolean isViewsGenerationGreedy = false;
-
-  private static boolean eachRequestAlwaysRegeneratesView = false;
 
   private static List<PictoProject> pictoProjects = new ArrayList<PictoProject>();
 
@@ -68,7 +74,39 @@ public class PictoApplication implements ApplicationListener<ApplicationContextE
     };
   };
 
+  private static CommandLine commandLine;
 
+  @Option(names = { "-ni",
+      "--non-incremental" }, description = "Use no incrementality. It implies that views generation "
+          + "would be greedy. All views are (re)generated when a change happened. Options: false (default), true.")
+  private static boolean nonIncremental = false;
+
+  @Option(names = { "-nc",
+      "--no-cache" }, description = "No-cache, every request always (re)generates a view. Options: false (default), true.")
+  private static boolean isNoCache = false;
+
+  /***
+   * Main program launcher
+   * 
+   * @param args
+   * @throws Exception
+   */
+  @Command(name = "Picto-Web", mixinStandardHelpOptions = true, version = "0.1.2-alpha", //
+      description = "A High-performance Tool for Complex Model Exploration.")
+  public static void main(String... args) throws Exception {
+
+    PictoApplication.args = args;
+
+    commandLine = new CommandLine(new PictoApplication());
+    commandLine.execute(args);
+
+    context = SpringApplication.run(PictoApplication.class, args);
+    PictoFactory.eINSTANCE.eClass();
+    PictoPackage.eINSTANCE.eClass();
+    FileWatcher.scanPictoFiles();
+    FileWatcher.startWatching();
+    pictoWebOnLoadedListener.onLoaded();
+  }
 
   /***
    * Initialise Picto Application
@@ -82,20 +120,8 @@ public class PictoApplication implements ApplicationListener<ApplicationContextE
     System.out.println("PICTO - Workspace directory: " + (new File(WORKSPACE)).getAbsolutePath());
   }
 
-  /***
-   * Main program launcher
-   * 
-   * @param args
-   * @throws Exception
-   */
-  public static void main(String[] args) throws Exception {
-    PictoApplication.args = args;
-    context = SpringApplication.run(PictoApplication.class, args);
-    PictoFactory.eINSTANCE.eClass();
-    PictoPackage.eINSTANCE.eClass();
-    FileWatcher.scanPictoFiles();
-    FileWatcher.startWatching();
-    pictoWebOnLoadedListener.onLoaded();
+  public Integer call() throws Exception {
+    return 0;
   }
 
   /**
@@ -106,7 +132,33 @@ public class PictoApplication implements ApplicationListener<ApplicationContextE
   }
 
   public static void exit() throws IOException, InterruptedException {
+//    Set<Thread> threads = Thread
+//        .getAllStackTraces().keySet().stream().filter(t -> t.isAlive() && (t.getName().startsWith("MessageBroker-")
+//            || t.getName().startsWith("clientInboundChannel-") || t.getName().startsWith("clientOutboundChannel-")))
+//        .collect(Collectors.toSet());
+//    while (threads.size() > 0) {
+//      for (Thread thread : threads) {
+//        try {
+//            thread.stop();
+//        } catch (Exception e) {
+////          e.printStackTrace();
+//        }
+//        try {
+//          thread.interrupt();
+//        } catch (Exception e) {
+////          e.printStackTrace();
+//        }
+//      }
+//      threads = Thread
+//          .getAllStackTraces().keySet().stream().filter(t -> t.isAlive() && (t.getName().startsWith("MessageBroker-")
+//              || t.getName().startsWith("clientInboundChannel-") || t.getName().startsWith("clientOutboundChannel-")))
+//          .collect(Collectors.toSet());
+//    }
     FileWatcher.stopWatching();
+    FileViewContentCache.clear();
+    ExecutorService px = PromiseView.getPromiseExecutor();
+    px.shutdown();
+//    context.close();
     SpringApplication.exit(context, new ExitCodeGenerator() {
       @Override
       public int getExitCode() {
@@ -132,20 +184,20 @@ public class PictoApplication implements ApplicationListener<ApplicationContextE
 //    }
   }
 
-  public static boolean isViewsGenerationGreedy() {
-    return isViewsGenerationGreedy;
+  public static boolean isNoCache() {
+    return isNoCache;
   }
 
-  public static void setViewsGenerationGreedy(boolean viewsGenerationIsGreedy) {
-    PictoApplication.isViewsGenerationGreedy = viewsGenerationIsGreedy;
+  public static void setNoCache(boolean isNoCache) {
+    PictoApplication.isNoCache = isNoCache;
   }
 
-  public static boolean getEachRequestAlwaysRegeneratesView() {
-    return eachRequestAlwaysRegeneratesView;
+  public static boolean isNonIncremental() {
+    return nonIncremental;
   }
 
-  public static void setEachRequestAlwaysRegeneratesView(boolean eachRequestAlwaysRegeneratesView) {
-    PictoApplication.eachRequestAlwaysRegeneratesView = eachRequestAlwaysRegeneratesView;
+  public static void setNonIncremental(boolean nonIncremental) {
+    PictoApplication.nonIncremental = nonIncremental;
   }
 
   public static PromisesGenerationListener getPromisesGenerationListener() {
@@ -155,6 +207,5 @@ public class PictoApplication implements ApplicationListener<ApplicationContextE
   public static void setPromisesGenerationListener(PromisesGenerationListener promisesGenerationListener) {
     PictoApplication.promisesGenerationListener = promisesGenerationListener;
   }
-
 
 }

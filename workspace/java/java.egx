@@ -1,0 +1,32 @@
+rule ClassDeclaration2PlantUMLClassDiagram
+    transform classDeclaration : java::ClassDeclaration {
+    template : "java.egl"
+    target : "output/" + classDeclaration.name + ".puml"
+    parameters : Map{
+        "path" = Sequence{classDeclaration.getFullName()},
+        "format" = "puml",
+        "class" =  classDeclaration
+    }
+}
+
+
+operation ClassDeclaration getFullName() {
+    var segments = Sequence{};
+    segments.add(self.name);
+    var container = self.eContainer;
+    var jModel = null;
+    while (container != null) {
+        if (container.isTypeOf(java::ClassDeclaration)) {
+            segments.add(0, container.name);
+        } else  if (container.isTypeOf(java::InterfaceDeclaration)) {
+            segments.add(0, container.name);
+        } else  if (container.isTypeOf(java::Package)) {
+            segments.add(0, container.name);
+        } else  if (container.isTypeOf(java::Model)) {
+            jModel = container;
+            segments.add(0, jModel.name);
+        }
+        container = container.eContainer;
+    }
+    return segments.concat(".");
+}

@@ -1,0 +1,74 @@
+@startuml
+class [%=classDeclaration.name%] {
+[% for (field in class.bodyDeclarations.select(b | b.isTypeOf(java::FieldDeclaration))) { %]
+[%   for (fragment in field.fragments) { %]
+  [%=field.getVisibility()%] [%=field.getType()%] [%=fragment.name%]
+[%   } %]
+[% } %]
+[% for (method in class.bodyDeclarations.select(b | b.isTypeOf(java::MethodDeclaration))) { %]
+  [%=method.getVisibility()%] [%=method.getType()%] [%=method.name%]([%=method.getParams()%])
+[% } %]
+}
+@enduml
+
+[%
+operation MethodDeclaration getParams() {
+    var params = Sequence{};
+    if (self.parameters == null or self.parameters.size() == 0){
+        return null;
+    }
+    for (i in Sequence{0..self.parameters.size()-1}){
+        var p = self.parameters.get(i);
+        if (p.type.type == null) continue;
+        params.add(p.type.type.name + " " + p.name);
+    }
+    return params.concat(", ");
+}
+
+operation FieldDeclaration getType() {
+    if (self.type == null) {
+        return null;
+    }
+    if (self.type.type == null) {
+        return null;
+    }
+    return self.type.type.name;
+}
+
+operation MethodDeclaration getType() {
+    if (self.returnType == null or self.returnType.type == null) {
+        return null;
+    }
+    return self.returnType.type.name;
+}
+
+operation FieldDeclaration getVisibility() {
+    if (self.modifier == null) {
+        return "+";
+    }
+    if (self.modifier.visibility == VisibilityKind#private){
+        return "-";
+    } else if (self.modifier.visibility  == VisibilityKind#protected){
+        return "#";
+    } else if (self.modifier.visibility  == VisibilityKind#public){
+        return "+";
+    } else {
+        return "+";
+    } 
+}
+
+operation MethodDeclaration getVisibility() {
+    if (self.modifier == null) {
+        return "+";
+    }
+    if (self.modifier.visibility == VisibilityKind#private){
+        return "-";
+    } else if (self.modifier.visibility  == VisibilityKind#protected){
+        return "#";
+    } else if (self.modifier.visibility  == VisibilityKind#public){
+        return "+";
+    } else {
+        return "+";
+    } 
+}
+%]

@@ -33,8 +33,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
  * the TreeView panel on the left side ('getPictoJson' method). This controller
  * also sends back JSON objects to clients via a STOMP broker server
  * ('sendChangesToBroker' method) triggered by (1) Request from clicking
- * TreeView nodes, and (2) Modifying a
- * file monitored by Picto Web.
+ * TreeView nodes, and (2) Modifying a file monitored by Picto Web.
  * 
  * @author Alfa Yohannis
  *
@@ -93,6 +92,7 @@ public class PictoJsonController {
 //        System.out.println("FROM CLICKING NODE");
         result = promiseView.getViewContent(timestamp);
     }
+
     return result;
   }
 

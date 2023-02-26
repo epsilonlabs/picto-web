@@ -32,93 +32,93 @@ import org.eclipse.epsilon.picto.pictograph.Property;
  * @generated
  */
 public class PropertyImpl extends InputEntityImpl implements Property {
-	/**
+  /**
    * The default value of the '{@link #getPreviousValue() <em>Previous Value</em>}' attribute.
    * <!-- begin-user-doc -->
-	 * <!-- end-user-doc -->
+   * <!-- end-user-doc -->
    * @see #getPreviousValue()
    * @generated
    * @ordered
    */
-	protected static final String PREVIOUS_VALUE_EDEFAULT = null;
+  protected static final String PREVIOUS_VALUE_EDEFAULT = null;
 
-	/**
+  /**
    * The cached value of the '{@link #getPreviousValue() <em>Previous Value</em>}' attribute.
    * <!-- begin-user-doc -->
-	 * <!-- end-user-doc -->
+   * <!-- end-user-doc -->
    * @see #getPreviousValue()
    * @generated
    * @ordered
    */
-	protected String previousValue = PREVIOUS_VALUE_EDEFAULT;
+  protected String previousValue = PREVIOUS_VALUE_EDEFAULT;
 
-	/**
+  /**
    * The default value of the '{@link #getValue() <em>Value</em>}' attribute.
    * <!-- begin-user-doc -->
-	 * <!-- end-user-doc -->
+   * <!-- end-user-doc -->
    * @see #getValue()
    * @generated
    * @ordered
    */
-	protected static final String VALUE_EDEFAULT = null;
+  protected static final String VALUE_EDEFAULT = null;
 
-	/**
+  /**
    * The cached value of the '{@link #getValue() <em>Value</em>}' attribute.
    * <!-- begin-user-doc -->
-	 * <!-- end-user-doc -->
+   * <!-- end-user-doc -->
    * @see #getValue()
    * @generated
    * @ordered
    */
-	protected String value = VALUE_EDEFAULT;
+  protected String value = VALUE_EDEFAULT;
 
-	/**
+  /**
    * <!-- begin-user-doc -->
-	 * <!-- end-user-doc -->
+   * <!-- end-user-doc -->
    * @generated
    */
-	protected PropertyImpl() {
+  protected PropertyImpl() {
     super();
   }
 
-	/**
+  /**
    * <!-- begin-user-doc -->
-	 * <!-- end-user-doc -->
+   * <!-- end-user-doc -->
    * @generated
    */
-	@Override
-	protected EClass eStaticClass() {
+  @Override
+  protected EClass eStaticClass() {
     return PictographPackage.Literals.PROPERTY;
   }
 
-	/**
+  /**
    * <!-- begin-user-doc -->
-	 * <!-- end-user-doc -->
+   * <!-- end-user-doc -->
    * @generated
    */
-	@Override
-	public Element getElement() {
+  @Override
+  public Element getElement() {
     if (eContainerFeatureID() != PictographPackage.PROPERTY__ELEMENT) return null;
     return (Element)eInternalContainer();
   }
 
-	/**
+  /**
    * <!-- begin-user-doc -->
-	 * <!-- end-user-doc -->
+   * <!-- end-user-doc -->
    * @generated
    */
-	public NotificationChain basicSetElement(Element newElement, NotificationChain msgs) {
+  public NotificationChain basicSetElement(Element newElement, NotificationChain msgs) {
     msgs = eBasicSetContainer((InternalEObject)newElement, PictographPackage.PROPERTY__ELEMENT, msgs);
     return msgs;
   }
 
-	/**
+  /**
    * <!-- begin-user-doc -->
-	 * <!-- end-user-doc -->
+   * <!-- end-user-doc -->
    * @generated
    */
-	@Override
-	public void setElement(Element newElement) {
+  @Override
+  public void setElement(Element newElement) {
     if (newElement != eInternalContainer() || (eContainerFeatureID() != PictographPackage.PROPERTY__ELEMENT && newElement != null)) {
       if (EcoreUtil.isAncestor(this, newElement))
         throw new IllegalArgumentException("Recursive containment not allowed for " + toString());
@@ -134,59 +134,59 @@ public class PropertyImpl extends InputEntityImpl implements Property {
       eNotify(new ENotificationImpl(this, Notification.SET, PictographPackage.PROPERTY__ELEMENT, newElement, newElement));
   }
 
-	/**
+  /**
    * <!-- begin-user-doc -->
-	 * <!-- end-user-doc -->
+   * <!-- end-user-doc -->
    * @generated
    */
-	@Override
-	public String getPreviousValue() {
+  @Override
+  public String getPreviousValue() {
     return previousValue;
   }
 
-	/**
+  /**
    * <!-- begin-user-doc -->
-	 * <!-- end-user-doc -->
+   * <!-- end-user-doc -->
    * @generated
    */
-	@Override
-	public void setPreviousValue(String newPreviousValue) {
+  @Override
+  public void setPreviousValue(String newPreviousValue) {
     String oldPreviousValue = previousValue;
     previousValue = newPreviousValue;
     if (eNotificationRequired())
       eNotify(new ENotificationImpl(this, Notification.SET, PictographPackage.PROPERTY__PREVIOUS_VALUE, oldPreviousValue, previousValue));
   }
 
-	/**
+  /**
    * <!-- begin-user-doc -->
-	 * <!-- end-user-doc -->
+   * <!-- end-user-doc -->
    * @generated
    */
-	@Override
-	public String getValue() {
+  @Override
+  public String getValue() {
     return value;
   }
 
-	/**
+  /**
    * <!-- begin-user-doc -->
-	 * <!-- end-user-doc -->
+   * <!-- end-user-doc -->
    * @generated
    */
-	@Override
-	public void setValue(String newValue) {
+  @Override
+  public void setValue(String newValue) {
     String oldValue = value;
     value = newValue;
     if (eNotificationRequired())
       eNotify(new ENotificationImpl(this, Notification.SET, PictographPackage.PROPERTY__VALUE, oldValue, value));
   }
 
-	/**
+  /**
    * <!-- begin-user-doc -->
-	 * <!-- end-user-doc -->
+   * <!-- end-user-doc -->
    * @generated
    */
-	@Override
-	public NotificationChain eInverseAdd(InternalEObject otherEnd, int featureID, NotificationChain msgs) {
+  @Override
+  public NotificationChain eInverseAdd(InternalEObject otherEnd, int featureID, NotificationChain msgs) {
     switch (featureID) {
       case PictographPackage.PROPERTY__ELEMENT:
         if (eInternalContainer() != null)
@@ -196,13 +196,13 @@ public class PropertyImpl extends InputEntityImpl implements Property {
     return super.eInverseAdd(otherEnd, featureID, msgs);
   }
 
-	/**
+  /**
    * <!-- begin-user-doc -->
-	 * <!-- end-user-doc -->
+   * <!-- end-user-doc -->
    * @generated
    */
-	@Override
-	public NotificationChain eInverseRemove(InternalEObject otherEnd, int featureID, NotificationChain msgs) {
+  @Override
+  public NotificationChain eInverseRemove(InternalEObject otherEnd, int featureID, NotificationChain msgs) {
     switch (featureID) {
       case PictographPackage.PROPERTY__ELEMENT:
         return basicSetElement(null, msgs);
@@ -210,13 +210,13 @@ public class PropertyImpl extends InputEntityImpl implements Property {
     return super.eInverseRemove(otherEnd, featureID, msgs);
   }
 
-	/**
+  /**
    * <!-- begin-user-doc -->
-	 * <!-- end-user-doc -->
+   * <!-- end-user-doc -->
    * @generated
    */
-	@Override
-	public NotificationChain eBasicRemoveFromContainerFeature(NotificationChain msgs) {
+  @Override
+  public NotificationChain eBasicRemoveFromContainerFeature(NotificationChain msgs) {
     switch (eContainerFeatureID()) {
       case PictographPackage.PROPERTY__ELEMENT:
         return eInternalContainer().eInverseRemove(this, PictographPackage.ELEMENT__PROPERTIES, Element.class, msgs);
@@ -224,13 +224,13 @@ public class PropertyImpl extends InputEntityImpl implements Property {
     return super.eBasicRemoveFromContainerFeature(msgs);
   }
 
-	/**
+  /**
    * <!-- begin-user-doc -->
-	 * <!-- end-user-doc -->
+   * <!-- end-user-doc -->
    * @generated
    */
-	@Override
-	public Object eGet(int featureID, boolean resolve, boolean coreType) {
+  @Override
+  public Object eGet(int featureID, boolean resolve, boolean coreType) {
     switch (featureID) {
       case PictographPackage.PROPERTY__ELEMENT:
         return getElement();
@@ -242,13 +242,13 @@ public class PropertyImpl extends InputEntityImpl implements Property {
     return super.eGet(featureID, resolve, coreType);
   }
 
-	/**
+  /**
    * <!-- begin-user-doc -->
-	 * <!-- end-user-doc -->
+   * <!-- end-user-doc -->
    * @generated
    */
-	@Override
-	public void eSet(int featureID, Object newValue) {
+  @Override
+  public void eSet(int featureID, Object newValue) {
     switch (featureID) {
       case PictographPackage.PROPERTY__ELEMENT:
         setElement((Element)newValue);
@@ -263,13 +263,13 @@ public class PropertyImpl extends InputEntityImpl implements Property {
     super.eSet(featureID, newValue);
   }
 
-	/**
+  /**
    * <!-- begin-user-doc -->
-	 * <!-- end-user-doc -->
+   * <!-- end-user-doc -->
    * @generated
    */
-	@Override
-	public void eUnset(int featureID) {
+  @Override
+  public void eUnset(int featureID) {
     switch (featureID) {
       case PictographPackage.PROPERTY__ELEMENT:
         setElement((Element)null);
@@ -284,13 +284,13 @@ public class PropertyImpl extends InputEntityImpl implements Property {
     super.eUnset(featureID);
   }
 
-	/**
+  /**
    * <!-- begin-user-doc -->
-	 * <!-- end-user-doc -->
+   * <!-- end-user-doc -->
    * @generated
    */
-	@Override
-	public boolean eIsSet(int featureID) {
+  @Override
+  public boolean eIsSet(int featureID) {
     switch (featureID) {
       case PictographPackage.PROPERTY__ELEMENT:
         return getElement() != null;
@@ -302,13 +302,13 @@ public class PropertyImpl extends InputEntityImpl implements Property {
     return super.eIsSet(featureID);
   }
 
-	/**
+  /**
    * <!-- begin-user-doc -->
-	 * <!-- end-user-doc -->
+   * <!-- end-user-doc -->
    * @generated
    */
-	@Override
-	public String toString() {
+  @Override
+  public String toString() {
     if (eIsProxy()) return super.toString();
 
     StringBuilder result = new StringBuilder(super.toString());

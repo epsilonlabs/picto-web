@@ -4,7 +4,7 @@ import java.security.MessageDigest;
 import java.util.Collection;
 
 import org.eclipse.epsilon.eol.execute.context.Variable;
-import org.eclipse.epsilon.picto.LazyEgxModule.LazyGenerationRuleContentPromise;
+import org.eclipse.epsilon.picto.incrementality.IncrementalLazyEgxModule.IncrementalLazyGenerationRuleContentPromise;
 
 public class IncrementalityUtil {
 
@@ -13,7 +13,7 @@ public class IncrementalityUtil {
   }
 
   @SuppressWarnings("unchecked")
-  public static String getPath(LazyGenerationRuleContentPromise content) {
+  public static String getPath(IncrementalLazyGenerationRuleContentPromise content) {
     Variable pathVar = content.getVariables().stream().filter(v -> v.getName().equals("path")).findFirst()
         .orElse(null);
     Collection<String> path = (pathVar != null) ? ((Collection<String>) pathVar.getValue()) : null;

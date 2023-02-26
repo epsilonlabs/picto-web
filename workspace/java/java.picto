@@ -1,0 +1,9 @@
+<?nsuri picto?>
+<picto format="egx" transformation="java.egx">
+    <model type="EMF">
+        <parameter name="name" value="M"/>
+        <parameter name="metamodelUri" value="http://www.eclipse.org/MoDisco/Java/0.2.incubation/java"/>
+        <parameter name="metamodelFile" file="java.ecore"/>
+        <parameter name="modelFile" file="java.xmi"/>s
+    </model>        
+</picto>

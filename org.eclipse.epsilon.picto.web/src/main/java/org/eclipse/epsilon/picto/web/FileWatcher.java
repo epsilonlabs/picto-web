@@ -15,8 +15,8 @@ import java.nio.file.WatchService;
 import java.util.HashMap;
 import java.util.List;
 
+import org.eclipse.epsilon.picto.web.test.PerformanceRecorder;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.messaging.handler.annotation.MessageMapping;
 
 /***
  * Monitor file changes.
@@ -51,12 +51,12 @@ public class FileWatcher extends Thread {
       watcher.close();
   }
 
-  @MessageMapping("/gs-guide-websocket")
+//  @MessageMapping("/gs-guide-websocket")
   public void notifyFileChange(File modifiedFile) throws Exception {
     if (this.pictoJsonController != null) {
       this.pictoJsonController.sendChangesToBroker(modifiedFile);
     } else {
-      // System.out.println("No PictoJsonController attached");
+      System.out.println("No PictoJsonController attached");
     }
   }
 
@@ -76,21 +76,19 @@ public class FileWatcher extends Thread {
         Path path;
         try {
           key = watcher.take();
-          Thread.sleep(100);
+          Thread.sleep(200);
           path = keys.get(key);
-//          // System.out.println("XXX: " + path);
           if (path == null) {
             System.err.println("WatchKey not recognized!!");
             continue;
           }
         } catch (Exception ex) {
-          // ex.printStackTrace();
           return;
         }
 
         List<WatchEvent<?>> events = key.pollEvents();
         for (WatchEvent<?> event : events) {
-          
+
           @SuppressWarnings("unchecked")
           WatchEvent<Path> ev = (WatchEvent<Path>) event;
           Path filePath = ev.context();
@@ -98,16 +96,33 @@ public class FileWatcher extends Thread {
           if (filePath.toString().endsWith(".picto")
 //              || filePath.toString().endsWith(".egx")
 //              || filePath.toString().endsWith(".egl") 
-              || filePath.toString().endsWith(".flexmi")
-              || filePath.toString().endsWith(".model") || filePath.toString().endsWith(".emf")
-              || filePath.toString().endsWith(".xmi")) {
-            // // System.out.println("Picto: " + filePath + " has changed!!!");
+              || filePath.toString().endsWith(".flexmi") || filePath.toString().endsWith(".model")
+              || filePath.toString().endsWith(".emf") || filePath.toString().endsWith(".xmi")) {
 
-            
             File modifiedFile = new File(path.toString() + File.separator + filePath.toString());
+
+             System.out.println("Modified file: " + modifiedFile.getAbsolutePath());
+//
+            long size = 0;
+//            System.out.print("Wait until model is fully stored ");
+//            while (! modifiedFile.exists() || !modifiedFile.canRead() || !modifiedFile.canWrite()) {
+//              Thread.sleep(100);
+//              System.out.print(".");
+//            }
             
-//            // System.out.println("Modified file: " + modifiedFile.getAbsolutePath());
-            this.notifyFileChange(modifiedFile);
+            while (size != modifiedFile.length() || size == 0) {
+              size = modifiedFile.length();
+              Thread.sleep(10);
+//              System.out.print(".");
+            }
+//            System.out.println(" Done");
+
+            try {
+              this.notifyFileChange(modifiedFile);
+            } catch (Exception e) {
+              e.printStackTrace();
+              System.console();
+            }
           }
         }
 
