@@ -111,6 +111,8 @@ public class WebEglPictoSource extends EglPictoSource {
   @SuppressWarnings({ "unchecked", "deprecation", "null" })
   public Set<String> generatePromises(String modifiedFilePath, PictoProject pictoProject, boolean fromFileWatcher)
       throws Exception {
+    long loadingStartTime = System.currentTimeMillis();
+//    PerformanceRecorder.startTime = loadingStartTime;
 
     Set<String> modifiedViewContents = new HashSet<>();
     try {
@@ -187,51 +189,47 @@ public class WebEglPictoSource extends EglPictoSource {
 
         context.getModelRepository().addModels(models);
 
+        // LOADING TIME
+        /** Calculate the loading time from a change on a file to getting promises **/
+        PerformanceRecorder.loadingTime = System.currentTimeMillis() - loadingStartTime;
+        PerformanceRecord record = new PerformanceRecord(PerformanceRecorder.genenerateAll,
+            PerformanceRecorder.generateAlways, PerformanceRecorder.globalNumberOfAffectedViews,
+            PerformanceRecorder.globalNumberIteration, "Server", "No Path", PerformanceRecorder.loadingTime, 0,
+            PerformanceTestType.LOADING_TIME, PerformanceRecorder.accessRecordResourceSize());
+        PerformanceRecorder.record(record);
+
         if ("egx".equals(picto.getFormat())) {
-
+          
+          // PROMISE TIME
+          long promiseStartTime = System.currentTimeMillis();
+          
           Set<String> invalidatedViewPaths = new HashSet<>();
-
           /** PROPERTY ACCESS RECORDS **/
           System.out.print("Creating Promises ... ");
-
-          long promiseStart = System.currentTimeMillis();
-
-//          ((IncrementalLazyEgxModule) module).startRecording();
           List<IncrementalLazyGenerationRuleContentPromise> promises = (List<IncrementalLazyGenerationRuleContentPromise>) module
               .execute();
-//          ((IncrementalLazyEgxModule) module).stopRecording();
-
-          PerformanceRecorder.promiseTime = System.currentTimeMillis() - promiseStart;
-
-          PerformanceRecord record = new PerformanceRecord(PerformanceRecorder.genenerateAll,
-              PerformanceRecorder.generateAlways, PerformanceRecorder.globalNumberOfAffectedViews,
-              PerformanceRecorder.globalNumberIteration, "Server", "No Path", PerformanceRecorder.promiseTime, 0,
-              PerformanceTestType.PROMISE_TIME, PerformanceRecorder.accessRecordResourceSize());
-          PerformanceRecorder.record(record);
-
-          System.out.println(" Done");
 //          accessRecordResource.printIncrementalRecords();
-//
           /**
            * the handleDynamicViews will add the generated lazy contents (tagged
            * with @lazy in the EGX) to instances to handled later in the next loop
            **/
           promises.addAll(handleCustomViews(picto, module, context, fs));
 
-          /** Calculate the loading time from a change on a file to getting promises **/
-          PerformanceRecorder.loadingTime = System.currentTimeMillis() - PerformanceRecorder.startTime;
+          PerformanceRecorder.promiseTime = System.currentTimeMillis() - promiseStartTime;
           record = new PerformanceRecord(PerformanceRecorder.genenerateAll, PerformanceRecorder.generateAlways,
               PerformanceRecorder.globalNumberOfAffectedViews, PerformanceRecorder.globalNumberIteration, "Server",
-              "No Path", PerformanceRecorder.loadingTime, 0, PerformanceTestType.LOADING_TIME,
+              "No Path", PerformanceRecorder.promiseTime, 0, PerformanceTestType.PROMISE_TIME,
               PerformanceRecorder.accessRecordResourceSize());
           PerformanceRecorder.record(record);
+          System.out.println(" Done");
 
           // if picto generation is not non-incremental = selective (re)generation.
           if (!PictoApplication.isNonIncremental()) {
-            long startTime = System.currentTimeMillis();
+            // DETECTION TIME
+            long detectionStartTime = System.currentTimeMillis();
             invalidatedViewPaths.addAll(accessRecordResource.getInvalidatedViewPaths(promises, (EgxModule) module));
             /** Calculate the detection time of invalidated views **/
-            PerformanceRecorder.detectionTime = System.currentTimeMillis() - startTime;
+            PerformanceRecorder.detectionTime = System.currentTimeMillis() - detectionStartTime;
             PerformanceRecord r = new PerformanceRecord(PerformanceRecorder.genenerateAll,
                 PerformanceRecorder.generateAlways, PerformanceRecorder.globalNumberOfAffectedViews,
                 PerformanceRecorder.globalNumberIteration, "Server", "No Path", PerformanceRecorder.detectionTime, 0,
@@ -239,6 +237,14 @@ public class WebEglPictoSource extends EglPictoSource {
             PerformanceRecorder.record(r);
           }
 
+          PerformanceRecorder.initialisationTime = System.currentTimeMillis() - loadingStartTime;
+          record = new PerformanceRecord(PerformanceRecorder.genenerateAll, PerformanceRecorder.generateAlways,
+              PerformanceRecorder.globalNumberOfAffectedViews, PerformanceRecorder.globalNumberIteration, "Server",
+              "No Path", PerformanceRecorder.initialisationTime, 0, PerformanceTestType.INIT_TIME,
+              PerformanceRecorder.accessRecordResourceSize());
+          PerformanceRecorder.record(record);
+
+          
           /** loop through the content promises of rules **/
           // System.out.println("\nGENERATING VIEWS: ");
           // generate view for each promises
@@ -288,16 +294,16 @@ public class WebEglPictoSource extends EglPictoSource {
             // to identify views affected by the last change.
             State isNew = accessRecordResource.getPathStatus(pathString);
             if (State.NEW.equals(isNew)) {
-              Thread t = new Thread() {
-                public void run() {
-                  try {
+//              Thread t = new Thread() {
+//                public void run() {
+//                  try {
                     promiseView.getViewContent(null);
-                  } catch (Exception e) {
-                    e.printStackTrace();
-                  }
-                }
-              };
-              t.start();
+//                  } catch (Exception e) {
+//                    e.printStackTrace();
+//                  }
+//                }
+//              };
+//              t.start();
             }
             modifiedViewContents.add(pathString);
 

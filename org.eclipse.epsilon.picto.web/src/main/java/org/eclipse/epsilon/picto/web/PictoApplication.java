@@ -159,12 +159,12 @@ public class PictoApplication implements ApplicationListener<ApplicationContextE
     ExecutorService px = PromiseView.getPromiseExecutor();
     px.shutdown();
 //    context.close();
-//    SpringApplication.exit(context, new ExitCodeGenerator() {
-//      @Override
-//      public int getExitCode() {
-//        return 0;
-//      }
-//    });
+    SpringApplication.exit(context, new ExitCodeGenerator() {
+      @Override
+      public int getExitCode() {
+        return 0;
+      }
+    });
   }
 
   public static void setPictoWebOnLoadedListener(PictoWebOnLoadedListener listener) {

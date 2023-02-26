@@ -1,12 +1,12 @@
 rule ClassDeclaration2PlantUMLClassDiagram
     transform classDeclaration : java::ClassDeclaration {
     template : "java.egl"
+    target : "output/" + classDeclaration.name + ".puml"
     parameters : Map{
         "path" = Sequence{classDeclaration.getFullName()},
         "format" = "puml",
         "class" =  classDeclaration
     }
-    target : "output/" + classDeclaration.name + ".puml"
 }
 
 

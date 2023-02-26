@@ -52,7 +52,7 @@ public class AccessGraphResource implements AccessRecordResource {
   private static ThreadPoolExecutor executorService = new ThreadPoolExecutor(1, 1, 0L, TimeUnit.MILLISECONDS,
       new LinkedBlockingQueue<Runnable>());
 
-  //  private ExecutorService executorService = Executors.newFixedThreadPool(2);
+  // private ExecutorService executorService = Executors.newFixedThreadPool(2);
   private PictographFactory factory = PictographFactory.eINSTANCE;
   private PictoGraph graph = factory.createPictoGraph();
   private TraceIndex traceIndex = new TraceIndex();
@@ -60,7 +60,7 @@ public class AccessGraphResource implements AccessRecordResource {
   public PictoGraph getGraph() {
     return graph;
   }
-  
+
   public static ThreadPoolExecutor getExecutorService() {
     return executorService;
   }
@@ -77,14 +77,11 @@ public class AccessGraphResource implements AccessRecordResource {
   @Override
   public void add(AccessRecord access) {
 
-//    System.out.println(access.toString());
-//    System.out.println(access.toString());
-//    if (access.getPath().equals("/XMLResourceImpl") && access.getElementObjectId().equals("e821")) {
-//      System.console();
-//    }
-    Thread t = new Thread() {
+    Thread t = new Thread() { 
+      
       @Override
       public void run() {
+        
         // path
         if (access.getPath() == null) {
           return;
@@ -237,6 +234,7 @@ public class AccessGraphResource implements AccessRecordResource {
 
           }
         }
+//        System.out.println(access.toString());
       }
     };
     executorService.submit(t);
@@ -327,7 +325,11 @@ public class AccessGraphResource implements AccessRecordResource {
       }
 
       // check if the new path is affected by a new object
-      for (InputEntity entity : path.getAffectedBy()) {
+      int i = 0;
+      while (i < path.getAffectedBy().size()) {
+        InputEntity entity = path.getAffectedBy().get(i);
+        i++;
+//      for (InputEntity entity : path.getAffectedBy()) {
 
         if (entity instanceof Element) {
           if (entity.getState().equals(State.NEW)) {

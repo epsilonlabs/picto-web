@@ -86,16 +86,14 @@ public class JavaPerformanceTest {
   static final String PICTO_WEB_ADDRESS = "http://localhost:8081/pictojson/picto?";
   public static final String WEB_SOCKET_ADDRESS = "ws://localhost:8081/picto-web";
   public static final String PICTO_FILE = "/java/java.picto";
-  private static final String MODEL_ORIGINAL = "/java/java.big.xmi";
+  private static String MODEL_ORIGINAL = "/java/java.big.xmi";
   private static final String MODEL_TMP = "/java.xmi";
-//  private static final String MODEL_ORIGINAL = "/java/java.small.xmi";
   private static final String MODEL = "/java/java.xmi";
   public static final String PICTO_TOPIC = "/topic/picto";
-  private static final File modelFileOriginal = new File(PictoApplication.WORKSPACE + File.separator + MODEL_ORIGINAL);
+  
   private static final File modelFile = new File(PictoApplication.WORKSPACE + File.separator + MODEL);
   private static final File modelFileTmp = new File(PictoApplication.TEMP + File.separator + MODEL_TMP);
-  private static final XMIResource resourceOriginal = new XMIResourceImpl(
-      URI.createFileURI(modelFileOriginal.getAbsolutePath()));
+  
   private static final XMIResource resource = new XMIResourceImpl(URI.createFileURI(modelFileTmp.getAbsolutePath()));
 
   static final Random random = new Random();
@@ -127,26 +125,24 @@ public class JavaPerformanceTest {
     Object invalidatedViewsWaiter = new Object();
     final int numberOfMeasurementPoints = 5;
 
-//    // configuration for larger experiment
-//    int numberOfViews = 10000; // Number of nodes the graph model.
-//    int numberOfClients = 100; // number of clients subscribed to Picto Web's STOMP server.
-//    int numberOfIteration = 13; // Number of iteration measuring for each number of affected views
-//    // a.k.a number of edges added for each modification + 3 views (origin node,
-//    // viewtree, overall graph)
-//    int[] numbersOfAffectedViews = { 10000, 5000, 1000, 500, 100, 50, 10, 5, 1 };
-//    boolean[] genAllViews = { true, false };
 
 //     configuration for smaller experiment
 //    int numberOfViews = 12; // Number of nodes the graph model
     int numberOfViews; // Number of nodes the graph model
-    int numberOfClients = 100; // number of clients subscribed to Picto Web's STOMP server.
-    int numberOfIteration = 13; // Number of iteration measuring for each number of affected views
+//    int numberOfClients = 100; // number of clients subscribed to Picto Web's STOMP server.
+//    int numberOfIteration = 13; // Number of iteration measuring for each number of affected views
+    
     int[] numbersOfAffectedViews = null;
-//    int[] numbersOfAffectedViews = { 12, 8, 4 };
-//    int[] numbersOfAffectedViews = { 100000 };
-//    int[] numbersOfAffectedViews = { 2, 3, 2 };
-    boolean[] genAllViews = { false, true };
+    boolean[] genAllViews = { true, false};
 //    boolean[] genAllViews = { false };
+    
+    int numberOfClients = 4; // number of clients subscribed to Picto Web's STOMP server.
+    int numberOfIteration = 5; // Number of iteration measuring for each number of affected views
+    MODEL_ORIGINAL = "/java/java.small.xmi";
+    
+    File modelFileOriginal = new File(PictoApplication.WORKSPACE + File.separator + MODEL_ORIGINAL);
+    XMIResource resourceOriginal = new XMIResourceImpl(
+        URI.createFileURI(modelFileOriginal.getAbsolutePath()));
 
     Map<Object, Object> loadOptions = ((XMIResourceImpl) resource).getDefaultLoadOptions();
     loadOptions.put(XMIResource.OPTION_DEFER_IDREF_RESOLUTION, Boolean.TRUE);

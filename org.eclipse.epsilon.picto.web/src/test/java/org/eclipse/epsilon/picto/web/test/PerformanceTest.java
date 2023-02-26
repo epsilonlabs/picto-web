@@ -166,14 +166,14 @@ public class PerformanceTest {
       Object invalidatedViewsWaiter = new Object();
 
 //      // a configuration for a larger scale test
-      int numberOfNodes = 10000; // Number of nodes the graph model.
-      int numberOfClients = 100; // number of clients subscribed to Picto Web's STOMP server.
-      int numberOfIteration = 200; // Number of requests per client
+//      int numberOfNodes = 10000; // Number of nodes the graph model.
+//      int numberOfClients = 100; // number of clients subscribed to Picto Web's STOMP server.
+//      int numberOfIteration = 200; // Number of requests per client
 
-//      // a configuration for a smaller scale test
-//      int numberOfNodes = 12; // Number of nodes the graph model.
-//      int numberOfClients = 3; // number of clients subscribed to Picto Web's STOMP server.
-//      int numberOfIteration = 12; // Number of requests per client
+      // a configuration for a smaller scale test
+      int numberOfNodes = 12; // Number of nodes the graph model.
+      int numberOfClients = 3; // number of clients subscribed to Picto Web's STOMP server.
+      int numberOfIteration = 12; // Number of requests per client
 
       boolean[] isAlwaysGenerated = { true, false };
 

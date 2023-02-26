@@ -15,6 +15,7 @@ import java.nio.file.WatchService;
 import java.util.HashMap;
 import java.util.List;
 
+import org.eclipse.epsilon.picto.web.test.PerformanceRecorder;
 import org.springframework.beans.factory.annotation.Autowired;
 
 /***
@@ -100,7 +101,7 @@ public class FileWatcher extends Thread {
 
             File modifiedFile = new File(path.toString() + File.separator + filePath.toString());
 
-            // System.out.println("Modified file: " + modifiedFile.getAbsolutePath());
+             System.out.println("Modified file: " + modifiedFile.getAbsolutePath());
 //
             long size = 0;
 //            System.out.print("Wait until model is fully stored ");
@@ -108,9 +109,10 @@ public class FileWatcher extends Thread {
 //              Thread.sleep(100);
 //              System.out.print(".");
 //            }
+            
             while (size != modifiedFile.length() || size == 0) {
               size = modifiedFile.length();
-              Thread.sleep(100);
+              Thread.sleep(10);
 //              System.out.print(".");
             }
 //            System.out.println(" Done");

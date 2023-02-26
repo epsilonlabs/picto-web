@@ -39,3 +39,4 @@ reproduce.sh
 
 org.eclipse.epsilon.picto.web.generator/.settings
 org.eclipse.epsilon.picto.web.generator/*.xmi
+temp/*

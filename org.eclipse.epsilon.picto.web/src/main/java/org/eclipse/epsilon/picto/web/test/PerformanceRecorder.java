@@ -44,6 +44,7 @@ public class PerformanceRecorder {
   public static int globalActualAffectedViews;
   public static int globalNumberOfAffectedViews;
   public static long startTime;
+  public static long initialisationTime;
   public static long detectionTime;
   public static long loadingTime;
   public static int globalNumberOfViews;
