@@ -136,8 +136,8 @@ public class JavaPerformanceTest {
     boolean[] genAllViews = { true, false};
 //    boolean[] genAllViews = { false };
     
-    int numberOfClients = 4; // number of clients subscribed to Picto Web's STOMP server.
-    int numberOfIteration = 5; // Number of iteration measuring for each number of affected views
+    int numberOfClients = 1; // number of clients subscribed to Picto Web's STOMP server.
+    int numberOfIteration = 3; // Number of iteration measuring for each number of affected views
     MODEL_ORIGINAL = "/java/java.small.xmi";
     
     File modelFileOriginal = new File(PictoApplication.WORKSPACE + File.separator + MODEL_ORIGINAL);

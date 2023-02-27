@@ -3,15 +3,20 @@ package org.eclipse.epsilon.picto.incrementality;
 import java.net.URI;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
+import java.util.Map.Entry;
 import java.util.stream.Collectors;
 
+import org.eclipse.emf.ecore.EObject;
 import org.eclipse.epsilon.common.module.ModuleElement;
 import org.eclipse.epsilon.common.parse.AST;
 import org.eclipse.epsilon.egl.EglFileGeneratingTemplateFactory;
 import org.eclipse.epsilon.egl.EglTemplate;
 import org.eclipse.epsilon.egl.EglTemplateFactory;
+import org.eclipse.epsilon.egl.EgxModule;
 import org.eclipse.epsilon.egl.concurrent.EgxModuleParallelGenerationRuleAtoms;
 import org.eclipse.epsilon.egl.dom.GenerationRule;
 import org.eclipse.epsilon.egl.execute.context.EgxContext;
@@ -99,7 +104,7 @@ public class IncrementalLazyEgxModule extends EgxModuleParallelGenerationRuleAto
 //      }).collect(Collectors.toList());
 //      return parallelPromises;
 //    }
-    
+
 //    else return getContext().executeAll(this, getAllJobs());
 
     IEgxContext context = getContext();
@@ -221,13 +226,41 @@ public class IncrementalLazyEgxModule extends EgxModuleParallelGenerationRuleAto
       return promise;
     }
 
+    @SuppressWarnings("unchecked")
     @Override
     public Object execute(IEolContext context) throws EolRuntimeException {
       Collection<IncrementalLazyGenerationRuleContentPromise> promises = new ArrayList<>();
       ExecutorFactory ef = context.getExecutorFactory();
       Collection<?> elements = getAllElements(context);
       for (Object element : elements) {
-//      for (Object element : getAllElements(context)) {
+
+        /**
+         * Get the path, if the path is still valid then skip the generation of the
+         * promise
+         */
+        FrameStack frameStack = context.getFrameStack();
+        if (sourceParameter != null) {
+          frameStack.enterLocal(FrameType.PROTECTED, this,
+              Variable.createReadOnlyVariable(sourceParameter.getName(), element));
+        } else {
+          frameStack.enterLocal(FrameType.PROTECTED, this);
+        }
+        String path = null;
+        if (parametersBlock != null) {
+          EolMap<String, ?> parameters = parametersBlock.execute(context, false);
+          Entry<String, ?> entry = parameters.entrySet().stream().filter(e -> e.getKey().equals("path")).findFirst()
+              .orElse(null);
+          path = "/" + String.join("/", (Collection<String>) entry.getValue());
+        }
+        frameStack.leaveLocal(this);
+        Set<String> invalidatedViewPaths = new HashSet<String>();
+        ((AccessGraphResource) accessRecordResource).checkPath((EgxModule) context.getModule(), invalidatedViewPaths,
+            new HashSet<String>(), new HashSet<EObject>(), path);
+        if (invalidatedViewPaths.size() == 0) {
+          continue;
+        }
+        /***/
+
         Object result = ef.execute(this, context, element);
         if (result instanceof IncrementalLazyGenerationRuleContentPromise) {
           promises.add((IncrementalLazyGenerationRuleContentPromise) result);

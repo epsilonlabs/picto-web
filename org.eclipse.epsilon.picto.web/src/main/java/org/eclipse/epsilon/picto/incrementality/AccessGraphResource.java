@@ -32,6 +32,7 @@ import org.eclipse.emf.ecore.util.EcoreUtil;
 import org.eclipse.epsilon.egl.EgxModule;
 import org.eclipse.epsilon.emc.emf.AbstractEmfModel;
 import org.eclipse.epsilon.emc.emf.EmfModel;
+import org.eclipse.epsilon.eol.models.IModel;
 import org.eclipse.epsilon.picto.incrementality.IncrementalLazyEgxModule.IncrementalLazyGenerationRuleContentPromise;
 import org.eclipse.epsilon.picto.pictograph.Element;
 import org.eclipse.epsilon.picto.pictograph.Entity;
@@ -77,11 +78,11 @@ public class AccessGraphResource implements AccessRecordResource {
   @Override
   public void add(AccessRecord access) {
 
-    Thread t = new Thread() { 
-      
+    Thread t = new Thread() {
+
       @Override
       public void run() {
-        
+
         // path
         if (access.getPath() == null) {
           return;
@@ -242,16 +243,21 @@ public class AccessGraphResource implements AccessRecordResource {
   }
 
   @Override
-  public Set<String> getInvalidatedViewPaths(List<IncrementalLazyGenerationRuleContentPromise> inProcessingPromises,
+  public Set<String> getInvalidatedViewPaths(List<IncrementalLazyGenerationRuleContentPromise> promises,
       EgxModule module) {
     Set<String> invalidatedViewPaths = new HashSet<String>();
     Set<String> toBeDeletedKeys = new HashSet<String>();
     Set<EObject> toBeDeletedElements = new HashSet<EObject>();
 
-    for (IncrementalLazyGenerationRuleContentPromise promise : inProcessingPromises) {
+//    for (IncrementalLazyGenerationRuleContentPromise promise : inProcessingPromises) {
+//      String checkedPath = IncrementalityUtil.getPath(promise);
+//      checkPath(module, invalidatedViewPaths, toBeDeletedKeys, toBeDeletedElements, checkedPath);
+//    }
+
+    promises.parallelStream().forEach(promise -> {
       String checkedPath = IncrementalityUtil.getPath(promise);
       checkPath(module, invalidatedViewPaths, toBeDeletedKeys, toBeDeletedElements, checkedPath);
-    }
+    });
 
     // run a new thread in the background to remove deleted elements from the
     // indices and graph
@@ -302,7 +308,7 @@ public class AccessGraphResource implements AccessRecordResource {
    * @param toBeDeletedElements
    * @param checkedPath
    */
-  private void checkPath(EgxModule module, Set<String> toBeProcessedPaths, Set<String> toBeDeletedKeys,
+  protected void checkPath(EgxModule module, Set<String> toBeProcessedPaths, Set<String> toBeDeletedKeys,
       Set<EObject> toBeDeletedElements, String checkedPath) {
 
     long start = System.currentTimeMillis();
@@ -339,7 +345,9 @@ public class AccessGraphResource implements AccessRecordResource {
             path.setAvgCheckTime(path.getCheckingTime() / path.getCheckCount());
             return;
           }
-        } else if (entity instanceof Property) {
+        } 
+        // property
+        else if (entity instanceof Property) {
           Property property = (Property) entity;
           Element element = property.getElement();
           if (element == null) {
@@ -350,22 +358,35 @@ public class AccessGraphResource implements AccessRecordResource {
             continue;
           }
           String resourcePath = resource.getName();
+          
+          /** this code is quite expensive, should be optimised*/
+          
+//          EmfModel model = null;
+//          for (IModel m : module.getContext().getModelRepository().getModels()) {
+//            if (((AbstractEmfModel) m).getResource().getURI().toFileString().equals(resourcePath)){
+//              model = (EmfModel) m;
+//              break;
+//            }
+//          }
+          
           EmfModel model = (EmfModel) module.getContext().getModelRepository().getModels().stream()
               .filter(m -> ((AbstractEmfModel) m).getResource().getURI().toFileString().equals(resourcePath))
               .findFirst().orElse(null);
 
           // if the resource has been deleted
-          if (!(new File(resource.getName())).exists()) {
-            toBeProcessedPaths.add(checkedPath);
-            toBeDeletedKeys.add(resource.getName());
-            toBeDeletedElements.add(resource);
-
-            long time = System.currentTimeMillis() - start;
-            path.setCheckingTime(path.getCheckingTime() + time);
-            path.setAvgCheckTime(path.getCheckingTime() / path.getCheckCount());
-
-            return;
-          } else if (model != null) {
+//          if (!(new File(resource.getName())).exists()) {
+////            toBeProcessedPaths.add(checkedPath);
+////            toBeDeletedKeys.add(resource.getName());
+////            toBeDeletedElements.add(resource);
+////
+////            long time = System.currentTimeMillis() - start;
+////            path.setCheckingTime(path.getCheckingTime() + time);
+////            path.setAvgCheckTime(path.getCheckingTime() / path.getCheckCount());
+//
+//            return;
+//          } 
+//          else 
+          if (model != null) {
             org.eclipse.emf.ecore.resource.Resource currentResource = model.getResource();
             EObject currentEObject = currentResource.getEObject(element.getName());
 

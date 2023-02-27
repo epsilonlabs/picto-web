@@ -265,19 +265,19 @@ public class HTTPRequestTest {
     people.add(dan);
     res.setID(dan, "4");
     res.save(res.getDefaultSaveOptions());
-    Thread.sleep(2000);
+    Thread.sleep(1000);
     Files.copy(tempModelFile, modelFile);
-    Thread.sleep(2000);
+    Thread.sleep(1000);
     
-    for(String s: Files.readLines(modelFile, StandardCharsets.UTF_8)) {
-      System.out.println(s);
-    }
+//    for(String s: Files.readLines(modelFile, StandardCharsets.UTF_8)) {
+//      System.out.println(s);
+//    }
     
 //    res.save(res.getDefaultSaveOptions());
     
 //    Thread.sleep(10000);
     synchronized (responseHolder) {
-      responseHolder.wait(4000);
+      responseHolder.wait(1000);
     }
 
     Set<String> expectedNames = new HashSet<String>(Arrays.asList(new String[] { "Alice", "Bob", "Charlie", "Dan" }));

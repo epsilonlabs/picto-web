@@ -199,10 +199,10 @@ public class WebEglPictoSource extends EglPictoSource {
         PerformanceRecorder.record(record);
 
         if ("egx".equals(picto.getFormat())) {
-          
+
           // PROMISE TIME
           long promiseStartTime = System.currentTimeMillis();
-          
+
           Set<String> invalidatedViewPaths = new HashSet<>();
           /** PROPERTY ACCESS RECORDS **/
           System.out.print("Creating Promises ... ");
@@ -244,7 +244,6 @@ public class WebEglPictoSource extends EglPictoSource {
               PerformanceRecorder.accessRecordResourceSize());
           PerformanceRecorder.record(record);
 
-          
           /** loop through the content promises of rules **/
           // System.out.println("\nGENERATING VIEWS: ");
           // generate view for each promises
@@ -294,16 +293,16 @@ public class WebEglPictoSource extends EglPictoSource {
             // to identify views affected by the last change.
             State isNew = accessRecordResource.getPathStatus(pathString);
             if (State.NEW.equals(isNew)) {
-//              Thread t = new Thread() {
-//                public void run() {
-//                  try {
+              Thread t = new Thread() {
+                public void run() {
+                  try {
                     promiseView.getViewContent(null);
-//                  } catch (Exception e) {
-//                    e.printStackTrace();
-//                  }
-//                }
-//              };
-//              t.start();
+                  } catch (Exception e) {
+                    e.printStackTrace();
+                  }
+                }
+              };
+              t.start();
             }
             modifiedViewContents.add(pathString);
 

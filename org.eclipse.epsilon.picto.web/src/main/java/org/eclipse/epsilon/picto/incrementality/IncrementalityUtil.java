@@ -3,6 +3,7 @@ package org.eclipse.epsilon.picto.incrementality;
 import java.security.MessageDigest;
 import java.util.Collection;
 
+import org.eclipse.epsilon.egl.dom.GenerationRule;
 import org.eclipse.epsilon.eol.execute.context.Variable;
 import org.eclipse.epsilon.picto.incrementality.IncrementalLazyEgxModule.IncrementalLazyGenerationRuleContentPromise;
 
@@ -13,9 +14,19 @@ public class IncrementalityUtil {
   }
 
   @SuppressWarnings("unchecked")
+  public static String getPath(GenerationRule rule) {
+//    rule.getPa
+//    Variable pathVar = content.getVariables().stream().filter(v -> v.getName().equals("path")).findFirst()
+//        .orElse(null);
+//    Collection<String> path = (pathVar != null) ? ((Collection<String>) pathVar.getValue()) : null;
+//    String pathStr = "/" + String.join("/", path);
+//    return pathStr;
+    return "";
+  }
+
+  @SuppressWarnings("unchecked")
   public static String getPath(IncrementalLazyGenerationRuleContentPromise content) {
-    Variable pathVar = content.getVariables().stream().filter(v -> v.getName().equals("path")).findFirst()
-        .orElse(null);
+    Variable pathVar = content.getVariables().stream().filter(v -> v.getName().equals("path")).findFirst().orElse(null);
     Collection<String> path = (pathVar != null) ? ((Collection<String>) pathVar.getValue()) : null;
     String pathStr = "/" + String.join("/", path);
     return pathStr;
