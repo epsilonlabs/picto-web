@@ -65,6 +65,7 @@ public class HtmlContentTransformer implements ViewContentTransformer {
       return null;
 
     String text = content.getText().trim();
+    text.replaceFirst("<?xml version=\"1.0\" encoding=\"UTF-8\" standalone=\"no\"?>", "");
     try {
       XmlHelper xmlHelper = new XmlHelper();
       Document document = xmlHelper.parse(text);

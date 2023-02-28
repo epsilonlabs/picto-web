@@ -10,7 +10,6 @@
 
 package org.eclipse.epsilon.picto.incrementality;
 
-import java.io.File;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashSet;
@@ -32,7 +31,6 @@ import org.eclipse.emf.ecore.util.EcoreUtil;
 import org.eclipse.epsilon.egl.EgxModule;
 import org.eclipse.epsilon.emc.emf.AbstractEmfModel;
 import org.eclipse.epsilon.emc.emf.EmfModel;
-import org.eclipse.epsilon.eol.models.IModel;
 import org.eclipse.epsilon.picto.incrementality.IncrementalLazyEgxModule.IncrementalLazyGenerationRuleContentPromise;
 import org.eclipse.epsilon.picto.pictograph.Element;
 import org.eclipse.epsilon.picto.pictograph.Entity;
@@ -314,6 +312,9 @@ public class AccessGraphResource implements AccessRecordResource {
     long start = System.currentTimeMillis();
     Path path = (Path) traceIndex.getPath(checkedPath);
 //    System.out.println("\nPATH: " + checkedPath);
+    if ("/Stats".equals(checkedPath)) {
+      System.console();
+    }
 
     // check if the path is a new view
     if (path == null) {
@@ -345,7 +346,7 @@ public class AccessGraphResource implements AccessRecordResource {
             path.setAvgCheckTime(path.getCheckingTime() / path.getCheckCount());
             return;
           }
-        } 
+        }
         // property
         else if (entity instanceof Property) {
           Property property = (Property) entity;
@@ -358,9 +359,9 @@ public class AccessGraphResource implements AccessRecordResource {
             continue;
           }
           String resourcePath = resource.getName();
-          
-          /** this code is quite expensive, should be optimised*/
-          
+
+          /** this code is quite expensive, should be optimised */
+
 //          EmfModel model = null;
 //          for (IModel m : module.getContext().getModelRepository().getModels()) {
 //            if (((AbstractEmfModel) m).getResource().getURI().toFileString().equals(resourcePath)){
@@ -368,7 +369,7 @@ public class AccessGraphResource implements AccessRecordResource {
 //              break;
 //            }
 //          }
-          
+
           EmfModel model = (EmfModel) module.getContext().getModelRepository().getModels().stream()
               .filter(m -> ((AbstractEmfModel) m).getResource().getURI().toFileString().equals(resourcePath))
               .findFirst().orElse(null);
@@ -501,9 +502,9 @@ public class AccessGraphResource implements AccessRecordResource {
     for (Entry<String, Path> entry : traceIndex.getPathIndex().entrySet()) {
       Path p = (Path) entry.getValue();
       p.setState(State.PROCESSED);
-      if (p.getName().equals("/XMLResourceImpl")) {
-        System.console();
-      }
+//      if (p.getName().equals("/Stats")) {
+//        System.console();
+//      }
       if (paths.contains(p.getName())) {
         for (int i = 0; i < p.getAffectedBy().size(); i++) {
           Entity entity = p.getAffectedBy().get(i);
@@ -512,6 +513,7 @@ public class AccessGraphResource implements AccessRecordResource {
           }
           entity.setState(State.PROCESSED);
           if (entity instanceof Property) {
+//            System.out.println(p.getName()+ "." + ((Property) entity).getElement().getName()+ "." + ((Property) entity).getName() + " - " + ((Property) entity).getPreviousValue() + " : " + ((Property) entity).getValue());
             ((Property) entity).setPreviousValue(((Property) entity).getValue());
             System.console();
           }

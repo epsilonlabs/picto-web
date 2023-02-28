@@ -3,6 +3,7 @@ package org.eclipse.epsilon.picto.incrementality;
 import java.util.Collection;
 import java.util.List;
 import java.util.Set;
+import java.util.concurrent.ExecutionException;
 
 import org.eclipse.epsilon.egl.EgxModule;
 import org.eclipse.epsilon.picto.incrementality.IncrementalLazyEgxModule.IncrementalLazyGenerationRuleContentPromise;
@@ -10,7 +11,7 @@ import org.eclipse.epsilon.picto.pictograph.State;
 
 public interface AccessRecordResource {
 
-  void add(AccessRecord propertyAccessRecord);
+  public void add(AccessRecord access);
 
   public List<AccessRecord> getIncrementalRecords();
 

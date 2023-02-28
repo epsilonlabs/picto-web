@@ -44,8 +44,9 @@ rule Persons2Table {
 	parameters : Map {
 		"path" = Sequence{"Stats"},
 		"icon" = "icons/table.gif",
-		"format" = "csv"
-		, "people" = Person.all()
+		"format" = "csv",
+		"people" = SocialNetwork.all().first().people
+//		"people" = Person.all()
 		// ,"pinsetrule" = "otherStats"
 	}
 }
