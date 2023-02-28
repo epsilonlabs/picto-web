@@ -434,7 +434,7 @@ public class PerformanceTest {
             fos = new FileOutputStream(modelFile);
             emfModel.store(fos);
             fos.close();
-//          Thread.sleep(100);
+//            Thread.sleep(1000);
             PerformanceRecorder.startTime = System.currentTimeMillis();
 
             // wait until we get the paths of invalidated views
@@ -444,15 +444,17 @@ public class PerformanceTest {
             }
 
             synchronized (clientWaitingList) {
-              clientWaitingList.wait(5 * 60 * 1000);
+//              clientWaitingList.wait(5 * 60 * 1000);
+              clientWaitingList.wait(3 * 1000);
             }
+            Thread.sleep(1000);
             // ----
           } // for (int i = 1; i <= numberOfIteration; i++) {
         } // for (int numViews : numbersOfAffectedViews) {
       }
 
-      Thread.sleep(1000);
       System.out.println("FINISHED!");
+      Thread.sleep(1000);
 
       // saving data to a file
       File outputFile = new File("data/selective.csv");

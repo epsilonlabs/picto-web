@@ -88,10 +88,13 @@ class IncrementalityTest {
     modelFile.delete();
     Files.copy(modelFileBackup, modelFile);
     modelFileBackup.delete();
+    Thread.sleep(1000);
   }
 
   @Test
   void testGeneration() throws Exception {
+    System.out.println("\n" + new Object(){}.getClass().getEnclosingMethod().getName());
+    
     Set<String> generatedViews = setUp("socialnetwork/socialnetwork.model.picto", "socialnetwork/socialnetwork.model");
 
     assertThat(generatedViews).contains("/Social Network", "/Social Network/Alice", "/Social Network/Bob",
@@ -101,6 +104,7 @@ class IncrementalityTest {
   @Test
   void testUpdateEglDoc() throws Exception {
     try {
+      System.out.println("\n" + new Object(){}.getClass().getEnclosingMethod().getName());
       setUp("egldoc/egldoc-standalone.picto", "egldoc/egldoc/Families.ecore");
 
       EObject eObject = res.getEObject("//Bike");
@@ -121,6 +125,7 @@ class IncrementalityTest {
 
   @Test
   void testUpdateProperty() throws Exception {
+    System.out.println("\n" + new Object(){}.getClass().getEnclosingMethod().getName());
     setUp("socialnetwork/socialnetwork.model.picto", "socialnetwork/socialnetwork.model");
 
     EObject eObject = res.getEObject("3"); // get Charlie (id = 3)
@@ -137,6 +142,7 @@ class IncrementalityTest {
 
   @Test
   void testDeleteElement() throws Exception {
+    System.out.println("\n" + new Object(){}.getClass().getEnclosingMethod().getName());
     setUp("socialnetwork/socialnetwork.model.picto", "socialnetwork/socialnetwork.model");
 
     EObject eObject = res.getEObject("2"); // get Bob (id = 2)
@@ -154,6 +160,7 @@ class IncrementalityTest {
   @SuppressWarnings("unchecked")
   @Test
   void testRemoveReference() throws Exception {
+    System.out.println("\n" + new Object(){}.getClass().getEnclosingMethod().getName());
     setUp("socialnetwork/socialnetwork.model.picto", "socialnetwork/socialnetwork.model");
 
     EObject alice = res.getEObject("1"); // get Alice (id = 1)
@@ -176,6 +183,7 @@ class IncrementalityTest {
   @SuppressWarnings("unchecked")
   @Test
   void testAddReference() throws Exception {
+    System.out.println("\n" + new Object(){}.getClass().getEnclosingMethod().getName());
     setUp("socialnetwork/socialnetwork.model.picto", "socialnetwork/socialnetwork.model");
 
     EObject sn = res.getEObject("0"); // get social Network (id = 0)
@@ -209,6 +217,7 @@ class IncrementalityTest {
   @SuppressWarnings("unchecked")
   @Test
   void testAddElement() throws Exception {
+    System.out.println("\n" + new Object(){}.getClass().getEnclosingMethod().getName());
     setUp("socialnetwork/socialnetwork.model.picto", "socialnetwork/socialnetwork.model");
 
     EObject sn = res.getEObject("0"); // get Alice (id = 1)
@@ -237,6 +246,7 @@ class IncrementalityTest {
   @SuppressWarnings("unchecked")
   @Test
   void testAddNonDeterminingElement() throws Exception {
+    System.out.println("\n" + new Object(){}.getClass().getEnclosingMethod().getName());
     setUp("socialnetwork/socialnetwork.model.picto", "socialnetwork/socialnetwork.model");
 
     EObject alice = res.getEObject("1"); // get Alice (id = 1)
@@ -264,6 +274,7 @@ class IncrementalityTest {
   @SuppressWarnings("unchecked")
   @Test
   void testMultipleUpdates() throws Exception {
+    System.out.println("\n" + new Object(){}.getClass().getEnclosingMethod().getName());
     setUp("socialnetwork/socialnetwork.model.picto", "socialnetwork/socialnetwork.model");
 
     /** first update **/
