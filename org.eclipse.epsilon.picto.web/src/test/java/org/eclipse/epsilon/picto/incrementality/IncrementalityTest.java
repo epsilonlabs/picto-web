@@ -72,8 +72,8 @@ class IncrementalityTest {
     Files.copy(modelFile, modelFileBackup);
 
     eglPictoSource = new WebEglPictoSource();
-    Set<String> result = eglPictoSource.generatePromises(modifiedFilePath,
-        PictoProject.createPictoProject(pictoFile), true);
+    Set<String> result = eglPictoSource.generatePromises(modifiedFilePath, PictoProject.createPictoProject(pictoFile),
+        true);
 
     res = (new XMIResourceImpl(URI.createFileURI(modelFile.getAbsolutePath())));
     res.load(null);
@@ -92,18 +92,10 @@ class IncrementalityTest {
 
   @Test
   void testGeneration() throws Exception {
-    Set<String> generatedViews = setUp(
-        "socialnetwork/socialnetwork.model.picto",
-        "socialnetwork/socialnetwork.model");
+    Set<String> generatedViews = setUp("socialnetwork/socialnetwork.model.picto", "socialnetwork/socialnetwork.model");
 
-    assertThat(generatedViews).contains(
-        "/Social Network",
-        "/Social Network/Alice",
-        "/Social Network/Bob",
-        "/Social Network/Charlie",
-        "/Stats",
-        "/Custom/Alice and Bob",
-        "/Readme");
+    assertThat(generatedViews).contains("/Social Network", "/Social Network/Alice", "/Social Network/Bob",
+        "/Social Network/Charlie", "/Stats", "/Custom/Alice and Bob", "/Readme");
   }
 
   @Test
@@ -115,6 +107,7 @@ class IncrementalityTest {
       EStructuralFeature eNameFeature = eObject.eClass().getEStructuralFeature("name");
       eObject.eSet(eNameFeature, "Bicycle");
       res.save(null);
+      Thread.sleep(1000);
 
       eglPictoSource = new WebEglPictoSource();
     } finally {
@@ -134,13 +127,12 @@ class IncrementalityTest {
     EStructuralFeature eNameFeature = eObject.eClass().getEStructuralFeature("name");
     eObject.eSet(eNameFeature, "Dan");
     res.save(null);
+    Thread.sleep(1000);
 
     eglPictoSource = new WebEglPictoSource();
     Set<String> generatedViews = eglPictoSource.generatePromises(modifiedFilePath,
         PictoProject.createPictoProject(pictoFile), true);
-    assertThat(generatedViews).contains(
-        "/Social Network",
-        "/Social Network/Dan");
+    assertThat(generatedViews).contains("/Social Network", "/Social Network/Dan");
   }
 
   @Test
@@ -150,16 +142,13 @@ class IncrementalityTest {
     EObject eObject = res.getEObject("2"); // get Bob (id = 2)
     EcoreUtil.delete(eObject);
     res.save(null);
+    Thread.sleep(1000);
 
     eglPictoSource = new WebEglPictoSource();
     Set<String> generatedViews = eglPictoSource.generatePromises(modifiedFilePath,
         PictoProject.createPictoProject(pictoFile), true);
 
-    assertThat(generatedViews).contains(
-        "/Social Network",
-        "/Social Network/Alice",
-        "/Stats",
-        "/Custom/Alice and Bob");
+    assertThat(generatedViews).contains("/Social Network", "/Social Network/Alice", "/Stats", "/Custom/Alice and Bob");
   }
 
   @SuppressWarnings("unchecked")
@@ -175,16 +164,13 @@ class IncrementalityTest {
     EList<EObject> likes = (EList<EObject>) alice.eGet(likesProperty);
     likes.remove(bob);
     res.save(null);
+    Thread.sleep(1000);
 
     eglPictoSource = new WebEglPictoSource();
     Set<String> generatedViews = eglPictoSource.generatePromises(modifiedFilePath,
         PictoProject.createPictoProject(pictoFile), true);
 
-    assertThat(generatedViews).contains(
-        "/Social Network",
-        "/Social Network/Alice",
-        "/Stats",
-        "/Custom/Alice and Bob");
+    assertThat(generatedViews).contains("/Social Network", "/Social Network/Alice", "/Stats", "/Custom/Alice and Bob");
   }
 
   @SuppressWarnings("unchecked")
@@ -211,15 +197,12 @@ class IncrementalityTest {
     EList<EObject> dislikes = (EList<EObject>) alice.eGet(dislikesProperty);
     dislikes.add(dan);
     res.save(null);
+    Thread.sleep(1000);
 
     eglPictoSource = new WebEglPictoSource();
     Set<String> generatedViews = eglPictoSource.generatePromises(modifiedFilePath,
         PictoProject.createPictoProject(pictoFile), true);
-    assertThat(generatedViews).contains(
-        "/Social Network",
-        "/Social Network/Alice",
-        "/Social Network/Dan",
-        "/Stats",
+    assertThat(generatedViews).contains("/Social Network", "/Social Network/Alice", "/Social Network/Dan", "/Stats",
         "/Custom/Alice and Bob");
   }
 
@@ -243,14 +226,12 @@ class IncrementalityTest {
     people.add(dan);
     res.setID(dan, "4");
     res.save(null);
+    Thread.sleep(1000);
 
     eglPictoSource = new WebEglPictoSource();
     Set<String> generatedViews = eglPictoSource.generatePromises(modifiedFilePath,
         PictoProject.createPictoProject(pictoFile), true);
-    assertThat(generatedViews).contains(
-        "/Social Network",
-        "/Social Network/Dan",
-        "/Stats");
+    assertThat(generatedViews).contains("/Social Network", "/Social Network/Dan", "/Stats");
   }
 
   @SuppressWarnings("unchecked")
@@ -272,14 +253,12 @@ class IncrementalityTest {
     items.add(book);
     res.setID(book, "1_1");
     res.save(null);
+    Thread.sleep(1000);
 
     eglPictoSource = new WebEglPictoSource();
     Set<String> generatedViews = eglPictoSource.generatePromises(modifiedFilePath,
         PictoProject.createPictoProject(pictoFile), true);
-    assertThat(generatedViews).contains(
-        "/Social Network",
-        "/Social Network/Alice",
-        "/Custom/Alice and Bob");
+    assertThat(generatedViews).contains("/Social Network", "/Social Network/Alice", "/Custom/Alice and Bob");
   }
 
   @SuppressWarnings("unchecked")
@@ -293,27 +272,27 @@ class IncrementalityTest {
     // update the name to 'Bobby'
     eObject.eSet(eNameFeature, "Bobby");
     res.save(null);
+    Thread.sleep(1000);
 
     eglPictoSource = new WebEglPictoSource();
     Set<String> generatedViews = eglPictoSource.generatePromises(modifiedFilePath,
         PictoProject.createPictoProject(pictoFile), true);
 
-    assertThat(generatedViews)
-        .as("Generated views from updating name to 'Bobby'")
-        .contains("/Social Network", "/Social Network/Bobby");
+    assertThat(generatedViews).as("Generated views from updating name to 'Bobby'").contains("/Social Network",
+        "/Social Network/Bobby");
 
     /** Second update **/
     eObject = res.getEObject("2"); // get Bob (id = 2)
     EcoreUtil.delete(eObject);
     res.save(null);
+    Thread.sleep(1000);
 
     eglPictoSource = new WebEglPictoSource();
     Set<String> generatedViews2 = eglPictoSource.generatePromises(modifiedFilePath,
         PictoProject.createPictoProject(pictoFile), true);
 
-    assertThat(generatedViews2)
-        .as("Generated views from deleting Bob")
-        .contains("/Social Network", "/Social Network/Alice", "/Stats", "/Custom/Alice and Bob");
+    assertThat(generatedViews2).as("Generated views from deleting Bob").contains("/Social Network",
+        "/Social Network/Alice", "/Stats", "/Custom/Alice and Bob");
 
     /** Third update **/
     EObject sn = res.getEObject("0"); // get social Network (id = 0)
@@ -336,14 +315,14 @@ class IncrementalityTest {
     dislikes.add(dan);
 
     res.save(null);
+    Thread.sleep(1000);
 
     eglPictoSource = new WebEglPictoSource();
     Set<String> generatedViews3 = eglPictoSource.generatePromises(modifiedFilePath,
         PictoProject.createPictoProject(pictoFile), true);
 
-    assertThat(generatedViews3)
-        .as("Generated views from creating Dan")
-        .contains("/Social Network", "/Social Network/Alice", "/Social Network/Dan", "/Stats", "/Custom/Alice and Bob");
+    assertThat(generatedViews3).as("Generated views from creating Dan").contains("/Social Network",
+        "/Social Network/Alice", "/Social Network/Dan", "/Stats", "/Custom/Alice and Bob");
 
     /** 4th update **/
     sn = res.getEObject("0"); // get Alice (id = 1)
@@ -362,13 +341,13 @@ class IncrementalityTest {
 
     res.setID(erin, "5");
     res.save(null);
+    Thread.sleep(1000);
 
     eglPictoSource = new WebEglPictoSource();
     Set<String> generatedViews4 = eglPictoSource.generatePromises(modifiedFilePath,
         PictoProject.createPictoProject(pictoFile), true);
 
-    assertThat(generatedViews4)
-        .as("Generated views from creating Erin")
-        .contains("/Social Network", "/Social Network/Erin", "/Stats");
+    assertThat(generatedViews4).as("Generated views from creating Erin").contains("/Social Network",
+        "/Social Network/Erin", "/Stats");
   }
 }
