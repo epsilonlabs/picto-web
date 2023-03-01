@@ -14,7 +14,7 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.List;
 
-class TraceIndex {
+public class TraceIndex {
 
   protected Map<String, Path> pathIndex = new HashMap<String, Path>();
   protected Map<String, Module> moduleIndex = new HashMap<String, Module>();

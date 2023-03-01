@@ -25,6 +25,7 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 
+import org.eclipse.epsilon.picto.incrementality.AccessGraphResource;
 import org.eclipse.epsilon.picto.incrementality.AccessRecordResource;
 
 /**
@@ -53,6 +54,7 @@ public class PerformanceRecorder {
   public static long promiseTime;
   public static File outputFile;
   public static AccessRecordResource accessRecordResource;
+  public static int num;
 
   /***
    * The class that is responsible to write string to the output log file.
@@ -86,10 +88,9 @@ public class PerformanceRecorder {
   public static void record(PerformanceRecord record) {
     try {
       if (isRecording) {
-        String line = ((record.isGenAll()) ? "all" : "N") + "," + record.getNumOfInvalidatedViews() + ","
+        String line = (++num) + "," + ((record.isGenAll()) ? "all" : "N") + "," + record.getNumOfInvalidatedViews() + ","
             + record.getIteration() + "," + record.getClient() + "," + record.getPath() + "," + record.getDuration()
-            + "," + record.getPayloadSize() + "," + record.getType() + ","
-            + PerformanceRecorder.accessRecordResourceSize();
+            + "," + record.getPayloadSize() + "," + record.getType() + "," + PerformanceRecorder.getPropertyCount();
         PerformanceRecorder.record(line);
       }
     } catch (InterruptedException | ExecutionException e) {
@@ -98,7 +99,7 @@ public class PerformanceRecorder {
   }
 
   /**
-   * Save record to file.
+   * Save record to the file.
    * 
    * @param text
    * @throws InterruptedException
@@ -109,6 +110,17 @@ public class PerformanceRecorder {
       Future<Path> result = RECORDING_EXECUTOR.submit(new RecordingTask(outputFile, text));
       result.get();
     }
+  }
+
+  /**
+   * Add header to the file.
+   * 
+   * @param text
+   * @throws InterruptedException
+   * @throws ExecutionException
+   */
+  static void header(String text) throws InterruptedException, ExecutionException {
+    record(text);
   }
 
   /**
@@ -254,5 +266,9 @@ public class PerformanceRecorder {
 
   public static int accessRecordResourceSize() {
     return accessRecordResource.size();
+  }
+
+  public static int getPropertyCount() {
+    return ((AccessGraphResource) accessRecordResource).getTraceIndex().getPropertyIndex().size();
   }
 }

@@ -18,6 +18,7 @@ import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.nio.file.Files;
+import java.nio.file.Path;
 import java.nio.file.StandardCopyOption;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -29,6 +30,7 @@ import java.util.Map;
 import java.util.Random;
 import java.util.Set;
 import java.util.concurrent.ExecutionException;
+import java.util.concurrent.Future;
 import java.util.stream.Collectors;
 
 import org.eclipse.emf.common.util.TreeIterator;
@@ -41,6 +43,7 @@ import org.eclipse.epsilon.picto.web.PictoApplication;
 import org.eclipse.epsilon.picto.web.PromisesGenerationListener;
 import org.eclipse.epsilon.picto.web.component.Server;
 import org.eclipse.epsilon.picto.web.component.TestUtil;
+import org.eclipse.epsilon.picto.web.test.PerformanceRecorder.RecordingTask;
 import org.eclipse.gmt.modisco.java.BodyDeclaration;
 import org.eclipse.gmt.modisco.java.ClassDeclaration;
 import org.eclipse.gmt.modisco.java.FieldDeclaration;
@@ -90,10 +93,10 @@ public class JavaPerformanceTest {
   private static final String MODEL_TMP = "/java.xmi";
   private static final String MODEL = "/java/java.xmi";
   public static final String PICTO_TOPIC = "/topic/picto";
-  
+
   private static final File modelFile = new File(PictoApplication.WORKSPACE + File.separator + MODEL);
   private static final File modelFileTmp = new File(PictoApplication.TEMP + File.separator + MODEL_TMP);
-  
+
   private static final XMIResource resource = new XMIResourceImpl(URI.createFileURI(modelFileTmp.getAbsolutePath()));
 
   static final Random random = new Random();
@@ -120,29 +123,27 @@ public class JavaPerformanceTest {
 
     PerformanceRecorder.setOutputFile(new File("data/selective.csv"));
     PerformanceRecorder.startRecording();
-    PerformanceRecorder.record("genall,views,iteration,client,path,waittime,bytes,type");
+    PerformanceRecorder.header("num,genall,views,iteration,client,path,waittime,bytes,type,properties");
 
     Object invalidatedViewsWaiter = new Object();
     final int numberOfMeasurementPoints = 5;
 
-
 //     configuration for smaller experiment
 //    int numberOfViews = 12; // Number of nodes the graph model
     int numberOfViews; // Number of nodes the graph model
-//    int numberOfClients = 100; // number of clients subscribed to Picto Web's STOMP server.
-//    int numberOfIteration = 13; // Number of iteration measuring for each number of affected views
-    
+    int numberOfClients = 100; // number of clients subscribed to Picto Web's STOMP server.
+    int numberOfIteration = 13; // Number of iteration measuring for each number of affected views
+
     int[] numbersOfAffectedViews = null;
-    boolean[] genAllViews = { true, false};
+    boolean[] genAllViews = { true, false };
 //    boolean[] genAllViews = { false };
-    
-    int numberOfClients = 1; // number of clients subscribed to Picto Web's STOMP server.
-    int numberOfIteration = 3; // Number of iteration measuring for each number of affected views
-    MODEL_ORIGINAL = "/java/java.small.xmi";
-    
+
+//    int numberOfClients = 1; // number of clients subscribed to Picto Web's STOMP server.
+//    int numberOfIteration = 3; // Number of iteration measuring for each number of affected views
+//    MODEL_ORIGINAL = "/java/java.small.xmi";
+
     File modelFileOriginal = new File(PictoApplication.WORKSPACE + File.separator + MODEL_ORIGINAL);
-    XMIResource resourceOriginal = new XMIResourceImpl(
-        URI.createFileURI(modelFileOriginal.getAbsolutePath()));
+    XMIResource resourceOriginal = new XMIResourceImpl(URI.createFileURI(modelFileOriginal.getAbsolutePath()));
 
     Map<Object, Object> loadOptions = ((XMIResourceImpl) resource).getDefaultLoadOptions();
     loadOptions.put(XMIResource.OPTION_DEFER_IDREF_RESOLUTION, Boolean.TRUE);
@@ -382,8 +383,12 @@ public class JavaPerformanceTest {
         } // for (int numViews : numbersOfAffectedViews) {
       }
 
-      System.out.println("FINISHED!");
+      
+      
       Thread.sleep(1000);
+      System.out.println("Number of Properties: " + PerformanceRecorder.getPropertyCount());
+      System.out.println("FINISHED!");
+      
 
     } catch (Exception e) {
       e.printStackTrace();
@@ -392,7 +397,7 @@ public class JavaPerformanceTest {
     for (Client client : clients) {
       client.shutdown();
     }
-
+   
     PerformanceRecorder.stopRecording();
     server.stop();
 //    System.exit(0);

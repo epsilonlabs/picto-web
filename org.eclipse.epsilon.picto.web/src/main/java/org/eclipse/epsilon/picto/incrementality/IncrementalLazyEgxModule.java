@@ -30,6 +30,8 @@ import org.eclipse.epsilon.eol.types.EolMap;
 import org.eclipse.epsilon.picto.ContentPromise;
 import org.eclipse.epsilon.picto.LazyEgxModule.LazyGenerationRuleContentPromise;
 import org.eclipse.epsilon.picto.PictoOperationContributor;
+import org.eclipse.epsilon.picto.web.PictoApplication;
+import org.eclipse.epsilon.picto.web.test.PerformanceRecorder;
 import org.eclipse.epsilon.pinset.DatasetRule;
 import org.eclipse.epsilon.pinset.PinsetModule;
 
@@ -45,6 +47,8 @@ public class IncrementalLazyEgxModule extends EgxModuleParallelGenerationRuleAto
   protected AccessRecordResource accessRecordResource;
 //  private EglFileGeneratingTemplateFactory templateFactory;
 //  protected EglTemplate template;
+
+  protected long promiseDetectionTime;
 
   public AccessRecordResource getIncrementalResource() {
     return accessRecordResource;
@@ -227,32 +231,43 @@ public class IncrementalLazyEgxModule extends EgxModuleParallelGenerationRuleAto
       Collection<?> elements = getAllElements(context);
       for (Object element : elements) {
 
-        /**
-         * Get the path, if the path is still valid then skip the generation of the
-         * promise
-         */
-        FrameStack frameStack = context.getFrameStack();
-        if (sourceParameter != null) {
-          frameStack.enterLocal(FrameType.PROTECTED, this,
-              Variable.createReadOnlyVariable(sourceParameter.getName(), element));
-        } else {
-          frameStack.enterLocal(FrameType.PROTECTED, this);
+        if (!PictoApplication.isNonIncremental()) {
+          
+          long startTime = System.currentTimeMillis();
+          
+          /**
+           * Get the path, if the path is still valid then skip the generation of the
+           * promise
+           */
+          FrameStack frameStack = context.getFrameStack();
+          if (sourceParameter != null) {
+            frameStack.enterLocal(FrameType.PROTECTED, this,
+                Variable.createReadOnlyVariable(sourceParameter.getName(), element));
+          } else {
+            frameStack.enterLocal(FrameType.PROTECTED, this);
+          }
+          String path = null;
+          if (parametersBlock != null) {
+            EolMap<String, ?> parameters = parametersBlock.execute(context, false);
+            Entry<String, ?> entry = parameters.entrySet().stream().filter(e -> e.getKey().equals("path")).findFirst()
+                .orElse(null);
+            path = "/" + String.join("/", (Collection<String>) entry.getValue());
+          }
+          frameStack.leaveLocal(this);
+
+          
+          Set<String> invalidatedViewPaths = new HashSet<String>();
+          ((AccessGraphResource) accessRecordResource).checkPath((EgxModule) context.getModule(), invalidatedViewPaths,
+              new HashSet<String>(), new HashSet<EObject>(), path);
+          promiseDetectionTime += (System.currentTimeMillis() - startTime);
+
+          // if invalidated views is empty (the path doesn't need regeneration) then there
+          // is no need to generate the promise, instead skip to the next element.
+          if (invalidatedViewPaths.size() == 0) {
+            continue;
+          }
+          /***/
         }
-        String path = null;
-        if (parametersBlock != null) {
-          EolMap<String, ?> parameters = parametersBlock.execute(context, false);
-          Entry<String, ?> entry = parameters.entrySet().stream().filter(e -> e.getKey().equals("path")).findFirst()
-              .orElse(null);
-          path = "/" + String.join("/", (Collection<String>) entry.getValue());
-        }
-        frameStack.leaveLocal(this);
-        Set<String> invalidatedViewPaths = new HashSet<String>();
-        ((AccessGraphResource) accessRecordResource).checkPath((EgxModule) context.getModule(), invalidatedViewPaths,
-            new HashSet<String>(), new HashSet<EObject>(), path);
-        if (invalidatedViewPaths.size() == 0) {
-          continue;
-        }
-        /***/
 
         Object result = ef.execute(this, context, element);
         if (result instanceof IncrementalLazyGenerationRuleContentPromise) {
@@ -424,6 +439,10 @@ public class IncrementalLazyEgxModule extends EgxModuleParallelGenerationRuleAto
       return variables;
 //      return wrappedPromise.getVariables();
     }
+  }
+
+  public long getPromiseDetectionTime() {
+    return promiseDetectionTime;
   }
 
 }

@@ -10,6 +10,8 @@
 
 package org.eclipse.epsilon.picto.incrementality;
 
+import static org.hamcrest.CoreMatchers.instanceOf;
+
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashSet;
@@ -44,6 +46,9 @@ import org.eclipse.epsilon.picto.pictograph.Resource;
 import org.eclipse.epsilon.picto.pictograph.Rule;
 import org.eclipse.epsilon.picto.pictograph.State;
 import org.eclipse.epsilon.picto.pictograph.Template;
+import org.eclipse.epsilon.picto.web.test.PerformanceRecord;
+import org.eclipse.epsilon.picto.web.test.PerformanceRecorder;
+import org.eclipse.epsilon.picto.web.test.PerformanceTestType;
 
 public class AccessGraphResource implements AccessRecordResource {
 
@@ -309,6 +314,8 @@ public class AccessGraphResource implements AccessRecordResource {
   protected void checkPath(EgxModule module, Set<String> toBeProcessedPaths, Set<String> toBeDeletedKeys,
       Set<EObject> toBeDeletedElements, String checkedPath) {
 
+    int numCheckedProperties = 0;
+
     long start = System.currentTimeMillis();
     Path path = (Path) traceIndex.getPath(checkedPath);
 //    System.out.println("\nPATH: " + checkedPath);
@@ -408,6 +415,9 @@ public class AccessGraphResource implements AccessRecordResource {
 
               return;
             } else {
+
+              numCheckedProperties += 1;
+
               EStructuralFeature currentProperty = currentEObject.eClass().getEStructuralFeature(property.getName());
               Object currentValueObject = (currentProperty != null) ? currentEObject.eGet(currentProperty) : null;
 
@@ -424,8 +434,21 @@ public class AccessGraphResource implements AccessRecordResource {
                 long time = System.currentTimeMillis() - start;
                 path.setCheckingTime(path.getCheckingTime() + time);
                 path.setAvgCheckTime(path.getCheckingTime() / path.getCheckCount());
-//                property.getAffects().forEach(p -> toBeProcessedPaths.add(p.getName()));
 
+                /** Record the number of Properties checked **/
+                PerformanceRecord r = new PerformanceRecord(PerformanceRecorder.genenerateAll,
+                    PerformanceRecorder.generateAlways, PerformanceRecorder.globalNumberOfAffectedViews,
+                    PerformanceRecorder.globalNumberIteration, "Server", checkedPath, numCheckedProperties, 0,
+                    PerformanceTestType.CHECKED_PROPERTIES, PerformanceRecorder.accessRecordResourceSize());
+                PerformanceRecorder.record(r);
+
+                r = new PerformanceRecord(PerformanceRecorder.genenerateAll, PerformanceRecorder.generateAlways,
+                    PerformanceRecorder.globalNumberOfAffectedViews, PerformanceRecorder.globalNumberIteration,
+                    "Server", checkedPath, path.getAffectedBy().stream().filter(e -> e instanceof Property).count(), 0,
+                    PerformanceTestType.PROPERTIES, PerformanceRecorder.accessRecordResourceSize());
+                PerformanceRecorder.record(r);
+                
+//                property.getAffects().forEach(p -> toBeProcessedPaths.add(p.getName()));
                 return;
               }
 
@@ -433,6 +456,19 @@ public class AccessGraphResource implements AccessRecordResource {
           }
         }
       }
+
+      /** Record the number of Properties checked **/
+      PerformanceRecord r = new PerformanceRecord(PerformanceRecorder.genenerateAll, PerformanceRecorder.generateAlways,
+          PerformanceRecorder.globalNumberOfAffectedViews, PerformanceRecorder.globalNumberIteration, "Server",
+          checkedPath, numCheckedProperties, 0, PerformanceTestType.CHECKED_PROPERTIES,
+          PerformanceRecorder.accessRecordResourceSize());
+      PerformanceRecorder.record(r);
+
+      r = new PerformanceRecord(PerformanceRecorder.genenerateAll, PerformanceRecorder.generateAlways,
+          PerformanceRecorder.globalNumberOfAffectedViews, PerformanceRecorder.globalNumberIteration, "Server",
+          checkedPath, path.getAffectedBy().stream().filter(e -> e instanceof Property).count(), 0,
+          PerformanceTestType.PROPERTIES, PerformanceRecorder.accessRecordResourceSize());
+      PerformanceRecorder.record(r);
 
       long time = System.currentTimeMillis() - start;
       path.setCheckingTime(path.getCheckingTime() + time);

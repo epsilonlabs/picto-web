@@ -213,6 +213,8 @@ public class WebEglPictoSource extends EglPictoSource {
           promises.addAll(handleCustomViews(picto, module, context, fs));
 
           PerformanceRecorder.promiseTime = System.currentTimeMillis() - promiseStartTime;
+          if (!PictoApplication.isNonIncremental())
+            PerformanceRecorder.promiseTime -= ((IncrementalLazyEgxModule) module).getPromiseDetectionTime();
           record = new PerformanceRecord(PerformanceRecorder.genenerateAll, PerformanceRecorder.generateAlways,
               PerformanceRecorder.globalNumberOfAffectedViews, PerformanceRecorder.globalNumberIteration, "Server",
               "No Path", PerformanceRecorder.promiseTime, 0, PerformanceTestType.PROMISE_TIME,
@@ -227,6 +229,7 @@ public class WebEglPictoSource extends EglPictoSource {
             invalidatedViewPaths.addAll(accessRecordResource.getInvalidatedViewPaths(promises, (EgxModule) module));
             /** Calculate the detection time of invalidated views **/
             PerformanceRecorder.detectionTime = System.currentTimeMillis() - detectionStartTime;
+            PerformanceRecorder.detectionTime += ((IncrementalLazyEgxModule) module).getPromiseDetectionTime();
             PerformanceRecord r = new PerformanceRecord(PerformanceRecorder.genenerateAll,
                 PerformanceRecorder.generateAlways, PerformanceRecorder.globalNumberOfAffectedViews,
                 PerformanceRecorder.globalNumberIteration, "Server", "No Path", PerformanceRecorder.detectionTime, 0,
