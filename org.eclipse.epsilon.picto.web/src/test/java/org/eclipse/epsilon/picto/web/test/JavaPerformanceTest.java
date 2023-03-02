@@ -135,12 +135,13 @@ public class JavaPerformanceTest {
     int numberOfIteration = 13; // Number of iteration measuring for each number of affected views
 
     int[] numbersOfAffectedViews = null;
-    boolean[] genAllViews = { true, false };
-//    boolean[] genAllViews = { false };
+//    boolean[] genAllViews = { true, false };
+    boolean[] genAllViews = { false };
 
-//    int numberOfClients = 1; // number of clients subscribed to Picto Web's STOMP server.
-//    int numberOfIteration = 3; // Number of iteration measuring for each number of affected views
-//    MODEL_ORIGINAL = "/java/java.small.xmi";
+    /** comment this if we want to test using the big model */
+    numberOfClients = 1; // number of clients subscribed to Picto Web's STOMP server.
+    numberOfIteration = 3; // Number of iteration measuring for each number of affected views
+    MODEL_ORIGINAL = "/java/java.small.xmi";
 
     File modelFileOriginal = new File(PictoApplication.WORKSPACE + File.separator + MODEL_ORIGINAL);
     XMIResource resourceOriginal = new XMIResourceImpl(URI.createFileURI(modelFileOriginal.getAbsolutePath()));

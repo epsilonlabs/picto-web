@@ -302,6 +302,7 @@ public class WebEglPictoSource extends EglPictoSource {
                   }
                 }
               };
+              t.setName(promiseView.getPath());
               t.start();
             }
             modifiedViewContents.add(pathString);

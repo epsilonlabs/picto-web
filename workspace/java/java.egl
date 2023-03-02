@@ -1,14 +1,44 @@
 @startuml
 class [%=classDeclaration.name%] {
+[% 
+var associations = Set{};
+var i = 0;
+while(i < 1) {
+    associations.add(ClassDeclaration.all().random());
+    i = i + 1;
+}
+%]
 [% for (field in class.bodyDeclarations.select(b | b.isTypeOf(java::FieldDeclaration))) { %]
-[%   for (fragment in field.fragments) { %]
-  [%=field.getVisibility()%] [%=field.getType()%] [%=fragment.name%]
+[%   var typeName = field.getTypeName();
+     for (fragment in field.fragments) { %]
+        [%=field.getVisibility()%] [%=field.getTypeName()%] [%=fragment.name%]
 [%   } %]
 [% } %]
 [% for (method in class.bodyDeclarations.select(b | b.isTypeOf(java::MethodDeclaration))) { %]
-  [%=method.getVisibility()%] [%=method.getType()%] [%=method.name%]([%=method.getParams()%])
+  [%=method.getVisibility()%] [%=method.getTypeName()%] [%=method.name%]([%=method.getParams()%])
 [% } %]
 }
+
+[% for (association in associations) { %]
+[% var class = association; %] 
+class [%=class.name%] {
+[% for (field in class.bodyDeclarations.select(b | b.isTypeOf(java::FieldDeclaration))) { %]
+[%   var typeName = field.getTypeName();
+     for (fragment in field.fragments) { %]
+  [%=field.getVisibility()%] [%=field.getTypeName()%] [%=fragment.name%]
+[%   } %]
+[% } %]
+[% for (method in class.bodyDeclarations.select(b | b.isTypeOf(java::MethodDeclaration))) { %]
+  [%=method.getVisibility()%] [%=method.getTypeName()%] [%=method.name%]([%=method.getParams()%])
+[% } %]
+}
+[% } %]
+
+''relationships
+[% for (association in associations) { %]
+[%=classDeclaration.name%] -- [%=association.name%] 
+[% } %]
+
 @enduml
 
 [%
@@ -25,7 +55,7 @@ operation MethodDeclaration getParams() {
     return params.concat(", ");
 }
 
-operation FieldDeclaration getType() {
+operation FieldDeclaration getTypeName() {
     if (self.type == null) {
         return null;
     }
@@ -35,7 +65,7 @@ operation FieldDeclaration getType() {
     return self.type.type.name;
 }
 
-operation MethodDeclaration getType() {
+operation MethodDeclaration getTypeName() {
     if (self.returnType == null or self.returnType.type == null) {
         return null;
     }

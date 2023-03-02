@@ -241,6 +241,7 @@ public class AccessGraphResource implements AccessRecordResource {
 //        System.out.println(access.toString());
       }
     };
+    t.setName(access.toString());
     executorService.submit(t);
 
   }
@@ -264,8 +265,9 @@ public class AccessGraphResource implements AccessRecordResource {
 
     // run a new thread in the background to remove deleted elements from the
     // indices and graph
-    new Thread() {
+    Thread t = new Thread() {
       public void run() {
+        
         // first, remove all the entries of the deleted elements
         for (String key : toBeDeletedKeys) {
           for (Map<String, ?> map : traceIndex.getAllIndices()) {
@@ -297,7 +299,9 @@ public class AccessGraphResource implements AccessRecordResource {
           }
         }
       }
-    }.start();
+    };
+    t.setName("PictoGraph Cleaner Thread");
+    t.start();
 
     return invalidatedViewPaths;
   }
@@ -442,12 +446,22 @@ public class AccessGraphResource implements AccessRecordResource {
                     PerformanceTestType.CHECKED_PROPERTIES, PerformanceRecorder.accessRecordResourceSize());
                 PerformanceRecorder.record(r);
 
-                r = new PerformanceRecord(PerformanceRecorder.genenerateAll, PerformanceRecorder.generateAlways,
-                    PerformanceRecorder.globalNumberOfAffectedViews, PerformanceRecorder.globalNumberIteration,
-                    "Server", checkedPath, path.getAffectedBy().stream().filter(e -> e instanceof Property).count(), 0,
-                    PerformanceTestType.PROPERTIES, PerformanceRecorder.accessRecordResourceSize());
-                PerformanceRecorder.record(r);
-                
+//                int count = 0;
+//                int it = 0;
+//                while (it < path.getAffectedBy().size()) {
+//                  Object o = path.getAffectedBy().get(it);
+//                  if (o instanceof Property) {
+//                    count++;
+//                  }
+//                  it++;
+//                }
+//
+//                r = new PerformanceRecord(PerformanceRecorder.genenerateAll, PerformanceRecorder.generateAlways,
+//                    PerformanceRecorder.globalNumberOfAffectedViews, PerformanceRecorder.globalNumberIteration,
+//                    "Server", checkedPath, count, 0, PerformanceTestType.PROPERTIES,
+//                    PerformanceRecorder.accessRecordResourceSize());
+//                PerformanceRecorder.record(r);
+
 //                property.getAffects().forEach(p -> toBeProcessedPaths.add(p.getName()));
                 return;
               }
@@ -466,8 +480,8 @@ public class AccessGraphResource implements AccessRecordResource {
 
       r = new PerformanceRecord(PerformanceRecorder.genenerateAll, PerformanceRecorder.generateAlways,
           PerformanceRecorder.globalNumberOfAffectedViews, PerformanceRecorder.globalNumberIteration, "Server",
-          checkedPath, path.getAffectedBy().stream().filter(e -> e instanceof Property).count(), 0,
-          PerformanceTestType.PROPERTIES, PerformanceRecorder.accessRecordResourceSize());
+          checkedPath, numCheckedProperties, 0, PerformanceTestType.PROPERTIES,
+          PerformanceRecorder.accessRecordResourceSize());
       PerformanceRecorder.record(r);
 
       long time = System.currentTimeMillis() - start;
