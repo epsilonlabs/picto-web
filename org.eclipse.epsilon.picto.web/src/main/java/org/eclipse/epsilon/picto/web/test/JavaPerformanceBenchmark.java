@@ -75,7 +75,11 @@ public class JavaPerformanceBenchmark {
 
   public static void main(String... args) throws Exception {
 
-    runCommandSync("mvn.cmd -f pom-performance.xml clean install -Dmaven.test.skip=true");
+    if (System.getProperty("os.name").contains("indows")) {
+      runCommandSync("mvn.cmd -f pom-performance.xml clean install -Dmaven.test.skip=true");
+    } else {
+      runCommandSync("mvn -f pom-performance.xml clean install -Dmaven.test.skip=true");
+    }
 
     File tempDir = new File(PictoApplication.TEMP);
     if (!tempDir.exists()) {
@@ -240,7 +244,7 @@ public class JavaPerformanceBenchmark {
     InputStreamReader isr = new InputStreamReader(process.getInputStream());
 //    while (isr.read() > -1) {
 //    }
-    
+
 //    BufferedReader reader = new BufferedReader(new InputStreamReader(inputStream));
 //    
 //    Reader
