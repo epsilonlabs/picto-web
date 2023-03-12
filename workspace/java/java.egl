@@ -3,7 +3,7 @@ class [%=classDeclaration.name%] {
 [% 
 var associations = Set{};
 var i = 0;
-while(i < 1) {
+while(i < 3) {
     associations.add(ClassDeclaration.all().random());
     i = i + 1;
 }

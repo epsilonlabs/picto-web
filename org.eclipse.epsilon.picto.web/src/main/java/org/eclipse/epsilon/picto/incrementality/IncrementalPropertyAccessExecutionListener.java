@@ -111,18 +111,18 @@ public class IncrementalPropertyAccessExecutionListener extends PropertyAccessEx
 
       } //
       else if (operationName.equals("all")) {
-        Collection<?> resultList = (Collection<?>) result;
-        if (resultList.iterator().hasNext() && resultList.iterator().next() instanceof EObject) {
-          for (IPropertyAccessRecorder recorder : this.recorders) {
-            if (recorder instanceof AccessRecordRecorder) {
-              Iterator<EObject> iterator = (Iterator<EObject>) resultList.iterator();
-              while (iterator.hasNext()) {
-                EObject member = (EObject) iterator.next();
-                ((AccessRecordRecorder) recorder).record(member, null, null);
-              }
-            }
-          }
-        }
+//        Collection<?> resultList = (Collection<?>) result;
+//        if (resultList.iterator().hasNext() && resultList.iterator().next() instanceof EObject) {
+//          for (IPropertyAccessRecorder recorder : this.recorders) {
+//            if (recorder instanceof AccessRecordRecorder) {
+//              Iterator<EObject> iterator = (Iterator<EObject>) resultList.iterator();
+//              while (iterator.hasNext()) {
+//                EObject member = (EObject) iterator.next();
+//                ((AccessRecordRecorder) recorder).record(member, null, null);
+//              }
+//            }
+//          }
+//        }
       }
     }
     // path variable, set access recorder path

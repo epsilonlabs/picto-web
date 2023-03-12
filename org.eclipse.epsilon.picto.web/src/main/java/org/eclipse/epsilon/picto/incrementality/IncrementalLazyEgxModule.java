@@ -217,6 +217,18 @@ public class IncrementalLazyEgxModule extends EgxModuleParallelGenerationRuleAto
       listener.removeRecorder(accessRecorder);
       IncrementalLazyEgxModule.this.getContext().getExecutorFactory().removeExecutionListener(listener);
 
+      long startTime = System.currentTimeMillis();
+      Set<String> invalidatedViewPaths = new HashSet<String>();
+      ((AccessGraphResource) accessRecordResource).checkPath((EgxModule) context.getModule(), invalidatedViewPaths,
+          new HashSet<String>(), new HashSet<EObject>(), path);
+      promiseDetectionTime += (System.currentTimeMillis() - startTime);
+
+      // if invalidated views is empty (the path doesn't need regeneration) then there
+      // is no need to generate the promise, instead skip to the next element.
+      if (invalidatedViewPaths.size() == 0) {
+        return null;
+      }
+      
       IncrementalLazyGenerationRuleContentPromise promise = new IncrementalLazyGenerationRuleContentPromise(
           contextObject, this, path, templateFactory, templateUri, variables, templateCache);
 
@@ -231,43 +243,43 @@ public class IncrementalLazyEgxModule extends EgxModuleParallelGenerationRuleAto
       Collection<?> elements = getAllElements(context);
       for (Object element : elements) {
 
-        if (!PictoApplication.isNonIncremental()) {
-          
-          long startTime = System.currentTimeMillis();
-          
-          /**
-           * Get the path, if the path is still valid then skip the generation of the
-           * promise
-           */
-          FrameStack frameStack = context.getFrameStack();
-          if (sourceParameter != null) {
-            frameStack.enterLocal(FrameType.PROTECTED, this,
-                Variable.createReadOnlyVariable(sourceParameter.getName(), element));
-          } else {
-            frameStack.enterLocal(FrameType.PROTECTED, this);
-          }
-          String path = null;
-          if (parametersBlock != null) {
-            EolMap<String, ?> parameters = parametersBlock.execute(context, false);
-            Entry<String, ?> entry = parameters.entrySet().stream().filter(e -> e.getKey().equals("path")).findFirst()
-                .orElse(null);
-            path = "/" + String.join("/", (Collection<String>) entry.getValue());
-          }
-          frameStack.leaveLocal(this);
-
-          
-          Set<String> invalidatedViewPaths = new HashSet<String>();
-          ((AccessGraphResource) accessRecordResource).checkPath((EgxModule) context.getModule(), invalidatedViewPaths,
-              new HashSet<String>(), new HashSet<EObject>(), path);
-          promiseDetectionTime += (System.currentTimeMillis() - startTime);
-
-          // if invalidated views is empty (the path doesn't need regeneration) then there
-          // is no need to generate the promise, instead skip to the next element.
-          if (invalidatedViewPaths.size() == 0) {
-            continue;
-          }
-          /***/
-        }
+//        if (!PictoApplication.isNonIncremental()) {
+//          
+//          long startTime = System.currentTimeMillis();
+//          
+//          /**
+//           * Get the path, if the path is still valid then skip the generation of the
+//           * promise
+//           */
+//          FrameStack frameStack = context.getFrameStack();
+//          if (sourceParameter != null) {
+//            frameStack.enterLocal(FrameType.PROTECTED, this,
+//                Variable.createReadOnlyVariable(sourceParameter.getName(), element));
+//          } else {
+//            frameStack.enterLocal(FrameType.PROTECTED, this);
+//          }
+//          String path = null;
+//          if (parametersBlock != null) {
+//            EolMap<String, ?> parameters = parametersBlock.execute(context, false);
+//            Entry<String, ?> entry = parameters.entrySet().stream().filter(e -> e.getKey().equals("path")).findFirst()
+//                .orElse(null);
+//            path = "/" + String.join("/", (Collection<String>) entry.getValue());
+//          }
+//          frameStack.leaveLocal(this);
+//
+//          
+//          Set<String> invalidatedViewPaths = new HashSet<String>();
+//          ((AccessGraphResource) accessRecordResource).checkPath((EgxModule) context.getModule(), invalidatedViewPaths,
+//              new HashSet<String>(), new HashSet<EObject>(), path);
+//          promiseDetectionTime += (System.currentTimeMillis() - startTime);
+//
+//          // if invalidated views is empty (the path doesn't need regeneration) then there
+//          // is no need to generate the promise, instead skip to the next element.
+//          if (invalidatedViewPaths.size() == 0) {
+//            continue;
+//          }
+//          /***/
+//        }
 
         Object result = ef.execute(this, context, element);
         if (result instanceof IncrementalLazyGenerationRuleContentPromise) {

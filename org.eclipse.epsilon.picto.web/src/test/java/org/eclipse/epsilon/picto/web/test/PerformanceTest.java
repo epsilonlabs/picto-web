@@ -43,8 +43,6 @@ import org.eclipse.epsilon.eol.dom.IntegerLiteral;
 import org.eclipse.epsilon.picto.dom.PictoPackage;
 import org.eclipse.epsilon.picto.web.PictoApplication;
 import org.eclipse.epsilon.picto.web.PromisesGenerationListener;
-import org.eclipse.epsilon.picto.web.component.Server;
-import org.eclipse.epsilon.picto.web.component.TestUtil;
 import org.eclipse.jetty.client.HttpClient;
 import org.eclipse.jetty.util.thread.QueuedThreadPool;
 import org.junit.jupiter.api.AfterAll;

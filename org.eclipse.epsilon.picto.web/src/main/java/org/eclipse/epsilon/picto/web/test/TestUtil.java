@@ -1,4 +1,4 @@
-package org.eclipse.epsilon.picto.web.component;
+package org.eclipse.epsilon.picto.web.test;
 
 import java.io.BufferedReader;
 import java.io.IOException;

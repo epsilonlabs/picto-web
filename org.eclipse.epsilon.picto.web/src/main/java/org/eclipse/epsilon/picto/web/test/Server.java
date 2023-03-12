@@ -8,7 +8,7 @@
 * SPDX-License-Identifier: EPL-2.0
 **********************************************************************/
 
-package org.eclipse.epsilon.picto.web.component;
+package org.eclipse.epsilon.picto.web.test;
 
 import java.io.IOException;
 

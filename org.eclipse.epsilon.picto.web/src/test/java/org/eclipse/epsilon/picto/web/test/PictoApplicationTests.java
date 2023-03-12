@@ -30,7 +30,6 @@ import javax.xml.xpath.XPathFactory;
 
 import org.eclipse.epsilon.picto.dom.PictoPackage;
 import org.eclipse.epsilon.picto.web.FileWatcher;
-import org.eclipse.epsilon.picto.web.component.TestUtil;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;

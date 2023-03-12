@@ -18,7 +18,6 @@ import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.nio.file.Files;
-import java.nio.file.Path;
 import java.nio.file.StandardCopyOption;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -30,34 +29,26 @@ import java.util.Map;
 import java.util.Random;
 import java.util.Set;
 import java.util.concurrent.ExecutionException;
-import java.util.concurrent.Future;
 import java.util.stream.Collectors;
 
 import org.eclipse.emf.common.util.TreeIterator;
 import org.eclipse.emf.common.util.URI;
 import org.eclipse.emf.ecore.EObject;
-import org.eclipse.emf.ecore.util.EcoreUtil;
 import org.eclipse.emf.ecore.xmi.XMIResource;
 import org.eclipse.emf.ecore.xmi.impl.XMIResourceImpl;
 import org.eclipse.epsilon.picto.web.PictoApplication;
 import org.eclipse.epsilon.picto.web.PromisesGenerationListener;
-import org.eclipse.epsilon.picto.web.test.PerformanceRecorder.RecordingTask;
 import org.eclipse.gmt.modisco.java.BodyDeclaration;
 import org.eclipse.gmt.modisco.java.ClassDeclaration;
 import org.eclipse.gmt.modisco.java.FieldDeclaration;
-import org.eclipse.gmt.modisco.java.InterfaceDeclaration;
 import org.eclipse.gmt.modisco.java.MethodDeclaration;
-import org.eclipse.gmt.modisco.java.Model;
 import org.eclipse.gmt.modisco.java.Modifier;
-import org.eclipse.gmt.modisco.java.Package;
 import org.eclipse.gmt.modisco.java.TypeAccess;
 import org.eclipse.gmt.modisco.java.VariableDeclarationFragment;
 import org.eclipse.gmt.modisco.java.VisibilityKind;
 import org.eclipse.gmt.modisco.java.emf.meta.JavaFactory;
-import org.eclipse.gmt.modisco.java.emf.meta.JavaPackage;
 import org.eclipse.jetty.client.HttpClient;
 import org.eclipse.jetty.util.thread.QueuedThreadPool;
-import org.junit.jupiter.api.Test;
 import org.springframework.messaging.simp.stomp.StompFrameHandler;
 import org.springframework.messaging.simp.stomp.StompHeaders;
 import org.springframework.messaging.simp.stomp.StompSession;
@@ -82,12 +73,11 @@ import com.fasterxml.jackson.databind.ObjectMapper;
  * @author Alfa Yohannis
  *
  */
-public class JavaPerformanceTest {
+public class ExpensiveViewBenchmark {
 
   static final String PICTO_WEB_ADDRESS = "http://localhost:8081/pictojson/picto?";
   public static final String WEB_SOCKET_ADDRESS = "ws://localhost:8081/picto-web";
   public static final String PICTO_FILE = "/java/java.picto";
-  private static String MODEL_ORIGINAL = "/java/java.big.xmi";
   private static final String MODEL_TMP = "/java.xmi";
   private static final String MODEL = "/java/java.xmi";
   public static final String PICTO_TOPIC = "/topic/picto";
@@ -106,13 +96,10 @@ public class JavaPerformanceTest {
   static ObjectMapper mapper = new ObjectMapper();
   static Set<String> expectedViews;
   private static List<String> classNames = new ArrayList<>();
+  private static int classCounter;
 
-  /**
-   * @param args
-   * @throws Exception
-   */
-  @Test
-  public void testInvalidatedViewsPerformance() throws Exception {
+
+  public static void main(String ...strings) throws Exception {
 
     File tempDir = new File(PictoApplication.TEMP);
     if (!tempDir.exists()) {
@@ -133,16 +120,12 @@ public class JavaPerformanceTest {
     int numberOfIteration = 13; // Number of iteration measuring for each number of affected views
 
     int[] numbersOfAffectedViews = null;
-    boolean[] genAllViews = { true, false };
-//    boolean[] genAllViews = { false };
+//    boolean[] genAllViews = { true, false };
+    boolean[] genAllViews = { false };
 
     /** comment this if we want to test using the big model */
-//    numberOfClients = 1; // number of clients subscribed to Picto Web's STOMP server.
-//    numberOfIteration = 3; // Number of iteration measuring for each number of affected views
-//    MODEL_ORIGINAL = "/java/java.small.xmi";
-
-    File modelFileOriginal = new File(PictoApplication.WORKSPACE + File.separator + MODEL_ORIGINAL);
-    XMIResource resourceOriginal = new XMIResourceImpl(URI.createFileURI(modelFileOriginal.getAbsolutePath()));
+    numberOfClients = 1; // number of clients subscribed to Picto Web's STOMP server.
+    numberOfIteration = 3; // Number of iteration measuring for each number of affected views
 
     Map<Object, Object> loadOptions = ((XMIResourceImpl) resource).getDefaultLoadOptions();
     loadOptions.put(XMIResource.OPTION_DEFER_IDREF_RESOLUTION, Boolean.TRUE);
@@ -150,85 +133,33 @@ public class JavaPerformanceTest {
     Map<Object, Object> saveOptions = ((XMIResourceImpl) resource).getDefaultSaveOptions();
     saveOptions.put(XMIResource.OPTION_PROCESS_DANGLING_HREF, XMIResource.OPTION_PROCESS_DANGLING_HREF_DISCARD);
 
-    JavaPackage.eINSTANCE.eClass();
-    System.out.print("Loading the original model ... ");
-    resourceOriginal.load(loadOptions);
-    System.out.println("Done");
-    System.out.print("Copy the original model ... ");
-    resource.getContents().addAll(EcoreUtil.copyAll(resourceOriginal.getContents()));
-    System.out.println("Done");
-    System.out.print("Unload the original model ... ");
-    resourceOriginal.unload();
-    System.out.println("Done");
+    classCounter = 0;
+    int numOfClasses = 1000;
 
-    List<String> classList = new ArrayList<>();
+    List<String> classIdList = new ArrayList<>();
     classNames.clear();
-    TreeIterator<EObject> treeIterator = resource.getAllContents();
-    while (treeIterator.hasNext()) {
-      EObject eObject = treeIterator.next();
-      if (eObject instanceof ClassDeclaration) {
-        ClassDeclaration cd = (ClassDeclaration) eObject;
-
-        // add a dummy field into every class to be edited later
-        FieldDeclaration fd = JavaFactory.eINSTANCE.createFieldDeclaration();
-        Modifier modifier = JavaFactory.eINSTANCE.createModifier();
-        modifier.setVisibility(VisibilityKind.PRIVATE);
-        fd.setModifier(modifier);
-        TypeAccess typeAccess = JavaFactory.eINSTANCE.createTypeAccess();
-        typeAccess.setType(cd);
-        fd.setType(typeAccess);
-        VariableDeclarationFragment vd = JavaFactory.eINSTANCE.createVariableDeclarationFragment();
-        vd.setName("dummy");
-        fd.getFragments().add(0, (VariableDeclarationFragment) vd);
-        cd.getBodyDeclarations().add(0, fd);
-      }
+    for (int i = 0; i < numOfClasses; i++) {
+      createNewClass();
     }
 
     int count = 0;
+    TreeIterator<EObject> treeIterator = resource.getAllContents();
     treeIterator = resource.getAllContents();
     while (treeIterator.hasNext()) {
       EObject eObject = treeIterator.next();
       resource.setID(eObject, "e" + count);
 
       if (eObject instanceof ClassDeclaration) {
-        ClassDeclaration cd = (ClassDeclaration) eObject;
-
-        // construct names for paths
-        EObject eContainer = cd.eContainer();
-        List<String> segments = new ArrayList<>();
-        segments.add(cd.getName());
-        Model model = null;
-        while (eContainer != null) {
-          if (eContainer instanceof ClassDeclaration) {
-            segments.add(0, ((ClassDeclaration) eContainer).getName());
-          } else if (eContainer instanceof InterfaceDeclaration) {
-            segments.add(0, ((InterfaceDeclaration) eContainer).getName());
-          } else if (eContainer instanceof Package) {
-            segments.add(0, ((Package) eContainer).getName());
-          } else if (eContainer instanceof Model) {
-            model = (Model) eContainer;
-            segments.add(0, model.getName());
-          }
-          eContainer = eContainer.eContainer();
-        }
-        classNames.add(String.join(".", segments));
-        String id = resource.getID(eObject);
-        classList.add(id);
+        classIdList.add(resource.getID(eObject));
       }
       count++;
     }
     resource.save(saveOptions);
 
-    numberOfViews = classList.size();
+    numberOfViews = classIdList.size();
     PerformanceRecorder.globalNumberOfViews = numberOfViews;
 
     numbersOfAffectedViews = new int[numberOfMeasurementPoints + 1];
-
-//    // order from high to low
-//    for (int i = 0; i < numberOfMeasurementPoints; i++) {
-//      numbersOfAffectedViews[i + 1] = numberOfViews - (numberOfViews / numberOfMeasurementPoints) * i;
-//    }
-//    numbersOfAffectedViews[0] = numbersOfAffectedViews[1] - 1;
 
     // order from low to high
     for (int i = 0; i < numberOfMeasurementPoints; i++) {
@@ -257,12 +188,13 @@ public class JavaPerformanceTest {
     // modify
     try {
 
-      for (boolean temp : genAllViews) {
-        PerformanceRecorder.genenerateAll = temp;
+      for (boolean genAll : genAllViews) {
+        PerformanceRecorder.genenerateAll = genAll;
         PictoApplication.setNonIncremental(PerformanceRecorder.genenerateAll);
-
+        
         // iterate for each number of affected views
         for (int numViews : numbersOfAffectedViews) {
+          
           PerformanceRecorder.globalNumberOfAffectedViews = numViews;
           for (int iterationIndex = 1; iterationIndex <= numberOfIteration; iterationIndex++) {
 
@@ -292,64 +224,24 @@ public class JavaPerformanceTest {
 
             for (int i = 0; i < numViews; i++) {
 
-              String id1 = classList.get(i);
+              String id1 = classIdList.get(i);
               ClassDeclaration class1 = (ClassDeclaration) resource.getEObject(id1);
               List<BodyDeclaration> elementList1 = class1.getBodyDeclarations().stream()
-                  .filter(b -> b instanceof FieldDeclaration /* || b instanceof MethodDeclaration */)
-                  .collect(Collectors.toList());
+                  .filter(b -> b instanceof FieldDeclaration).collect(Collectors.toList());
 
               /** update the names of fields **/
-              BodyDeclaration nameModifiedElement = null;
               if (elementList1.size() > 0) {
                 BodyDeclaration element = elementList1.get(0);
                 if (element instanceof FieldDeclaration) {
-                  nameModifiedElement = element;
                   VariableDeclarationFragment variable = ((FieldDeclaration) element).getFragments().get(0);
-                  variable.setName(variable.getName() + "_" + numViews);
-//                  System.out.println("UPDATE name TO " + variable.getName() +" IN " + class1.getName());
-                } else if (element instanceof MethodDeclaration) {
-                  nameModifiedElement = element;
-                  MethodDeclaration method = (MethodDeclaration) element;
-                  method.setName(method.getName() + "_" + numViews);
-//                  System.out.println("UPDATE name TO " + method.getName() +" IN " + class1.getName());
+                  variable.setName("field_" + numViews + "_" + genAll);
                 }
 
               }
 
-//              List<BodyDeclaration> elementList2 = class1.getBodyDeclarations().stream()
-//                  .filter(b -> b instanceof FieldDeclaration || b instanceof MethodDeclaration)
-//                  .collect(Collectors.toList());
-//              elementList2.remove(nameModifiedElement);
-//                
-//              /** move fields and methods **/
-//              if (elementList2.size() > 0) {
-//                String id2 = (i == numViews - 1) ? classList.get(0) : classList.get(i + 1);
-//                ClassDeclaration class2 = (ClassDeclaration) resource.getEObject(id2);
-//                BodyDeclaration movedElement = elementList2.get(0);
-//
-//                String name = null;
-//                if (movedElement instanceof FieldDeclaration) {
-//                  VariableDeclarationFragment variable = ((FieldDeclaration) movedElement).getFragments().get(0);
-//                  name = variable.getName();
-//                } else if (movedElement instanceof MethodDeclaration) {
-//                  MethodDeclaration method = (MethodDeclaration) movedElement;
-//                  name = method.getName();
-//                }
-//                System.out.println("MOVE " + name + " FROM " + class1.getName() + " TO " + class2.getName());
-//
-//                class2.getBodyDeclarations().add(class2.getBodyDeclarations().size(), movedElement);
-//              }
-
             }
 
             resource.save(saveOptions);
-//            System.out.print("Waiting for the target file can be written ");
-//            while (!Files.exists(modelFileTmp.toPath()) || !Files.isReadable(modelFileTmp.toPath())
-//                || !Files.isWritable(modelFileTmp.toPath()) || !Files.exists(modelFile.toPath())
-//                || !Files.isReadable(modelFile.toPath()) || !Files.isWritable(modelFile.toPath())) {
-//              Thread.sleep(100);
-//              System.out.print(".");
-//            }
             boolean isCopySuccess = false;
             while (!isCopySuccess) {
               try {
@@ -382,12 +274,9 @@ public class JavaPerformanceTest {
         } // for (int numViews : numbersOfAffectedViews) {
       }
 
-      
-      
       Thread.sleep(1000);
       System.out.println("Number of Properties: " + PerformanceRecorder.getPropertyCount());
       System.out.println("FINISHED!");
-      
 
     } catch (Exception e) {
       e.printStackTrace();
@@ -396,10 +285,48 @@ public class JavaPerformanceTest {
     for (Client client : clients) {
       client.shutdown();
     }
-   
+
     PerformanceRecorder.stopRecording();
     server.stop();
-//    System.exit(0);
+    System.exit(0);
+  }
+
+  public static void addProperties() {
+    
+  }
+  
+  public static void createNewClass() {
+    classCounter += 1;
+
+    ClassDeclaration classDeclaration = JavaFactory.eINSTANCE.createClassDeclaration();
+    classDeclaration.setName("Class" + classCounter);
+    classNames.add(classDeclaration.getName());
+    
+//    // add a dummy field into every class to be edited later
+//    FieldDeclaration fieldDeclaration = JavaFactory.eINSTANCE.createFieldDeclaration();
+//    Modifier modifier = JavaFactory.eINSTANCE.createModifier();
+//    modifier.setVisibility(VisibilityKind.PRIVATE);
+//    fieldDeclaration.setModifier(modifier);
+//    TypeAccess typeAccess = JavaFactory.eINSTANCE.createTypeAccess();
+//    typeAccess.setType(classDeclaration);
+//    fieldDeclaration.setType(typeAccess);
+//    VariableDeclarationFragment vd = JavaFactory.eINSTANCE.createVariableDeclarationFragment();
+//    vd.setName("field" + classCounter);
+//    fieldDeclaration.getFragments().add(0, (VariableDeclarationFragment) vd);
+//    classDeclaration.getBodyDeclarations().add(0, fieldDeclaration);
+//
+//    // add a dummy operation
+//    MethodDeclaration methodDeclaration = JavaFactory.eINSTANCE.createMethodDeclaration();
+//    Modifier methodModifier = JavaFactory.eINSTANCE.createModifier();
+//    methodModifier.setVisibility(VisibilityKind.PRIVATE);
+//    methodDeclaration.setModifier(methodModifier);
+//    TypeAccess methodTypeAccess = JavaFactory.eINSTANCE.createTypeAccess();
+//    methodTypeAccess.setType(classDeclaration);
+//    methodDeclaration.setReturnType(methodTypeAccess);
+//    vd.setName("method" + classCounter);
+//    classDeclaration.getBodyDeclarations().add(classDeclaration.getBodyDeclarations().size(), methodDeclaration);
+    
+    resource.getContents().add(classDeclaration);
   }
 
   /***
