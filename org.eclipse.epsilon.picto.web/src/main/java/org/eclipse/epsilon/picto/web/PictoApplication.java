@@ -156,8 +156,8 @@ public class PictoApplication implements ApplicationListener<ApplicationContextE
 //    }
     FileWatcher.stopWatching();
     FileViewContentCache.clear();
-    ExecutorService px = PromiseView.getPromiseExecutor();
-    px.shutdown();
+//    ExecutorService px = PromiseView.getPromiseExecutor();
+//    px.shutdown();
 //    context.close();
     SpringApplication.exit(context, new ExitCodeGenerator() {
       @Override

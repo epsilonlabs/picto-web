@@ -205,7 +205,7 @@
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-surefire-plugin</artifactId>
-        <!-- <configuration>
+       <!-- <configuration>
           <forkCount>1</forkCount>
           <reuseForks>true</reuseForks>
           <argLine>-Xmx13312m -Xms1024m</argLine>
@@ -215,26 +215,29 @@
         <groupId>org.springframework.boot</groupId>
         <artifactId>spring-boot-maven-plugin</artifactId>
         <configuration>
+          <mainClass>org.eclipse.epsilon.picto.web.test.JavaPerformanceProcess</mainClass>
           <excludes>
             <exclude>
               <groupId>org.projectlombok</groupId>
               <artifactId>lombok</artifactId>
             </exclude>
           </excludes>
+          
           <!-- PICTO WEB -->
-          <finalName>picto</finalName>
+          <finalName>performance</finalName>
           <!--<appendAssemblyId>false</appendAssemblyId>-->
           <outputDirectory>./</outputDirectory>
-          <archive>
+          <!-- <archive>
             <manifest>
               <addClasspath>true</addClasspath>
-              <mainClass>org.eclipse.epsilon.picto.web.PictoApplication</mainClass>
+              <mainClass>org.eclipse.epsilon.picto.web.test.Dummy</mainClass>
             </manifest>
           </archive>
           <descriptorRefs>
             <descriptorRef>jar-with-dependencies</descriptorRef>
-          </descriptorRefs>
+          </descriptorRefs>-->
           <!-- PICTO WEB -->
+          
         </configuration>
       </plugin>
     </plugins>

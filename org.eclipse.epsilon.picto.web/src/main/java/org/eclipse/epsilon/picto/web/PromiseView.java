@@ -35,7 +35,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 public class PromiseView {
 
 //  private static final ExecutorService promiseExecutor = Executors.newFixedThreadPool(1);
-  private static final ExecutorService promiseExecutor = Executors.newSingleThreadExecutor();
+//  private static final ExecutorService promiseExecutor = Executors.newSingleThreadExecutor();
 
   private PictoView pictoView;
   private String timestamp = Timestamp.from(Instant.now()).toString();
@@ -150,9 +150,9 @@ public class PromiseView {
     return path;
   }
 
-  public static ExecutorService getPromiseExecutor() {
-    return promiseExecutor;
-  }
+//  public static ExecutorService getPromiseExecutor() {
+//    return promiseExecutor;
+//  }
 
   public class GetViewContentTask implements Callable<ViewContent> {
 

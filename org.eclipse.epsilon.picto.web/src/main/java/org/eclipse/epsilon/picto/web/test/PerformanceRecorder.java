@@ -123,6 +123,15 @@ public class PerformanceRecorder {
     record(text);
   }
 
+  public static void initFile(File outputFile) throws IOException, InterruptedException, ExecutionException {
+    if (!outputFile.getParentFile().exists())
+      outputFile.getParentFile().mkdir();
+    if (outputFile.exists())
+      outputFile.delete();
+    outputFile.createNewFile();
+    PerformanceRecorder.outputFile = outputFile;
+  }
+  
   /**
    * Set the output file.
    * 
@@ -132,11 +141,6 @@ public class PerformanceRecorder {
    * @throws ExecutionException
    */
   public static void setOutputFile(File outputFile) throws IOException, InterruptedException, ExecutionException {
-    if (!outputFile.getParentFile().exists())
-      outputFile.getParentFile().mkdir();
-    if (outputFile.exists())
-      outputFile.delete();
-    outputFile.createNewFile();
     PerformanceRecorder.outputFile = outputFile;
   }
 

@@ -50,6 +50,7 @@ import org.eclipse.epsilon.eol.models.IModel;
 import org.eclipse.epsilon.eol.types.EolAnyType;
 import org.eclipse.epsilon.flexmi.FlexmiResourceFactory;
 import org.eclipse.epsilon.picto.Layer;
+import org.eclipse.epsilon.picto.LazyEgxModule;
 import org.eclipse.epsilon.picto.PictoView;
 import org.eclipse.epsilon.picto.StaticContentPromise;
 import org.eclipse.epsilon.picto.ViewTree;
@@ -135,8 +136,8 @@ public class WebEglPictoSource extends EglPictoSource {
         if (picto.getFormat() == null)
           picto.setFormat("egx");
         if ("egx".equals(picto.getFormat())) {
-          module = new IncrementalLazyEgxModule(accessRecordResource);
-          ((IncrementalLazyEgxModule) module).getContext().setParallelism(32);
+            module = new IncrementalLazyEgxModule(accessRecordResource);
+            ((IncrementalLazyEgxModule) module).getContext().setParallelism(32);
         } else {
           module = new EglTemplateFactoryModuleAdapter(new EglFileGeneratingTemplateFactory());
         }
