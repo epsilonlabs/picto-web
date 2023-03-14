@@ -10,11 +10,10 @@
 
 package org.eclipse.epsilon.picto.web.test;
 
-import java.io.BufferedReader;
 import java.io.File;
 import java.io.IOException;
-import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.lang.ProcessBuilder.Redirect;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -55,6 +54,10 @@ import com.fasterxml.jackson.databind.ObjectMapper;
  */
 public class JavaPerformanceBenchmark {
 
+  /**
+   * 
+   */
+  private static  String OTHER_LOG_FILE_NAME = "/var/tmp/picto-web.log";
   private static String MODEL_ORIGINAL = "/java/java.big.xmi";
   private static final String MODEL_TMP = "/java.xmi";
   private static final String MODEL = "/java/java.xmi";
@@ -72,9 +75,15 @@ public class JavaPerformanceBenchmark {
   static ObjectMapper mapper = new ObjectMapper();
   static Set<String> expectedViews;
   private static List<String> classNames = new ArrayList<>();
+  private static File logFile;
 
   public static void main(String... args) throws Exception {
 
+    logFile = new File(System.getProperty("java.io.tmpdir") + File.separator +  "picto-web.log");
+    if (logFile.exists())
+      logFile.delete();
+    logFile.createNewFile();
+    
     if (System.getProperty("os.name").contains("indows")) {
       runCommandSync("mvn.cmd -f pom-performance.xml clean install -Dmaven.test.skip=true");
     } else {
@@ -95,16 +104,16 @@ public class JavaPerformanceBenchmark {
 //     configuration for smaller experiment
 //    int numberOfViews = 12; // Number of nodes the graph model
     int numberOfViews = 0; // Number of nodes the graph model
-    int numberOfIteration = 13; // Number of iteration measuring for each number of affected views
 
     int[] numbersOfAffectedViews = null;
-    boolean[] genAllViews = { false, true };
+    boolean[] genAllViews = { true, false };
 //    boolean[] genAllViews = { false };
 
     /** comment this if we want to test using the big model */
 //    numberOfClients = 1; // number of clients subscribed to Picto Web's STOMP server.
 //    numberOfIteration = 3; // Number of iteration measuring for each number of affected views
 //    MODEL_ORIGINAL = "/java/java.small.xmi";
+//    MODEL_ORIGINAL = "/java/java.medium.xmi";
 
     File modelFileOriginal = new File(PictoApplication.WORKSPACE + File.separator + MODEL_ORIGINAL);
     XMIResource resourceOriginal = new XMIResourceImpl(URI.createFileURI(modelFileOriginal.getAbsolutePath()));
@@ -207,11 +216,16 @@ public class JavaPerformanceBenchmark {
           PerformanceRecorder.globalNumberOfAffectedViews = numViews;
           String command = String.format("java -jar performance.jar %s %s", genAll, numViews);
           runCommandSync(command);
-          System.console();
+
+//          for (int i = 1; i < 5; i++) {
+//            System.gc();
+//            Thread.sleep(1000);
+//          }
+//          System.console();
         }
+
       }
 
-      System.out.println("Number of Properties: " + PerformanceRecorder.getPropertyCount());
       System.out.println("COMPLETED!");
 
     } catch (Exception e) {
@@ -240,8 +254,9 @@ public class JavaPerformanceBenchmark {
 
     ProcessBuilder processBuilder = new ProcessBuilder(command);
     processBuilder.inheritIO();
+//    processBuilder.redirectOutput(Redirect.appendTo(logFile));
     Process process = processBuilder.start();
-    InputStreamReader isr = new InputStreamReader(process.getInputStream());
+//    InputStreamReader isr = new InputStreamReader(process.getInputStream());
 //    while (isr.read() > -1) {
 //    }
 

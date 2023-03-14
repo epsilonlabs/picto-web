@@ -233,16 +233,6 @@ public class PictographPackageImpl extends EPackageImpl implements PictographPac
    * @generated
    */
   @Override
-  public EAttribute getEntity_CheckingTime() {
-    return (EAttribute)entityEClass.getEStructuralFeatures().get(4);
-  }
-
-  /**
-   * <!-- begin-user-doc -->
-   * <!-- end-user-doc -->
-   * @generated
-   */
-  @Override
   public EClass getInputEntity() {
     return inputEntityEClass;
   }
@@ -295,6 +285,46 @@ public class PictographPackageImpl extends EPackageImpl implements PictographPac
   @Override
   public EAttribute getPath_GenerationTime() {
     return (EAttribute)pathEClass.getEStructuralFeatures().get(2);
+  }
+
+  /**
+   * <!-- begin-user-doc -->
+   * <!-- end-user-doc -->
+   * @generated
+   */
+  @Override
+  public EAttribute getPath_AvgGenTime() {
+    return (EAttribute)pathEClass.getEStructuralFeatures().get(3);
+  }
+
+  /**
+   * <!-- begin-user-doc -->
+   * <!-- end-user-doc -->
+   * @generated
+   */
+  @Override
+  public EAttribute getPath_CheckCount() {
+    return (EAttribute)pathEClass.getEStructuralFeatures().get(4);
+  }
+
+  /**
+   * <!-- begin-user-doc -->
+   * <!-- end-user-doc -->
+   * @generated
+   */
+  @Override
+  public EAttribute getPath_CheckingTime() {
+    return (EAttribute)pathEClass.getEStructuralFeatures().get(5);
+  }
+
+  /**
+   * <!-- begin-user-doc -->
+   * <!-- end-user-doc -->
+   * @generated
+   */
+  @Override
+  public EAttribute getPath_AvgCheckTime() {
+    return (EAttribute)pathEClass.getEStructuralFeatures().get(6);
   }
 
   /**
@@ -363,8 +393,18 @@ public class PictographPackageImpl extends EPackageImpl implements PictographPac
    * @generated
    */
   @Override
-  public EAttribute getProperty_Value() {
+  public EAttribute getProperty_PreviousValue() {
     return (EAttribute)propertyEClass.getEStructuralFeatures().get(1);
+  }
+
+  /**
+   * <!-- begin-user-doc -->
+   * <!-- end-user-doc -->
+   * @generated
+   */
+  @Override
+  public EAttribute getProperty_Value() {
+    return (EAttribute)propertyEClass.getEStructuralFeatures().get(2);
   }
 
   /**
@@ -533,7 +573,6 @@ public class PictographPackageImpl extends EPackageImpl implements PictographPac
     createEAttribute(entityEClass, ENTITY__STATE);
     createEAttribute(entityEClass, ENTITY__HASH);
     createEAttribute(entityEClass, ENTITY__ACCESS_COUNT);
-    createEAttribute(entityEClass, ENTITY__CHECKING_TIME);
 
     inputEntityEClass = createEClass(INPUT_ENTITY);
     createEReference(inputEntityEClass, INPUT_ENTITY__AFFECTS);
@@ -542,6 +581,10 @@ public class PictographPackageImpl extends EPackageImpl implements PictographPac
     createEReference(pathEClass, PATH__AFFECTED_BY);
     createEAttribute(pathEClass, PATH__GENERATION_COUNT);
     createEAttribute(pathEClass, PATH__GENERATION_TIME);
+    createEAttribute(pathEClass, PATH__AVG_GEN_TIME);
+    createEAttribute(pathEClass, PATH__CHECK_COUNT);
+    createEAttribute(pathEClass, PATH__CHECKING_TIME);
+    createEAttribute(pathEClass, PATH__AVG_CHECK_TIME);
 
     moduleEClass = createEClass(MODULE);
     createEReference(moduleEClass, MODULE__RULES);
@@ -551,6 +594,7 @@ public class PictographPackageImpl extends EPackageImpl implements PictographPac
 
     propertyEClass = createEClass(PROPERTY);
     createEReference(propertyEClass, PROPERTY__ELEMENT);
+    createEAttribute(propertyEClass, PROPERTY__PREVIOUS_VALUE);
     createEAttribute(propertyEClass, PROPERTY__VALUE);
 
     elementEClass = createEClass(ELEMENT);
@@ -615,9 +659,8 @@ public class PictographPackageImpl extends EPackageImpl implements PictographPac
     initEClass(entityEClass, Entity.class, "Entity", IS_ABSTRACT, !IS_INTERFACE, IS_GENERATED_INSTANCE_CLASS);
     initEAttribute(getEntity_Name(), ecorePackage.getEString(), "name", null, 0, 1, Entity.class, !IS_TRANSIENT, !IS_VOLATILE, IS_CHANGEABLE, !IS_UNSETTABLE, !IS_ID, IS_UNIQUE, !IS_DERIVED, IS_ORDERED);
     initEAttribute(getEntity_State(), this.getState(), "state", null, 0, 1, Entity.class, !IS_TRANSIENT, !IS_VOLATILE, IS_CHANGEABLE, !IS_UNSETTABLE, !IS_ID, IS_UNIQUE, !IS_DERIVED, IS_ORDERED);
-    initEAttribute(getEntity_Hash(), ecorePackage.getEString(), "hash", null, 0, 1, Entity.class, !IS_TRANSIENT, !IS_VOLATILE, IS_CHANGEABLE, !IS_UNSETTABLE, !IS_ID, IS_UNIQUE, !IS_DERIVED, IS_ORDERED);
+    initEAttribute(getEntity_Hash(), ecorePackage.getEByte(), "hash", null, 0, -1, Entity.class, !IS_TRANSIENT, !IS_VOLATILE, IS_CHANGEABLE, !IS_UNSETTABLE, !IS_ID, IS_UNIQUE, !IS_DERIVED, IS_ORDERED);
     initEAttribute(getEntity_AccessCount(), ecorePackage.getEInt(), "accessCount", null, 0, 1, Entity.class, !IS_TRANSIENT, !IS_VOLATILE, IS_CHANGEABLE, !IS_UNSETTABLE, !IS_ID, IS_UNIQUE, !IS_DERIVED, IS_ORDERED);
-    initEAttribute(getEntity_CheckingTime(), ecorePackage.getELong(), "checkingTime", null, 0, 1, Entity.class, !IS_TRANSIENT, !IS_VOLATILE, IS_CHANGEABLE, !IS_UNSETTABLE, !IS_ID, IS_UNIQUE, !IS_DERIVED, IS_ORDERED);
 
     initEClass(inputEntityEClass, InputEntity.class, "InputEntity", IS_ABSTRACT, !IS_INTERFACE, IS_GENERATED_INSTANCE_CLASS);
     initEReference(getInputEntity_Affects(), this.getPath(), this.getPath_AffectedBy(), "affects", null, 0, -1, InputEntity.class, !IS_TRANSIENT, !IS_VOLATILE, IS_CHANGEABLE, !IS_COMPOSITE, IS_RESOLVE_PROXIES, !IS_UNSETTABLE, IS_UNIQUE, !IS_DERIVED, IS_ORDERED);
@@ -626,6 +669,10 @@ public class PictographPackageImpl extends EPackageImpl implements PictographPac
     initEReference(getPath_AffectedBy(), this.getInputEntity(), this.getInputEntity_Affects(), "affectedBy", null, 0, -1, Path.class, !IS_TRANSIENT, !IS_VOLATILE, IS_CHANGEABLE, !IS_COMPOSITE, IS_RESOLVE_PROXIES, !IS_UNSETTABLE, IS_UNIQUE, !IS_DERIVED, IS_ORDERED);
     initEAttribute(getPath_GenerationCount(), ecorePackage.getEInt(), "generationCount", null, 0, 1, Path.class, !IS_TRANSIENT, !IS_VOLATILE, IS_CHANGEABLE, !IS_UNSETTABLE, !IS_ID, IS_UNIQUE, !IS_DERIVED, IS_ORDERED);
     initEAttribute(getPath_GenerationTime(), ecorePackage.getELong(), "generationTime", null, 0, 1, Path.class, !IS_TRANSIENT, !IS_VOLATILE, IS_CHANGEABLE, !IS_UNSETTABLE, !IS_ID, IS_UNIQUE, !IS_DERIVED, IS_ORDERED);
+    initEAttribute(getPath_AvgGenTime(), ecorePackage.getEDouble(), "avgGenTime", null, 0, 1, Path.class, !IS_TRANSIENT, !IS_VOLATILE, IS_CHANGEABLE, !IS_UNSETTABLE, !IS_ID, IS_UNIQUE, !IS_DERIVED, IS_ORDERED);
+    initEAttribute(getPath_CheckCount(), ecorePackage.getEInt(), "checkCount", null, 0, 1, Path.class, !IS_TRANSIENT, !IS_VOLATILE, IS_CHANGEABLE, !IS_UNSETTABLE, !IS_ID, IS_UNIQUE, !IS_DERIVED, IS_ORDERED);
+    initEAttribute(getPath_CheckingTime(), ecorePackage.getELong(), "checkingTime", null, 0, 1, Path.class, !IS_TRANSIENT, !IS_VOLATILE, IS_CHANGEABLE, !IS_UNSETTABLE, !IS_ID, IS_UNIQUE, !IS_DERIVED, IS_ORDERED);
+    initEAttribute(getPath_AvgCheckTime(), ecorePackage.getEDouble(), "avgCheckTime", null, 0, 1, Path.class, !IS_TRANSIENT, !IS_VOLATILE, IS_CHANGEABLE, !IS_UNSETTABLE, !IS_ID, IS_UNIQUE, !IS_DERIVED, IS_ORDERED);
 
     initEClass(moduleEClass, org.eclipse.epsilon.picto.pictograph.Module.class, "Module", !IS_ABSTRACT, !IS_INTERFACE, IS_GENERATED_INSTANCE_CLASS);
     initEReference(getModule_Rules(), this.getRule(), this.getRule_Module(), "rules", null, 0, -1, org.eclipse.epsilon.picto.pictograph.Module.class, !IS_TRANSIENT, !IS_VOLATILE, IS_CHANGEABLE, IS_COMPOSITE, !IS_RESOLVE_PROXIES, !IS_UNSETTABLE, IS_UNIQUE, !IS_DERIVED, IS_ORDERED);
@@ -635,6 +682,7 @@ public class PictographPackageImpl extends EPackageImpl implements PictographPac
 
     initEClass(propertyEClass, Property.class, "Property", !IS_ABSTRACT, !IS_INTERFACE, IS_GENERATED_INSTANCE_CLASS);
     initEReference(getProperty_Element(), this.getElement(), this.getElement_Properties(), "element", null, 0, 1, Property.class, !IS_TRANSIENT, !IS_VOLATILE, IS_CHANGEABLE, !IS_COMPOSITE, !IS_RESOLVE_PROXIES, !IS_UNSETTABLE, IS_UNIQUE, !IS_DERIVED, IS_ORDERED);
+    initEAttribute(getProperty_PreviousValue(), ecorePackage.getEString(), "previousValue", null, 0, 1, Property.class, !IS_TRANSIENT, !IS_VOLATILE, IS_CHANGEABLE, !IS_UNSETTABLE, !IS_ID, IS_UNIQUE, !IS_DERIVED, IS_ORDERED);
     initEAttribute(getProperty_Value(), ecorePackage.getEString(), "value", null, 0, 1, Property.class, !IS_TRANSIENT, !IS_VOLATILE, IS_CHANGEABLE, !IS_UNSETTABLE, !IS_ID, IS_UNIQUE, !IS_DERIVED, IS_ORDERED);
 
     initEClass(elementEClass, Element.class, "Element", !IS_ABSTRACT, !IS_INTERFACE, IS_GENERATED_INSTANCE_CLASS);

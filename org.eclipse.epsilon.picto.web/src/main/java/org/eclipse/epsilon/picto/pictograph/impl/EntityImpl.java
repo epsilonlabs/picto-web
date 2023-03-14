@@ -2,12 +2,18 @@
  */
 package org.eclipse.epsilon.picto.pictograph.impl;
 
+import java.util.Collection;
+
 import org.eclipse.emf.common.notify.Notification;
+
+import org.eclipse.emf.common.util.EList;
 
 import org.eclipse.emf.ecore.EClass;
 
 import org.eclipse.emf.ecore.impl.ENotificationImpl;
 import org.eclipse.emf.ecore.impl.EObjectImpl;
+
+import org.eclipse.emf.ecore.util.EDataTypeUniqueEList;
 
 import org.eclipse.epsilon.picto.pictograph.Entity;
 import org.eclipse.epsilon.picto.pictograph.PictographPackage;
@@ -78,7 +84,7 @@ public abstract class EntityImpl extends EObjectImpl implements Entity {
    * @generated
    * @ordered
    */
-  protected static final String HASH_EDEFAULT = null;
+  protected static final byte[] HASH_EDEFAULT = null;
 
   /**
    * The cached value of the '{@link #getHash() <em>Hash</em>}' attribute.
@@ -88,7 +94,7 @@ public abstract class EntityImpl extends EObjectImpl implements Entity {
    * @generated
    * @ordered
    */
-  protected String hash = HASH_EDEFAULT;
+  protected byte[] hash = HASH_EDEFAULT;
 
   /**
    * The default value of the '{@link #getAccessCount() <em>Access Count</em>}' attribute.
@@ -181,7 +187,7 @@ public abstract class EntityImpl extends EObjectImpl implements Entity {
    * @generated
    */
   @Override
-  public String getHash() {
+  public byte[] getHash() {
     return hash;
   }
 
@@ -191,8 +197,8 @@ public abstract class EntityImpl extends EObjectImpl implements Entity {
    * @generated
    */
   @Override
-  public void setHash(String newHash) {
-    String oldHash = hash;
+  public void setHash(byte[] newHash) {
+    byte[] oldHash = hash;
     hash = newHash;
     if (eNotificationRequired())
       eNotify(new ENotificationImpl(this, Notification.SET, PictographPackage.ENTITY__HASH, oldHash, hash));
@@ -246,6 +252,7 @@ public abstract class EntityImpl extends EObjectImpl implements Entity {
    * <!-- end-user-doc -->
    * @generated
    */
+  @SuppressWarnings("unchecked")
   @Override
   public void eSet(int featureID, Object newValue) {
     switch (featureID) {
@@ -256,7 +263,7 @@ public abstract class EntityImpl extends EObjectImpl implements Entity {
         setState((State)newValue);
         return;
       case PictographPackage.ENTITY__HASH:
-        setHash((String)newValue);
+        setHash((byte[])newValue);
         return;
       case PictographPackage.ENTITY__ACCESS_COUNT:
         setAccessCount((Integer)newValue);

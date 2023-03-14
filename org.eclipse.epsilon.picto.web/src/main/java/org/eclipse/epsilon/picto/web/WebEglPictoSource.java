@@ -10,6 +10,8 @@
 
 package org.eclipse.epsilon.picto.web;
 
+import static org.hamcrest.CoreMatchers.nullValue;
+
 import java.io.File;
 import java.io.IOException;
 import java.net.URI;
@@ -115,6 +117,7 @@ public class WebEglPictoSource extends EglPictoSource {
     Set<String> modifiedViewContents = new HashSet<>();
     try {
 
+      List<String> paths = null;
       PictoView pictoView = new PictoView();
       ViewTree rootViewTree = pictoView.getViewTree();
 
@@ -136,8 +139,8 @@ public class WebEglPictoSource extends EglPictoSource {
         if (picto.getFormat() == null)
           picto.setFormat("egx");
         if ("egx".equals(picto.getFormat())) {
-            module = new IncrementalLazyEgxModule(accessRecordResource);
-            ((IncrementalLazyEgxModule) module).getContext().setParallelism(32);
+          module = new IncrementalLazyEgxModule(accessRecordResource);
+          //((IncrementalLazyEgxModule) module).getContext().setParallelism(32);
         } else {
           module = new EglTemplateFactoryModuleAdapter(new EglFileGeneratingTemplateFactory());
         }
@@ -207,11 +210,13 @@ public class WebEglPictoSource extends EglPictoSource {
           List<IncrementalLazyGenerationRuleContentPromise> promises = (List<IncrementalLazyGenerationRuleContentPromise>) module
               .execute();
 //          accessRecordResource.printIncrementalRecords();
+
+          paths = ((IncrementalLazyEgxModule) module).getPaths();
           /**
            * the handleDynamicViews will add the generated lazy contents (tagged
            * with @lazy in the EGX) to instances to handled later in the next loop
            **/
-          promises.addAll(handleCustomViews(picto, module, context, fs));
+          promises.addAll(handleCustomViews(picto, module, context, fs, paths));
 
           PerformanceRecorder.promiseTime = System.currentTimeMillis() - promiseStartTime;
           if (!PictoApplication.isNonIncremental())
@@ -297,7 +302,8 @@ public class WebEglPictoSource extends EglPictoSource {
               Thread t = new Thread() {
                 public void run() {
                   try {
-                    promiseView.getViewContent(null);
+                    String x = promiseView.getViewContent(null);
+//                    System.out.println(x);
                   } catch (Exception e) {
                     e.printStackTrace();
                   }
@@ -329,8 +335,8 @@ public class WebEglPictoSource extends EglPictoSource {
         // Handle static views (i.e. where source != null), add the custom view loaded
         // from a file
         // defined in the picto file
-        handleStaticViews(modifiedViewContents, rootViewTree, pictoFilePath, viewContentCache, picto, module,
-            pictoView);
+        handleStaticViews(modifiedViewContents, rootViewTree, pictoFilePath, viewContentCache, picto, module, pictoView,
+            paths);
 
         // Handle patches for existing views (i.e. where source == null and type/rule ==
         // null)
@@ -345,7 +351,6 @@ public class WebEglPictoSource extends EglPictoSource {
 
         // generate JSON of the JsTree library (the tree panel on the client-side web
         // browser)
-
         PictoResponse pictoResponse = generateJsTreeData(pictoFilePath, rootViewTree);
         pictoResponse.setFilename(pictoFilePath);
         PromiseView promiseView = new PromiseView(pictoResponse);
@@ -420,7 +425,8 @@ public class WebEglPictoSource extends EglPictoSource {
    * @throws Exception
    */
   private void handleStaticViews(Set<String> modifiedViewContents, ViewTree rootViewTree, String pictoFilePath,
-      PromiseViewCache viewContentCache, Picto picto, IEolModule module, PictoView pictoView) throws Exception {
+      PromiseViewCache viewContentCache, Picto picto, IEolModule module, PictoView pictoView, List<String> paths)
+      throws Exception {
     for (CustomView customView : picto.getCustomViews().stream().filter(cv -> cv.getSource() != null)
         .collect(Collectors.toList())) {
       String format = customView.getFormat() != null ? customView.getFormat() : getDefaultFormat();
@@ -431,6 +437,7 @@ public class WebEglPictoSource extends EglPictoSource {
               new StaticContentPromise(new File(
                   new File(customView.eResource().getURI().toFileString()).getParentFile(), customView.getSource())),
               format, icon, customView.getPosition(), customView.getPatches(), Collections.emptyList()));
+      paths.add(IncrementalityUtil.getPath(customView.getPath()));
 
       ViewTree vt = rootViewTree.getChildren().get(rootViewTree.getChildren().size() - 1);
 
@@ -451,7 +458,7 @@ public class WebEglPictoSource extends EglPictoSource {
    * @throws EolRuntimeException
    */
   private List<IncrementalLazyGenerationRuleContentPromise> handleCustomViews(Picto picto, IEolModule module,
-      IEolContext context, FrameStack fs) throws EolRuntimeException {
+      IEolContext context, FrameStack fs, List<String> paths) throws EolRuntimeException {
     List<IncrementalLazyGenerationRuleContentPromise> customPromises = new ArrayList<>();
     List<CustomView> customViews = picto.getCustomViews().stream().filter(cv -> cv.getType() != null)
         .collect(Collectors.toList());
@@ -511,6 +518,7 @@ public class WebEglPictoSource extends EglPictoSource {
           }
         }
         customPromises.add(contentPromise);
+        paths.add(IncrementalityUtil.getPath(contentPromise));
       }
     }
     return customPromises;

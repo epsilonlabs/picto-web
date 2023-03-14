@@ -76,7 +76,7 @@ public class FileWatcher extends Thread {
         Path path;
         try {
           key = watcher.take();
-          Thread.sleep(200);
+          Thread.sleep(100);
           path = keys.get(key);
           if (path == null) {
             System.err.println("WatchKey not recognized!!");
@@ -101,7 +101,7 @@ public class FileWatcher extends Thread {
 
             File modifiedFile = new File(path.toString() + File.separator + filePath.toString());
 
-             System.out.println("Modified file: " + modifiedFile.getAbsolutePath());
+            System.out.println("Modified file: " + modifiedFile.getAbsolutePath());
 //
             long size = 0;
 //            System.out.print("Wait until model is fully stored ");
@@ -109,7 +109,7 @@ public class FileWatcher extends Thread {
 //              Thread.sleep(100);
 //              System.out.print(".");
 //            }
-            
+
             while (size != modifiedFile.length() || size == 0) {
               size = modifiedFile.length();
               Thread.sleep(10);
@@ -119,6 +119,7 @@ public class FileWatcher extends Thread {
 
             try {
               this.notifyFileChange(modifiedFile);
+              break;
             } catch (Exception e) {
               e.printStackTrace();
               System.console();

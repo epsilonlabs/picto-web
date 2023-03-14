@@ -1,8 +1,8 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <genmodel:GenModel xmi:version="2.0" xmlns:xmi="http://www.omg.org/XMI" xmlns:ecore="http://www.eclipse.org/emf/2002/Ecore"
-    xmlns:genmodel="http://www.eclipse.org/emf/2002/GenModel" copyrightText="" modelDirectory="/org.eclipse.epsilon.picto.web/src/main/java"
-    modelPluginID="org.eclipse.epsilon.picto.web" modelName="Pictograph" importerID="org.eclipse.emf.importer.ecore"
-    complianceLevel="6.0" copyrightFields="false">
+    xmlns:genmodel="http://www.eclipse.org/emf/2002/GenModel" copyrightText="" modelDirectory="/picto-web/src/main/java" modelPluginID="picto-web"
+    modelName="Pictograph" importerID="org.eclipse.emf.importer.ecore" complianceLevel="6.0"
+    copyrightFields="false">
   <foreignModel>pictograph.ecore</foreignModel>
   <genPackages prefix="Pictograph" basePackage="org.eclipse.epsilon.picto" disposableProviderFactory="true"
       ecorePackage="pictograph.ecore#/">
@@ -11,6 +11,7 @@
       <genEnumLiterals ecoreEnumLiteral="pictograph.ecore#//State/UPDATED"/>
       <genEnumLiterals ecoreEnumLiteral="pictograph.ecore#//State/PROCESSED"/>
     </genEnums>
+    <genDataTypes ecoreDataType="pictograph.ecore#//EByteArray"/>
     <genClasses ecoreClass="pictograph.ecore#//PictoGraph"/>
     <genClasses image="false" ecoreClass="pictograph.ecore#//Entity">
       <genFeatures createChild="false" ecoreFeature="ecore:EAttribute pictograph.ecore#//Entity/name"/>

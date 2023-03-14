@@ -4,6 +4,7 @@ package org.eclipse.epsilon.picto.pictograph;
 
 import org.eclipse.emf.ecore.EAttribute;
 import org.eclipse.emf.ecore.EClass;
+import org.eclipse.emf.ecore.EDataType;
 import org.eclipse.emf.ecore.EEnum;
 import org.eclipse.emf.ecore.EPackage;
 import org.eclipse.emf.ecore.EReference;
@@ -841,6 +842,16 @@ public interface PictographPackage extends EPackage {
 
 
   /**
+   * The meta object id for the '<em>EByte Array</em>' data type.
+   * <!-- begin-user-doc -->
+   * <!-- end-user-doc -->
+   * @see org.eclipse.epsilon.picto.pictograph.impl.PictographPackageImpl#getEByteArray()
+   * @generated
+   */
+  int EBYTE_ARRAY = 11;
+
+
+  /**
    * Returns the meta object for class '{@link org.eclipse.epsilon.picto.pictograph.PictoGraph <em>Picto Graph</em>}'.
    * <!-- begin-user-doc -->
    * <!-- end-user-doc -->
@@ -1237,6 +1248,16 @@ public interface PictographPackage extends EPackage {
   EEnum getState();
 
   /**
+   * Returns the meta object for data type '<em>EByte Array</em>'.
+   * <!-- begin-user-doc -->
+   * <!-- end-user-doc -->
+   * @return the meta object for data type '<em>EByte Array</em>'.
+   * @model instanceClass="byte[]"
+   * @generated
+   */
+  EDataType getEByteArray();
+
+  /**
    * Returns the factory that creates the instances of the model.
    * <!-- begin-user-doc -->
    * <!-- end-user-doc -->
@@ -1575,6 +1596,15 @@ public interface PictographPackage extends EPackage {
      * @generated
      */
     EEnum STATE = eINSTANCE.getState();
+
+    /**
+     * The meta object literal for the '<em>EByte Array</em>' data type.
+     * <!-- begin-user-doc -->
+     * <!-- end-user-doc -->
+     * @see org.eclipse.epsilon.picto.pictograph.impl.PictographPackageImpl#getEByteArray()
+     * @generated
+     */
+    EDataType EBYTE_ARRAY = eINSTANCE.getEByteArray();
 
   }
 

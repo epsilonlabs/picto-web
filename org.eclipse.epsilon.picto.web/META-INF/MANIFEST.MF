@@ -1,8 +1,8 @@
 Manifest-Version: 1.0
 Bundle-ManifestVersion: 2
 Bundle-Name: %pluginName
-Bundle-SymbolicName: org.eclipse.epsilon.picto.web;singleton:=true
-Automatic-Module-Name: org.eclipse.epsilon.picto.web
+Bundle-SymbolicName: picto-web;singleton:=true
+Automatic-Module-Name: picto-web
 Bundle-Version: 1.0.0.qualifier
 Bundle-ClassPath: .
 Bundle-Vendor: %providerName

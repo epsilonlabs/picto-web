@@ -2,16 +2,25 @@
 class [%=classDeclaration.name%] {
 [% 
 var associations = Set{};
-var i = 0;
-while(i < 3) {
-    associations.add(ClassDeclaration.all().random());
-    i = i + 1;
-}
+
 %]
 [% for (field in class.bodyDeclarations.select(b | b.isTypeOf(java::FieldDeclaration))) { %]
 [%   var typeName = field.getTypeName();
+     var type = null;
+     if (field.type <> null and field.type.type <> null 
+        and field.type.type.isTypeOf(java::ClassDeclaration)
+        and classDeclaration <> field.type.type
+        and field.type.type.name <> null
+        //and associations.size() <= 3
+        ){
+        type = field.type.type;
+     }
      for (fragment in field.fragments) { %]
-        [%=field.getVisibility()%] [%=field.getTypeName()%] [%=fragment.name%]
+        [% if (type <> null) {
+            associations.add(Sequence{type, fragment.name});
+        }  else { %]
+  [%=field.getVisibility()%] [%=field.getTypeName()%] [%=fragment.name%]
+        [% } %]
 [%   } %]
 [% } %]
 [% for (method in class.bodyDeclarations.select(b | b.isTypeOf(java::MethodDeclaration))) { %]
@@ -19,8 +28,15 @@ while(i < 3) {
 [% } %]
 }
 
-[% for (association in associations) { %]
-[% var class = association; %] 
+[% var visited = Set{};
+for (association in associations) { 
+    var class = association.at(0);
+    if (visited.includes(class)){
+        continue;
+    } else {
+        visited.add(class);
+    }
+%] 
 class [%=class.name%] {
 [% for (field in class.bodyDeclarations.select(b | b.isTypeOf(java::FieldDeclaration))) { %]
 [%   var typeName = field.getTypeName();
@@ -36,7 +52,7 @@ class [%=class.name%] {
 
 ''relationships
 [% for (association in associations) { %]
-[%=classDeclaration.name%] -- [%=association.name%] 
+[%=classDeclaration.name%] --> [%=association.at(0).name%] : [%=association.at(1)%] 
 [% } %]
 
 @enduml

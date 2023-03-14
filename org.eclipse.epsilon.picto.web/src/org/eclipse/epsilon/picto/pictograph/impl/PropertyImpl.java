@@ -25,12 +25,33 @@ import org.eclipse.epsilon.picto.pictograph.Property;
  * </p>
  * <ul>
  *   <li>{@link org.eclipse.epsilon.picto.pictograph.impl.PropertyImpl#getElement <em>Element</em>}</li>
+ *   <li>{@link org.eclipse.epsilon.picto.pictograph.impl.PropertyImpl#getPreviousValue <em>Previous Value</em>}</li>
  *   <li>{@link org.eclipse.epsilon.picto.pictograph.impl.PropertyImpl#getValue <em>Value</em>}</li>
  * </ul>
  *
  * @generated
  */
 public class PropertyImpl extends InputEntityImpl implements Property {
+  /**
+   * The default value of the '{@link #getPreviousValue() <em>Previous Value</em>}' attribute.
+   * <!-- begin-user-doc -->
+   * <!-- end-user-doc -->
+   * @see #getPreviousValue()
+   * @generated
+   * @ordered
+   */
+  protected static final String PREVIOUS_VALUE_EDEFAULT = null;
+
+  /**
+   * The cached value of the '{@link #getPreviousValue() <em>Previous Value</em>}' attribute.
+   * <!-- begin-user-doc -->
+   * <!-- end-user-doc -->
+   * @see #getPreviousValue()
+   * @generated
+   * @ordered
+   */
+  protected String previousValue = PREVIOUS_VALUE_EDEFAULT;
+
   /**
    * The default value of the '{@link #getValue() <em>Value</em>}' attribute.
    * <!-- begin-user-doc -->
@@ -119,6 +140,29 @@ public class PropertyImpl extends InputEntityImpl implements Property {
    * @generated
    */
   @Override
+  public String getPreviousValue() {
+    return previousValue;
+  }
+
+  /**
+   * <!-- begin-user-doc -->
+   * <!-- end-user-doc -->
+   * @generated
+   */
+  @Override
+  public void setPreviousValue(String newPreviousValue) {
+    String oldPreviousValue = previousValue;
+    previousValue = newPreviousValue;
+    if (eNotificationRequired())
+      eNotify(new ENotificationImpl(this, Notification.SET, PictographPackage.PROPERTY__PREVIOUS_VALUE, oldPreviousValue, previousValue));
+  }
+
+  /**
+   * <!-- begin-user-doc -->
+   * <!-- end-user-doc -->
+   * @generated
+   */
+  @Override
   public String getValue() {
     return value;
   }
@@ -190,6 +234,8 @@ public class PropertyImpl extends InputEntityImpl implements Property {
     switch (featureID) {
       case PictographPackage.PROPERTY__ELEMENT:
         return getElement();
+      case PictographPackage.PROPERTY__PREVIOUS_VALUE:
+        return getPreviousValue();
       case PictographPackage.PROPERTY__VALUE:
         return getValue();
     }
@@ -206,6 +252,9 @@ public class PropertyImpl extends InputEntityImpl implements Property {
     switch (featureID) {
       case PictographPackage.PROPERTY__ELEMENT:
         setElement((Element)newValue);
+        return;
+      case PictographPackage.PROPERTY__PREVIOUS_VALUE:
+        setPreviousValue((String)newValue);
         return;
       case PictographPackage.PROPERTY__VALUE:
         setValue((String)newValue);
@@ -225,6 +274,9 @@ public class PropertyImpl extends InputEntityImpl implements Property {
       case PictographPackage.PROPERTY__ELEMENT:
         setElement((Element)null);
         return;
+      case PictographPackage.PROPERTY__PREVIOUS_VALUE:
+        setPreviousValue(PREVIOUS_VALUE_EDEFAULT);
+        return;
       case PictographPackage.PROPERTY__VALUE:
         setValue(VALUE_EDEFAULT);
         return;
@@ -242,6 +294,8 @@ public class PropertyImpl extends InputEntityImpl implements Property {
     switch (featureID) {
       case PictographPackage.PROPERTY__ELEMENT:
         return getElement() != null;
+      case PictographPackage.PROPERTY__PREVIOUS_VALUE:
+        return PREVIOUS_VALUE_EDEFAULT == null ? previousValue != null : !PREVIOUS_VALUE_EDEFAULT.equals(previousValue);
       case PictographPackage.PROPERTY__VALUE:
         return VALUE_EDEFAULT == null ? value != null : !VALUE_EDEFAULT.equals(value);
     }
@@ -258,7 +312,9 @@ public class PropertyImpl extends InputEntityImpl implements Property {
     if (eIsProxy()) return super.toString();
 
     StringBuilder result = new StringBuilder(super.toString());
-    result.append(" (value: ");
+    result.append(" (previousValue: ");
+    result.append(previousValue);
+    result.append(", value: ");
     result.append(value);
     result.append(')');
     return result.toString();

@@ -36,6 +36,7 @@
     <details key="by" value="Resource.name, elements.name, properties.name"/>
     <details key="many" value="false"/>
   </eAnnotations>
+  <eClassifiers xsi:type="ecore:EDataType" name="EByteArray" instanceClassName="byte[]"/>
   <eClassifiers xsi:type="ecore:EEnum" name="State">
     <eLiterals name="NEW"/>
     <eLiterals name="UPDATED" value="1"/>
@@ -45,7 +46,7 @@
   <eClassifiers xsi:type="ecore:EClass" name="Entity" abstract="true">
     <eStructuralFeatures xsi:type="ecore:EAttribute" name="name" eType="ecore:EDataType http://www.eclipse.org/emf/2002/Ecore#//EString"/>
     <eStructuralFeatures xsi:type="ecore:EAttribute" name="state" eType="#//State"/>
-    <eStructuralFeatures xsi:type="ecore:EAttribute" name="hash" eType="ecore:EDataType http://www.eclipse.org/emf/2002/Ecore#//EString"/>
+    <eStructuralFeatures xsi:type="ecore:EAttribute" name="hash" eType="#//EByteArray"/>
     <eStructuralFeatures xsi:type="ecore:EAttribute" name="accessCount" eType="ecore:EDataType http://www.eclipse.org/emf/2002/Ecore#//EInt"/>
   </eClassifiers>
   <eClassifiers xsi:type="ecore:EClass" name="InputEntity" abstract="true" eSuperTypes="#//Entity">

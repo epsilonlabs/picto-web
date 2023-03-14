@@ -4,6 +4,7 @@ package org.eclipse.epsilon.picto.pictograph.impl;
 
 import org.eclipse.emf.ecore.EAttribute;
 import org.eclipse.emf.ecore.EClass;
+import org.eclipse.emf.ecore.EDataType;
 import org.eclipse.emf.ecore.EEnum;
 import org.eclipse.emf.ecore.EPackage;
 import org.eclipse.emf.ecore.EReference;
@@ -106,6 +107,13 @@ public class PictographPackageImpl extends EPackageImpl implements PictographPac
    * @generated
    */
   private EEnum stateEEnum = null;
+
+  /**
+   * <!-- begin-user-doc -->
+   * <!-- end-user-doc -->
+   * @generated
+   */
+  private EDataType eByteArrayEDataType = null;
 
   /**
    * Creates an instance of the model <b>Package</b>, registered with
@@ -544,6 +552,16 @@ public class PictographPackageImpl extends EPackageImpl implements PictographPac
    * @generated
    */
   @Override
+  public EDataType getEByteArray() {
+    return eByteArrayEDataType;
+  }
+
+  /**
+   * <!-- begin-user-doc -->
+   * <!-- end-user-doc -->
+   * @generated
+   */
+  @Override
   public PictographFactory getPictographFactory() {
     return (PictographFactory)getEFactoryInstance();
   }
@@ -615,6 +633,9 @@ public class PictographPackageImpl extends EPackageImpl implements PictographPac
 
     // Create enums
     stateEEnum = createEEnum(STATE);
+
+    // Create data types
+    eByteArrayEDataType = createEDataType(EBYTE_ARRAY);
   }
 
   /**
@@ -660,7 +681,7 @@ public class PictographPackageImpl extends EPackageImpl implements PictographPac
     initEClass(entityEClass, Entity.class, "Entity", IS_ABSTRACT, !IS_INTERFACE, IS_GENERATED_INSTANCE_CLASS);
     initEAttribute(getEntity_Name(), ecorePackage.getEString(), "name", null, 0, 1, Entity.class, !IS_TRANSIENT, !IS_VOLATILE, IS_CHANGEABLE, !IS_UNSETTABLE, !IS_ID, IS_UNIQUE, !IS_DERIVED, IS_ORDERED);
     initEAttribute(getEntity_State(), this.getState(), "state", null, 0, 1, Entity.class, !IS_TRANSIENT, !IS_VOLATILE, IS_CHANGEABLE, !IS_UNSETTABLE, !IS_ID, IS_UNIQUE, !IS_DERIVED, IS_ORDERED);
-    initEAttribute(getEntity_Hash(), ecorePackage.getEString(), "hash", null, 0, 1, Entity.class, !IS_TRANSIENT, !IS_VOLATILE, IS_CHANGEABLE, !IS_UNSETTABLE, !IS_ID, IS_UNIQUE, !IS_DERIVED, IS_ORDERED);
+    initEAttribute(getEntity_Hash(), this.getEByteArray(), "hash", null, 0, 1, Entity.class, !IS_TRANSIENT, !IS_VOLATILE, IS_CHANGEABLE, !IS_UNSETTABLE, !IS_ID, IS_UNIQUE, !IS_DERIVED, IS_ORDERED);
     initEAttribute(getEntity_AccessCount(), ecorePackage.getEInt(), "accessCount", null, 0, 1, Entity.class, !IS_TRANSIENT, !IS_VOLATILE, IS_CHANGEABLE, !IS_UNSETTABLE, !IS_ID, IS_UNIQUE, !IS_DERIVED, IS_ORDERED);
 
     initEClass(inputEntityEClass, InputEntity.class, "InputEntity", IS_ABSTRACT, !IS_INTERFACE, IS_GENERATED_INSTANCE_CLASS);
@@ -706,6 +727,9 @@ public class PictographPackageImpl extends EPackageImpl implements PictographPac
     addEEnumLiteral(stateEEnum, State.NEW);
     addEEnumLiteral(stateEEnum, State.UPDATED);
     addEEnumLiteral(stateEEnum, State.PROCESSED);
+
+    // Initialize data types
+    initEDataType(eByteArrayEDataType, byte[].class, "EByteArray", IS_SERIALIZABLE, !IS_GENERATED_INSTANCE_CLASS);
 
     // Create resource
     createResource(eNS_URI);

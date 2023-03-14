@@ -2,6 +2,7 @@
  */
 package org.eclipse.epsilon.picto.pictograph;
 
+import org.eclipse.emf.common.util.EList;
 import org.eclipse.emf.ecore.EObject;
 
 /**
@@ -17,7 +18,6 @@ import org.eclipse.emf.ecore.EObject;
  *   <li>{@link org.eclipse.epsilon.picto.pictograph.Entity#getState <em>State</em>}</li>
  *   <li>{@link org.eclipse.epsilon.picto.pictograph.Entity#getHash <em>Hash</em>}</li>
  *   <li>{@link org.eclipse.epsilon.picto.pictograph.Entity#getAccessCount <em>Access Count</em>}</li>
- *   <li>{@link org.eclipse.epsilon.picto.pictograph.Entity#getCheckingTime <em>Checking Time</em>}</li>
  * </ul>
  *
  * @see org.eclipse.epsilon.picto.pictograph.PictographPackage#getEntity()
@@ -73,26 +73,16 @@ public interface Entity extends EObject {
   void setState(State value);
 
   /**
-   * Returns the value of the '<em><b>Hash</b></em>' attribute.
+   * Returns the value of the '<em><b>Hash</b></em>' attribute list.
+   * The list contents are of type {@link java.lang.Byte}.
    * <!-- begin-user-doc -->
    * <!-- end-user-doc -->
-   * @return the value of the '<em>Hash</em>' attribute.
-   * @see #setHash(String)
+   * @return the value of the '<em>Hash</em>' attribute list.
    * @see org.eclipse.epsilon.picto.pictograph.PictographPackage#getEntity_Hash()
    * @model
    * @generated
    */
-  String getHash();
-
-  /**
-   * Sets the value of the '{@link org.eclipse.epsilon.picto.pictograph.Entity#getHash <em>Hash</em>}' attribute.
-   * <!-- begin-user-doc -->
-   * <!-- end-user-doc -->
-   * @param value the new value of the '<em>Hash</em>' attribute.
-   * @see #getHash()
-   * @generated
-   */
-  void setHash(String value);
+  EList<Byte> getHash();
 
   /**
    * Returns the value of the '<em><b>Access Count</b></em>' attribute.
@@ -115,27 +105,5 @@ public interface Entity extends EObject {
    * @generated
    */
   void setAccessCount(int value);
-
-  /**
-   * Returns the value of the '<em><b>Checking Time</b></em>' attribute.
-   * <!-- begin-user-doc -->
-   * <!-- end-user-doc -->
-   * @return the value of the '<em>Checking Time</em>' attribute.
-   * @see #setCheckingTime(long)
-   * @see org.eclipse.epsilon.picto.pictograph.PictographPackage#getEntity_CheckingTime()
-   * @model
-   * @generated
-   */
-  long getCheckingTime();
-
-  /**
-   * Sets the value of the '{@link org.eclipse.epsilon.picto.pictograph.Entity#getCheckingTime <em>Checking Time</em>}' attribute.
-   * <!-- begin-user-doc -->
-   * <!-- end-user-doc -->
-   * @param value the new value of the '<em>Checking Time</em>' attribute.
-   * @see #getCheckingTime()
-   * @generated
-   */
-  void setCheckingTime(long value);
 
 } // Entity

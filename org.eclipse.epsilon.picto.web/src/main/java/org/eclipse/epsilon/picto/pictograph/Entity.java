@@ -2,6 +2,8 @@
  */
 package org.eclipse.epsilon.picto.pictograph;
 
+import org.eclipse.emf.common.util.EList;
+
 import org.eclipse.emf.ecore.EObject;
 
 /**
@@ -76,12 +78,12 @@ public interface Entity extends EObject {
    * <!-- begin-user-doc -->
    * <!-- end-user-doc -->
    * @return the value of the '<em>Hash</em>' attribute.
-   * @see #setHash(String)
+   * @see #setHash(byte[])
    * @see org.eclipse.epsilon.picto.pictograph.PictographPackage#getEntity_Hash()
-   * @model
+   * @model dataType="org.eclipse.epsilon.picto.pictograph.EByteArray"
    * @generated
    */
-  String getHash();
+  byte[] getHash();
 
   /**
    * Sets the value of the '{@link org.eclipse.epsilon.picto.pictograph.Entity#getHash <em>Hash</em>}' attribute.
@@ -91,7 +93,7 @@ public interface Entity extends EObject {
    * @see #getHash()
    * @generated
    */
-  void setHash(String value);
+  void setHash(byte[] value);
 
   /**
    * Returns the value of the '<em><b>Access Count</b></em>' attribute.

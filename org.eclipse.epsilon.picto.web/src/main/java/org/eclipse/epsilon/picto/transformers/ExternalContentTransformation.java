@@ -14,6 +14,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.time.Duration;
+import java.util.Random;
 import java.util.concurrent.Callable;
 import java.util.concurrent.TimeUnit;
 import org.eclipse.epsilon.common.util.FileUtil;
@@ -36,6 +37,7 @@ public class ExternalContentTransformation implements Runnable, Callable<byte[]>
 	protected boolean hasRun = false;
 	protected byte[] result;
 	protected String processOutput;
+	protected static Random random = new Random();
 
 	protected ExternalContentTransformation(String program, Object... arguments) {
 		if (arguments == null) {
@@ -72,7 +74,7 @@ public class ExternalContentTransformation implements Runnable, Callable<byte[]>
 	 * @throws IOException If the temp file couldn't be created.
 	 */
 	public static Path createTempFile(String extension, byte... contents) throws IOException {
-		Path file = FileUtil.createTempFile("picto-renderer"+System.currentTimeMillis(), '.'+extension).toPath();
+		Path file = FileUtil.createTempFile(("picto-renderer"+ System.nanoTime()) + random.nextInt(10, 100), '.'+extension).toPath();
 		Path result = contents != null && contents.length > 0 ? Files.write(file, contents) : file;
 		return result.toAbsolutePath();
 	}

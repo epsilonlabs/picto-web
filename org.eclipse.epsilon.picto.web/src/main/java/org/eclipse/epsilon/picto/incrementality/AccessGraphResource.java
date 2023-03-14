@@ -10,8 +10,6 @@
 
 package org.eclipse.epsilon.picto.incrementality;
 
-import static org.hamcrest.CoreMatchers.instanceOf;
-
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashSet;
@@ -326,7 +324,8 @@ public class AccessGraphResource implements AccessRecordResource {
     if ("/Stats".equals(checkedPath)) {
       System.console();
     }
-
+    
+    
     // check if the path is a new view
     if (path == null) {
       toBeProcessedPaths.add(checkedPath);
@@ -439,12 +438,12 @@ public class AccessGraphResource implements AccessRecordResource {
                 path.setCheckingTime(path.getCheckingTime() + time);
                 path.setAvgCheckTime(path.getCheckingTime() / path.getCheckCount());
 
-                /** Record the number of Properties checked **/
-                PerformanceRecord r = new PerformanceRecord(PerformanceRecorder.genenerateAll,
-                    PerformanceRecorder.generateAlways, PerformanceRecorder.globalNumberOfAffectedViews,
-                    PerformanceRecorder.globalNumberIteration, "Server", checkedPath, numCheckedProperties, 0,
-                    PerformanceTestType.CHECKED_PROPERTIES, PerformanceRecorder.accessRecordResourceSize());
-                PerformanceRecorder.record(r);
+//                /** Record the number of Properties checked **/
+//                PerformanceRecord r = new PerformanceRecord(PerformanceRecorder.genenerateAll,
+//                    PerformanceRecorder.generateAlways, PerformanceRecorder.globalNumberOfAffectedViews,
+//                    PerformanceRecorder.globalNumberIteration, "Server", checkedPath, numCheckedProperties, 0,
+//                    PerformanceTestType.CHECKED_PROPERTIES, PerformanceRecorder.accessRecordResourceSize());
+//                PerformanceRecorder.record(r);
 
 //                int count = 0;
 //                int it = 0;
@@ -471,19 +470,19 @@ public class AccessGraphResource implements AccessRecordResource {
         }
       }
 
-      /** Record the number of Properties checked **/
-      PerformanceRecord r = new PerformanceRecord(PerformanceRecorder.genenerateAll, PerformanceRecorder.generateAlways,
-          PerformanceRecorder.globalNumberOfAffectedViews, PerformanceRecorder.globalNumberIteration, "Server",
-          checkedPath, numCheckedProperties, 0, PerformanceTestType.CHECKED_PROPERTIES,
-          PerformanceRecorder.accessRecordResourceSize());
-      PerformanceRecorder.record(r);
-
-      r = new PerformanceRecord(PerformanceRecorder.genenerateAll, PerformanceRecorder.generateAlways,
-          PerformanceRecorder.globalNumberOfAffectedViews, PerformanceRecorder.globalNumberIteration, "Server",
-          checkedPath, numCheckedProperties, 0, PerformanceTestType.PROPERTIES,
-          PerformanceRecorder.accessRecordResourceSize());
-      PerformanceRecorder.record(r);
-
+//      /** Record the number of Properties checked **/
+//      PerformanceRecord r = new PerformanceRecord(PerformanceRecorder.genenerateAll, PerformanceRecorder.generateAlways,
+//          PerformanceRecorder.globalNumberOfAffectedViews, PerformanceRecorder.globalNumberIteration, "Server",
+//          checkedPath, numCheckedProperties, 0, PerformanceTestType.CHECKED_PROPERTIES,
+//          PerformanceRecorder.accessRecordResourceSize());
+//      PerformanceRecorder.record(r);
+//
+//      r = new PerformanceRecord(PerformanceRecorder.genenerateAll, PerformanceRecorder.generateAlways,
+//          PerformanceRecorder.globalNumberOfAffectedViews, PerformanceRecorder.globalNumberIteration, "Server",
+//          checkedPath, numCheckedProperties, 0, PerformanceTestType.PROPERTIES,
+//          PerformanceRecorder.accessRecordResourceSize());
+//      PerformanceRecorder.record(r);
+//
       long time = System.currentTimeMillis() - start;
       path.setCheckingTime(path.getCheckingTime() + time);
       path.setAvgCheckTime(path.getCheckingTime() / path.getCheckCount());

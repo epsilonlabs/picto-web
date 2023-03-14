@@ -10,6 +10,8 @@
 
 package pictograph;
 
+datatype EByteArray : "byte[]";
+
 enum State {
 	NEW = 0;
 	UPDATED = 1;
@@ -22,7 +24,7 @@ class PictoGraph {
 abstract class Entity {
 	attr String name;
 	attr State state;
-	attr String hash; 
+	attr EByteArray hash; 
 	attr int accessCount;
 }
 

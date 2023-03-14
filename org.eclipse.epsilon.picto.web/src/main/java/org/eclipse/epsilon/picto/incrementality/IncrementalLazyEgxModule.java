@@ -45,8 +45,7 @@ import org.eclipse.epsilon.pinset.PinsetModule;
 public class IncrementalLazyEgxModule extends EgxModuleParallelGenerationRuleAtoms {
 
   protected AccessRecordResource accessRecordResource;
-//  private EglFileGeneratingTemplateFactory templateFactory;
-//  protected EglTemplate template;
+  protected List<String> paths = new ArrayList<>();
 
   protected long promiseDetectionTime;
 
@@ -217,18 +216,24 @@ public class IncrementalLazyEgxModule extends EgxModuleParallelGenerationRuleAto
       listener.removeRecorder(accessRecorder);
       IncrementalLazyEgxModule.this.getContext().getExecutorFactory().removeExecutionListener(listener);
 
-      long startTime = System.currentTimeMillis();
-      Set<String> invalidatedViewPaths = new HashSet<String>();
-      ((AccessGraphResource) accessRecordResource).checkPath((EgxModule) context.getModule(), invalidatedViewPaths,
-          new HashSet<String>(), new HashSet<EObject>(), path);
-      promiseDetectionTime += (System.currentTimeMillis() - startTime);
+      if (path != null)
+        paths.add(path);
 
-      // if invalidated views is empty (the path doesn't need regeneration) then there
-      // is no need to generate the promise, instead skip to the next element.
-      if (invalidatedViewPaths.size() == 0) {
-        return null;
+      /*** START FILTER THE PROMISES ***/
+      if (!PictoApplication.isNonIncremental()) {
+        long startTime = System.currentTimeMillis();
+        Set<String> invalidatedViewPaths = new HashSet<String>();
+        ((AccessGraphResource) accessRecordResource).checkPath((EgxModule) context.getModule(), invalidatedViewPaths,
+            new HashSet<String>(), new HashSet<EObject>(), path);
+        promiseDetectionTime += (System.currentTimeMillis() - startTime);
+        // if invalidated views is empty (the path doesn't need regeneration) then there
+        // is no need to generate the promise, instead skip to the next element.
+        if (invalidatedViewPaths.size() == 0) {
+          return null;
+        }
       }
-      
+      /*** END FILTER THE PROMISES ***/
+
       IncrementalLazyGenerationRuleContentPromise promise = new IncrementalLazyGenerationRuleContentPromise(
           contextObject, this, path, templateFactory, templateUri, variables, templateCache);
 
@@ -457,4 +462,7 @@ public class IncrementalLazyEgxModule extends EgxModuleParallelGenerationRuleAto
     return promiseDetectionTime;
   }
 
+  public List<String> getPaths() {
+    return paths;
+  }
 }

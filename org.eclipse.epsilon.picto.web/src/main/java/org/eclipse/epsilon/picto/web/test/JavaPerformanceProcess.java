@@ -20,8 +20,10 @@ import java.nio.file.Files;
 import java.nio.file.StandardCopyOption;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.Comparator;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Random;
@@ -92,7 +94,7 @@ public class JavaPerformanceProcess {
 
   static ObjectMapper mapper = new ObjectMapper();
   static Set<String> expectedViews;
-  private static List<String> classNames = new ArrayList<>();
+  private static List<String> classNames = new LinkedList<>();
 
   public static void main(String... args) throws Exception {
 
@@ -104,6 +106,11 @@ public class JavaPerformanceProcess {
 
     int numberOfIteration = 13; // Number of iteration measuring for each number of affected views
     int numberOfClients = 100; // number of clients subscribed to Picto Web's STOMP server.
+
+    /** comment this if we want to test using the big model */
+//  numberOfClients = 1; // number of clients subscribed to Picto Web's STOMP server.
+//  numberOfIteration = 3; // Number of iteration measuring for each number of affected views
+//  MODEL_ORIGINAL = "/java/java.small.xmi";
 
     PerformanceRecorder.globalNumberOfAffectedViews = numOfAffectedViews;
     PerformanceRecorder.setOutputFile(new File("data/selective.csv"));
@@ -122,17 +129,11 @@ public class JavaPerformanceProcess {
       clients.add(client);
       client.setName("Client-" + i);
       client.start();
-      client.join(); // wait until each process finishes one by one
+      client.join(); 
     }
-
-//    System.out.println("1. ZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZ");
-
+    
     Object invalidatedViewsWaiter = new Object();
 
-    /** comment this if we want to test using the big model */
-//    numberOfClients = 1; // number of clients subscribed to Picto Web's STOMP server.
-//    numberOfIteration = 3; // Number of iteration measuring for each number of affected views
-//    MODEL_ORIGINAL = "/java/java.small.xmi";
 
     Map<Object, Object> loadOptions = ((XMIResourceImpl) resource).getDefaultLoadOptions();
     loadOptions.put(XMIResource.OPTION_DEFER_IDREF_RESOLUTION, Boolean.TRUE);
@@ -142,11 +143,8 @@ public class JavaPerformanceProcess {
 
     JavaPackage.eINSTANCE.eClass();
 
-//    System.out.println("2. ZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZ");
-
     System.out.print("Loading Model ... ");
     resource.load(loadOptions);
-//    System.out.println("3. ZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZ");
     System.out.println("Done");
 
     List<String> classList = new ArrayList<>();
@@ -187,13 +185,6 @@ public class JavaPerformanceProcess {
 
       for (int iterationIndex = 1; iterationIndex <= numberOfIteration; iterationIndex++) {
 
-        System.out.print("Waiting AccessGraphResource task executor to complete ");
-        while(AccessGraphResource.getExecutorService().getActiveCount() > 0) {
-          System.out.print(".");
-//          System.out.println("AAA: " + AccessGraphResource.getExecutorService().getActiveCount() + " of " + AccessGraphResource.getExecutorService().getTaskCount());
-        }
-        System.out.println(" Done");
-        
         PictoApplication.setPromisesGenerationListener(new PromisesGenerationListener() {
           @Override
           public void onGenerated(Set<String> invalidatedViews) {
@@ -248,11 +239,10 @@ public class JavaPerformanceProcess {
             }
 
           }
-
         }
-
         resource.save(saveOptions);
 
+        // copy model to the watched directory
         boolean isCopySuccess = false;
         while (!isCopySuccess) {
           try {
@@ -265,13 +255,10 @@ public class JavaPerformanceProcess {
             isCopySuccess = true;
           } catch (Exception e) {
             Thread.sleep(100);
-//                System.out.print(".");
             isCopySuccess = false;
           }
         }
-//            System.out.println(" Done");
 
-//          Thread.sleep(100);
         PerformanceRecorder.startTime = System.currentTimeMillis();
 
         // wait until we get the paths of invalidated views
@@ -279,14 +266,21 @@ public class JavaPerformanceProcess {
           invalidatedViewsWaiter.wait();
           System.out.println("Expected Views : " + expectedViews);
         }
-
         synchronized (clientWaitingList) {
           clientWaitingList.wait(5 * 60 * 1000);
         }
-//            System.out.println("Wait 1 seconds");
-        Thread.sleep(2000);
-        // ----
-      } // for (int i = 1; i <= numberOfIteration; i++) {
+        System.out.print("Waiting AccessGraphResource task executor to complete ");
+        while (AccessGraphResource.getExecutorService().getActiveCount() > 0) {
+          System.out.print(".");
+        }
+        
+        System.out.println(" Done");
+        
+//        for (int i = 1; i < 5;i++) {
+          System.gc();
+          Thread.sleep(1000);
+//        }
+      }
 
       for (Client client : clients) {
         client.shutdown();
@@ -296,7 +290,6 @@ public class JavaPerformanceProcess {
       server.stop();
 
       Thread.sleep(1000);
-//      System.out.println("Number of Properties: " + PerformanceRecorder.getPropertyCount());
       System.out.println("FINISHED!");
 
     } catch (Exception e) {

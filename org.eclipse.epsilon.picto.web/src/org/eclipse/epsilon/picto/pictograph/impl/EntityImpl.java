@@ -2,13 +2,16 @@
  */
 package org.eclipse.epsilon.picto.pictograph.impl;
 
+import java.util.Collection;
 import org.eclipse.emf.common.notify.Notification;
 
+import org.eclipse.emf.common.util.EList;
 import org.eclipse.emf.ecore.EClass;
 
 import org.eclipse.emf.ecore.impl.ENotificationImpl;
 import org.eclipse.emf.ecore.impl.EObjectImpl;
 
+import org.eclipse.emf.ecore.util.EDataTypeUniqueEList;
 import org.eclipse.epsilon.picto.pictograph.Entity;
 import org.eclipse.epsilon.picto.pictograph.PictographPackage;
 import org.eclipse.epsilon.picto.pictograph.State;
@@ -25,7 +28,6 @@ import org.eclipse.epsilon.picto.pictograph.State;
  *   <li>{@link org.eclipse.epsilon.picto.pictograph.impl.EntityImpl#getState <em>State</em>}</li>
  *   <li>{@link org.eclipse.epsilon.picto.pictograph.impl.EntityImpl#getHash <em>Hash</em>}</li>
  *   <li>{@link org.eclipse.epsilon.picto.pictograph.impl.EntityImpl#getAccessCount <em>Access Count</em>}</li>
- *   <li>{@link org.eclipse.epsilon.picto.pictograph.impl.EntityImpl#getCheckingTime <em>Checking Time</em>}</li>
  * </ul>
  *
  * @generated
@@ -72,24 +74,14 @@ public abstract class EntityImpl extends EObjectImpl implements Entity {
   protected State state = STATE_EDEFAULT;
 
   /**
-   * The default value of the '{@link #getHash() <em>Hash</em>}' attribute.
+   * The cached value of the '{@link #getHash() <em>Hash</em>}' attribute list.
    * <!-- begin-user-doc -->
    * <!-- end-user-doc -->
    * @see #getHash()
    * @generated
    * @ordered
    */
-  protected static final String HASH_EDEFAULT = null;
-
-  /**
-   * The cached value of the '{@link #getHash() <em>Hash</em>}' attribute.
-   * <!-- begin-user-doc -->
-   * <!-- end-user-doc -->
-   * @see #getHash()
-   * @generated
-   * @ordered
-   */
-  protected String hash = HASH_EDEFAULT;
+  protected EList<Byte> hash;
 
   /**
    * The default value of the '{@link #getAccessCount() <em>Access Count</em>}' attribute.
@@ -110,26 +102,6 @@ public abstract class EntityImpl extends EObjectImpl implements Entity {
    * @ordered
    */
   protected int accessCount = ACCESS_COUNT_EDEFAULT;
-
-  /**
-   * The default value of the '{@link #getCheckingTime() <em>Checking Time</em>}' attribute.
-   * <!-- begin-user-doc -->
-   * <!-- end-user-doc -->
-   * @see #getCheckingTime()
-   * @generated
-   * @ordered
-   */
-  protected static final long CHECKING_TIME_EDEFAULT = 0L;
-
-  /**
-   * The cached value of the '{@link #getCheckingTime() <em>Checking Time</em>}' attribute.
-   * <!-- begin-user-doc -->
-   * <!-- end-user-doc -->
-   * @see #getCheckingTime()
-   * @generated
-   * @ordered
-   */
-  protected long checkingTime = CHECKING_TIME_EDEFAULT;
 
   /**
    * <!-- begin-user-doc -->
@@ -202,21 +174,11 @@ public abstract class EntityImpl extends EObjectImpl implements Entity {
    * @generated
    */
   @Override
-  public String getHash() {
+  public EList<Byte> getHash() {
+    if (hash == null) {
+      hash = new EDataTypeUniqueEList<Byte>(Byte.class, this, PictographPackage.ENTITY__HASH);
+    }
     return hash;
-  }
-
-  /**
-   * <!-- begin-user-doc -->
-   * <!-- end-user-doc -->
-   * @generated
-   */
-  @Override
-  public void setHash(String newHash) {
-    String oldHash = hash;
-    hash = newHash;
-    if (eNotificationRequired())
-      eNotify(new ENotificationImpl(this, Notification.SET, PictographPackage.ENTITY__HASH, oldHash, hash));
   }
 
   /**
@@ -248,29 +210,6 @@ public abstract class EntityImpl extends EObjectImpl implements Entity {
    * @generated
    */
   @Override
-  public long getCheckingTime() {
-    return checkingTime;
-  }
-
-  /**
-   * <!-- begin-user-doc -->
-   * <!-- end-user-doc -->
-   * @generated
-   */
-  @Override
-  public void setCheckingTime(long newCheckingTime) {
-    long oldCheckingTime = checkingTime;
-    checkingTime = newCheckingTime;
-    if (eNotificationRequired())
-      eNotify(new ENotificationImpl(this, Notification.SET, PictographPackage.ENTITY__CHECKING_TIME, oldCheckingTime, checkingTime));
-  }
-
-  /**
-   * <!-- begin-user-doc -->
-   * <!-- end-user-doc -->
-   * @generated
-   */
-  @Override
   public Object eGet(int featureID, boolean resolve, boolean coreType) {
     switch (featureID) {
       case PictographPackage.ENTITY__NAME:
@@ -281,8 +220,6 @@ public abstract class EntityImpl extends EObjectImpl implements Entity {
         return getHash();
       case PictographPackage.ENTITY__ACCESS_COUNT:
         return getAccessCount();
-      case PictographPackage.ENTITY__CHECKING_TIME:
-        return getCheckingTime();
     }
     return super.eGet(featureID, resolve, coreType);
   }
@@ -292,6 +229,7 @@ public abstract class EntityImpl extends EObjectImpl implements Entity {
    * <!-- end-user-doc -->
    * @generated
    */
+  @SuppressWarnings("unchecked")
   @Override
   public void eSet(int featureID, Object newValue) {
     switch (featureID) {
@@ -302,13 +240,11 @@ public abstract class EntityImpl extends EObjectImpl implements Entity {
         setState((State)newValue);
         return;
       case PictographPackage.ENTITY__HASH:
-        setHash((String)newValue);
+        getHash().clear();
+        getHash().addAll((Collection<? extends Byte>)newValue);
         return;
       case PictographPackage.ENTITY__ACCESS_COUNT:
         setAccessCount((Integer)newValue);
-        return;
-      case PictographPackage.ENTITY__CHECKING_TIME:
-        setCheckingTime((Long)newValue);
         return;
     }
     super.eSet(featureID, newValue);
@@ -329,13 +265,10 @@ public abstract class EntityImpl extends EObjectImpl implements Entity {
         setState(STATE_EDEFAULT);
         return;
       case PictographPackage.ENTITY__HASH:
-        setHash(HASH_EDEFAULT);
+        getHash().clear();
         return;
       case PictographPackage.ENTITY__ACCESS_COUNT:
         setAccessCount(ACCESS_COUNT_EDEFAULT);
-        return;
-      case PictographPackage.ENTITY__CHECKING_TIME:
-        setCheckingTime(CHECKING_TIME_EDEFAULT);
         return;
     }
     super.eUnset(featureID);
@@ -354,11 +287,9 @@ public abstract class EntityImpl extends EObjectImpl implements Entity {
       case PictographPackage.ENTITY__STATE:
         return state != STATE_EDEFAULT;
       case PictographPackage.ENTITY__HASH:
-        return HASH_EDEFAULT == null ? hash != null : !HASH_EDEFAULT.equals(hash);
+        return hash != null && !hash.isEmpty();
       case PictographPackage.ENTITY__ACCESS_COUNT:
         return accessCount != ACCESS_COUNT_EDEFAULT;
-      case PictographPackage.ENTITY__CHECKING_TIME:
-        return checkingTime != CHECKING_TIME_EDEFAULT;
     }
     return super.eIsSet(featureID);
   }
@@ -381,8 +312,6 @@ public abstract class EntityImpl extends EObjectImpl implements Entity {
     result.append(hash);
     result.append(", accessCount: ");
     result.append(accessCount);
-    result.append(", checkingTime: ");
-    result.append(checkingTime);
     result.append(')');
     return result.toString();
   }

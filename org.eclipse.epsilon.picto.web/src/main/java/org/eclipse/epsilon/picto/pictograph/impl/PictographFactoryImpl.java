@@ -89,6 +89,8 @@ public class PictographFactoryImpl extends EFactoryImpl implements PictographFac
     switch (eDataType.getClassifierID()) {
       case PictographPackage.STATE:
         return createStateFromString(eDataType, initialValue);
+      case PictographPackage.EBYTE_ARRAY:
+        return createEByteArrayFromString(eDataType, initialValue);
       default:
         throw new IllegalArgumentException("The datatype '" + eDataType.getName() + "' is not a valid classifier");
     }
@@ -104,6 +106,8 @@ public class PictographFactoryImpl extends EFactoryImpl implements PictographFac
     switch (eDataType.getClassifierID()) {
       case PictographPackage.STATE:
         return convertStateToString(eDataType, instanceValue);
+      case PictographPackage.EBYTE_ARRAY:
+        return convertEByteArrayToString(eDataType, instanceValue);
       default:
         throw new IllegalArgumentException("The datatype '" + eDataType.getName() + "' is not a valid classifier");
     }
@@ -215,6 +219,24 @@ public class PictographFactoryImpl extends EFactoryImpl implements PictographFac
    */
   public String convertStateToString(EDataType eDataType, Object instanceValue) {
     return instanceValue == null ? null : instanceValue.toString();
+  }
+
+  /**
+   * <!-- begin-user-doc -->
+   * <!-- end-user-doc -->
+   * @generated
+   */
+  public byte[] createEByteArrayFromString(EDataType eDataType, String initialValue) {
+    return (byte[])super.createFromString(initialValue);
+  }
+
+  /**
+   * <!-- begin-user-doc -->
+   * <!-- end-user-doc -->
+   * @generated
+   */
+  public String convertEByteArrayToString(EDataType eDataType, Object instanceValue) {
+    return super.convertToString(instanceValue);
   }
 
   /**

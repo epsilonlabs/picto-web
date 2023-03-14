@@ -111,7 +111,7 @@ public interface PictographPackage extends EPackage {
   int ENTITY__STATE = 1;
 
   /**
-   * The feature id for the '<em><b>Hash</b></em>' attribute.
+   * The feature id for the '<em><b>Hash</b></em>' attribute list.
    * <!-- begin-user-doc -->
    * <!-- end-user-doc -->
    * @generated
@@ -129,22 +129,13 @@ public interface PictographPackage extends EPackage {
   int ENTITY__ACCESS_COUNT = 3;
 
   /**
-   * The feature id for the '<em><b>Checking Time</b></em>' attribute.
-   * <!-- begin-user-doc -->
-   * <!-- end-user-doc -->
-   * @generated
-   * @ordered
-   */
-  int ENTITY__CHECKING_TIME = 4;
-
-  /**
    * The number of structural features of the '<em>Entity</em>' class.
    * <!-- begin-user-doc -->
    * <!-- end-user-doc -->
    * @generated
    * @ordered
    */
-  int ENTITY_FEATURE_COUNT = 5;
+  int ENTITY_FEATURE_COUNT = 4;
 
   /**
    * The meta object id for the '{@link org.eclipse.epsilon.picto.pictograph.impl.InputEntityImpl <em>Input Entity</em>}' class.
@@ -175,7 +166,7 @@ public interface PictographPackage extends EPackage {
   int INPUT_ENTITY__STATE = ENTITY__STATE;
 
   /**
-   * The feature id for the '<em><b>Hash</b></em>' attribute.
+   * The feature id for the '<em><b>Hash</b></em>' attribute list.
    * <!-- begin-user-doc -->
    * <!-- end-user-doc -->
    * @generated
@@ -191,15 +182,6 @@ public interface PictographPackage extends EPackage {
    * @ordered
    */
   int INPUT_ENTITY__ACCESS_COUNT = ENTITY__ACCESS_COUNT;
-
-  /**
-   * The feature id for the '<em><b>Checking Time</b></em>' attribute.
-   * <!-- begin-user-doc -->
-   * <!-- end-user-doc -->
-   * @generated
-   * @ordered
-   */
-  int INPUT_ENTITY__CHECKING_TIME = ENTITY__CHECKING_TIME;
 
   /**
    * The feature id for the '<em><b>Affects</b></em>' reference list.
@@ -248,7 +230,7 @@ public interface PictographPackage extends EPackage {
   int PATH__STATE = ENTITY__STATE;
 
   /**
-   * The feature id for the '<em><b>Hash</b></em>' attribute.
+   * The feature id for the '<em><b>Hash</b></em>' attribute list.
    * <!-- begin-user-doc -->
    * <!-- end-user-doc -->
    * @generated
@@ -264,15 +246,6 @@ public interface PictographPackage extends EPackage {
    * @ordered
    */
   int PATH__ACCESS_COUNT = ENTITY__ACCESS_COUNT;
-
-  /**
-   * The feature id for the '<em><b>Checking Time</b></em>' attribute.
-   * <!-- begin-user-doc -->
-   * <!-- end-user-doc -->
-   * @generated
-   * @ordered
-   */
-  int PATH__CHECKING_TIME = ENTITY__CHECKING_TIME;
 
   /**
    * The feature id for the '<em><b>Affected By</b></em>' reference list.
@@ -302,13 +275,49 @@ public interface PictographPackage extends EPackage {
   int PATH__GENERATION_TIME = ENTITY_FEATURE_COUNT + 2;
 
   /**
+   * The feature id for the '<em><b>Avg Gen Time</b></em>' attribute.
+   * <!-- begin-user-doc -->
+   * <!-- end-user-doc -->
+   * @generated
+   * @ordered
+   */
+  int PATH__AVG_GEN_TIME = ENTITY_FEATURE_COUNT + 3;
+
+  /**
+   * The feature id for the '<em><b>Check Count</b></em>' attribute.
+   * <!-- begin-user-doc -->
+   * <!-- end-user-doc -->
+   * @generated
+   * @ordered
+   */
+  int PATH__CHECK_COUNT = ENTITY_FEATURE_COUNT + 4;
+
+  /**
+   * The feature id for the '<em><b>Checking Time</b></em>' attribute.
+   * <!-- begin-user-doc -->
+   * <!-- end-user-doc -->
+   * @generated
+   * @ordered
+   */
+  int PATH__CHECKING_TIME = ENTITY_FEATURE_COUNT + 5;
+
+  /**
+   * The feature id for the '<em><b>Avg Check Time</b></em>' attribute.
+   * <!-- begin-user-doc -->
+   * <!-- end-user-doc -->
+   * @generated
+   * @ordered
+   */
+  int PATH__AVG_CHECK_TIME = ENTITY_FEATURE_COUNT + 6;
+
+  /**
    * The number of structural features of the '<em>Path</em>' class.
    * <!-- begin-user-doc -->
    * <!-- end-user-doc -->
    * @generated
    * @ordered
    */
-  int PATH_FEATURE_COUNT = ENTITY_FEATURE_COUNT + 3;
+  int PATH_FEATURE_COUNT = ENTITY_FEATURE_COUNT + 7;
 
   /**
    * The meta object id for the '{@link org.eclipse.epsilon.picto.pictograph.impl.ModuleImpl <em>Module</em>}' class.
@@ -339,7 +348,7 @@ public interface PictographPackage extends EPackage {
   int MODULE__STATE = INPUT_ENTITY__STATE;
 
   /**
-   * The feature id for the '<em><b>Hash</b></em>' attribute.
+   * The feature id for the '<em><b>Hash</b></em>' attribute list.
    * <!-- begin-user-doc -->
    * <!-- end-user-doc -->
    * @generated
@@ -355,15 +364,6 @@ public interface PictographPackage extends EPackage {
    * @ordered
    */
   int MODULE__ACCESS_COUNT = INPUT_ENTITY__ACCESS_COUNT;
-
-  /**
-   * The feature id for the '<em><b>Checking Time</b></em>' attribute.
-   * <!-- begin-user-doc -->
-   * <!-- end-user-doc -->
-   * @generated
-   * @ordered
-   */
-  int MODULE__CHECKING_TIME = INPUT_ENTITY__CHECKING_TIME;
 
   /**
    * The feature id for the '<em><b>Affects</b></em>' reference list.
@@ -421,7 +421,7 @@ public interface PictographPackage extends EPackage {
   int RESOURCE__STATE = INPUT_ENTITY__STATE;
 
   /**
-   * The feature id for the '<em><b>Hash</b></em>' attribute.
+   * The feature id for the '<em><b>Hash</b></em>' attribute list.
    * <!-- begin-user-doc -->
    * <!-- end-user-doc -->
    * @generated
@@ -437,15 +437,6 @@ public interface PictographPackage extends EPackage {
    * @ordered
    */
   int RESOURCE__ACCESS_COUNT = INPUT_ENTITY__ACCESS_COUNT;
-
-  /**
-   * The feature id for the '<em><b>Checking Time</b></em>' attribute.
-   * <!-- begin-user-doc -->
-   * <!-- end-user-doc -->
-   * @generated
-   * @ordered
-   */
-  int RESOURCE__CHECKING_TIME = INPUT_ENTITY__CHECKING_TIME;
 
   /**
    * The feature id for the '<em><b>Affects</b></em>' reference list.
@@ -503,7 +494,7 @@ public interface PictographPackage extends EPackage {
   int PROPERTY__STATE = INPUT_ENTITY__STATE;
 
   /**
-   * The feature id for the '<em><b>Hash</b></em>' attribute.
+   * The feature id for the '<em><b>Hash</b></em>' attribute list.
    * <!-- begin-user-doc -->
    * <!-- end-user-doc -->
    * @generated
@@ -519,15 +510,6 @@ public interface PictographPackage extends EPackage {
    * @ordered
    */
   int PROPERTY__ACCESS_COUNT = INPUT_ENTITY__ACCESS_COUNT;
-
-  /**
-   * The feature id for the '<em><b>Checking Time</b></em>' attribute.
-   * <!-- begin-user-doc -->
-   * <!-- end-user-doc -->
-   * @generated
-   * @ordered
-   */
-  int PROPERTY__CHECKING_TIME = INPUT_ENTITY__CHECKING_TIME;
 
   /**
    * The feature id for the '<em><b>Affects</b></em>' reference list.
@@ -548,13 +530,22 @@ public interface PictographPackage extends EPackage {
   int PROPERTY__ELEMENT = INPUT_ENTITY_FEATURE_COUNT + 0;
 
   /**
+   * The feature id for the '<em><b>Previous Value</b></em>' attribute.
+   * <!-- begin-user-doc -->
+   * <!-- end-user-doc -->
+   * @generated
+   * @ordered
+   */
+  int PROPERTY__PREVIOUS_VALUE = INPUT_ENTITY_FEATURE_COUNT + 1;
+
+  /**
    * The feature id for the '<em><b>Value</b></em>' attribute.
    * <!-- begin-user-doc -->
    * <!-- end-user-doc -->
    * @generated
    * @ordered
    */
-  int PROPERTY__VALUE = INPUT_ENTITY_FEATURE_COUNT + 1;
+  int PROPERTY__VALUE = INPUT_ENTITY_FEATURE_COUNT + 2;
 
   /**
    * The number of structural features of the '<em>Property</em>' class.
@@ -563,7 +554,7 @@ public interface PictographPackage extends EPackage {
    * @generated
    * @ordered
    */
-  int PROPERTY_FEATURE_COUNT = INPUT_ENTITY_FEATURE_COUNT + 2;
+  int PROPERTY_FEATURE_COUNT = INPUT_ENTITY_FEATURE_COUNT + 3;
 
   /**
    * The meta object id for the '{@link org.eclipse.epsilon.picto.pictograph.impl.ElementImpl <em>Element</em>}' class.
@@ -594,7 +585,7 @@ public interface PictographPackage extends EPackage {
   int ELEMENT__STATE = INPUT_ENTITY__STATE;
 
   /**
-   * The feature id for the '<em><b>Hash</b></em>' attribute.
+   * The feature id for the '<em><b>Hash</b></em>' attribute list.
    * <!-- begin-user-doc -->
    * <!-- end-user-doc -->
    * @generated
@@ -610,15 +601,6 @@ public interface PictographPackage extends EPackage {
    * @ordered
    */
   int ELEMENT__ACCESS_COUNT = INPUT_ENTITY__ACCESS_COUNT;
-
-  /**
-   * The feature id for the '<em><b>Checking Time</b></em>' attribute.
-   * <!-- begin-user-doc -->
-   * <!-- end-user-doc -->
-   * @generated
-   * @ordered
-   */
-  int ELEMENT__CHECKING_TIME = INPUT_ENTITY__CHECKING_TIME;
 
   /**
    * The feature id for the '<em><b>Affects</b></em>' reference list.
@@ -685,7 +667,7 @@ public interface PictographPackage extends EPackage {
   int RULE__STATE = INPUT_ENTITY__STATE;
 
   /**
-   * The feature id for the '<em><b>Hash</b></em>' attribute.
+   * The feature id for the '<em><b>Hash</b></em>' attribute list.
    * <!-- begin-user-doc -->
    * <!-- end-user-doc -->
    * @generated
@@ -701,15 +683,6 @@ public interface PictographPackage extends EPackage {
    * @ordered
    */
   int RULE__ACCESS_COUNT = INPUT_ENTITY__ACCESS_COUNT;
-
-  /**
-   * The feature id for the '<em><b>Checking Time</b></em>' attribute.
-   * <!-- begin-user-doc -->
-   * <!-- end-user-doc -->
-   * @generated
-   * @ordered
-   */
-  int RULE__CHECKING_TIME = INPUT_ENTITY__CHECKING_TIME;
 
   /**
    * The feature id for the '<em><b>Affects</b></em>' reference list.
@@ -794,7 +767,7 @@ public interface PictographPackage extends EPackage {
   int TEMPLATE__STATE = INPUT_ENTITY__STATE;
 
   /**
-   * The feature id for the '<em><b>Hash</b></em>' attribute.
+   * The feature id for the '<em><b>Hash</b></em>' attribute list.
    * <!-- begin-user-doc -->
    * <!-- end-user-doc -->
    * @generated
@@ -810,15 +783,6 @@ public interface PictographPackage extends EPackage {
    * @ordered
    */
   int TEMPLATE__ACCESS_COUNT = INPUT_ENTITY__ACCESS_COUNT;
-
-  /**
-   * The feature id for the '<em><b>Checking Time</b></em>' attribute.
-   * <!-- begin-user-doc -->
-   * <!-- end-user-doc -->
-   * @generated
-   * @ordered
-   */
-  int TEMPLATE__CHECKING_TIME = INPUT_ENTITY__CHECKING_TIME;
 
   /**
    * The feature id for the '<em><b>Affects</b></em>' reference list.
@@ -919,10 +883,10 @@ public interface PictographPackage extends EPackage {
   EAttribute getEntity_State();
 
   /**
-   * Returns the meta object for the attribute '{@link org.eclipse.epsilon.picto.pictograph.Entity#getHash <em>Hash</em>}'.
+   * Returns the meta object for the attribute list '{@link org.eclipse.epsilon.picto.pictograph.Entity#getHash <em>Hash</em>}'.
    * <!-- begin-user-doc -->
    * <!-- end-user-doc -->
-   * @return the meta object for the attribute '<em>Hash</em>'.
+   * @return the meta object for the attribute list '<em>Hash</em>'.
    * @see org.eclipse.epsilon.picto.pictograph.Entity#getHash()
    * @see #getEntity()
    * @generated
@@ -939,17 +903,6 @@ public interface PictographPackage extends EPackage {
    * @generated
    */
   EAttribute getEntity_AccessCount();
-
-  /**
-   * Returns the meta object for the attribute '{@link org.eclipse.epsilon.picto.pictograph.Entity#getCheckingTime <em>Checking Time</em>}'.
-   * <!-- begin-user-doc -->
-   * <!-- end-user-doc -->
-   * @return the meta object for the attribute '<em>Checking Time</em>'.
-   * @see org.eclipse.epsilon.picto.pictograph.Entity#getCheckingTime()
-   * @see #getEntity()
-   * @generated
-   */
-  EAttribute getEntity_CheckingTime();
 
   /**
    * Returns the meta object for class '{@link org.eclipse.epsilon.picto.pictograph.InputEntity <em>Input Entity</em>}'.
@@ -1016,6 +969,50 @@ public interface PictographPackage extends EPackage {
   EAttribute getPath_GenerationTime();
 
   /**
+   * Returns the meta object for the attribute '{@link org.eclipse.epsilon.picto.pictograph.Path#getAvgGenTime <em>Avg Gen Time</em>}'.
+   * <!-- begin-user-doc -->
+   * <!-- end-user-doc -->
+   * @return the meta object for the attribute '<em>Avg Gen Time</em>'.
+   * @see org.eclipse.epsilon.picto.pictograph.Path#getAvgGenTime()
+   * @see #getPath()
+   * @generated
+   */
+  EAttribute getPath_AvgGenTime();
+
+  /**
+   * Returns the meta object for the attribute '{@link org.eclipse.epsilon.picto.pictograph.Path#getCheckCount <em>Check Count</em>}'.
+   * <!-- begin-user-doc -->
+   * <!-- end-user-doc -->
+   * @return the meta object for the attribute '<em>Check Count</em>'.
+   * @see org.eclipse.epsilon.picto.pictograph.Path#getCheckCount()
+   * @see #getPath()
+   * @generated
+   */
+  EAttribute getPath_CheckCount();
+
+  /**
+   * Returns the meta object for the attribute '{@link org.eclipse.epsilon.picto.pictograph.Path#getCheckingTime <em>Checking Time</em>}'.
+   * <!-- begin-user-doc -->
+   * <!-- end-user-doc -->
+   * @return the meta object for the attribute '<em>Checking Time</em>'.
+   * @see org.eclipse.epsilon.picto.pictograph.Path#getCheckingTime()
+   * @see #getPath()
+   * @generated
+   */
+  EAttribute getPath_CheckingTime();
+
+  /**
+   * Returns the meta object for the attribute '{@link org.eclipse.epsilon.picto.pictograph.Path#getAvgCheckTime <em>Avg Check Time</em>}'.
+   * <!-- begin-user-doc -->
+   * <!-- end-user-doc -->
+   * @return the meta object for the attribute '<em>Avg Check Time</em>'.
+   * @see org.eclipse.epsilon.picto.pictograph.Path#getAvgCheckTime()
+   * @see #getPath()
+   * @generated
+   */
+  EAttribute getPath_AvgCheckTime();
+
+  /**
    * Returns the meta object for class '{@link org.eclipse.epsilon.picto.pictograph.Module <em>Module</em>}'.
    * <!-- begin-user-doc -->
    * <!-- end-user-doc -->
@@ -1077,6 +1074,17 @@ public interface PictographPackage extends EPackage {
    * @generated
    */
   EReference getProperty_Element();
+
+  /**
+   * Returns the meta object for the attribute '{@link org.eclipse.epsilon.picto.pictograph.Property#getPreviousValue <em>Previous Value</em>}'.
+   * <!-- begin-user-doc -->
+   * <!-- end-user-doc -->
+   * @return the meta object for the attribute '<em>Previous Value</em>'.
+   * @see org.eclipse.epsilon.picto.pictograph.Property#getPreviousValue()
+   * @see #getProperty()
+   * @generated
+   */
+  EAttribute getProperty_PreviousValue();
 
   /**
    * Returns the meta object for the attribute '{@link org.eclipse.epsilon.picto.pictograph.Property#getValue <em>Value</em>}'.
@@ -1287,7 +1295,7 @@ public interface PictographPackage extends EPackage {
     EAttribute ENTITY__STATE = eINSTANCE.getEntity_State();
 
     /**
-     * The meta object literal for the '<em><b>Hash</b></em>' attribute feature.
+     * The meta object literal for the '<em><b>Hash</b></em>' attribute list feature.
      * <!-- begin-user-doc -->
      * <!-- end-user-doc -->
      * @generated
@@ -1301,14 +1309,6 @@ public interface PictographPackage extends EPackage {
      * @generated
      */
     EAttribute ENTITY__ACCESS_COUNT = eINSTANCE.getEntity_AccessCount();
-
-    /**
-     * The meta object literal for the '<em><b>Checking Time</b></em>' attribute feature.
-     * <!-- begin-user-doc -->
-     * <!-- end-user-doc -->
-     * @generated
-     */
-    EAttribute ENTITY__CHECKING_TIME = eINSTANCE.getEntity_CheckingTime();
 
     /**
      * The meta object literal for the '{@link org.eclipse.epsilon.picto.pictograph.impl.InputEntityImpl <em>Input Entity</em>}' class.
@@ -1363,6 +1363,38 @@ public interface PictographPackage extends EPackage {
     EAttribute PATH__GENERATION_TIME = eINSTANCE.getPath_GenerationTime();
 
     /**
+     * The meta object literal for the '<em><b>Avg Gen Time</b></em>' attribute feature.
+     * <!-- begin-user-doc -->
+     * <!-- end-user-doc -->
+     * @generated
+     */
+    EAttribute PATH__AVG_GEN_TIME = eINSTANCE.getPath_AvgGenTime();
+
+    /**
+     * The meta object literal for the '<em><b>Check Count</b></em>' attribute feature.
+     * <!-- begin-user-doc -->
+     * <!-- end-user-doc -->
+     * @generated
+     */
+    EAttribute PATH__CHECK_COUNT = eINSTANCE.getPath_CheckCount();
+
+    /**
+     * The meta object literal for the '<em><b>Checking Time</b></em>' attribute feature.
+     * <!-- begin-user-doc -->
+     * <!-- end-user-doc -->
+     * @generated
+     */
+    EAttribute PATH__CHECKING_TIME = eINSTANCE.getPath_CheckingTime();
+
+    /**
+     * The meta object literal for the '<em><b>Avg Check Time</b></em>' attribute feature.
+     * <!-- begin-user-doc -->
+     * <!-- end-user-doc -->
+     * @generated
+     */
+    EAttribute PATH__AVG_CHECK_TIME = eINSTANCE.getPath_AvgCheckTime();
+
+    /**
      * The meta object literal for the '{@link org.eclipse.epsilon.picto.pictograph.impl.ModuleImpl <em>Module</em>}' class.
      * <!-- begin-user-doc -->
      * <!-- end-user-doc -->
@@ -1415,6 +1447,14 @@ public interface PictographPackage extends EPackage {
      * @generated
      */
     EReference PROPERTY__ELEMENT = eINSTANCE.getProperty_Element();
+
+    /**
+     * The meta object literal for the '<em><b>Previous Value</b></em>' attribute feature.
+     * <!-- begin-user-doc -->
+     * <!-- end-user-doc -->
+     * @generated
+     */
+    EAttribute PROPERTY__PREVIOUS_VALUE = eINSTANCE.getProperty_PreviousValue();
 
     /**
      * The meta object literal for the '<em><b>Value</b></em>' attribute feature.
