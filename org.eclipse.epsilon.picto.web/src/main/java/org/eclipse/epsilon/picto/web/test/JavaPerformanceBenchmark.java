@@ -217,11 +217,6 @@ public class JavaPerformanceBenchmark {
           String command = String.format("java -jar performance.jar %s %s", genAll, numViews);
           runCommandSync(command);
 
-//          for (int i = 1; i < 5; i++) {
-//            System.gc();
-//            Thread.sleep(1000);
-//          }
-//          System.console();
         }
 
       }

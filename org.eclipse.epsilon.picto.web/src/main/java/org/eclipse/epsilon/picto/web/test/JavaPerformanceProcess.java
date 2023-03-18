@@ -276,10 +276,10 @@ public class JavaPerformanceProcess {
         
         System.out.println(" Done");
         
-//        for (int i = 1; i < 5;i++) {
-          System.gc();
+////        for (int i = 1; i < 5;i++) {
+//          System.gc();
           Thread.sleep(1000);
-//        }
+////        }
       }
 
       for (Client client : clients) {
