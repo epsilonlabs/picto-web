@@ -57,7 +57,7 @@ public class JavaPerformanceBenchmark {
   /**
    * 
    */
-  private static  String OTHER_LOG_FILE_NAME = "/var/tmp/picto-web.log";
+  private static String OTHER_LOG_FILE_NAME = "/var/tmp/picto-web.log";
   private static String MODEL_ORIGINAL = "/java/java.big.xmi";
   private static final String MODEL_TMP = "/java.xmi";
   private static final String MODEL = "/java/java.xmi";
@@ -79,11 +79,11 @@ public class JavaPerformanceBenchmark {
 
   public static void main(String... args) throws Exception {
 
-    logFile = new File(System.getProperty("java.io.tmpdir") + File.separator +  "picto-web.log");
+    logFile = new File(System.getProperty("java.io.tmpdir") + File.separator + "picto-web.log");
     if (logFile.exists())
       logFile.delete();
     logFile.createNewFile();
-    
+
     if (System.getProperty("os.name").contains("indows")) {
       runCommandSync("mvn.cmd -f pom-performance.xml clean install -Dmaven.test.skip=true");
     } else {
@@ -106,14 +106,14 @@ public class JavaPerformanceBenchmark {
     int numberOfViews = 0; // Number of nodes the graph model
 
     int[] numbersOfAffectedViews = null;
-    boolean[] genAllViews = { true, false };
+    boolean[] genAllViews = { false, true };
 //    boolean[] genAllViews = { false };
 
     /** comment this if we want to test using the big model */
 //    numberOfClients = 1; // number of clients subscribed to Picto Web's STOMP server.
 //    numberOfIteration = 3; // Number of iteration measuring for each number of affected views
 //    MODEL_ORIGINAL = "/java/java.small.xmi";
-//    MODEL_ORIGINAL = "/java/java.medium.xmi";
+    MODEL_ORIGINAL = "/java/java.medium.xmi";
 
     File modelFileOriginal = new File(PictoApplication.WORKSPACE + File.separator + MODEL_ORIGINAL);
     XMIResource resourceOriginal = new XMIResourceImpl(URI.createFileURI(modelFileOriginal.getAbsolutePath()));
@@ -149,7 +149,7 @@ public class JavaPerformanceBenchmark {
         modifier.setVisibility(VisibilityKind.PRIVATE);
         fd.setModifier(modifier);
         TypeAccess typeAccess = JavaFactory.eINSTANCE.createTypeAccess();
-        typeAccess.setType(cd);
+        typeAccess.setType(JavaFactory.eINSTANCE.createPrimitiveTypeInt());
         fd.setType(typeAccess);
         VariableDeclarationFragment vd = JavaFactory.eINSTANCE.createVariableDeclarationFragment();
         vd.setName("dummy");
@@ -214,8 +214,11 @@ public class JavaPerformanceBenchmark {
         // iterate for each number of affected views
         for (int numViews : numbersOfAffectedViews) {
           PerformanceRecorder.globalNumberOfAffectedViews = numViews;
+          
           String command = String.format("java -jar performance.jar %s %s", genAll, numViews);
           runCommandSync(command);
+          
+//          JavaPerformanceProcess.main(new String[] { String.valueOf(genAll), String.valueOf(numViews) });
 
         }
 

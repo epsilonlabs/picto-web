@@ -10,6 +10,8 @@
 
 package org.eclipse.epsilon.picto.web.test;
 
+import static org.assertj.core.api.Assertions.assertThat;
+
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
@@ -23,6 +25,7 @@ import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.LinkedHashSet;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
@@ -93,8 +96,10 @@ public class JavaPerformanceProcess {
   static Set<String> clientWaitingList = Collections.synchronizedSet(new HashSet<>());
 
   static ObjectMapper mapper = new ObjectMapper();
-  static Set<String> expectedViews;
+  static List<String> generatedViews = new LinkedList<>();
   private static List<String> classNames = new LinkedList<>();
+  private static List<String> classIDs = new LinkedList<>();
+  private static List<String> modifiedViews = new LinkedList<>();
 
   public static void main(String... args) throws Exception {
 
@@ -129,11 +134,10 @@ public class JavaPerformanceProcess {
       clients.add(client);
       client.setName("Client-" + i);
       client.start();
-      client.join(); 
+      client.join();
     }
-    
-    Object invalidatedViewsWaiter = new Object();
 
+    Object invalidatedViewsWaiter = new Object();
 
     Map<Object, Object> loadOptions = ((XMIResourceImpl) resource).getDefaultLoadOptions();
     loadOptions.put(XMIResource.OPTION_DEFER_IDREF_RESOLUTION, Boolean.TRUE);
@@ -147,7 +151,7 @@ public class JavaPerformanceProcess {
     resource.load(loadOptions);
     System.out.println("Done");
 
-    List<String> classList = new ArrayList<>();
+    classIDs.clear();
     classNames.clear();
 
     TreeIterator<EObject> treeIterator = resource.getAllContents();
@@ -176,7 +180,7 @@ public class JavaPerformanceProcess {
         }
         classNames.add(String.join(".", segments));
         String id = resource.getID(eObject);
-        classList.add(id);
+        classIDs.add(id);
       }
     }
 
@@ -185,11 +189,19 @@ public class JavaPerformanceProcess {
 
       for (int iterationIndex = 1; iterationIndex <= numberOfIteration; iterationIndex++) {
 
+        final int index = iterationIndex;
+        
         PictoApplication.setPromisesGenerationListener(new PromisesGenerationListener() {
           @Override
           public void onGenerated(Set<String> invalidatedViews) {
             synchronized (invalidatedViewsWaiter) {
-              expectedViews.addAll(invalidatedViews);
+              generatedViews.addAll(invalidatedViews);
+              Collections.sort(generatedViews);
+              System.out.println(
+                  "CHANGED VIEWS = " + modifiedViews.size() + ", GENERATED VIEWS = " + generatedViews.size());
+              if (index > 1 && !PictoApplication.isNonIncremental()) {
+                assertThat(modifiedViews).isSubsetOf(generatedViews);
+              }
               // notify the main thread to continue iteration
               invalidatedViewsWaiter.notify();
             }
@@ -205,13 +217,15 @@ public class JavaPerformanceProcess {
         Set<String> set = clients.stream().map(c -> c.getName()).collect(Collectors.toSet());
         clientWaitingList.addAll(set);
 
-        expectedViews = new HashSet<>();
+        generatedViews.clear();
 
 //            resource.load(options);
 
+        modifiedViews.clear();
+        modifiedViews.add("/");
         for (int i = 0; i < numOfAffectedViews; i++) {
-
-          String id1 = classList.get(i);
+          modifiedViews.add("/" + classNames.get(i));
+          String id1 = classIDs.get(i);
           ClassDeclaration class1 = (ClassDeclaration) resource.getEObject(id1);
           List<BodyDeclaration> elementList1 = class1.getBodyDeclarations().stream()
               .filter(b -> b instanceof FieldDeclaration /* || b instanceof MethodDeclaration */)
@@ -222,12 +236,16 @@ public class JavaPerformanceProcess {
             BodyDeclaration element = elementList1.get(0);
             if (element instanceof FieldDeclaration) {
               VariableDeclarationFragment variable = ((FieldDeclaration) element).getFragments().get(0);
+//              System.out.print(classNames.get(i) + ": CHANGE " + variable.getName() + " TO ");
               String[] segments = variable.getName().split("_");
               if (segments.length > 1) {
+                
                 variable.setName(segments[0] + "_" + (Integer.parseInt(segments[1]) + 1));
               } else {
                 variable.setName(segments[0] + "_" + "1");
               }
+//              System.out.println(variable.getName());
+              
             } else if (element instanceof MethodDeclaration) {
               MethodDeclaration method = (MethodDeclaration) element;
               String[] segments = method.getName().split("_");
@@ -240,6 +258,8 @@ public class JavaPerformanceProcess {
 
           }
         }
+       
+        
         resource.save(saveOptions);
 
         // copy model to the watched directory
@@ -264,21 +284,17 @@ public class JavaPerformanceProcess {
         // wait until we get the paths of invalidated views
         synchronized (invalidatedViewsWaiter) {
           invalidatedViewsWaiter.wait();
-          System.out.println("Expected Views : " + expectedViews);
+          System.out.println("Expected Views : " + generatedViews);
         }
         synchronized (clientWaitingList) {
           clientWaitingList.wait(5 * 60 * 1000);
         }
-        System.out.print("Waiting AccessGraphResource task executor to complete ");
-        while (AccessGraphResource.getExecutorService().getActiveCount() > 0) {
-          System.out.print(".");
-        }
-        
-        System.out.println(" Done");
-        
+
+        waitingBackgroundTasks();
+
 ////        for (int i = 1; i < 5;i++) {
 //          System.gc();
-          Thread.sleep(1000);
+        Thread.sleep(1000);
 ////        }
       }
 
@@ -302,6 +318,17 @@ public class JavaPerformanceProcess {
       }
     }
     System.exit(0);
+  }
+
+  public static void waitingBackgroundTasks() throws InterruptedException {
+    long start = System.currentTimeMillis();
+    System.out.print("Waiting AccessGraphResource task executor to complete ");
+    while (AccessGraphResource.getExecutorService().getQueue().size() > 0) {
+      System.out.print(AccessGraphResource.getExecutorService().getQueue().size());
+      System.out.print(".");
+      Thread.sleep(1000);
+    }
+    System.out.println(" Done: " + (System.currentTimeMillis() - start) + " ms");
   }
 
   /***
@@ -432,6 +459,8 @@ public class JavaPerformanceProcess {
                   + PerformanceRecorder.genenerateAll + ", N-views " + PerformanceRecorder.globalNumberOfAffectedViews
                   + ", Iter " + PerformanceRecorder.globalNumberIteration + ", " + Client.this.getName()
                   + " received, path " + path + ", time " + overallTime + " ms");
+
+              assertThat(expectedPath).isEqualTo(path);
 
             } catch (IOException e) {
               e.printStackTrace();

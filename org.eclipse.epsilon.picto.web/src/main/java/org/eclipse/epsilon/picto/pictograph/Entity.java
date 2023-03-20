@@ -1,120 +1,64 @@
+/*********************************************************************
+* Copyright (c) 2023 The University of York.
+*
+* This program and the accompanying materials are made
+* available under the terms of the Eclipse Public License 2.0
+* which is available at https://www.eclipse.org/legal/epl-2.0/
+*
+* SPDX-License-Identifier: EPL-2.0
+*
+* @author Alfa Yohannis
+**********************************************************************/
+
 /**
+ * 
  */
 package org.eclipse.epsilon.picto.pictograph;
 
-import org.eclipse.emf.common.util.EList;
-
-import org.eclipse.emf.ecore.EObject;
-
 /**
- * <!-- begin-user-doc -->
- * A representation of the model object '<em><b>Entity</b></em>'.
- * <!-- end-user-doc -->
+ * @author Alfa Yohannis
  *
- * <p>
- * The following features are supported:
- * </p>
- * <ul>
- *   <li>{@link org.eclipse.epsilon.picto.pictograph.Entity#getName <em>Name</em>}</li>
- *   <li>{@link org.eclipse.epsilon.picto.pictograph.Entity#getState <em>State</em>}</li>
- *   <li>{@link org.eclipse.epsilon.picto.pictograph.Entity#getHash <em>Hash</em>}</li>
- *   <li>{@link org.eclipse.epsilon.picto.pictograph.Entity#getAccessCount <em>Access Count</em>}</li>
- * </ul>
- *
- * @see org.eclipse.epsilon.picto.pictograph.PictographPackage#getEntity()
- * @model abstract="true"
- * @generated
  */
-public interface Entity extends EObject {
-  /**
-   * Returns the value of the '<em><b>Name</b></em>' attribute.
-   * <!-- begin-user-doc -->
-   * <!-- end-user-doc -->
-   * @return the value of the '<em>Name</em>' attribute.
-   * @see #setName(String)
-   * @see org.eclipse.epsilon.picto.pictograph.PictographPackage#getEntity_Name()
-   * @model
-   * @generated
-   */
-  String getName();
+public abstract class Entity {
+  protected String name;
+  protected org.eclipse.epsilon.picto.pictograph.State state;
+  protected byte[] hash;
+  protected int accessCount;
 
-  /**
-   * Sets the value of the '{@link org.eclipse.epsilon.picto.pictograph.Entity#getName <em>Name</em>}' attribute.
-   * <!-- begin-user-doc -->
-   * <!-- end-user-doc -->
-   * @param value the new value of the '<em>Name</em>' attribute.
-   * @see #getName()
-   * @generated
-   */
-  void setName(String value);
+  public String getName() {
+    return name;
+  }
 
-  /**
-   * Returns the value of the '<em><b>State</b></em>' attribute.
-   * The literals are from the enumeration {@link org.eclipse.epsilon.picto.pictograph.State}.
-   * <!-- begin-user-doc -->
-   * <!-- end-user-doc -->
-   * @return the value of the '<em>State</em>' attribute.
-   * @see org.eclipse.epsilon.picto.pictograph.State
-   * @see #setState(State)
-   * @see org.eclipse.epsilon.picto.pictograph.PictographPackage#getEntity_State()
-   * @model
-   * @generated
-   */
-  State getState();
+  public void setName(String name) {
+    this.name = name;
+  }
 
-  /**
-   * Sets the value of the '{@link org.eclipse.epsilon.picto.pictograph.Entity#getState <em>State</em>}' attribute.
-   * <!-- begin-user-doc -->
-   * <!-- end-user-doc -->
-   * @param value the new value of the '<em>State</em>' attribute.
-   * @see org.eclipse.epsilon.picto.pictograph.State
-   * @see #getState()
-   * @generated
-   */
-  void setState(State value);
+  public org.eclipse.epsilon.picto.pictograph.State getState() {
+    return state;
+  }
 
-  /**
-   * Returns the value of the '<em><b>Hash</b></em>' attribute.
-   * <!-- begin-user-doc -->
-   * <!-- end-user-doc -->
-   * @return the value of the '<em>Hash</em>' attribute.
-   * @see #setHash(byte[])
-   * @see org.eclipse.epsilon.picto.pictograph.PictographPackage#getEntity_Hash()
-   * @model dataType="org.eclipse.epsilon.picto.pictograph.EByteArray"
-   * @generated
-   */
-  byte[] getHash();
+  public void setState(org.eclipse.epsilon.picto.pictograph.State state) {
+    this.state = state;
+  }
 
-  /**
-   * Sets the value of the '{@link org.eclipse.epsilon.picto.pictograph.Entity#getHash <em>Hash</em>}' attribute.
-   * <!-- begin-user-doc -->
-   * <!-- end-user-doc -->
-   * @param value the new value of the '<em>Hash</em>' attribute.
-   * @see #getHash()
-   * @generated
-   */
-  void setHash(byte[] value);
+  public byte[] getHash() {
+    return hash;
+  }
 
-  /**
-   * Returns the value of the '<em><b>Access Count</b></em>' attribute.
-   * <!-- begin-user-doc -->
-   * <!-- end-user-doc -->
-   * @return the value of the '<em>Access Count</em>' attribute.
-   * @see #setAccessCount(int)
-   * @see org.eclipse.epsilon.picto.pictograph.PictographPackage#getEntity_AccessCount()
-   * @model
-   * @generated
-   */
-  int getAccessCount();
+  public void setHash(byte[] hash) {
+    this.hash = hash;
+  }
 
-  /**
-   * Sets the value of the '{@link org.eclipse.epsilon.picto.pictograph.Entity#getAccessCount <em>Access Count</em>}' attribute.
-   * <!-- begin-user-doc -->
-   * <!-- end-user-doc -->
-   * @param value the new value of the '<em>Access Count</em>' attribute.
-   * @see #getAccessCount()
-   * @generated
-   */
-  void setAccessCount(int value);
+  public int getAccessCount() {
+    return accessCount;
+  }
 
-} // Entity
+  public void setAccessCount(int accessCount) {
+    this.accessCount = accessCount;
+  }
+
+  @Override
+  public String toString() {
+    return this.getClass().getSimpleName() + "-" + this.getName();
+  }
+}

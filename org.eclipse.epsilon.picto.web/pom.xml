@@ -184,7 +184,6 @@
     <dependency>
       <groupId>org.assertj</groupId>
       <artifactId>assertj-core</artifactId>
-      <scope>test</scope>
     </dependency>
     <!-- https://mvnrepository.com/artifact/org.eclipse.jetty/jetty-client -->
     <dependency>
@@ -205,11 +204,11 @@
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-surefire-plugin</artifactId>
-        <!-- <configuration>
+        <configuration>
           <forkCount>1</forkCount>
           <reuseForks>true</reuseForks>
-          <argLine>-Xmx13312m -Xms1024m</argLine>
-        </configuration> -->
+          <argLine>-Xmx24576m -Xms1024m</argLine>
+        </configuration> 
       </plugin>
       <plugin>
         <groupId>org.springframework.boot</groupId>

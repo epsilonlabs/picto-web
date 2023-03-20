@@ -12,6 +12,7 @@ package org.eclipse.epsilon.picto.incrementality;
 
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
@@ -19,15 +20,14 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
 import java.util.concurrent.Callable;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
-import java.util.stream.Collectors;
 
-import org.eclipse.emf.common.util.EList;
 import org.eclipse.emf.ecore.EObject;
 import org.eclipse.emf.ecore.EStructuralFeature;
-import org.eclipse.emf.ecore.util.EcoreUtil;
 import org.eclipse.epsilon.egl.EgxModule;
 import org.eclipse.epsilon.emc.emf.AbstractEmfModel;
 import org.eclipse.epsilon.emc.emf.EmfModel;
@@ -37,31 +37,19 @@ import org.eclipse.epsilon.picto.pictograph.Entity;
 import org.eclipse.epsilon.picto.pictograph.InputEntity;
 import org.eclipse.epsilon.picto.pictograph.Module;
 import org.eclipse.epsilon.picto.pictograph.Path;
-import org.eclipse.epsilon.picto.pictograph.PictoGraph;
-import org.eclipse.epsilon.picto.pictograph.PictographFactory;
 import org.eclipse.epsilon.picto.pictograph.Property;
 import org.eclipse.epsilon.picto.pictograph.Resource;
 import org.eclipse.epsilon.picto.pictograph.Rule;
 import org.eclipse.epsilon.picto.pictograph.State;
 import org.eclipse.epsilon.picto.pictograph.Template;
-import org.eclipse.epsilon.picto.web.test.PerformanceRecord;
-import org.eclipse.epsilon.picto.web.test.PerformanceRecorder;
-import org.eclipse.epsilon.picto.web.test.PerformanceTestType;
 
 public class AccessGraphResource implements AccessRecordResource {
 
-//  private ExecutorService executorService = Executors.newSingleThreadExecutor();
-  private static ThreadPoolExecutor executorService = new ThreadPoolExecutor(1, 1, 0L, TimeUnit.MILLISECONDS,
-      new LinkedBlockingQueue<Runnable>());
+  private static ThreadPoolExecutor executorService = (ThreadPoolExecutor) Executors.newFixedThreadPool(2);
+//  private static ThreadPoolExecutor executorService = new ThreadPoolExecutor(1,
+//      Runtime.getRuntime().availableProcessors(), 0L, TimeUnit.MILLISECONDS, new LinkedBlockingQueue<Runnable>());
 
-  // private ExecutorService executorService = Executors.newFixedThreadPool(2);
-  private PictographFactory factory = PictographFactory.eINSTANCE;
-  private PictoGraph graph = factory.createPictoGraph();
   private TraceIndex traceIndex = new TraceIndex();
-
-  public PictoGraph getGraph() {
-    return graph;
-  }
 
   public static ThreadPoolExecutor getExecutorService() {
     return executorService;
@@ -79,7 +67,7 @@ public class AccessGraphResource implements AccessRecordResource {
   @Override
   public void add(AccessRecord access) {
 
-    Thread t = new Thread() {
+    Thread t = new Thread("SaveToGraph-" + access.toString()) {
 
       @Override
       public void run() {
@@ -93,7 +81,7 @@ public class AccessGraphResource implements AccessRecordResource {
         Path path = (Path) traceIndex.getPath(pathName);
 //        Path path = (Path) graph.getPaths().get(pathName);
         if (path == null) {
-          path = factory.createPath();
+          path = new Path();
           path.setState(org.eclipse.epsilon.picto.pictograph.State.NEW);
           path.setName(access.getPath());
           traceIndex.putPath(pathName, path);
@@ -105,7 +93,7 @@ public class AccessGraphResource implements AccessRecordResource {
           String moduleName = access.getModulePath();
           Module module = (Module) traceIndex.getModule(moduleName);
           if (module == null) {
-            module = factory.createModule();
+            module = new Module();
             module.setState(org.eclipse.epsilon.picto.pictograph.State.NEW);
             module.setName(access.getModulePath());
             traceIndex.putModule(moduleName, module);
@@ -118,7 +106,7 @@ public class AccessGraphResource implements AccessRecordResource {
             String ruleName = access.getGenerationRuleName();
             Rule rule = (Rule) traceIndex.getRule(moduleName, ruleName);
             if (rule == null) {
-              rule = factory.createRule();
+              rule = new Rule();
               rule.setState(org.eclipse.epsilon.picto.pictograph.State.NEW);
               rule.setName(access.getGenerationRuleName());
               traceIndex.putRule(moduleName, ruleName, rule);
@@ -133,13 +121,13 @@ public class AccessGraphResource implements AccessRecordResource {
               String templateName = access.getTemplatePath();
               template = (Template) traceIndex.getTemplate(moduleName, ruleName, templateName);
               if (template == null) {
-                template = factory.createTemplate();
+                template = new Template();
                 template.setState(org.eclipse.epsilon.picto.pictograph.State.NEW);
                 template.setName(access.getTemplatePath());
                 traceIndex.putTemplate(moduleName, ruleName, templateName, template);
               }
               template.setAccessCount(template.getAccessCount() + 1);
-              template.getModules().add(module);
+              template.addModule(module);
               rule.setTemplate(template);
               addAffectedPath((InputEntity) template, path);
 
@@ -154,7 +142,7 @@ public class AccessGraphResource implements AccessRecordResource {
                 String fullname = access.getContextResourceUri();
                 contextResource = (Resource) traceIndex.getResource(fullname);
                 if (contextResource == null) {
-                  contextResource = factory.createResource();
+                  contextResource = new Resource();
                   contextResource.setState(org.eclipse.epsilon.picto.pictograph.State.NEW);
                   contextResource.setName(access.getContextResourceUri());
                   traceIndex.putResource(fullname, contextResource);
@@ -167,7 +155,7 @@ public class AccessGraphResource implements AccessRecordResource {
               Element contextElement = (Element) traceIndex.getElement(access.getContextResourceUri(),
                   access.getContextObjectId());
               if (contextElement == null) {
-                contextElement = factory.createElement();
+                contextElement = new Element();
                 contextElement.setState(org.eclipse.epsilon.picto.pictograph.State.NEW);
                 contextElement.setName(access.getContextObjectId());
                 rule.getContextElements().add(contextElement);
@@ -188,7 +176,7 @@ public class AccessGraphResource implements AccessRecordResource {
                 String fullname = access.getElementResourceUri();
                 elementResource = (Resource) traceIndex.getResource(fullname);
                 if (elementResource == null) {
-                  elementResource = factory.createResource();
+                  elementResource = new Resource();
                   elementResource.setState(org.eclipse.epsilon.picto.pictograph.State.NEW);
                   elementResource.setName(access.getElementResourceUri());
                   traceIndex.putResource(fullname, elementResource);
@@ -201,17 +189,14 @@ public class AccessGraphResource implements AccessRecordResource {
               Element element = (Element) traceIndex.getElement(access.getElementResourceUri(),
                   access.getElementObjectId());
               if (element == null) {
-                element = factory.createElement();
+                element = new Element();
                 element.setState(org.eclipse.epsilon.picto.pictograph.State.NEW);
                 element.setName(access.getElementObjectId());
                 rule.getElements().add(element);
                 traceIndex.putElement(access.getElementResourceUri(), access.getElementObjectId(), element);
               }
               element.setAccessCount(element.getAccessCount() + 1);
-              template.getElements().add(element);
-              if (element == null || elementResource == null) {
-                System.console();
-              }
+              template.addelement(element);
               element.setResource(elementResource);
               addAffectedPath((InputEntity) element, path);
 
@@ -221,7 +206,7 @@ public class AccessGraphResource implements AccessRecordResource {
                 Property property = (Property) traceIndex.getProperty(access.getElementResourceUri(),
                     access.getElementObjectId(), access.getPropertyName());
                 if (property == null) {
-                  property = factory.createProperty();
+                  property = new Property();
                   property.setState(org.eclipse.epsilon.picto.pictograph.State.NEW);
                   property.setName(access.getPropertyName());
                   traceIndex.putProperty(access.getElementResourceUri(), access.getElementObjectId(),
@@ -239,7 +224,6 @@ public class AccessGraphResource implements AccessRecordResource {
 //        System.out.println(access.toString());
       }
     };
-    t.setName(access.toString());
     executorService.submit(t);
 
   }
@@ -247,25 +231,25 @@ public class AccessGraphResource implements AccessRecordResource {
   @Override
   public Set<String> getInvalidatedViewPaths(List<IncrementalLazyGenerationRuleContentPromise> promises,
       EgxModule module) {
-    Set<String> invalidatedViewPaths = new HashSet<String>();
-    Set<String> toBeDeletedKeys = new HashSet<String>();
-    Set<EObject> toBeDeletedElements = new HashSet<EObject>();
+    Set<String> invalidatedViewPaths = Collections.synchronizedSet(new HashSet<String>());
+    Set<String> toBeDeletedKeys = Collections.synchronizedSet(new HashSet<String>());
+    Set<Entity> toBeDeletedElements = Collections.synchronizedSet(new HashSet<Entity>());
 
-//    for (IncrementalLazyGenerationRuleContentPromise promise : inProcessingPromises) {
-//      String checkedPath = IncrementalityUtil.getPath(promise);
-//      checkPath(module, invalidatedViewPaths, toBeDeletedKeys, toBeDeletedElements, checkedPath);
-//    }
-
-    promises.parallelStream().forEach(promise -> {
+    for (IncrementalLazyGenerationRuleContentPromise promise : promises) {
       String checkedPath = IncrementalityUtil.getPath(promise);
       checkPath(module, invalidatedViewPaths, toBeDeletedKeys, toBeDeletedElements, checkedPath);
-    });
+    }
+
+//    promises.parallelStream().forEach(promise -> {
+//      String checkedPath = IncrementalityUtil.getPath(promise);
+//      checkPath(module, invalidatedViewPaths, toBeDeletedKeys, toBeDeletedElements, checkedPath);
+//    });
 
     // run a new thread in the background to remove deleted elements from the
     // indices and graph
     Thread t = new Thread() {
       public void run() {
-        
+
         // first, remove all the entries of the deleted elements
         for (String key : toBeDeletedKeys) {
           for (Map<String, ?> map : traceIndex.getAllIndices()) {
@@ -276,15 +260,15 @@ public class AccessGraphResource implements AccessRecordResource {
           }
         }
 
-        for (EObject element : toBeDeletedElements) {
+        for (Entity element : toBeDeletedElements) {
           try {
             InputEntity ie = (InputEntity) element;
-            EList<Path> paths = ie.getAffects();
+            List<Path> paths = ie.getAffects();
             for (Path path : paths) {
               while (path.getAffectedBy().remove(ie))
                 ;
             }
-            EcoreUtil.delete(element, true);
+//            EcoreUtil.delete(element, true);
           } catch (Exception e) {
           }
         }
@@ -310,22 +294,21 @@ public class AccessGraphResource implements AccessRecordResource {
    * @param module
    * @param toBeProcessedPaths
    * @param toBeDeletedKeys
-   * @param toBeDeletedElements
+   * @param toBeDeletedEntities
    * @param checkedPath
    */
   protected void checkPath(EgxModule module, Set<String> toBeProcessedPaths, Set<String> toBeDeletedKeys,
-      Set<EObject> toBeDeletedElements, String checkedPath) {
+      Set<Entity> toBeDeletedEntities, String checkedPath) {
 
-    int numCheckedProperties = 0;
+//    int numCheckedProperties = 0;
 
     long start = System.currentTimeMillis();
     Path path = (Path) traceIndex.getPath(checkedPath);
-//    System.out.println("\nPATH: " + checkedPath);
+//    System.out.println("CHECKING PATH: " + checkedPath);
     if ("/Stats".equals(checkedPath)) {
       System.console();
     }
-    
-    
+
     // check if the path is a new view
     if (path == null) {
       toBeProcessedPaths.add(checkedPath);
@@ -344,7 +327,11 @@ public class AccessGraphResource implements AccessRecordResource {
       // check if the new path is affected by a new object
       int i = 0;
       while (i < path.getAffectedBy().size()) {
-        InputEntity entity = path.getAffectedBy().get(i);
+        List<InputEntity> list = path.getAffectedBy();
+        if (list == null) {
+          break;
+        }
+        InputEntity entity = list.get(i);
         i++;
 //      for (InputEntity entity : path.getAffectedBy()) {
 
@@ -411,15 +398,15 @@ public class AccessGraphResource implements AccessRecordResource {
 
               for (Property p : element.getProperties()) {
                 toBeDeletedKeys.add(resource.getName() + "#" + element.getName() + "#" + p.getName());
-                toBeDeletedElements.add(p);
+                toBeDeletedEntities.add(p);
               }
               toBeDeletedKeys.add(resource.getName() + "#" + element.getName());
-              toBeDeletedElements.add(element);
+              toBeDeletedEntities.add(element);
 
               return;
             } else {
 
-              numCheckedProperties += 1;
+//              numCheckedProperties += 1;
 
               EStructuralFeature currentProperty = currentEObject.eClass().getEStructuralFeature(property.getName());
               Object currentValueObject = (currentProperty != null) ? currentEObject.eGet(currentProperty) : null;
@@ -430,7 +417,8 @@ public class AccessGraphResource implements AccessRecordResource {
 
               if (!IncrementalityUtil.equals(property.getPreviousValue(), currentValue)) {
 //              if (!IncrementalityUtil.equals(previousValue, currentValue)) {
-//                System.out.println(currentEObject.eClass().getName() + " - " + property.getName() + ": " + previousValue + " vs. " + currentValue);
+//                System.out.println(checkedPath + ": " + currentEObject.eClass().getName() + " - " + property.getName()
+//                    + ": " + property.getPreviousValue() + " vs. " + currentValue);
                 toBeProcessedPaths.add(checkedPath);
                 property.setValue(currentValue);
 
@@ -492,11 +480,11 @@ public class AccessGraphResource implements AccessRecordResource {
   /***
    * Add the affected path to the affecting module.
    * 
-   * @param module
+   * @param inputEntity
    * @param path
    */
-  private void addAffectedPath(InputEntity module, final Path path) {
-    EList<Path> affectedPaths = module.getAffects();
+  private void addAffectedPath(InputEntity inputEntity, final Path path) {
+    List<Path> affectedPaths = inputEntity.getAffects();
     for (int i = 0; i < affectedPaths.size(); i++) {
       if (i < affectedPaths.size()) {
         Path affectedPath = affectedPaths.get(i);
@@ -504,7 +492,8 @@ public class AccessGraphResource implements AccessRecordResource {
           return;
       }
     }
-    module.getAffects().add(path);
+//    inputEntity.getAffects().add(path);
+    inputEntity.addAffectedPath(path);
 //    if (!module.getAffects().stream().anyMatch(p -> p.getName().equals(path.getName()))) {
 //      module.getAffects().add(path);
 //    }
@@ -535,40 +524,55 @@ public class AccessGraphResource implements AccessRecordResource {
       List<String> keys = new ArrayList<String>();
       InputEntity ie = e1;
       keys.add(ie.getName());
-      while (ie.eContainer() != null) {
-        ie = (InputEntity) ie.eContainer();
-        keys.add(0, ie.getName());
-      }
-      System.out.print(String.join("#", keys) + " --> ");
-      Set<String> paths = e1.getAffects().stream().map(p -> p.getName()).collect(Collectors.toSet());
-      System.out.println(String.join(", ", paths));
+//      while (ie.eContainer() != null) {
+//        ie = (InputEntity) ie.eContainer();
+//        keys.add(0, ie.getName());
+//      }
+//      System.out.print(String.join("#", keys) + " --> ");
+//      Set<String> paths = e1.getAffects().stream().map(p -> p.getName()).collect(Collectors.toSet());
+//      System.out.println(String.join(", ", paths));
     }
     System.out.println();
   }
 
   @Override
   public void updateStatusToProcessed(Collection<String> paths) {
-    for (Entry<String, Path> entry : traceIndex.getPathIndex().entrySet()) {
-      Path p = (Path) entry.getValue();
-      p.setState(State.PROCESSED);
-//      if (p.getName().equals("/Stats")) {
-//        System.console();
-//      }
-      if (paths.contains(p.getName())) {
-        for (int i = 0; i < p.getAffectedBy().size(); i++) {
-          Entity entity = p.getAffectedBy().get(i);
-          if (entity.getName().equals("name")) {
-            System.console();
-          }
-          entity.setState(State.PROCESSED);
-          if (entity instanceof Property) {
-//            System.out.println(p.getName()+ "." + ((Property) entity).getElement().getName()+ "." + ((Property) entity).getName() + " - " + ((Property) entity).getPreviousValue() + " : " + ((Property) entity).getValue());
-            ((Property) entity).setPreviousValue(((Property) entity).getValue());
-            System.console();
-          }
+//    Thread t = new Thread("UpdatePathStatus") {
+//      public void run() {
+
+    for (String path : paths) {
+      Path p = traceIndex.getPath(path);
+      if (p == null)
+        continue;
+      p.setState(org.eclipse.epsilon.picto.pictograph.State.PROCESSED);
+      for (int i = 0; i < p.getAffectedBy().size(); i++) {
+        Entity entity = p.getAffectedBy().get(i);
+        entity.setState(org.eclipse.epsilon.picto.pictograph.State.PROCESSED);
+        if (entity instanceof Property) {
+          Property property = (Property) entity;
+          property.setPreviousValue(property.getValue());
+          System.console();
         }
       }
     }
+
+//        for (Entry<String, Path> entry : traceIndex.getPathIndex().entrySet()) {
+//          Path p = (Path) entry.getValue();
+//          p.setState(org.eclipse.epsilon.picto.pictograph.State.PROCESSED);
+//          if (paths.contains(p.getName())) {
+//            for (int i = 0; i < p.getAffectedBy().size(); i++) {
+//              Entity entity = p.getAffectedBy().get(i);
+//              entity.setState(org.eclipse.epsilon.picto.pictograph.State.PROCESSED);
+//              if (entity instanceof Property) {
+//                ((Property) entity).setPreviousValue(((Property) entity).getValue());
+//              }
+//            }
+//          }
+//        }
+
+//      }
+//    };
+//    executorService.submit(t);
   }
 
   @Override
@@ -577,9 +581,9 @@ public class AccessGraphResource implements AccessRecordResource {
       map.clear();
       System.console();
     }
-    for (EObject eObject : graph.eContents()) {
-      EcoreUtil.delete(eObject, false);
-    }
+//    for (EObject eObject : graph.eContents()) {
+//      EcoreUtil.delete(eObject, false);
+//    }
     System.console();
 //		graph.eContents().clear();
   }

@@ -8,6 +8,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 import org.eclipse.emf.ecore.EObject;
 import org.eclipse.epsilon.common.module.ModuleElement;
@@ -108,33 +109,33 @@ public class IncrementalLazyEgxModule extends EgxModuleParallelGenerationRuleAto
     context.getOperationContributorRegistry().add(new PictoOperationContributor(this));
     Collection<? extends GenerationRule> rules = getGenerationRules();
 //
-//    Collection<LazyGenerationRuleContentPromise> promises = rules.parallelStream()
-//        .filter(rule -> {
-//          
-//      boolean result = false;
-//      try {
-//        result = !rule.isLazy(context);
-//      } catch (EolRuntimeException e) {
-//        e.printStackTrace();
-//      }
-//      return result;
-//    })
-//        .map(rule -> {
-//      Collection<? extends LazyGenerationRuleContentPromise> result = null;
-//      try {
-//        result = (Collection<? extends LazyGenerationRuleContentPromise>) ef.execute(rule, context);
-//      } catch (EolRuntimeException e) {
-//        e.printStackTrace();
-//      }
-//      return result;
-//    }).flatMap(l -> l.stream()).collect(Collectors.toList());
-
-    Collection<LazyGenerationRuleContentPromise> promises = new ArrayList<>(rules.size());
-    for (GenerationRule rule : rules) {
-      if (!rule.isLazy(context)) {
-        promises.addAll((Collection<? extends LazyGenerationRuleContentPromise>) ef.execute(rule, context));
+    Collection<LazyGenerationRuleContentPromise> promises = rules.parallelStream()
+        .filter(rule -> {
+          
+      boolean result = false;
+      try {
+        result = !rule.isLazy(context);
+      } catch (EolRuntimeException e) {
+        e.printStackTrace();
       }
-    }
+      return result;
+    }).parallel()
+        .map(rule -> {
+      Collection<? extends LazyGenerationRuleContentPromise> result = null;
+      try {
+        result = (Collection<? extends LazyGenerationRuleContentPromise>) ef.execute(rule, context);
+      } catch (EolRuntimeException e) {
+        e.printStackTrace();
+      }
+      return result;
+    }).parallel().flatMap(l -> l.stream()).collect(Collectors.toList());
+
+//    Collection<LazyGenerationRuleContentPromise> promises = new ArrayList<>(rules.size());
+//    for (GenerationRule rule : rules) {
+//      if (!rule.isLazy(context)) {
+//        promises.addAll((Collection<? extends LazyGenerationRuleContentPromise>) ef.execute(rule, context));
+//      }
+//    }
 
     return promises;
   }
@@ -219,20 +220,20 @@ public class IncrementalLazyEgxModule extends EgxModuleParallelGenerationRuleAto
       if (path != null)
         paths.add(path);
 
-      /*** START FILTER THE PROMISES ***/
-      if (!PictoApplication.isNonIncremental()) {
-        long startTime = System.currentTimeMillis();
-        Set<String> invalidatedViewPaths = new HashSet<String>();
-        ((AccessGraphResource) accessRecordResource).checkPath((EgxModule) context.getModule(), invalidatedViewPaths,
-            new HashSet<String>(), new HashSet<EObject>(), path);
-        promiseDetectionTime += (System.currentTimeMillis() - startTime);
-        // if invalidated views is empty (the path doesn't need regeneration) then there
-        // is no need to generate the promise, instead skip to the next element.
-        if (invalidatedViewPaths.size() == 0) {
-          return null;
-        }
-      }
-      /*** END FILTER THE PROMISES ***/
+//      /*** START FILTER THE PROMISES ***/
+//      if (!PictoApplication.isNonIncremental()) {
+//        long startTime = System.currentTimeMillis();
+//        Set<String> invalidatedViewPaths = new HashSet<String>();
+//        ((AccessGraphResource) accessRecordResource).checkPath((EgxModule) context.getModule(), invalidatedViewPaths,
+//            new HashSet<String>(), new HashSet<EObject>(), path);
+//        promiseDetectionTime += (System.currentTimeMillis() - startTime);
+//        // if invalidated views is empty (the path doesn't need regeneration) then there
+//        // is no need to generate the promise, instead skip to the next element.
+//        if (invalidatedViewPaths.size() == 0) {
+//          return null;
+//        }
+//      }
+//      /*** END FILTER THE PROMISES ***/
 
       IncrementalLazyGenerationRuleContentPromise promise = new IncrementalLazyGenerationRuleContentPromise(
           contextObject, this, path, templateFactory, templateUri, variables, templateCache);

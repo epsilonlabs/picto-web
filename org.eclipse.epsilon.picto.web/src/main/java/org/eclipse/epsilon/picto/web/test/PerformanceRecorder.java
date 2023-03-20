@@ -24,6 +24,9 @@ import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
+import java.util.concurrent.LinkedBlockingQueue;
+import java.util.concurrent.ThreadPoolExecutor;
+import java.util.concurrent.TimeUnit;
 
 import org.eclipse.epsilon.picto.incrementality.AccessGraphResource;
 import org.eclipse.epsilon.picto.incrementality.AccessRecordResource;
@@ -34,7 +37,8 @@ import org.eclipse.epsilon.picto.incrementality.AccessRecordResource;
  */
 public class PerformanceRecorder {
 
-  private static final ExecutorService RECORDING_EXECUTOR = Executors.newSingleThreadExecutor();
+  public static final ThreadPoolExecutor recordingExecutor = new ThreadPoolExecutor(1, 1, 0L, TimeUnit.MILLISECONDS,
+      new LinkedBlockingQueue<Runnable>());
 
   private static boolean isRecording = false;
   public static long fileChangeTime = 0;
@@ -107,7 +111,7 @@ public class PerformanceRecorder {
    */
   static void record(String text) throws InterruptedException, ExecutionException {
     if (isRecording) {
-      Future<Path> result = RECORDING_EXECUTOR.submit(new RecordingTask(outputFile, text));
+      Future<Path> result = recordingExecutor.submit(new RecordingTask(outputFile, text));
       result.get();
     }
   }

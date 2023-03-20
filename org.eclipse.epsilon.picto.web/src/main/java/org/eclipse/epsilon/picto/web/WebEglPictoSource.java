@@ -63,12 +63,13 @@ import org.eclipse.epsilon.picto.dom.Patch;
 import org.eclipse.epsilon.picto.dom.Picto;
 import org.eclipse.epsilon.picto.dom.PictoPackage;
 import org.eclipse.epsilon.picto.dummy.IEditorPart;
+import org.eclipse.epsilon.picto.incrementality.AccessGraphResource;
 import org.eclipse.epsilon.picto.incrementality.AccessRecordResource;
 import org.eclipse.epsilon.picto.incrementality.IncrementalLazyEgxModule;
 import org.eclipse.epsilon.picto.incrementality.IncrementalLazyEgxModule.IncrementalLazyGenerationRule;
 import org.eclipse.epsilon.picto.incrementality.IncrementalLazyEgxModule.IncrementalLazyGenerationRuleContentPromise;
-import org.eclipse.epsilon.picto.incrementality.IncrementalityUtil;
 import org.eclipse.epsilon.picto.pictograph.State;
+import org.eclipse.epsilon.picto.incrementality.IncrementalityUtil;
 import org.eclipse.epsilon.picto.source.EglPictoSource;
 import org.eclipse.epsilon.picto.web.test.PerformanceRecord;
 import org.eclipse.epsilon.picto.web.test.PerformanceRecorder;
@@ -140,7 +141,7 @@ public class WebEglPictoSource extends EglPictoSource {
           picto.setFormat("egx");
         if ("egx".equals(picto.getFormat())) {
           module = new IncrementalLazyEgxModule(accessRecordResource);
-          //((IncrementalLazyEgxModule) module).getContext().setParallelism(32);
+          // ((IncrementalLazyEgxModule) module).getContext().setParallelism(32);
         } else {
           module = new EglTemplateFactoryModuleAdapter(new EglFileGeneratingTemplateFactory());
         }
@@ -230,6 +231,16 @@ public class WebEglPictoSource extends EglPictoSource {
 
           // if picto generation is not non-incremental = selective (re)generation.
           if (!PictoApplication.isNonIncremental()) {
+            
+//            System.out.print("Waiting AccessGraphResource task executor to complete ");
+//            while (AccessGraphResource.getExecutorService().getActiveCount() > 0) {
+//              System.out.print(".");
+//            }
+//            while (PerformanceRecorder.recordingExecutor.getActiveCount() > 0) {
+//              System.out.print(".");
+//            }
+//            System.out.println(" Done");
+            
             // DETECTION TIME
             long detectionStartTime = System.currentTimeMillis();
             invalidatedViewPaths.addAll(accessRecordResource.getInvalidatedViewPaths(promises, (EgxModule) module));
@@ -299,7 +310,7 @@ public class WebEglPictoSource extends EglPictoSource {
             // to identify views affected by the last change.
             State isNew = accessRecordResource.getPathStatus(pathString);
             if (State.NEW.equals(isNew)) {
-              Thread t = new Thread() {
+              Thread t = new Thread("InitGen-" + promiseView.getPath()) {
                 public void run() {
                   try {
                     String x = promiseView.getViewContent(null);
@@ -309,7 +320,6 @@ public class WebEglPictoSource extends EglPictoSource {
                   }
                 }
               };
-              t.setName(promiseView.getPath());
               t.start();
             }
             modifiedViewContents.add(pathString);

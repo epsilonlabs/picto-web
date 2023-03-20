@@ -1,17 +1,18 @@
 package org.eclipse.epsilon.picto.incrementality;
 
-import org.eclipse.epsilon.picto.pictograph.Path;
-import org.eclipse.epsilon.picto.pictograph.Module;
-import org.eclipse.epsilon.picto.pictograph.Resource;
-import org.eclipse.epsilon.picto.pictograph.Property;
-import org.eclipse.epsilon.picto.pictograph.Element;
-import org.eclipse.epsilon.picto.pictograph.Rule;
-import org.eclipse.epsilon.picto.pictograph.Template;
-
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
+
+import org.eclipse.epsilon.picto.pictograph.Element;
+import org.eclipse.epsilon.picto.pictograph.Module;
+import org.eclipse.epsilon.picto.pictograph.Path;
+import org.eclipse.epsilon.picto.pictograph.Property;
+import org.eclipse.epsilon.picto.pictograph.Resource;
+import org.eclipse.epsilon.picto.pictograph.Rule;
+import org.eclipse.epsilon.picto.pictograph.Template;
+
 import java.util.List;
 
 public class TraceIndex {
