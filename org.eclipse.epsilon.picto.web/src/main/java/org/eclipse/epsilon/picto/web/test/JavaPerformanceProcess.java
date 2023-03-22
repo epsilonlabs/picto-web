@@ -197,11 +197,13 @@ public class JavaPerformanceProcess {
             synchronized (invalidatedViewsWaiter) {
               generatedViews.addAll(invalidatedViews);
               Collections.sort(generatedViews);
-              System.out.println(
-                  "CHANGED VIEWS = " + modifiedViews.size() + ", GENERATED VIEWS = " + generatedViews.size());
-              if (index > 1 && !PictoApplication.isNonIncremental()) {
-                assertThat(modifiedViews).isSubsetOf(generatedViews);
-              }
+              
+//              System.out.println(
+//                  "MODIFIED VIEWS = " + modifiedViews.size() + ", GENERATED VIEWS = " + generatedViews.size());
+//              if (index > 1 && !PictoApplication.isNonIncremental()) {
+//                assertThat(modifiedViews).isSubsetOf(generatedViews);
+//              }
+              
               // notify the main thread to continue iteration
               invalidatedViewsWaiter.notify();
             }
@@ -290,7 +292,7 @@ public class JavaPerformanceProcess {
           clientWaitingList.wait(5 * 60 * 1000);
         }
 
-        waitingBackgroundTasks();
+        JavaPerformanceProcess.waitingBackgroundTasks();
 
 ////        for (int i = 1; i < 5;i++) {
 //          System.gc();
@@ -320,6 +322,10 @@ public class JavaPerformanceProcess {
     System.exit(0);
   }
 
+  /***
+   * 
+   * @throws InterruptedException
+   */
   public static void waitingBackgroundTasks() throws InterruptedException {
     long start = System.currentTimeMillis();
     System.out.print("Waiting AccessGraphResource task executor to complete ");

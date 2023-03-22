@@ -28,6 +28,7 @@ import org.eclipse.epsilon.eol.execute.context.IEolContext;
 import org.eclipse.epsilon.eol.execute.context.Variable;
 import org.eclipse.epsilon.eol.types.EolAnyType;
 import org.eclipse.epsilon.eol.types.EolMap;
+import org.eclipse.epsilon.erl.execute.context.concurrent.ErlContextParallel;
 import org.eclipse.epsilon.picto.ContentPromise;
 import org.eclipse.epsilon.picto.LazyEgxModule.LazyGenerationRuleContentPromise;
 import org.eclipse.epsilon.picto.PictoOperationContributor;
@@ -109,33 +110,33 @@ public class IncrementalLazyEgxModule extends EgxModuleParallelGenerationRuleAto
     context.getOperationContributorRegistry().add(new PictoOperationContributor(this));
     Collection<? extends GenerationRule> rules = getGenerationRules();
 //
-    Collection<LazyGenerationRuleContentPromise> promises = rules.parallelStream()
-        .filter(rule -> {
-          
-      boolean result = false;
-      try {
-        result = !rule.isLazy(context);
-      } catch (EolRuntimeException e) {
-        e.printStackTrace();
-      }
-      return result;
-    }).parallel()
-        .map(rule -> {
-      Collection<? extends LazyGenerationRuleContentPromise> result = null;
-      try {
-        result = (Collection<? extends LazyGenerationRuleContentPromise>) ef.execute(rule, context);
-      } catch (EolRuntimeException e) {
-        e.printStackTrace();
-      }
-      return result;
-    }).parallel().flatMap(l -> l.stream()).collect(Collectors.toList());
-
-//    Collection<LazyGenerationRuleContentPromise> promises = new ArrayList<>(rules.size());
-//    for (GenerationRule rule : rules) {
-//      if (!rule.isLazy(context)) {
-//        promises.addAll((Collection<? extends LazyGenerationRuleContentPromise>) ef.execute(rule, context));
+//    Collection<LazyGenerationRuleContentPromise> promises = rules.parallelStream()
+//        .filter(rule -> {
+//          
+//      boolean result = false;
+//      try {
+//        result = !rule.isLazy(context);
+//      } catch (EolRuntimeException e) {
+//        e.printStackTrace();
 //      }
-//    }
+//      return result;
+//    }).parallel()
+//        .map(rule -> {
+//      Collection<? extends LazyGenerationRuleContentPromise> result = null;
+//      try {
+//        result = (Collection<? extends LazyGenerationRuleContentPromise>) ef.execute(rule, context);
+//      } catch (EolRuntimeException e) {
+//        e.printStackTrace();
+//      }
+//      return result;
+//    }).parallel().flatMap(l -> l.stream()).collect(Collectors.toList());
+
+    Collection<LazyGenerationRuleContentPromise> promises = new ArrayList<>(rules.size());
+    for (GenerationRule rule : rules) {
+      if (!rule.isLazy(context)) {
+        promises.addAll((Collection<? extends LazyGenerationRuleContentPromise>) ef.execute(rule, context));
+      }
+    }
 
     return promises;
   }

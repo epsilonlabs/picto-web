@@ -10,8 +10,6 @@
 
 package org.eclipse.epsilon.picto.web;
 
-import static org.hamcrest.CoreMatchers.nullValue;
-
 import java.io.File;
 import java.io.IOException;
 import java.net.URI;
@@ -52,7 +50,6 @@ import org.eclipse.epsilon.eol.models.IModel;
 import org.eclipse.epsilon.eol.types.EolAnyType;
 import org.eclipse.epsilon.flexmi.FlexmiResourceFactory;
 import org.eclipse.epsilon.picto.Layer;
-import org.eclipse.epsilon.picto.LazyEgxModule;
 import org.eclipse.epsilon.picto.PictoView;
 import org.eclipse.epsilon.picto.StaticContentPromise;
 import org.eclipse.epsilon.picto.ViewTree;
@@ -68,7 +65,6 @@ import org.eclipse.epsilon.picto.incrementality.AccessRecordResource;
 import org.eclipse.epsilon.picto.incrementality.IncrementalLazyEgxModule;
 import org.eclipse.epsilon.picto.incrementality.IncrementalLazyEgxModule.IncrementalLazyGenerationRule;
 import org.eclipse.epsilon.picto.incrementality.IncrementalLazyEgxModule.IncrementalLazyGenerationRuleContentPromise;
-import org.eclipse.epsilon.picto.pictograph.State;
 import org.eclipse.epsilon.picto.incrementality.IncrementalityUtil;
 import org.eclipse.epsilon.picto.source.EglPictoSource;
 import org.eclipse.epsilon.picto.web.test.PerformanceRecord;
@@ -227,21 +223,21 @@ public class WebEglPictoSource extends EglPictoSource {
               "No Path", PerformanceRecorder.promiseTime, 0, PerformanceTestType.PROMISE_TIME,
               PerformanceRecorder.accessRecordResourceSize());
           PerformanceRecorder.record(record);
-          System.out.println(" Done");
+          System.out.println("Done");
 
+          long start1 = System.currentTimeMillis();
+          System.out.print("Waiting AccessGraphResource task executor to complete ");
+          while (AccessGraphResource.getExecutorService().getQueue().size() > 0) {
+            System.out.print(AccessGraphResource.getExecutorService().getQueue().size());
+            System.out.print(".");
+            Thread.sleep(1000);
+          }
+          System.out.println(" Done: " + (System.currentTimeMillis() - start1) + " ms");
+          
           // if picto generation is not non-incremental = selective (re)generation.
           if (!PictoApplication.isNonIncremental()) {
-            
-//            System.out.print("Waiting AccessGraphResource task executor to complete ");
-//            while (AccessGraphResource.getExecutorService().getActiveCount() > 0) {
-//              System.out.print(".");
-//            }
-//            while (PerformanceRecorder.recordingExecutor.getActiveCount() > 0) {
-//              System.out.print(".");
-//            }
-//            System.out.println(" Done");
-            
             // DETECTION TIME
+            System.out.print("Detecting invalidated views ... ");
             long detectionStartTime = System.currentTimeMillis();
             invalidatedViewPaths.addAll(accessRecordResource.getInvalidatedViewPaths(promises, (EgxModule) module));
             /** Calculate the detection time of invalidated views **/
@@ -252,6 +248,7 @@ public class WebEglPictoSource extends EglPictoSource {
                 PerformanceRecorder.globalNumberIteration, "Server", "No Path", PerformanceRecorder.detectionTime, 0,
                 PerformanceTestType.DETECTION_TIME, PerformanceRecorder.accessRecordResourceSize());
             PerformanceRecorder.record(r);
+            System.out.print("Done");
           }
 
           PerformanceRecorder.initialisationTime = System.currentTimeMillis() - loadingStartTime;
@@ -308,12 +305,13 @@ public class WebEglPictoSource extends EglPictoSource {
             // Immediately generates the final view of a new, recently added view
             // into the modified contents to help construct accessresource which is used
             // to identify views affected by the last change.
-            State isNew = accessRecordResource.getPathStatus(pathString);
-            if (State.NEW.equals(isNew)) {
-              Thread t = new Thread("InitGen-" + promiseView.getPath()) {
+//            boolean isNew = accessRecordResource.getPathStatus(pathString);
+//            if (isNew) {
+              Thread t = new Thread("InitialGeneration-" + promiseView.getPath()) {
                 public void run() {
                   try {
-                    String x = promiseView.getViewContent(null);
+                    promiseView.getViewContent(null);
+//                    String x = promiseView.getViewContent(null);
 //                    System.out.println(x);
                   } catch (Exception e) {
                     e.printStackTrace();
@@ -321,7 +319,7 @@ public class WebEglPictoSource extends EglPictoSource {
                 }
               };
               t.start();
-            }
+//            }
             modifiedViewContents.add(pathString);
 
             System.out.print(",PROCESSED");
@@ -329,7 +327,7 @@ public class WebEglPictoSource extends EglPictoSource {
           }
 
 //          accessRecordResource.printIncrementalRecords();
-          accessRecordResource.updateStatusToProcessed(invalidatedViewPaths);
+//          accessRecordResource.updateStatusToProcessed(invalidatedViewPaths);
           generateAll1stTime = false;
 
           // System.out.println();

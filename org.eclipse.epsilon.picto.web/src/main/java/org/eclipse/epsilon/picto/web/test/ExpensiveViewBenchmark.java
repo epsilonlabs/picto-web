@@ -275,7 +275,7 @@ public class ExpensiveViewBenchmark {
       }
 
       Thread.sleep(1000);
-      System.out.println("Number of Properties: " + PerformanceRecorder.getPropertyCount());
+//      System.out.println("Number of Properties: " + PerformanceRecorder.getPropertyCount());
       System.out.println("FINISHED!");
 
     } catch (Exception e) {

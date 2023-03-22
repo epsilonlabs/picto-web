@@ -93,18 +93,20 @@ class IncrementalityTest {
 
   @Test
   void testGeneration() throws Exception {
-    System.out.println("\n" + new Object(){}.getClass().getEnclosingMethod().getName());
-    
+    System.out.println("\n" + new Object() {
+    }.getClass().getEnclosingMethod().getName());
+
     Set<String> generatedViews = setUp("socialnetwork/socialnetwork.model.picto", "socialnetwork/socialnetwork.model");
 
-    assertThat(generatedViews).contains("/Social Network", "/Social Network/Alice", "/Social Network/Bob",
-        "/Social Network/Charlie", "/Stats", "/Custom/Alice and Bob", "/Readme");
+    assertThat(generatedViews).containsExactlyInAnyOrder("/Social Network", "/Social Network/Alice",
+        "/Social Network/Bob", "/Social Network/Charlie", "/Stats", "/Custom/Alice and Bob", "/Readme", "/");
   }
 
   @Test
   void testUpdateEglDoc() throws Exception {
     try {
-      System.out.println("\n" + new Object(){}.getClass().getEnclosingMethod().getName());
+      System.out.println("\n" + new Object() {
+      }.getClass().getEnclosingMethod().getName());
       setUp("egldoc/egldoc-standalone.picto", "egldoc/egldoc/Families.ecore");
 
       EObject eObject = res.getEObject("//Bike");
@@ -125,7 +127,8 @@ class IncrementalityTest {
 
   @Test
   void testUpdateProperty() throws Exception {
-    System.out.println("\n" + new Object(){}.getClass().getEnclosingMethod().getName());
+    System.out.println("\n" + new Object() {
+    }.getClass().getEnclosingMethod().getName());
     setUp("socialnetwork/socialnetwork.model.picto", "socialnetwork/socialnetwork.model");
 
     EObject eObject = res.getEObject("3"); // get Charlie (id = 3)
@@ -137,12 +140,14 @@ class IncrementalityTest {
     eglPictoSource = new WebEglPictoSource();
     Set<String> generatedViews = eglPictoSource.generatePromises(modifiedFilePath,
         PictoProject.createPictoProject(pictoFile), true);
-    assertThat(generatedViews).contains("/Social Network", "/Social Network/Dan");
+    assertThat(generatedViews).containsExactlyInAnyOrder("/", "/Readme", "/Custom/Alice and Bob", "/Social Network",
+        "/Social Network/Dan");
   }
 
   @Test
   void testDeleteElement() throws Exception {
-    System.out.println("\n" + new Object(){}.getClass().getEnclosingMethod().getName());
+    System.out.println("\n" + new Object() {
+    }.getClass().getEnclosingMethod().getName());
     setUp("socialnetwork/socialnetwork.model.picto", "socialnetwork/socialnetwork.model");
 
     EObject eObject = res.getEObject("2"); // get Bob (id = 2)
@@ -154,13 +159,14 @@ class IncrementalityTest {
     Set<String> generatedViews = eglPictoSource.generatePromises(modifiedFilePath,
         PictoProject.createPictoProject(pictoFile), true);
 
-    assertThat(generatedViews).contains("/Social Network", "/Social Network/Alice", "/Stats", "/Custom/Alice and Bob");
+    assertThat(generatedViews).containsExactlyInAnyOrder("/", "/Readme", "/Custom/Alice and Bob", "/Social Network", "/Social Network/Alice", "/Stats");
   }
 
   @SuppressWarnings("unchecked")
   @Test
   void testRemoveReference() throws Exception {
-    System.out.println("\n" + new Object(){}.getClass().getEnclosingMethod().getName());
+    System.out.println("\n" + new Object() {
+    }.getClass().getEnclosingMethod().getName());
     setUp("socialnetwork/socialnetwork.model.picto", "socialnetwork/socialnetwork.model");
 
     EObject alice = res.getEObject("1"); // get Alice (id = 1)
@@ -177,13 +183,14 @@ class IncrementalityTest {
     Set<String> generatedViews = eglPictoSource.generatePromises(modifiedFilePath,
         PictoProject.createPictoProject(pictoFile), true);
 
-    assertThat(generatedViews).contains("/Social Network", "/Social Network/Alice", "/Stats", "/Custom/Alice and Bob");
+    assertThat(generatedViews).containsExactlyInAnyOrder("/", "/Readme", "/Custom/Alice and Bob", "/Social Network", "/Social Network/Alice", "/Stats");
   }
 
   @SuppressWarnings("unchecked")
   @Test
   void testAddReference() throws Exception {
-    System.out.println("\n" + new Object(){}.getClass().getEnclosingMethod().getName());
+    System.out.println("\n" + new Object() {
+    }.getClass().getEnclosingMethod().getName());
     setUp("socialnetwork/socialnetwork.model.picto", "socialnetwork/socialnetwork.model");
 
     EObject sn = res.getEObject("0"); // get social Network (id = 0)
@@ -210,14 +217,15 @@ class IncrementalityTest {
     eglPictoSource = new WebEglPictoSource();
     Set<String> generatedViews = eglPictoSource.generatePromises(modifiedFilePath,
         PictoProject.createPictoProject(pictoFile), true);
-    assertThat(generatedViews).contains("/Social Network", "/Social Network/Alice", "/Social Network/Dan", "/Stats",
-        "/Custom/Alice and Bob");
+    assertThat(generatedViews).containsExactlyInAnyOrder("/", "/Readme", "/Custom/Alice and Bob", "/Social Network", "/Social Network/Alice",
+        "/Social Network/Dan", "/Stats");
   }
 
   @SuppressWarnings("unchecked")
   @Test
   void testAddElement() throws Exception {
-    System.out.println("\n" + new Object(){}.getClass().getEnclosingMethod().getName());
+    System.out.println("\n" + new Object() {
+    }.getClass().getEnclosingMethod().getName());
     setUp("socialnetwork/socialnetwork.model.picto", "socialnetwork/socialnetwork.model");
 
     EObject sn = res.getEObject("0"); // get Alice (id = 1)
@@ -240,13 +248,14 @@ class IncrementalityTest {
     eglPictoSource = new WebEglPictoSource();
     Set<String> generatedViews = eglPictoSource.generatePromises(modifiedFilePath,
         PictoProject.createPictoProject(pictoFile), true);
-    assertThat(generatedViews).contains("/Social Network", "/Social Network/Dan", "/Stats");
+    assertThat(generatedViews).containsExactlyInAnyOrder("/", "/Readme", "/Custom/Alice and Bob", "/Social Network", "/Social Network/Dan", "/Stats");
   }
 
   @SuppressWarnings("unchecked")
   @Test
   void testAddNonDeterminingElement() throws Exception {
-    System.out.println("\n" + new Object(){}.getClass().getEnclosingMethod().getName());
+    System.out.println("\n" + new Object() {
+    }.getClass().getEnclosingMethod().getName());
     setUp("socialnetwork/socialnetwork.model.picto", "socialnetwork/socialnetwork.model");
 
     EObject alice = res.getEObject("1"); // get Alice (id = 1)
@@ -268,16 +277,18 @@ class IncrementalityTest {
     eglPictoSource = new WebEglPictoSource();
     Set<String> generatedViews = eglPictoSource.generatePromises(modifiedFilePath,
         PictoProject.createPictoProject(pictoFile), true);
-    assertThat(generatedViews).contains("/Social Network", "/Social Network/Alice", "/Custom/Alice and Bob");
+    assertThat(generatedViews).containsExactlyInAnyOrder("/", "/Readme", "/Custom/Alice and Bob", "/Social Network", "/Social Network/Alice");
   }
 
   @SuppressWarnings("unchecked")
   @Test
   void testMultipleUpdates() throws Exception {
-    System.out.println("\n" + new Object(){}.getClass().getEnclosingMethod().getName());
+    System.out.println("\n" + new Object() {
+    }.getClass().getEnclosingMethod().getName());
     setUp("socialnetwork/socialnetwork.model.picto", "socialnetwork/socialnetwork.model");
 
     /** first update **/
+    System.out.println("### Rename Charlie to Bob ###");
     EObject eObject = res.getEObject("3"); // get Charlie (id = 3)
     EStructuralFeature eNameFeature = eObject.eClass().getEStructuralFeature("name");
     // update the name to 'Bobby'
@@ -289,10 +300,11 @@ class IncrementalityTest {
     Set<String> generatedViews = eglPictoSource.generatePromises(modifiedFilePath,
         PictoProject.createPictoProject(pictoFile), true);
 
-    assertThat(generatedViews).as("Generated views from updating name to 'Bobby'").contains("/Social Network",
-        "/Social Network/Bobby");
+    assertThat(generatedViews).as("Generated views from updating name to 'Bobby'")
+        .containsExactlyInAnyOrder("/", "/Readme", "/Custom/Alice and Bob", "/Social Network", "/Social Network/Bobby");
 
     /** Second update **/
+    System.out.println("### Delete the Real Bob ###");
     eObject = res.getEObject("2"); // get Bob (id = 2)
     EcoreUtil.delete(eObject);
     res.save(null);
@@ -302,10 +314,11 @@ class IncrementalityTest {
     Set<String> generatedViews2 = eglPictoSource.generatePromises(modifiedFilePath,
         PictoProject.createPictoProject(pictoFile), true);
 
-    assertThat(generatedViews2).as("Generated views from deleting Bob").contains("/Social Network",
-        "/Social Network/Alice", "/Stats", "/Custom/Alice and Bob");
+    assertThat(generatedViews2).as("Generated views from deleting Bob").containsExactlyInAnyOrder("/", "/Readme", "/Custom/Alice and Bob",
+        "/Social Network", "/Social Network/Alice", "/Stats");
 
     /** Third update **/
+    System.out.println("### Add Dan to the people that Alice dislikes ###");
     EObject sn = res.getEObject("0"); // get social Network (id = 0)
     EClass socialNetwork = sn.eClass();
     EStructuralFeature peopleProperty = socialNetwork.getEStructuralFeature("people");
@@ -332,10 +345,11 @@ class IncrementalityTest {
     Set<String> generatedViews3 = eglPictoSource.generatePromises(modifiedFilePath,
         PictoProject.createPictoProject(pictoFile), true);
 
-    assertThat(generatedViews3).as("Generated views from creating Dan").contains("/Social Network",
-        "/Social Network/Alice", "/Social Network/Dan", "/Stats", "/Custom/Alice and Bob");
+    assertThat(generatedViews3).as("Generated views from creating Dan").containsExactlyInAnyOrder("/", "/Readme", "/Custom/Alice and Bob", 
+        "/Social Network", "/Social Network/Alice", "/Social Network/Dan", "/Stats");
 
     /** 4th update **/
+    System.out.println("### Add Erin ###");
     sn = res.getEObject("0"); // get Alice (id = 1)
     socialNetwork = sn.eClass();
     peopleProperty = socialNetwork.getEStructuralFeature("people");
@@ -358,7 +372,7 @@ class IncrementalityTest {
     Set<String> generatedViews4 = eglPictoSource.generatePromises(modifiedFilePath,
         PictoProject.createPictoProject(pictoFile), true);
 
-    assertThat(generatedViews4).as("Generated views from creating Erin").contains("/Social Network",
-        "/Social Network/Erin", "/Stats");
+    assertThat(generatedViews4).as("Generated views from creating Erin").containsExactlyInAnyOrder("/", "/Readme", "/Custom/Alice and Bob", 
+        "/Social Network", "/Social Network/Erin", "/Stats");
   }
 }

@@ -1,27 +1,61 @@
 package org.eclipse.epsilon.picto.pictograph;
 
-public class Property extends InputEntity {
-  protected Element element;
-  protected String previousValue;
+public class Property {
+  protected boolean isNew = true;
+  protected String propertyId;
+  protected String propertyName;
+  protected String element;
+  protected String resource;
   protected String value;
 
-  public Element getElement() {
+  public Property(String propertyId, String resource, String element, String propertyName, String value) {
+    super();
+    this.isNew = true;
+    this.propertyId = propertyId;
+    this.propertyName = propertyName;
+    this.element = element;
+    this.resource = resource;
+    this.value = value;
+  }
+
+  public String getPropertyId() {
+    return propertyId;
+  }
+
+  public void setPropertyId(String propertyId) {
+    this.propertyId = propertyId;
+  }
+
+  public String getPropertyName() {
+    return propertyName;
+  }
+
+  public void setPropertyName(String propertyName) {
+    this.propertyName = propertyName;
+  }
+
+  public String getElement() {
     return element;
   }
 
-  public void setElement(Element element) {
+  public void setElement(String element) {
     this.element = element;
-    if (!element.getProperties().contains(this)) {
-      element.getProperties().add(this);
-    }
   }
 
-  public String getPreviousValue() {
-    return previousValue;
+  public String getResource() {
+    return resource;
   }
 
-  public void setPreviousValue(String previousValue) {
-    this.previousValue = previousValue;
+  public void setResource(String resource) {
+    this.resource = resource;
+  }
+
+  public boolean isNew() {
+    return isNew;
+  }
+
+  public void setOld() {
+    isNew = false;
   }
 
   public String getValue() {

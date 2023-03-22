@@ -113,7 +113,7 @@ public class JavaPerformanceBenchmark {
 //    numberOfClients = 1; // number of clients subscribed to Picto Web's STOMP server.
 //    numberOfIteration = 3; // Number of iteration measuring for each number of affected views
 //    MODEL_ORIGINAL = "/java/java.small.xmi";
-    MODEL_ORIGINAL = "/java/java.medium.xmi";
+//    MODEL_ORIGINAL = "/java/java.medium.xmi";
 
     File modelFileOriginal = new File(PictoApplication.WORKSPACE + File.separator + MODEL_ORIGINAL);
     XMIResource resourceOriginal = new XMIResourceImpl(URI.createFileURI(modelFileOriginal.getAbsolutePath()));
@@ -214,11 +214,14 @@ public class JavaPerformanceBenchmark {
         // iterate for each number of affected views
         for (int numViews : numbersOfAffectedViews) {
           PerformanceRecorder.globalNumberOfAffectedViews = numViews;
-          
+
+          // run this code if we want to run the performance benchmark on separate JVM
+          // processes
           String command = String.format("java -jar performance.jar %s %s", genAll, numViews);
           runCommandSync(command);
-          
-//          JavaPerformanceProcess.main(new String[] { String.valueOf(genAll), String.valueOf(numViews) });
+
+//           //run this code if we want to only use one JVM process
+//           JavaPerformanceProcess.main(new String[] { String.valueOf(genAll), String.valueOf(numViews) });
 
         }
 
@@ -252,7 +255,8 @@ public class JavaPerformanceBenchmark {
 
     ProcessBuilder processBuilder = new ProcessBuilder(command);
     processBuilder.inheritIO();
-//    processBuilder.redirectOutput(Redirect.appendTo(logFile));
+    processBuilder.redirectOutput(Redirect.appendTo(logFile));
+    processBuilder.redirectError(Redirect.appendTo(logFile));
     Process process = processBuilder.start();
 //    InputStreamReader isr = new InputStreamReader(process.getInputStream());
 //    while (isr.read() > -1) {

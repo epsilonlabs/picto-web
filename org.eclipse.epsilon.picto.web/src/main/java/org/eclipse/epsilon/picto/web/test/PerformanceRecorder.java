@@ -92,9 +92,10 @@ public class PerformanceRecorder {
   public static void record(PerformanceRecord record) {
     try {
       if (isRecording) {
-        String line = (++num) + "," + ((record.isGenAll()) ? "all" : "N") + "," + record.getNumOfInvalidatedViews() + ","
-            + record.getIteration() + "," + record.getClient() + "," + record.getPath() + "," + record.getDuration()
-            + "," + record.getPayloadSize() + "," + record.getType() + "," + PerformanceRecorder.getPropertyCount();
+        String line = (++num) + "," + ((record.isGenAll()) ? "all" : "N") + "," + record.getNumOfInvalidatedViews()
+            + "," + record.getIteration() + "," + record.getClient() + "," + record.getPath() + ","
+            + record.getDuration() + "," + record.getPayloadSize() + "," + record.getType() + ","
+            + PerformanceRecorder.getPropertyCount();
         PerformanceRecorder.record(line);
       }
     } catch (InterruptedException | ExecutionException e) {
@@ -135,7 +136,7 @@ public class PerformanceRecorder {
     outputFile.createNewFile();
     PerformanceRecorder.outputFile = outputFile;
   }
-  
+
   /**
    * Set the output file.
    * 
@@ -277,6 +278,7 @@ public class PerformanceRecorder {
   }
 
   public static int getPropertyCount() {
-    return ((AccessGraphResource) accessRecordResource).getTraceIndex().getPropertyIndex().size();
+    return ((AccessGraphResource) accessRecordResource).getTraceIndex().entrySet().stream()
+        .mapToInt(e -> e.getValue().getProperties().size()).sum();
   }
 }

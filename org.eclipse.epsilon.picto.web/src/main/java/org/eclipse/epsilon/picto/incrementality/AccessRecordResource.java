@@ -6,7 +6,6 @@ import java.util.Set;
 
 import org.eclipse.epsilon.egl.EgxModule;
 import org.eclipse.epsilon.picto.incrementality.IncrementalLazyEgxModule.IncrementalLazyGenerationRuleContentPromise;
-import org.eclipse.epsilon.picto.pictograph.State;
 
 public interface AccessRecordResource {
 
@@ -26,7 +25,7 @@ public interface AccessRecordResource {
   public void updatePath(String modulePath, String ruleName, String contextResourceUri, String contextObjectId,
       String path);
 
-  public State getPathStatus(String pathString);
+  public boolean getPathStatus(String pathString);
 
   public int size();
 
