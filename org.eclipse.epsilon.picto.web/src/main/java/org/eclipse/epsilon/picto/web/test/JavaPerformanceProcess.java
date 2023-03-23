@@ -198,11 +198,11 @@ public class JavaPerformanceProcess {
               generatedViews.addAll(invalidatedViews);
               Collections.sort(generatedViews);
               
-//              System.out.println(
-//                  "MODIFIED VIEWS = " + modifiedViews.size() + ", GENERATED VIEWS = " + generatedViews.size());
-//              if (index > 1 && !PictoApplication.isNonIncremental()) {
-//                assertThat(modifiedViews).isSubsetOf(generatedViews);
-//              }
+              System.out.println(
+                  "MODIFIED VIEWS = " + modifiedViews.size() + ", GENERATED VIEWS = " + generatedViews.size());
+              if (index > 1 && !PictoApplication.isNonIncremental()) {
+                assertThat(modifiedViews).isSubsetOf(generatedViews);
+              }
               
               // notify the main thread to continue iteration
               invalidatedViewsWaiter.notify();

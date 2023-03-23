@@ -29,4 +29,9 @@ public interface AccessRecordResource {
 
   public int size();
 
+  /**
+   * @param currentPropertyAccesses
+   */
+  public void addAll(List<AccessRecord> currentPropertyAccesses);
+
 }

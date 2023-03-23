@@ -49,6 +49,7 @@ public class AccessRecordRecorder extends PropertyAccessRecorder {
       AccessRecord r = currentPropertyAccesses.remove(0);
       accessRecordResource.add(r);
     }
+//    accessRecordResource.addAll(currentPropertyAccesses);
 //    currentPropertyAccesses.clear();
   }
 

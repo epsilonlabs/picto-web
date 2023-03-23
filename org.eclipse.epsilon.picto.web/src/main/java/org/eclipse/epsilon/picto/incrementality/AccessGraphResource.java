@@ -40,8 +40,10 @@ public class AccessGraphResource implements AccessRecordResource {
 //  private static ThreadPoolExecutor executorService = (ThreadPoolExecutor) Executors
 //      .newFixedThreadPool(Runtime.getRuntime().availableProcessors());
 //  private static ThreadPoolExecutor executorService = (ThreadPoolExecutor) Executors.newFixedThreadPool(2);
-  private static ThreadPoolExecutor executorService = new ThreadPoolExecutor(Runtime.getRuntime().availableProcessors(),
-      Runtime.getRuntime().availableProcessors(), 0L, TimeUnit.MILLISECONDS, new LinkedBlockingQueue<Runnable>());
+//  private static ThreadPoolExecutor executorService = new ThreadPoolExecutor(Runtime.getRuntime().availableProcessors(),
+//      Runtime.getRuntime().availableProcessors(), 0L, TimeUnit.MILLISECONDS, new LinkedBlockingQueue<Runnable>());
+  private static ThreadPoolExecutor executorService = new ThreadPoolExecutor(1,
+      1, 0L, TimeUnit.MILLISECONDS, new LinkedBlockingQueue<Runnable>());
 
 //  private ConcurrentHashMap<String, Path> paths = new ConcurrentHashMap<>();
   private Map<String, Path> paths = new HashMap<>();
@@ -63,6 +65,12 @@ public class AccessGraphResource implements AccessRecordResource {
     return paths;
   }
 
+  public void addAll(List<AccessRecord> currentPropertyAccesses) {
+    currentPropertyAccesses.parallelStream().forEach(access -> {
+      this.add(access);
+    });
+  }
+  
   @SuppressWarnings("null")
   @Override
   public void add(AccessRecord access) {

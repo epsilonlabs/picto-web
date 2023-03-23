@@ -83,6 +83,8 @@ public class JavaPerformanceBenchmark {
     if (logFile.exists())
       logFile.delete();
     logFile.createNewFile();
+    
+    System.out.println("Dump output into file  " +  logFile.getAbsolutePath());
 
     if (System.getProperty("os.name").contains("indows")) {
       runCommandSync("mvn.cmd -f pom-performance.xml clean install -Dmaven.test.skip=true");
