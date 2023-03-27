@@ -114,7 +114,6 @@ public class WebEglPictoSource extends EglPictoSource {
     Set<String> modifiedViewContents = new HashSet<>();
     try {
 
-      List<String> paths = null;
       PictoView pictoView = new PictoView();
       ViewTree rootViewTree = pictoView.getViewTree();
 
@@ -198,23 +197,20 @@ public class WebEglPictoSource extends EglPictoSource {
 
         if ("egx".equals(picto.getFormat())) {
 
+          Set<String> invalidatedViewPaths = new HashSet<>();
+
+//          long start1 = System.currentTimeMillis();
+//          System.out.print("Waiting AccessGraphResource task executor to complete ");
+//          while (AccessGraphResource.getExecutorService().getQueue().size() > 0) {
+//            System.out.print(AccessGraphResource.getExecutorService().getQueue().size());
+//            System.out.print(".");
+//            Thread.sleep(1000);
+//          }
+//          System.out.println(" Done: " + (System.currentTimeMillis() - start1) + " ms");
+
           // PROMISE TIME
           long promiseStartTime = System.currentTimeMillis();
-
-          Set<String> invalidatedViewPaths = new HashSet<>();
-          /** PROPERTY ACCESS RECORDS **/
-          System.out.print("Creating Promises ... ");
-          List<IncrementalLazyGenerationRuleContentPromise> promises = (List<IncrementalLazyGenerationRuleContentPromise>) module
-              .execute();
-//          accessRecordResource.printIncrementalRecords();
-
-          paths = ((IncrementalLazyEgxModule) module).getPaths();
-          /**
-           * the handleDynamicViews will add the generated lazy contents (tagged
-           * with @lazy in the EGX) to instances to handled later in the next loop
-           **/
-          promises.addAll(handleCustomViews(picto, module, context, fs, paths));
-
+          List<IncrementalLazyGenerationRuleContentPromise> promises = generatePromises(picto, module, context, fs);
           PerformanceRecorder.promiseTime = System.currentTimeMillis() - promiseStartTime;
           if (!PictoApplication.isNonIncremental())
             PerformanceRecorder.promiseTime -= ((IncrementalLazyEgxModule) module).getPromiseDetectionTime();
@@ -224,16 +220,20 @@ public class WebEglPictoSource extends EglPictoSource {
               PerformanceRecorder.accessRecordResourceSize());
           PerformanceRecorder.record(record);
           System.out.println("Done");
+          System.out.println();
 
-          long start1 = System.currentTimeMillis();
+          // WAITING ...
+          long start2 = System.currentTimeMillis();
           System.out.print("Waiting AccessGraphResource task executor to complete ");
-          while (AccessGraphResource.getExecutorService().getQueue().size() > 0) {
+          while (AccessGraphResource.getExecutorService().getQueue().isEmpty()
+              && AccessGraphResource.getExecutorService().getActiveCount() > 0) {
             System.out.print(AccessGraphResource.getExecutorService().getQueue().size());
             System.out.print(".");
             Thread.sleep(1000);
           }
-          System.out.println(" Done: " + (System.currentTimeMillis() - start1) + " ms");
-          
+          System.out.println(" Done: " + (System.currentTimeMillis() - start2) + " ms");
+          System.out.println();
+
           // if picto generation is not non-incremental = selective (re)generation.
           if (!PictoApplication.isNonIncremental()) {
             // DETECTION TIME
@@ -292,7 +292,7 @@ public class WebEglPictoSource extends EglPictoSource {
             // Skip to next promise if path is not in the invalidatedViewPaths.
             if (!generateAll1stTime && !PictoApplication.isNonIncremental()) {
               if (!invalidatedViewPaths.contains(pathString)) {
-                System.out.print(",SKIP");
+                System.out.print(",SKIPPED");
                 System.out.println("," + (System.currentTimeMillis() - start));
                 continue;
               }
@@ -307,18 +307,18 @@ public class WebEglPictoSource extends EglPictoSource {
             // to identify views affected by the last change.
 //            boolean isNew = accessRecordResource.getPathStatus(pathString);
 //            if (isNew) {
-              Thread t = new Thread("InitialGeneration-" + promiseView.getPath()) {
-                public void run() {
-                  try {
-                    promiseView.getViewContent(null);
+            Thread t = new Thread("Generate-" + promiseView.getPath()) {
+              public void run() {
+                try {
+                  promiseView.getViewContent(null);
 //                    String x = promiseView.getViewContent(null);
 //                    System.out.println(x);
-                  } catch (Exception e) {
-                    e.printStackTrace();
-                  }
+                } catch (Exception e) {
+                  e.printStackTrace();
                 }
-              };
-              t.start();
+              }
+            };
+            t.start();
 //            }
             modifiedViewContents.add(pathString);
 
@@ -343,8 +343,8 @@ public class WebEglPictoSource extends EglPictoSource {
         // Handle static views (i.e. where source != null), add the custom view loaded
         // from a file
         // defined in the picto file
-        handleStaticViews(modifiedViewContents, rootViewTree, pictoFilePath, viewContentCache, picto, module, pictoView,
-            paths);
+        handleStaticViews(modifiedViewContents, rootViewTree, pictoFilePath, viewContentCache, picto, module,
+            pictoView);
 
         // Handle patches for existing views (i.e. where source == null and type/rule ==
         // null)
@@ -384,6 +384,20 @@ public class WebEglPictoSource extends EglPictoSource {
 
     return modifiedViewContents;
 
+  }
+
+  public List<IncrementalLazyGenerationRuleContentPromise> generatePromises(Picto picto, IEolModule module,
+      IEolContext context, FrameStack fs) throws EolRuntimeException {
+    /** PROPERTY ACCESS RECORDS **/
+    System.out.print("Creating Promises ... ");
+    List<IncrementalLazyGenerationRuleContentPromise> promises = (List<IncrementalLazyGenerationRuleContentPromise>) module
+        .execute();
+    /**
+     * the handleDynamicViews will add the generated lazy contents (tagged
+     * with @lazy in the EGX) to instances to handled later in the next loop
+     **/
+    promises.addAll(handleCustomViews(picto, module, context, fs));
+    return promises;
   }
 
   /***
@@ -433,8 +447,7 @@ public class WebEglPictoSource extends EglPictoSource {
    * @throws Exception
    */
   private void handleStaticViews(Set<String> modifiedViewContents, ViewTree rootViewTree, String pictoFilePath,
-      PromiseViewCache viewContentCache, Picto picto, IEolModule module, PictoView pictoView, List<String> paths)
-      throws Exception {
+      PromiseViewCache viewContentCache, Picto picto, IEolModule module, PictoView pictoView) throws Exception {
     for (CustomView customView : picto.getCustomViews().stream().filter(cv -> cv.getSource() != null)
         .collect(Collectors.toList())) {
       String format = customView.getFormat() != null ? customView.getFormat() : getDefaultFormat();
@@ -445,7 +458,6 @@ public class WebEglPictoSource extends EglPictoSource {
               new StaticContentPromise(new File(
                   new File(customView.eResource().getURI().toFileString()).getParentFile(), customView.getSource())),
               format, icon, customView.getPosition(), customView.getPatches(), Collections.emptyList()));
-      paths.add(IncrementalityUtil.getPath(customView.getPath()));
 
       ViewTree vt = rootViewTree.getChildren().get(rootViewTree.getChildren().size() - 1);
 
@@ -466,7 +478,7 @@ public class WebEglPictoSource extends EglPictoSource {
    * @throws EolRuntimeException
    */
   private List<IncrementalLazyGenerationRuleContentPromise> handleCustomViews(Picto picto, IEolModule module,
-      IEolContext context, FrameStack fs, List<String> paths) throws EolRuntimeException {
+      IEolContext context, FrameStack fs) throws EolRuntimeException {
     List<IncrementalLazyGenerationRuleContentPromise> customPromises = new ArrayList<>();
     List<CustomView> customViews = picto.getCustomViews().stream().filter(cv -> cv.getType() != null)
         .collect(Collectors.toList());
@@ -526,7 +538,6 @@ public class WebEglPictoSource extends EglPictoSource {
           }
         }
         customPromises.add(contentPromise);
-        paths.add(IncrementalityUtil.getPath(contentPromise));
       }
     }
     return customPromises;

@@ -130,8 +130,7 @@ public class AccessRecord extends PropertyAccess {
 	 * @param value
 	 */
 	public void setValue(Object value) {
-		String val = convertValueToString(value);
-		this.setValue(val);
+		this.setValue(convertValueToString(value));
 	}
 
 	public static String convertValueToString(Object value) {

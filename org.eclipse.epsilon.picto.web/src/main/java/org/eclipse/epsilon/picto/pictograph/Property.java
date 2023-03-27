@@ -1,6 +1,7 @@
 package org.eclipse.epsilon.picto.pictograph;
 
 public class Property {
+  protected boolean isDeleted = false;
   protected boolean isNew = true;
   protected String propertyId;
   protected String propertyName;
@@ -16,6 +17,14 @@ public class Property {
     this.element = element;
     this.resource = resource;
     this.value = value;
+  }
+
+  public void setDeleted() {
+    this.isDeleted = true;
+  }
+
+  public boolean isDeleted() {
+    return isDeleted;
   }
 
   public String getPropertyId() {

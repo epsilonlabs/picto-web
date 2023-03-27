@@ -1,0 +1,250 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
+  <modelVersion>4.0.0</modelVersion>
+  <parent>
+    <groupId>org.springframework.boot</groupId>
+    <artifactId>spring-boot-starter-parent</artifactId>
+    <version>2.6.14</version>
+    <relativePath /> <!-- lookup parent from repository -->
+  </parent>
+  <groupId>epsilon.picto.web</groupId>
+  <version>0.1.2-alpha</version>
+  <name>Picto Web</name>
+  <description>Picto Web</description>
+  <properties>
+    <java.version>11</java.version>
+  </properties>
+  <dependencies>
+    <dependency>
+      <groupId>org.springframework.boot</groupId>
+      <artifactId>spring-boot-starter-thymeleaf</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>org.springframework.boot</groupId>
+      <artifactId>spring-boot-starter-web</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>org.springframework.boot</groupId>
+      <artifactId>spring-boot-starter-webflux</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>org.springframework.boot</groupId>
+      <artifactId>spring-boot-devtools</artifactId>
+      <scope>runtime</scope>
+      <optional>true</optional>
+    </dependency>
+    <dependency>
+      <groupId>org.springframework.boot</groupId>
+      <artifactId>spring-boot-configuration-processor</artifactId>
+      <optional>true</optional>
+    </dependency>
+    <dependency>
+      <groupId>org.projectlombok</groupId>
+      <artifactId>lombok</artifactId>
+      <optional>true</optional>
+    </dependency>
+    <dependency>
+      <groupId>org.springframework.boot</groupId>
+      <artifactId>spring-boot-starter-test</artifactId>
+      <scope>test</scope>
+    </dependency>
+    <dependency>
+      <groupId>info.picocli</groupId>
+      <artifactId>picocli-spring-boot-starter</artifactId>
+      <version>4.7.0</version>
+    </dependency>
+    <dependency>
+      <groupId>io.projectreactor</groupId>
+      <artifactId>reactor-test</artifactId>
+      <scope>test</scope>
+    </dependency>
+    <dependency>
+      <groupId>org.springframework.boot</groupId>
+      <artifactId>spring-boot-starter-websocket</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>org.webjars</groupId>
+      <artifactId>webjars-locator-core</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>org.webjars</groupId>
+      <artifactId>sockjs-client</artifactId>
+      <version>1.5.1</version>
+    </dependency>
+    <dependency>
+      <groupId>org.webjars</groupId>
+      <artifactId>stomp-websocket</artifactId>
+      <version>2.3.4</version>
+    </dependency>
+    <dependency>
+      <groupId>org.webjars</groupId>
+      <artifactId>bootstrap</artifactId>
+      <version>5.2.2</version>
+    </dependency>
+    <dependency>
+      <groupId>org.webjars</groupId>
+      <artifactId>jquery</artifactId>
+      <version>3.6.1</version>
+    </dependency>
+    <!-- https://mvnrepository.com/artifact/org.eclipse.epsilon/org.eclipse.epsilon.flexmi -->
+    <dependency>
+      <groupId>org.eclipse.epsilon</groupId>
+      <artifactId>org.eclipse.epsilon.flexmi</artifactId>
+      <version>2.4.0</version>
+    </dependency>
+    <!-- https://mvnrepository.com/artifact/org.eclipse.epsilon/org.eclipse.epsilon.pinset.engine -->
+    <dependency>
+      <groupId>org.eclipse.epsilon</groupId>
+      <artifactId>org.eclipse.epsilon.pinset.engine</artifactId>
+      <version>2.4.0</version>
+    </dependency>
+    <!-- https://mvnrepository.com/artifact/org.eclipse.emfatic/org.eclipse.emfatic.core -->
+    <dependency>
+      <groupId>org.eclipse.emfatic</groupId>
+      <artifactId>org.eclipse.emfatic.core</artifactId>
+      <version>1.0.0</version>
+    </dependency>
+    <!-- https://mvnrepository.com/artifact/org.atlanmod.zoo/emf.java -->
+    <dependency>
+      <groupId>org.atlanmod.zoo</groupId>
+      <artifactId>emf.java</artifactId>
+      <version>1.0.5</version>
+    </dependency>
+    <!-- https://mvnrepository.com/artifact/junit/junit -->
+    <dependency>
+      <groupId>junit</groupId>
+      <artifactId>junit</artifactId>
+    </dependency>
+    <!-- https://mvnrepository.com/artifact/org.eclipse.platform/org.eclipse.core.resources -->
+    <dependency>
+      <groupId>org.eclipse.platform</groupId>
+      <artifactId>org.eclipse.core.resources</artifactId>
+      <version>3.15.100</version>
+    </dependency>
+    <dependency>
+      <groupId>org.eclipse.platform</groupId>
+      <artifactId>org.eclipse.swt.win32.win32.x86_64</artifactId>
+      <version>3.117.0</version>
+    </dependency>
+    <!-- https://mvnrepository.com/artifact/org.eclipse.platform/org.eclipse.jface -->
+    <dependency>
+      <groupId>org.eclipse.platform</groupId>
+      <artifactId>org.eclipse.jface</artifactId>
+      <version>3.23.0</version>
+    </dependency>
+    <!-- https://mvnrepository.com/artifact/org.eclipse.platform/org.eclipse.core.commands -->
+    <dependency>
+      <groupId>org.eclipse.platform</groupId>
+      <artifactId>org.eclipse.core.commands</artifactId>
+      <version>3.10.100</version>
+    </dependency>
+    <!-- https://mvnrepository.com/artifact/org.apache.commons/commons-csv -->
+    <dependency>
+      <groupId>org.apache.commons</groupId>
+      <artifactId>commons-csv</artifactId>
+      <version>1.9.0</version>
+    </dependency>
+    <!-- https://mvnrepository.com/artifact/org.commonmark/commonmark-ext-gfm-strikethrough -->
+    <dependency>
+      <groupId>org.commonmark</groupId>
+      <artifactId>commonmark-ext-gfm-strikethrough</artifactId>
+      <version>0.19.0</version>
+    </dependency>
+    <!-- https://mvnrepository.com/artifact/org.commonmark/commonmark-ext-gfm-tables -->
+    <dependency>
+      <groupId>org.commonmark</groupId>
+      <artifactId>commonmark-ext-gfm-tables</artifactId>
+      <version>0.19.0</version>
+    </dependency>
+    <!-- https://mvnrepository.com/artifact/org.commonmark/commonmark-ext-ins -->
+    <dependency>
+      <groupId>org.commonmark</groupId>
+      <artifactId>commonmark-ext-ins</artifactId>
+      <version>0.19.0</version>
+    </dependency>
+    <!-- https://mvnrepository.com/artifact/org.commonmark/commonmark-ext-yaml-front-matter -->
+    <dependency>
+      <groupId>org.commonmark</groupId>
+      <artifactId>commonmark-ext-yaml-front-matter</artifactId>
+      <version>0.19.0</version>
+    </dependency>
+    <!-- https://mvnrepository.com/artifact/org.commonmark/commonmark-ext-image-attributes -->
+    <dependency>
+      <groupId>org.commonmark</groupId>
+      <artifactId>commonmark-ext-image-attributes</artifactId>
+      <version>0.19.0</version>
+    </dependency>
+    <dependency>
+      <groupId>net.sourceforge.plantuml</groupId>
+      <artifactId>plantuml</artifactId>
+      <version>1.2022.8</version>
+    </dependency>
+    <dependency>
+      <groupId>org.assertj</groupId>
+      <artifactId>assertj-core</artifactId>
+    </dependency>
+    <!-- https://mvnrepository.com/artifact/org.eclipse.jetty/jetty-client -->
+    <dependency>
+      <groupId>org.eclipse.jetty</groupId>
+      <artifactId>jetty-client</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>org.eclipse.jetty</groupId>
+      <artifactId>jetty-io</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>org.eclipse.jetty</groupId>
+      <artifactId>jetty-util</artifactId>
+    </dependency>
+  </dependencies>
+  <build>
+    <plugins>
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-surefire-plugin</artifactId>
+       <configuration>
+          <forkCount>1</forkCount>
+          <reuseForks>true</reuseForks>
+          <argLine>-Xmx24576m -Xms1024m</argLine>
+        </configuration>
+      </plugin>
+      <plugin>
+        <groupId>org.springframework.boot</groupId>
+        <artifactId>spring-boot-maven-plugin</artifactId>
+        <configuration>
+          <mainClass>org.eclipse.epsilon.picto.web.test.JavaPerformanceProcessNoClient</mainClass>
+          <excludes>
+            <exclude>
+              <groupId>org.projectlombok</groupId>
+              <artifactId>lombok</artifactId>
+            </exclude>
+          </excludes>
+          
+          <!-- PICTO WEB -->
+          <finalName>performance-noclient</finalName>
+          <!--<appendAssemblyId>false</appendAssemblyId>-->
+          <outputDirectory>./</outputDirectory>
+          <!-- <archive>
+            <manifest>
+              <addClasspath>true</addClasspath>
+              <mainClass>org.eclipse.epsilon.picto.web.test.Dummy</mainClass>
+            </manifest>
+          </archive>
+          <descriptorRefs>
+            <descriptorRef>jar-with-dependencies</descriptorRef>
+          </descriptorRefs>-->
+          <!-- PICTO WEB -->
+          
+        </configuration>
+      </plugin>
+    </plugins>
+  </build>
+  <url>https://github.com/epsilonlabs/picto-web</url>
+  <artifactId>picto-web</artifactId>
+  <organization>
+    <name>EpsilonLabs, University of York</name>
+    <url>https://github.com/epsilonlabs/</url>
+  </organization>
+</project>
