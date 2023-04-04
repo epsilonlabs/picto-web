@@ -8,6 +8,20 @@ var associations = Set{};
 [%   var typeName = field.getTypeName();
      var type = null;
      if (field.type <> null and field.type.type <> null 
+        and field.type.type.isTypeOf(java::ParameterizedType) 
+        and (field.type.type.name.contains("List")
+        or field.type.type.name.contains("Collection") 
+        or field.type.type.name.contains("Map") 
+        or field.type.type.name.contains("Set"))){
+        
+        for (argument in field.type.type.typeArguments){
+	        if (argument.type.isTypeOf(java::ClassDeclaration) and classDeclaration <> argument.type){
+	            type = argument.type;
+	            break;
+	        }
+        }
+     }
+     if (field.type <> null and field.type.type <> null 
         and field.type.type.isTypeOf(java::ClassDeclaration)
         and classDeclaration <> field.type.type
         and field.type.type.name <> null

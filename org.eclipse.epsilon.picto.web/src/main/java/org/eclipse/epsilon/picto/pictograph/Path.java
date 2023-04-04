@@ -8,8 +8,8 @@ public class Path {
 
   protected boolean isNew = true;
   protected String name;
-//  protected ConcurrentHashMap<String, Property> properties = new ConcurrentHashMap<>();
-  protected Map<String, Property> properties = new HashMap();
+  protected ConcurrentHashMap<String, Property> properties = new ConcurrentHashMap<>();
+//  protected Map<String, Property> properties = new HashMap();
 
   public String getName() {
     return name;

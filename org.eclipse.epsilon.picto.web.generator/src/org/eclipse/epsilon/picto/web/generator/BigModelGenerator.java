@@ -12,8 +12,6 @@
 
 package org.eclipse.epsilon.picto.web.generator;
 
-import static org.hamcrest.CoreMatchers.containsString;
-
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
@@ -21,12 +19,9 @@ import java.util.Arrays;
 import java.util.Comparator;
 import java.util.HashMap;
 import java.util.HashSet;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.stream.Collector;
-import java.util.stream.Collectors;
 
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.IProjectDescription;
@@ -39,7 +34,6 @@ import org.eclipse.emf.ecore.EcorePackage;
 import org.eclipse.emf.ecore.resource.Resource;
 import org.eclipse.emf.ecore.resource.ResourceSet;
 import org.eclipse.emf.ecore.resource.impl.ResourceSetImpl;
-import org.eclipse.emf.ecore.util.EcoreUtil;
 import org.eclipse.emf.ecore.xmi.XMIResource;
 import org.eclipse.emf.ecore.xmi.impl.XMIResourceFactoryImpl;
 import org.eclipse.emf.ecore.xmi.impl.XMIResourceImpl;
@@ -200,9 +194,10 @@ public class BigModelGenerator {
         System.out.println(record.getModelName() + "," + record.getTime());
       }
 
-      Set<String> modelNames = new HashSet<>(Arrays.asList(new String[] { "M294", "M330", "M296", "M311", "M317" }));
-
-      bigResource.getContents().removeIf(m -> m instanceof Model && !modelNames.contains(((Model) m).getName()));
+//      Set<String> modelNames = new HashSet<>(Arrays.asList(new String[] {"M294", "M330", "M296", "M311", "M317" }));
+//      Set<String> modelNames = new HashSet<>(Arrays.asList(new String[] {"M38", "M232", "M241", "M22", "M42", "M1", "M289" }));
+//
+//      bigResource.getContents().removeIf(m -> m instanceof Model && !modelNames.contains(((Model) m).getName()));
 
 //      List<EObject> temp = new ArrayList<>();
 //      temp.addAll(bigResource.getContents());

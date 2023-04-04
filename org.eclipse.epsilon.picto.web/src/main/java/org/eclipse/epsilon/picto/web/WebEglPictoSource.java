@@ -199,14 +199,18 @@ public class WebEglPictoSource extends EglPictoSource {
 
           Set<String> invalidatedViewPaths = new HashSet<>();
 
-//          long start1 = System.currentTimeMillis();
+          
+//          Thread.sleep(1000);
+//          start1 = System.currentTimeMillis();
 //          System.out.print("Waiting AccessGraphResource task executor to complete ");
-//          while (AccessGraphResource.getExecutorService().getQueue().size() > 0) {
+//          while (AccessGraphResource.getExecutorService().getQueue().size() > 0
+//              && AccessGraphResource.getExecutorService().getActiveCount() > 0) {
 //            System.out.print(AccessGraphResource.getExecutorService().getQueue().size());
 //            System.out.print(".");
 //            Thread.sleep(1000);
 //          }
 //          System.out.println(" Done: " + (System.currentTimeMillis() - start1) + " ms");
+//          System.out.println();
 
           // PROMISE TIME
           long promiseStartTime = System.currentTimeMillis();
@@ -225,7 +229,7 @@ public class WebEglPictoSource extends EglPictoSource {
           // WAITING ...
           long start2 = System.currentTimeMillis();
           System.out.print("Waiting AccessGraphResource task executor to complete ");
-          while (AccessGraphResource.getExecutorService().getQueue().isEmpty()
+          while (AccessGraphResource.getExecutorService().getQueue().size() > 0
               && AccessGraphResource.getExecutorService().getActiveCount() > 0) {
             System.out.print(AccessGraphResource.getExecutorService().getQueue().size());
             System.out.print(".");
@@ -386,6 +390,7 @@ public class WebEglPictoSource extends EglPictoSource {
 
   }
 
+  @SuppressWarnings("unchecked")
   public List<IncrementalLazyGenerationRuleContentPromise> generatePromises(Picto picto, IEolModule module,
       IEolContext context, FrameStack fs) throws EolRuntimeException {
     /** PROPERTY ACCESS RECORDS **/

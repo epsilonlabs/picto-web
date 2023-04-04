@@ -12,7 +12,6 @@ package org.eclipse.epsilon.picto.web.test;
 
 import java.io.File;
 import java.io.IOException;
-import java.io.InputStreamReader;
 import java.lang.ProcessBuilder.Redirect;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -83,8 +82,8 @@ public class JavaPerformanceBenchmark {
     if (logFile.exists())
       logFile.delete();
     logFile.createNewFile();
-    
-    System.out.println("Dump output into file  " +  logFile.getAbsolutePath());
+
+    System.out.println("Dump output into file  " + logFile.getAbsolutePath());
 
     if (System.getProperty("os.name").contains("indows")) {
       runCommandSync("mvn.cmd -f pom-performance.xml clean install -Dmaven.test.skip=true");
@@ -116,6 +115,8 @@ public class JavaPerformanceBenchmark {
 //    numberOfIteration = 3; // Number of iteration measuring for each number of affected views
 //    MODEL_ORIGINAL = "/java/java.small.xmi";
 //    MODEL_ORIGINAL = "/java/java.medium.xmi";
+//    MODEL_ORIGINAL = "/java/java.xx.big.xmi";
+//    MODEL_ORIGINAL = "/java/java.x.big.xmi";
 
     File modelFileOriginal = new File(PictoApplication.WORKSPACE + File.separator + MODEL_ORIGINAL);
     XMIResource resourceOriginal = new XMIResourceImpl(URI.createFileURI(modelFileOriginal.getAbsolutePath()));
@@ -198,13 +199,14 @@ public class JavaPerformanceBenchmark {
 
     PerformanceRecorder.globalNumberOfViews = numberOfViews;
     numberOfViews = classList.size();
-    numbersOfAffectedViews = new int[numberOfMeasurementPoints + 1];
+//    numbersOfAffectedViews = new int[numberOfMeasurementPoints + 1];
+    numbersOfAffectedViews = new int[numberOfMeasurementPoints];
 
     // order from low to high
     for (int i = 0; i < numberOfMeasurementPoints; i++) {
-      numbersOfAffectedViews[i + 1] = 0 + (numberOfViews / numberOfMeasurementPoints) * (i + 1);
+      numbersOfAffectedViews[i] = 0 + (numberOfViews / numberOfMeasurementPoints) * (i + 1);
     }
-    numbersOfAffectedViews[0] = numbersOfAffectedViews[numbersOfAffectedViews.length - 1] - 1;
+//    numbersOfAffectedViews[0] = numbersOfAffectedViews[numbersOfAffectedViews.length - 1] - 1;
 
     System.out.println("Iteration = " + Arrays.toString(numbersOfAffectedViews));
 
@@ -219,11 +221,11 @@ public class JavaPerformanceBenchmark {
 
           // run this code if we want to run the performance benchmark on separate JVM
           // processes
-          String command = String.format("java -jar performance.jar %s %s", genAll, numViews);
+          String command = String.format("java -jar performance.jar %s %s %s", genAll, numViews, numberOfViews);
           runCommandSync(command);
 
-//           //run this code if we want to only use one JVM process
-//           JavaPerformanceProcess.main(new String[] { String.valueOf(genAll), String.valueOf(numViews) });
+////           run this code if we want to only use one JVM process
+//           JavaPerformanceProcess.main(new String[] { String.valueOf(genAll), String.valueOf(numViews), String.valueOf(numberOfViews) });
 
         }
 
@@ -245,49 +247,12 @@ public class JavaPerformanceBenchmark {
 
   public static void runCommandSync(String... command) throws IOException, InterruptedException {
     System.out.println("Execute Sync: " + String.join(" ", command));
-//    Process process = Runtime.getRuntime().exec(command);
-//    InputStream inputStream = process.getInputStream();
-//    BufferedReader reader = new BufferedReader(new InputStreamReader(inputStream));
-//    String line;
-//    while ((line = reader.readLine()) != null) {
-//      System.out.println(line);
-//    }
-//    int exitCode = process.waitFor();
-//    System.out.println("Exited with error code : " + exitCode);
-
     ProcessBuilder processBuilder = new ProcessBuilder(command);
     processBuilder.inheritIO();
-    processBuilder.redirectOutput(Redirect.appendTo(logFile));
-    processBuilder.redirectError(Redirect.appendTo(logFile));
+//    processBuilder.redirectOutput(Redirect.appendTo(logFile));
+//    processBuilder.redirectError(Redirect.appendTo(logFile));
     Process process = processBuilder.start();
-//    InputStreamReader isr = new InputStreamReader(process.getInputStream());
-//    while (isr.read() > -1) {
-//    }
-
-//    BufferedReader reader = new BufferedReader(new InputStreamReader(inputStream));
-//    
-//    Reader
-//    
-//    String line;
-//    while ((line = reader.readLine()) != null) {
-//      System.out.println(line);
-//    }
     int exitCode = process.waitFor();
     System.out.println("Exited with error code : " + exitCode);
-  }
-
-  public static void runCommand(String command) throws IOException, InterruptedException {
-    runCommand(command.split(" "));
-  }
-
-  public static void runCommand(String... command) throws IOException, InterruptedException {
-    File lockFile = new File(PictoApplication.TEMP + File.separator + "performance.lock");
-    lockFile.createNewFile();
-    System.out.println("Execute: " + String.join(" ", command));
-    Runtime.getRuntime().exec(command);
-    System.out.println("Excecuted");
-    while (lockFile.exists()) {
-      Thread.sleep(2000);
-    }
   }
 }

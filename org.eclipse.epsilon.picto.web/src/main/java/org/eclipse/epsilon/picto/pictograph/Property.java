@@ -19,6 +19,10 @@ public class Property {
     this.value = value;
   }
 
+  public String toString() {
+    return propertyId + ", " + value + ", deleted:" + isDeleted;
+  }
+
   public void setDeleted() {
     this.isDeleted = true;
   }

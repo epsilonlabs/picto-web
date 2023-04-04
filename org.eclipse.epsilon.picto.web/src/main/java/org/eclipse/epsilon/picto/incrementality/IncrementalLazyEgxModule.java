@@ -3,14 +3,19 @@ package org.eclipse.epsilon.picto.incrementality;
 import java.net.URI;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.HashSet;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.stream.Collectors;
 
 import org.eclipse.emf.ecore.EObject;
+import org.eclipse.emf.ecore.resource.Resource;
 import org.eclipse.epsilon.common.module.ModuleElement;
 import org.eclipse.epsilon.common.parse.AST;
 import org.eclipse.epsilon.egl.EglTemplate;
@@ -19,6 +24,9 @@ import org.eclipse.epsilon.egl.EgxModule;
 import org.eclipse.epsilon.egl.concurrent.EgxModuleParallelGenerationRuleAtoms;
 import org.eclipse.epsilon.egl.dom.GenerationRule;
 import org.eclipse.epsilon.egl.execute.context.IEgxContext;
+import org.eclipse.epsilon.egl.execute.context.concurrent.IEgxContextParallel;
+import org.eclipse.epsilon.emc.emf.AbstractEmfModel;
+import org.eclipse.epsilon.emc.emf.EmfModel;
 import org.eclipse.epsilon.eol.dom.Parameter;
 import org.eclipse.epsilon.eol.exceptions.EolRuntimeException;
 import org.eclipse.epsilon.eol.execute.ExecutorFactory;
@@ -46,6 +54,7 @@ import org.eclipse.epsilon.pinset.PinsetModule;
  */
 public class IncrementalLazyEgxModule extends EgxModuleParallelGenerationRuleAtoms {
 
+  protected static boolean generateAll1stTime = true;
   protected AccessRecordResource accessRecordResource;
   protected List<String> paths = new ArrayList<>();
 
@@ -56,18 +65,7 @@ public class IncrementalLazyEgxModule extends EgxModuleParallelGenerationRuleAto
   }
 
   public IncrementalLazyEgxModule(AccessRecordResource accessRecordResource) {
-
     this.accessRecordResource = accessRecordResource;
-
-//    templateFactory = new EglFileGeneratingTemplateFactory() {
-//      @Override
-//      protected EglTemplate createTemplate(EglTemplateSpecification spec) throws Exception {
-//        EglTemplate template = super.createTemplate(spec);
-//        IncrementalLazyEgxModule.this.template = template;
-//        return template;
-//      }
-//    };
-//    this.setTemplateFactory(templateFactory);
   }
 
   @Override
@@ -129,7 +127,7 @@ public class IncrementalLazyEgxModule extends EgxModuleParallelGenerationRuleAto
 //        e.printStackTrace();
 //      }
 //      return result;
-//    }).parallel().flatMap(l -> l.stream()).collect(Collectors.toList());
+//    }).parallel().filter(promise -> promise != null).flatMap(l -> l.stream()).collect(Collectors.toList());
 
     Collection<LazyGenerationRuleContentPromise> promises = new ArrayList<>(rules.size());
     for (GenerationRule rule : rules) {
@@ -226,7 +224,7 @@ public class IncrementalLazyEgxModule extends EgxModuleParallelGenerationRuleAto
 //        long startTime = System.currentTimeMillis();
 //        Set<String> invalidatedViewPaths = new HashSet<String>();
 //        ((AccessGraphResource) accessRecordResource).checkPath((EgxModule) context.getModule(), invalidatedViewPaths,
-//            new HashSet<String>(), new HashSet<EObject>(), path);
+//            new HashSet<String>(), new HashSet<String>(), path, false);
 //        promiseDetectionTime += (System.currentTimeMillis() - startTime);
 //        // if invalidated views is empty (the path doesn't need regeneration) then there
 //        // is no need to generate the promise, instead skip to the next element.
@@ -242,50 +240,119 @@ public class IncrementalLazyEgxModule extends EgxModuleParallelGenerationRuleAto
       return promise;
     }
 
+    private boolean requireGeneration(Object element) throws EolRuntimeException {
+
+      if (PictoApplication.isNonIncremental()) {
+        return true;
+      }
+
+      long startTime = System.currentTimeMillis();
+
+      /**
+       * Get the path, if the path is still valid then skip the generation of the
+       * promise
+       */
+      FrameStack frameStack = context.getFrameStack();
+      if (sourceParameter != null) {
+        frameStack.enterLocal(FrameType.PROTECTED, this,
+            Variable.createReadOnlyVariable(sourceParameter.getName(), element));
+      } else {
+        frameStack.enterLocal(FrameType.PROTECTED, this);
+      }
+      String path = null;
+      if (parametersBlock != null) {
+        EolMap<String, ?> parameters = parametersBlock.execute(context, false);
+        Entry<String, ?> entry = parameters.entrySet().stream().filter(e -> e.getKey().equals("path")).findFirst()
+            .orElse(null);
+        path = "/" + String.join("/", (Collection<String>) entry.getValue());
+      }
+      frameStack.leaveLocal(this);
+
+      Set<String> invalidatedViewPaths = new HashSet<String>();
+      ((AccessGraphResource) accessRecordResource).checkPath((EgxModule) context.getModule(), invalidatedViewPaths,
+          new HashSet<>(), new HashSet<>(), path, false);
+      promiseDetectionTime += (System.currentTimeMillis() - startTime);
+
+      // if invalidated views is empty (the path doesn't need regeneration) then there
+      // is no need to generate the promise, instead skip to the next element.
+      if (invalidatedViewPaths.size() == 0) {
+        return false;
+      }
+
+      return true;
+    }
+
+    /***
+     * 
+     */
     @SuppressWarnings("unchecked")
     @Override
     public Object execute(IEolContext context) throws EolRuntimeException {
+
       Collection<IncrementalLazyGenerationRuleContentPromise> promises = new ArrayList<>();
       ExecutorFactory ef = context.getExecutorFactory();
       Collection<?> elements = getAllElements(context);
-      for (Object element : elements) {
 
-//        if (!PictoApplication.isNonIncremental()) {
-//          
-//          long startTime = System.currentTimeMillis();
-//          
-//          /**
-//           * Get the path, if the path is still valid then skip the generation of the
-//           * promise
-//           */
-//          FrameStack frameStack = context.getFrameStack();
-//          if (sourceParameter != null) {
-//            frameStack.enterLocal(FrameType.PROTECTED, this,
-//                Variable.createReadOnlyVariable(sourceParameter.getName(), element));
-//          } else {
-//            frameStack.enterLocal(FrameType.PROTECTED, this);
-//          }
-//          String path = null;
-//          if (parametersBlock != null) {
-//            EolMap<String, ?> parameters = parametersBlock.execute(context, false);
-//            Entry<String, ?> entry = parameters.entrySet().stream().filter(e -> e.getKey().equals("path")).findFirst()
-//                .orElse(null);
-//            path = "/" + String.join("/", (Collection<String>) entry.getValue());
-//          }
-//          frameStack.leaveLocal(this);
-//
-//          
-//          Set<String> invalidatedViewPaths = new HashSet<String>();
-//          ((AccessGraphResource) accessRecordResource).checkPath((EgxModule) context.getModule(), invalidatedViewPaths,
-//              new HashSet<String>(), new HashSet<EObject>(), path);
-//          promiseDetectionTime += (System.currentTimeMillis() - startTime);
-//
-//          // if invalidated views is empty (the path doesn't need regeneration) then there
-//          // is no need to generate the promise, instead skip to the next element.
-//          if (invalidatedViewPaths.size() == 0) {
-//            continue;
-//          }
-//          /***/
+//      /** Parallel **/
+//      elements.parallelStream().forEach(element -> {
+//        try {
+//        Object result = ef.execute(this, context, element);
+//        if (result instanceof IncrementalLazyGenerationRuleContentPromise) {
+//          promises.add((IncrementalLazyGenerationRuleContentPromise) result);
+//        }
+//        }catch(Exception e) {
+//          e.printStackTrace();
+//        }
+//      });
+
+//      /** Parallel **/
+//      promises.addAll(elements.parallelStream().map(element -> {
+//        IncrementalLazyGenerationRuleContentPromise result = null;
+//        try {
+//          Object temp = ef.execute(this, context, element);
+//          result = (result instanceof IncrementalLazyGenerationRuleContentPromise)
+//              ? (IncrementalLazyGenerationRuleContentPromise) temp
+//              : null;
+//        } catch (Exception e) {
+//          e.printStackTrace();
+//        }
+//        return result;
+//      }).filter(result -> result != null).collect(Collectors.toList()));
+
+      /*** FILTER PROMISES ***/
+      int size1 = elements.size();
+      Collection<?> filteredElements = elements;
+      if (!PictoApplication.isNonIncremental() && !generateAll1stTime) {
+
+        // WAITING ...
+        long start1 = System.currentTimeMillis();
+        System.out.print("Waiting AccessGraphResource task executor to complete ");
+        while (AccessGraphResource.getExecutorService().getQueue().size() > 0
+            && AccessGraphResource.getExecutorService().getActiveCount() > 0) {
+          System.out.print(AccessGraphResource.getExecutorService().getQueue().size());
+          System.out.print(".");
+          try {
+            Thread.sleep(1000);
+          } catch (InterruptedException e) {
+            e.printStackTrace();
+          }
+        }
+        System.out.println(" Done: " + (System.currentTimeMillis() - start1) + " ms");
+
+        long startTime = System.currentTimeMillis();
+        filteredElements = filterContextElements(elements);
+        promiseDetectionTime += (System.currentTimeMillis() - startTime);
+
+      }
+      generateAll1stTime = false;
+      System.out.println("Elements filtered from " + size1 + " to " + filteredElements.size());
+
+      /** Sequential **/
+      System.console();
+      for (Object element : filteredElements) {
+//        System.out.println("AL:" + element);  
+//        if (!requireGeneration(element)) {
+//          continue;
 //        }
 
         Object result = ef.execute(this, context, element);
@@ -293,7 +360,89 @@ public class IncrementalLazyEgxModule extends EgxModuleParallelGenerationRuleAto
           promises.add((IncrementalLazyGenerationRuleContentPromise) result);
         }
       }
+
       return promises;
+    }
+
+    /***
+     * 
+     * @param elements
+     * @return
+     */
+    public Collection<Object> filterContextElements(Collection<?> elements) {
+
+      // main
+      String ruleId = this.getName();
+      String moduleId = IncrementalLazyEgxModule.this.getFile().getAbsolutePath();
+      String moduleAndRuleIds = moduleId + "#" + ruleId + "#";
+
+//      List<Object> filteredElements = Collections.synchronizedList(new ArrayList<>());
+//      elements.parallelStream().forEach(element -> {
+//        String resourceId = null;
+//        String eObjectId = null;
+//        if (element instanceof EObject) {
+//          EObject eObject = (EObject) element;
+//          Resource resource = eObject.eResource();
+//          resourceId = eObject.eResource().getURI().toFileString();
+//          eObjectId = resource.getURIFragment(eObject);
+//        }
+//        String promiseKey = moduleAndRuleIds + resourceId + "#" + eObjectId;
+//        String path = ((AccessGraphResource) accessRecordResource).getPromises().get(promiseKey);
+//
+//        Set<String> invalidatedViewPaths = new HashSet<String>();
+//        ((AccessGraphResource) accessRecordResource).checkPath((EgxModule) context.getModule(), invalidatedViewPaths,
+//            new HashSet<>(), new HashSet<>(), path, false);
+//        if (invalidatedViewPaths.size() != 0) {
+//          filteredElements.add(element);
+//        }
+//      });
+      
+//      Map<Object, Object> temp = new ConcurrentHashMap<>();
+//      elements.parallelStream().forEach(element -> {
+//        String resourceId = null;
+//        String eObjectId = null;
+//        if (element instanceof EObject) {
+//          EObject eObject = (EObject) element;
+//          Resource resource = eObject.eResource();
+//          resourceId = eObject.eResource().getURI().toFileString();
+//          eObjectId = resource.getURIFragment(eObject);
+//        }
+//        String promiseKey = moduleAndRuleIds + resourceId + "#" + eObjectId;
+//        String path = ((AccessGraphResource) accessRecordResource).getPromises().get(promiseKey);
+//
+//        Set<String> invalidatedViewPaths = new HashSet<String>();
+//        ((AccessGraphResource) accessRecordResource).checkPath((EgxModule) context.getModule(), invalidatedViewPaths,
+//            new HashSet<>(), new HashSet<>(), path, false);
+//        if (invalidatedViewPaths.size() != 0) {
+//          temp.put(path, element);
+//        }
+//      });
+//      List<Object> filteredElements = new ArrayList<>(temp.values());
+      
+
+      List<Object> filteredElements = elements.parallelStream().map(element -> {
+        String resourceId = null;
+        String eObjectId = null;
+        if (element instanceof EObject) {
+          EObject eObject = (EObject) element;
+          Resource resource = eObject.eResource();
+          resourceId = eObject.eResource().getURI().toFileString();
+          eObjectId = resource.getURIFragment(eObject);
+        }
+        String promiseKey = moduleAndRuleIds + resourceId + "#" + eObjectId;
+        String path = ((AccessGraphResource) accessRecordResource).getPromises().get(promiseKey);
+
+        Set<String> invalidatedViewPaths = new HashSet<String>();
+        ((AccessGraphResource) accessRecordResource).checkPath((EgxModule) context.getModule(), invalidatedViewPaths,
+            new HashSet<>(), new HashSet<>(), path, false);
+        if (invalidatedViewPaths.size() != 0) {
+          return element;
+        } else {
+          return false;
+        }
+      }).parallel().filter(element -> !(element instanceof Boolean)).parallel().collect(Collectors.toList());
+
+      return filteredElements;
     }
 
     public Parameter getSourceParameter() {

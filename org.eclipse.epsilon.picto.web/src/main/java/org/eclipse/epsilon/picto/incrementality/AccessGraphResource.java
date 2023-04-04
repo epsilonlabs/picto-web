@@ -14,6 +14,7 @@ import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
@@ -43,17 +44,13 @@ public class AccessGraphResource implements AccessRecordResource {
 //  private static ThreadPoolExecutor executorService = (ThreadPoolExecutor) Executors
 //      .newFixedThreadPool(Runtime.getRuntime().availableProcessors());
 //  private static ThreadPoolExecutor executorService = (ThreadPoolExecutor) Executors.newFixedThreadPool(1);
-//  private static ThreadPoolExecutor executorService = new ThreadPoolExecutor(Runtime.getRuntime().availableProcessors(),
-//      Runtime.getRuntime().availableProcessors(), 1, TimeUnit.MINUTES, new LinkedBlockingQueue<Runnable>());
-  private static ThreadPoolExecutor executorService = new ThreadPoolExecutor(1, 1, 1, TimeUnit.MINUTES,
-      new LinkedBlockingQueue<Runnable>());
+  private static ThreadPoolExecutor executorService = new ThreadPoolExecutor(Runtime.getRuntime().availableProcessors(),
+      Runtime.getRuntime().availableProcessors(), 1, TimeUnit.MINUTES, new LinkedBlockingQueue<Runnable>());
+//  private static ThreadPoolExecutor executorService = new ThreadPoolExecutor(1, 1, 1, TimeUnit.MINUTES,
+//      new LinkedBlockingQueue<Runnable>());
 
-//  private ConcurrentHashMap<String, Path> paths = new ConcurrentHashMap<>();
-  private Map<String, Path> paths = new HashMap<>();
-
-//  Map<String, Resource> modelCache = new HashMap<>();
-//  Map<String, EObject> eObjectCache = new HashMap<>();
-//  Map<String, EStructuralFeature> featureCache = new HashMap<>();
+  private Map<String, Path> paths = new LinkedHashMap<>();
+  private Map<String, String> promises = new LinkedHashMap<>();
 
   public static ThreadPoolExecutor getExecutorService() {
     return executorService;
@@ -63,9 +60,12 @@ public class AccessGraphResource implements AccessRecordResource {
     return paths.size();
   }
 
-//  public ConcurrentHashMap<String, Path> getTraceIndex() {
   public Map<String, Path> getTraceIndex() {
     return paths;
+  }
+
+  public Map<String, String> getPromises() {
+    return promises;
   }
 
   public void addAll(List<AccessRecord> currentPropertyAccesses) {
@@ -108,6 +108,15 @@ public class AccessGraphResource implements AccessRecordResource {
           path.putProperty(propertyId, property);
         }
 
+        // promise
+        String promiseKey = access.getModulePath() + "#" + access.getGenerationRuleName() + "#"
+            + access.getContextResourceUri() + "#" + access.getContextObjectId();
+//        System.out.println("PK:" + promiseKey);
+        String ps = promises.get(promiseKey);
+        if (ps == null) {
+          promises.put(promiseKey, pathName);
+        }
+
       }
     };
     executorService.submit(t);
@@ -117,13 +126,6 @@ public class AccessGraphResource implements AccessRecordResource {
   @Override
   public Set<String> getInvalidatedViewPaths(List<IncrementalLazyGenerationRuleContentPromise> promises,
       EgxModule module) {
-//    Set<String> invalidatedPaths = ConcurrentHashMap.newKeySet();
-//    Set<String> toBeDeletedPaths = ConcurrentHashMap.newKeySet();
-//    Set<String> toBeDeletedProperties = ConcurrentHashMap.newKeySet();
-//
-//    ConcurrentHashMap<String, Resource> modelCache = new ConcurrentHashMap<>();
-//    ConcurrentHashMap<String, EObject> eObjectCache = new ConcurrentHashMap<>();
-//    ConcurrentHashMap<String, EStructuralFeature> featureCache = new ConcurrentHashMap<>();
 
     Set<String> invalidatedPaths = ConcurrentHashMap.newKeySet();
     Set<String> toBeDeletedPaths = new HashSet<>();
@@ -137,11 +139,7 @@ public class AccessGraphResource implements AccessRecordResource {
       checkPath(module, invalidatedPaths, toBeDeletedPaths, toBeDeletedProperties, promise);
     });
     return invalidatedPaths;
-    
-//    Set<String> set = promises.parallelStream().map(promise -> {
-//      return checkPath(module, invalidatedPaths, toBeDeletedPaths, toBeDeletedProperties, promise);
-//    }).parallel().filter(p -> p != null).parallel().collect(Collectors.toSet());
-//    return set;
+
   }
 
   /***
@@ -151,30 +149,39 @@ public class AccessGraphResource implements AccessRecordResource {
    * @param toBeDeletedPaths
    * @param toBeDeletedProperties
    * @param promise
-   * @return 
    */
-//  public void checkPath(EgxModule module, Set<String> invalidatedPaths, Set<String> toBeDeletedPaths,
-//      Set<String> toBeDeletedProperties, ConcurrentHashMap<String, Resource> modelCache,
-//      ConcurrentHashMap<String, EObject> eObjectCache, ConcurrentHashMap<String, EStructuralFeature> featureCache,
-//      IncrementalLazyGenerationRuleContentPromise promise) {
   public void checkPath(EgxModule module, Set<String> invalidatedPaths, Set<String> toBeDeletedPaths,
       Set<String> toBeDeletedProperties, IncrementalLazyGenerationRuleContentPromise promise) {
+    String pathName = IncrementalityUtil.getPath(promise);
+    this.checkPath(module, invalidatedPaths, toBeDeletedPaths, toBeDeletedProperties, pathName, true);
+  }
+
+  /***
+   * 
+   * @param module
+   * @param invalidatedPaths
+   * @param toBeDeletedPaths
+   * @param toBeDeletedProperties
+   * @param pathName
+   */
+  public void checkPath(EgxModule module, Set<String> invalidatedPaths, Set<String> toBeDeletedPaths,
+      Set<String> toBeDeletedProperties, String pathName, boolean changeState) {
 
     // path
-//    String invalidatedPathName = null;
-    String pathName = IncrementalityUtil.getPath(promise);
     Path path = paths.get(pathName);
     if (path == null) {
       invalidatedPaths.add(pathName);
-//      invalidatedPathName = pathName;
-      return; 
-//          invalidatedPathName;
+      return;
     }
     if (path.isNew()) {
       invalidatedPaths.add(pathName);
-//      invalidatedPathName = pathName;
       path.setOld();
     }
+
+//    if (path.getName().equals("/Social Network")) {
+//      this.printIncrementalRecords();
+//      System.console();
+//    }
 
     Iterator<Entry<String, Property>> iterator = path.getProperties().entrySet().iterator();
     while (iterator.hasNext()) {
@@ -190,8 +197,6 @@ public class AccessGraphResource implements AccessRecordResource {
           .findFirst().orElse(null)).getResource();
       if (resource == null) {
         invalidatedPaths.add(pathName);
-//        invalidatedPathName = pathName;
-        toBeDeletedPaths.add(pathName);
         property.setDeleted();
         continue;
       }
@@ -200,8 +205,6 @@ public class AccessGraphResource implements AccessRecordResource {
       EObject eObject = resource.getEObject(property.getElement());
       if (eObject == null) {
         invalidatedPaths.add(pathName);
-//        invalidatedPathName = pathName;
-        toBeDeletedPaths.add(pathName);
         property.setDeleted();
         continue;
       }
@@ -212,50 +215,17 @@ public class AccessGraphResource implements AccessRecordResource {
       String currentValue = AccessRecord.convertValueToString(currentValueObject);
       if (!IncrementalityUtil.equals(currentValue, property.getValue())) {
         invalidatedPaths.add(pathName);
-//        invalidatedPathName = pathName;
-        property.setValue(currentValue);
+        if (changeState) {
+          property.setValue(currentValue);
+        }
       }
 
       if (property.isNew()) {
         property.setOld();
       }
     }
-//    return invalidatedPathName;
-
-//    deleteProperties(path, toBeDeletedProperties);
 
   }
-
-//  private void deleteProperties(Path path, Set<String> toBeDeletedProperties) {
-//    Thread t = new Thread("Delete Properties") {
-//      public void run() {
-//        deleteProperties(path, toBeDeletedProperties);
-//      }
-//    };
-//    t.start();
-//  }
-
-  /***
-   * Add the affected path to the affecting module.
-   * 
-   * @param inputEntity
-   * @param path
-   */
-//  private void addAffectedPath(InputEntity inputEntity, final Path path) {
-//    List<Path> affectedPaths = inputEntity.getAffects();
-//    for (int i = 0; i < affectedPaths.size(); i++) {
-//      if (i < affectedPaths.size()) {
-//        Path affectedPath = affectedPaths.get(i);
-//        if (path.getName().equals(affectedPath.getName()))
-//          return;
-//      }
-//    }
-////    inputEntity.getAffects().add(path);
-//    inputEntity.addAffectedPath(path);
-////    if (!module.getAffects().stream().anyMatch(p -> p.getName().equals(path.getName()))) {
-////      module.getAffects().add(path);
-////    }
-//  }
 
   @Override
   public List<AccessRecord> getIncrementalRecords() {
@@ -265,72 +235,24 @@ public class AccessGraphResource implements AccessRecordResource {
 
   @Override
   public void printIncrementalRecords() {
-//    System.out.println();
-//    printEntities("## Modules ##", traceIndex.getModuleIndex());
-//    printEntities("## Rules ##", traceIndex.getRuleIndex());
-//    printEntities("## Templates ##", traceIndex.getTemplateIndex());
-//    printEntities("## Resources ##", traceIndex.getResourceIndex());
-//    printEntities("## Elements ##", traceIndex.getElementIndex());
-//    printEntities("## Properties ##", traceIndex.getPropertyIndex());
-  }
-
-  private void printEntities(String header, Map<String, ?> map) {
-//    System.out.println(header);
-//    for (Object temp : map.values()) {
-//      InputEntity e1 = (InputEntity) temp;
-//
-//      List<String> keys = new ArrayList<String>();
-//      InputEntity ie = e1;
-//      keys.add(ie.getName());
-////      while (ie.eContainer() != null) {
-////        ie = (InputEntity) ie.eContainer();
-////        keys.add(0, ie.getName());
-////      }
-////      System.out.print(String.join("#", keys) + " --> ");
-////      Set<String> paths = e1.getAffects().stream().map(p -> p.getName()).collect(Collectors.toSet());
-////      System.out.println(String.join(", ", paths));
-//    }
-//    System.out.println();
+    System.out.println();
+    synchronized (paths) {
+      for (Entry<String, Path> entry : paths.entrySet()) {
+        System.out.println(entry.getKey());
+        Map<String, Property> properties = entry.getValue().getProperties();
+        synchronized (properties) {
+          for (Property property : properties.values()) {
+            System.out.print("+---");
+            System.out.println(property);
+          }
+        }
+      }
+    }
   }
 
   @Override
   public void updateStatusToProcessed(Collection<String> paths) {
-////    Thread t = new Thread("UpdatePathStatus") {
-////      public void run() {
-//
-//    for (String path : paths) {
-//      Path p = traceIndex.getPath(path);
-//      if (p == null)
-//        continue;
-//      p.setState(org.eclipse.epsilon.picto.pictograph.State.PROCESSED);
-//      for (int i = 0; i < p.getAffectedBy().size(); i++) {
-//        Entity entity = p.getAffectedBy().get(i);
-//        entity.setState(org.eclipse.epsilon.picto.pictograph.State.PROCESSED);
-//        if (entity instanceof Property) {
-//          Property property = (Property) entity;
-//          property.setPreviousValue(property.getValue());
-//          System.console();
-//        }
-//      }
-//    }
 
-//        for (Entry<String, Path> entry : traceIndex.getPathIndex().entrySet()) {
-//          Path p = (Path) entry.getValue();
-//          p.setState(org.eclipse.epsilon.picto.pictograph.State.PROCESSED);
-//          if (paths.contains(p.getName())) {
-//            for (int i = 0; i < p.getAffectedBy().size(); i++) {
-//              Entity entity = p.getAffectedBy().get(i);
-//              entity.setState(org.eclipse.epsilon.picto.pictograph.State.PROCESSED);
-//              if (entity instanceof Property) {
-//                ((Property) entity).setPreviousValue(((Property) entity).getValue());
-//              }
-//            }
-//          }
-//        }
-
-//      }
-//    };
-//    executorService.submit(t);
   }
 
   @Override
