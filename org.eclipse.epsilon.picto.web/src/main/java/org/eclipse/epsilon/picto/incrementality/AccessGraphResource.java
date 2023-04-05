@@ -173,9 +173,11 @@ public class AccessGraphResource implements AccessRecordResource {
       invalidatedPaths.add(pathName);
       return;
     }
+    
     if (path.isNew()) {
       invalidatedPaths.add(pathName);
       path.setOld();
+      return;
     }
 
 //    if (path.getName().equals("/Social Network")) {

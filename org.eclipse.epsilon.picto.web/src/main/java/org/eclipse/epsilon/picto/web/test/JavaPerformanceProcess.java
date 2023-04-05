@@ -298,8 +298,8 @@ public class JavaPerformanceProcess {
         JavaPerformanceProcess.waitingBackgroundTasks();
 
 ////        for (int i = 1; i < 5;i++) {
-//          System.gc();
         Thread.sleep(1000);
+        System.gc();
 ////        }
       }
 
@@ -446,9 +446,9 @@ public class JavaPerformanceProcess {
                 String pageAddress = PICTO_WEB_ADDRESS + TestUtil.getParamsString(parameters);
                 URL url = new URL(pageAddress);
 
+                long start = System.currentTimeMillis();
                 HttpURLConnection httpConnection = (HttpURLConnection) url.openConnection();
                 httpConnection.setRequestProperty("accept", "application/json");
-                long start = System.currentTimeMillis();
                 InputStream inputStream = httpConnection.getInputStream();
                 byte[] viewBytes = inputStream.readAllBytes();
                 long end = System.currentTimeMillis();
@@ -478,12 +478,12 @@ public class JavaPerformanceProcess {
                 System.out.println("PICTO: Type " + PerformanceTestType.OVERALL_TIME + ", GenAll "
                     + PerformanceRecorder.genenerateAll + ", N-views " + PerformanceRecorder.globalNumberOfAffectedViews
                     + ", Iter " + PerformanceRecorder.globalNumberIteration + ", " + Client.this.getName()
-                    + " received, path " + path + ", time " + overallTime + " ms");
+                    + " received, path " + path + ", time " + responseTime + " ms");
 
                 assertThat(expectedPath).isEqualTo(path);
 
                 try {
-                  Thread.sleep(10);
+                  Thread.sleep(1000);
                 } catch (InterruptedException e) {
                   e.printStackTrace();
                 }

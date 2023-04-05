@@ -218,68 +218,10 @@ public class IncrementalLazyEgxModule extends EgxModuleParallelGenerationRuleAto
 
       if (path != null)
         paths.add(path);
-
-//      /*** START FILTER THE PROMISES ***/
-//      if (!PictoApplication.isNonIncremental()) {
-//        long startTime = System.currentTimeMillis();
-//        Set<String> invalidatedViewPaths = new HashSet<String>();
-//        ((AccessGraphResource) accessRecordResource).checkPath((EgxModule) context.getModule(), invalidatedViewPaths,
-//            new HashSet<String>(), new HashSet<String>(), path, false);
-//        promiseDetectionTime += (System.currentTimeMillis() - startTime);
-//        // if invalidated views is empty (the path doesn't need regeneration) then there
-//        // is no need to generate the promise, instead skip to the next element.
-//        if (invalidatedViewPaths.size() == 0) {
-//          return null;
-//        }
-//      }
-//      /*** END FILTER THE PROMISES ***/
-
       IncrementalLazyGenerationRuleContentPromise promise = new IncrementalLazyGenerationRuleContentPromise(
           contextObject, this, path, templateFactory, templateUri, variables, templateCache);
 
       return promise;
-    }
-
-    private boolean requireGeneration(Object element) throws EolRuntimeException {
-
-      if (PictoApplication.isNonIncremental()) {
-        return true;
-      }
-
-      long startTime = System.currentTimeMillis();
-
-      /**
-       * Get the path, if the path is still valid then skip the generation of the
-       * promise
-       */
-      FrameStack frameStack = context.getFrameStack();
-      if (sourceParameter != null) {
-        frameStack.enterLocal(FrameType.PROTECTED, this,
-            Variable.createReadOnlyVariable(sourceParameter.getName(), element));
-      } else {
-        frameStack.enterLocal(FrameType.PROTECTED, this);
-      }
-      String path = null;
-      if (parametersBlock != null) {
-        EolMap<String, ?> parameters = parametersBlock.execute(context, false);
-        Entry<String, ?> entry = parameters.entrySet().stream().filter(e -> e.getKey().equals("path")).findFirst()
-            .orElse(null);
-        path = "/" + String.join("/", (Collection<String>) entry.getValue());
-      }
-      frameStack.leaveLocal(this);
-
-      Set<String> invalidatedViewPaths = new HashSet<String>();
-      ((AccessGraphResource) accessRecordResource).checkPath((EgxModule) context.getModule(), invalidatedViewPaths,
-          new HashSet<>(), new HashSet<>(), path, false);
-      promiseDetectionTime += (System.currentTimeMillis() - startTime);
-
-      // if invalidated views is empty (the path doesn't need regeneration) then there
-      // is no need to generate the promise, instead skip to the next element.
-      if (invalidatedViewPaths.size() == 0) {
-        return false;
-      }
-
-      return true;
     }
 
     /***
@@ -348,13 +290,7 @@ public class IncrementalLazyEgxModule extends EgxModuleParallelGenerationRuleAto
       System.out.println("Elements filtered from " + size1 + " to " + filteredElements.size());
 
       /** Sequential **/
-      System.console();
       for (Object element : filteredElements) {
-//        System.out.println("AL:" + element);  
-//        if (!requireGeneration(element)) {
-//          continue;
-//        }
-
         Object result = ef.execute(this, context, element);
         if (result instanceof IncrementalLazyGenerationRuleContentPromise) {
           promises.add((IncrementalLazyGenerationRuleContentPromise) result);
@@ -396,7 +332,7 @@ public class IncrementalLazyEgxModule extends EgxModuleParallelGenerationRuleAto
 //          filteredElements.add(element);
 //        }
 //      });
-      
+
 //      Map<Object, Object> temp = new ConcurrentHashMap<>();
 //      elements.parallelStream().forEach(element -> {
 //        String resourceId = null;
@@ -418,7 +354,6 @@ public class IncrementalLazyEgxModule extends EgxModuleParallelGenerationRuleAto
 //        }
 //      });
 //      List<Object> filteredElements = new ArrayList<>(temp.values());
-      
 
       List<Object> filteredElements = elements.parallelStream().map(element -> {
         String resourceId = null;
@@ -431,6 +366,8 @@ public class IncrementalLazyEgxModule extends EgxModuleParallelGenerationRuleAto
         }
         String promiseKey = moduleAndRuleIds + resourceId + "#" + eObjectId;
         String path = ((AccessGraphResource) accessRecordResource).getPromises().get(promiseKey);
+        if (path == null)
+          return element;
 
         Set<String> invalidatedViewPaths = new HashSet<String>();
         ((AccessGraphResource) accessRecordResource).checkPath((EgxModule) context.getModule(), invalidatedViewPaths,

@@ -78,6 +78,8 @@ public class JavaPerformanceBenchmark {
 
   public static void main(String... args) throws Exception {
 
+    long startTime = System.currentTimeMillis();
+    
     logFile = new File(System.getProperty("java.io.tmpdir") + File.separator + "picto-web.log");
     if (logFile.exists())
       logFile.delete();
@@ -107,7 +109,7 @@ public class JavaPerformanceBenchmark {
     int numberOfViews = 0; // Number of nodes the graph model
 
     int[] numbersOfAffectedViews = null;
-    boolean[] genAllViews = { false, true };
+    boolean[] genAllViews = { false, true};
 //    boolean[] genAllViews = { false };
 
     /** comment this if we want to test using the big model */
@@ -199,14 +201,13 @@ public class JavaPerformanceBenchmark {
 
     PerformanceRecorder.globalNumberOfViews = numberOfViews;
     numberOfViews = classList.size();
-//    numbersOfAffectedViews = new int[numberOfMeasurementPoints + 1];
-    numbersOfAffectedViews = new int[numberOfMeasurementPoints];
+    numbersOfAffectedViews = new int[numberOfMeasurementPoints + 1];
 
     // order from low to high
     for (int i = 0; i < numberOfMeasurementPoints; i++) {
-      numbersOfAffectedViews[i] = 0 + (numberOfViews / numberOfMeasurementPoints) * (i + 1);
+      numbersOfAffectedViews[i + 1] = 0 + (numberOfViews / numberOfMeasurementPoints) * (i + 1);
     }
-//    numbersOfAffectedViews[0] = numbersOfAffectedViews[numbersOfAffectedViews.length - 1] - 1;
+    numbersOfAffectedViews[0] = numbersOfAffectedViews[numbersOfAffectedViews.length - 1] - 1;
 
     System.out.println("Iteration = " + Arrays.toString(numbersOfAffectedViews));
 
@@ -237,6 +238,9 @@ public class JavaPerformanceBenchmark {
       e.printStackTrace();
     }
     PerformanceRecorder.stopRecording();
+    
+    long stopTime = System.currentTimeMillis();
+    System.out.println("DURATION: " + (stopTime - startTime) + " ms");
     Thread.sleep(5000);
     System.exit(0);
   }

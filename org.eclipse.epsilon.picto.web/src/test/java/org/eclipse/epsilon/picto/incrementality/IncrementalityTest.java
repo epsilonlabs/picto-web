@@ -245,6 +245,8 @@ class IncrementalityTest {
     res.save(null);
     Thread.sleep(1000);
 
+//    System.out.println("--------------------------------------");
+    
     eglPictoSource = new WebEglPictoSource();
     Set<String> generatedViews = eglPictoSource.generatePromises(modifiedFilePath,
         PictoProject.createPictoProject(pictoFile), true);
