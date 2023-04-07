@@ -79,7 +79,7 @@ public class JavaPerformanceBenchmark {
   public static void main(String... args) throws Exception {
 
     long startTime = System.currentTimeMillis();
-    
+
     logFile = new File(System.getProperty("java.io.tmpdir") + File.separator + "picto-web.log");
     if (logFile.exists())
       logFile.delete();
@@ -109,7 +109,7 @@ public class JavaPerformanceBenchmark {
     int numberOfViews = 0; // Number of nodes the graph model
 
     int[] numbersOfAffectedViews = null;
-    boolean[] genAllViews = { false, true};
+    boolean[] genAllViews = { true, false };
 //    boolean[] genAllViews = { false };
 
     /** comment this if we want to test using the big model */
@@ -238,7 +238,7 @@ public class JavaPerformanceBenchmark {
       e.printStackTrace();
     }
     PerformanceRecorder.stopRecording();
-    
+
     long stopTime = System.currentTimeMillis();
     System.out.println("DURATION: " + (stopTime - startTime) + " ms");
     Thread.sleep(5000);

@@ -1,0 +1,77 @@
+<?xml version="1.0" encoding="ASCII"?>
+<java:Model xmi:version="2.0" xmlns:xmi="http://www.omg.org/XMI" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:java="http://www.eclipse.org/MoDisco/Java/0.2.incubation/java" name="Models23">
+  <ownedElements name="demo">
+    <ownedElements xsi:type="java:ClassDeclaration" originalCompilationUnit="//@compilationUnits.4" name="ClassA" usagesInTypeAccess="//@ownedElements.0/@ownedElements.1/@bodyDeclarations.1/@type">
+      <modifier visibility="public"/>
+      <bodyDeclarations xsi:type="java:FieldDeclaration" originalCompilationUnit="//@compilationUnits.4">
+        <modifier visibility="private"/>
+        <type type="//@orphanTypes.9"/>
+        <fragments originalCompilationUnit="//@compilationUnits.4" name="children"/>
+      </bodyDeclarations>
+    </ownedElements>
+    <ownedElements xsi:type="java:ClassDeclaration" originalCompilationUnit="//@compilationUnits.3" name="ClassB" usagesInTypeAccess="//@orphanTypes.9/@typeArguments.0">
+      <modifier visibility="public"/>
+      <bodyDeclarations xsi:type="java:FieldDeclaration" originalCompilationUnit="//@compilationUnits.3">
+        <modifier visibility="private"/>
+        <type type="//@orphanTypes.0"/>
+        <fragments originalCompilationUnit="//@compilationUnits.3" name="count"/>
+      </bodyDeclarations>
+      <bodyDeclarations xsi:type="java:FieldDeclaration" originalCompilationUnit="//@compilationUnits.3">
+        <modifier visibility="private"/>
+        <type type="//@ownedElements.0/@ownedElements.0"/>
+        <fragments originalCompilationUnit="//@compilationUnits.3" name="parent"/>
+      </bodyDeclarations>
+    </ownedElements>
+    <ownedElements xsi:type="java:ClassDeclaration" originalCompilationUnit="//@compilationUnits.0" name="ClassC">
+      <modifier visibility="public"/>
+      <bodyDeclarations xsi:type="java:FieldDeclaration" originalCompilationUnit="//@compilationUnits.0">
+        <modifier visibility="private"/>
+        <type type="//@orphanTypes.4"/>
+        <fragments originalCompilationUnit="//@compilationUnits.0" name="dummy"/>
+      </bodyDeclarations>
+    </ownedElements>
+    <ownedElements xsi:type="java:ClassDeclaration" originalCompilationUnit="//@compilationUnits.1" name="ClassD">
+      <modifier visibility="public"/>
+    </ownedElements>
+    <ownedElements xsi:type="java:ClassDeclaration" originalCompilationUnit="//@compilationUnits.2" name="ClassE">
+      <modifier visibility="public"/>
+    </ownedElements>
+  </ownedElements>
+  <ownedElements name="java" proxy="true">
+    <ownedPackages name="util" proxy="true">
+      <ownedElements xsi:type="java:InterfaceDeclaration" name="List" proxy="true" usagesInImports="//@compilationUnits.4/@imports.0" usagesInTypeAccess="//@orphanTypes.9/@type">
+        <superInterfaces type="//@ownedElements.1/@ownedPackages.0/@ownedElements.1"/>
+        <typeParameters name="E" proxy="true"/>
+      </ownedElements>
+      <ownedElements xsi:type="java:InterfaceDeclaration" name="Collection" proxy="true" usagesInTypeAccess="//@ownedElements.1/@ownedPackages.0/@ownedElements.0/@superInterfaces.0">
+        <superInterfaces type="//@ownedElements.1/@ownedPackages.1/@ownedElements.0"/>
+        <typeParameters name="E" proxy="true"/>
+      </ownedElements>
+    </ownedPackages>
+    <ownedPackages name="lang" proxy="true">
+      <ownedElements xsi:type="java:InterfaceDeclaration" name="Iterable" proxy="true" usagesInTypeAccess="//@ownedElements.1/@ownedPackages.0/@ownedElements.1/@superInterfaces.0">
+        <typeParameters name="T" proxy="true"/>
+      </ownedElements>
+    </ownedPackages>
+  </ownedElements>
+  <orphanTypes xsi:type="java:PrimitiveTypeInt" name="int" usagesInTypeAccess="//@ownedElements.0/@ownedElements.1/@bodyDeclarations.0/@type"/>
+  <orphanTypes xsi:type="java:PrimitiveTypeLong" name="long"/>
+  <orphanTypes xsi:type="java:PrimitiveTypeFloat" name="float"/>
+  <orphanTypes xsi:type="java:PrimitiveTypeDouble" name="double"/>
+  <orphanTypes xsi:type="java:PrimitiveTypeBoolean" name="boolean" usagesInTypeAccess="//@ownedElements.0/@ownedElements.2/@bodyDeclarations.0/@type"/>
+  <orphanTypes xsi:type="java:PrimitiveTypeVoid" name="void"/>
+  <orphanTypes xsi:type="java:PrimitiveTypeChar" name="char"/>
+  <orphanTypes xsi:type="java:PrimitiveTypeShort" name="short"/>
+  <orphanTypes xsi:type="java:PrimitiveTypeByte" name="byte"/>
+  <orphanTypes xsi:type="java:ParameterizedType" name="java.util.List&lt;demo.ClassB>" usagesInTypeAccess="//@ownedElements.0/@ownedElements.0/@bodyDeclarations.0/@type">
+    <type type="//@ownedElements.1/@ownedPackages.0/@ownedElements.0"/>
+    <typeArguments type="//@ownedElements.0/@ownedElements.1"/>
+  </orphanTypes>
+  <compilationUnits name="ClassC.java" originalFilePath="C:\eclipse.picto\workspace\ZDemo\src\demo\ClassC.java" package="//@ownedElements.0" types="//@ownedElements.0/@ownedElements.2"/>
+  <compilationUnits name="ClassD.java" originalFilePath="C:\eclipse.picto\workspace\ZDemo\src\demo\ClassD.java" package="//@ownedElements.0" types="//@ownedElements.0/@ownedElements.3"/>
+  <compilationUnits name="ClassE.java" originalFilePath="C:\eclipse.picto\workspace\ZDemo\src\demo\ClassE.java" package="//@ownedElements.0" types="//@ownedElements.0/@ownedElements.4"/>
+  <compilationUnits name="ClassB.java" originalFilePath="C:\eclipse.picto\workspace\ZDemo\src\demo\ClassB.java" package="//@ownedElements.0" types="//@ownedElements.0/@ownedElements.1"/>
+  <compilationUnits name="ClassA.java" originalFilePath="C:\eclipse.picto\workspace\ZDemo\src\demo\ClassA.java" package="//@ownedElements.0" types="//@ownedElements.0/@ownedElements.0">
+    <imports originalCompilationUnit="//@compilationUnits.4" importedElement="//@ownedElements.1/@ownedPackages.0/@ownedElements.0"/>
+  </compilationUnits>
+</java:Model>

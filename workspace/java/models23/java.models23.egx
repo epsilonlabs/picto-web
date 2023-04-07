@@ -1,0 +1,83 @@
+rule Java2Model
+    transform m : java::Model {
+    template : "java.model.egl"
+    target : "output/" + m.name + ".puml"
+    parameters : Map{
+        "path" = Sequence{m.name},
+        "format" = "puml",
+        "classes" =  m.getClasses()
+    }
+}
+
+rule Java2Class
+    transform classDeclaration : java::ClassDeclaration {
+    template : "java.class.egl"
+    target : "output/" + classDeclaration.getFullName() + ".puml"
+    parameters : Map{
+        "path" = Sequence{classDeclaration.getModelName(), classDeclaration.getFullName()},
+        "format" = "puml",
+        "class" =  classDeclaration
+    }
+}
+
+@lazy
+rule Java2Classes {
+    template : "java.model.egl"
+    parameters : Map{
+        "format" = "puml",
+        "classes" =  names.isDefined() ? ClassDeclaration.all.select(c | names.includes(c.name)) : Sequence {}
+    }
+}
+
+
+
+operation Model getClasses() {
+    var classes = Set{};
+    for (element in self.ownedElements){
+        if (element.isTypeOf(java::Package)) {
+            classes.addAll(element.getClasses());
+        }
+    }
+    return classes;
+}
+
+operation Package getClasses() {
+    var classes = Set{};
+    for (element in self.ownedElements){
+        if (element.isTypeOf(java::Package)) {
+            classes.addAll(element.getClasses());
+        } else if (element.isTypeOf(java::ClassDeclaration)) {
+            classes.add(element);
+        }
+    }
+    return classes;
+}
+
+operation ClassDeclaration getModelName() {
+    var container = self.eContainer;
+    while (container != null) {
+        if (container.isTypeOf(java::Model)) {
+            return container.name;
+        }
+        container = container.eContainer;
+    }
+    return null;
+}
+
+operation ClassDeclaration getFullName() {
+    var segments = Sequence{};
+    segments.add(self.name);
+    var container = self.eContainer;
+    var jModel = null;
+    while (container != null) {
+        if (container.isTypeOf(java::ClassDeclaration)) {
+            segments.add(0, container.name);
+        } else  if (container.isTypeOf(java::InterfaceDeclaration)) {
+            segments.add(0, container.name);
+        } else  if (container.isTypeOf(java::Package)) {
+            segments.add(0, container.name);
+        }
+        container = container.eContainer;
+    }
+    return segments.concat(".");
+}

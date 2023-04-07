@@ -1,0 +1,135 @@
+@startuml
+class [%=classDeclaration.name%] {
+[% 
+var associations = Set{};
+
+%]
+[% for (field in class.bodyDeclarations.select(b | b.isTypeOf(java::FieldDeclaration))) { %]
+[%   var typeName = field.getTypeName();
+     var type = null;
+     if (field.type <> null and field.type.type <> null 
+        and field.type.type.isTypeOf(java::ParameterizedType) 
+        and (field.type.type.name.contains("List")
+        or field.type.type.name.contains("Collection") 
+        or field.type.type.name.contains("Map") 
+        or field.type.type.name.contains("Set"))){
+        
+        for (argument in field.type.type.typeArguments){
+	        if (argument.type.isTypeOf(java::ClassDeclaration) and classDeclaration <> argument.type){
+	            type = argument.type;
+	            break;
+	        }
+        }
+     }
+     if (field.type <> null and field.type.type <> null 
+        and field.type.type.isTypeOf(java::ClassDeclaration)
+        and classDeclaration <> field.type.type
+        and field.type.type.name <> null
+        //and associations.size() <= 3
+        ){
+        type = field.type.type;
+     }
+     for (fragment in field.fragments) { %]
+        [% if (type <> null) {
+            associations.add(Sequence{type, fragment.name});
+        }  else { %]
+  [%=field.getVisibility()%] [%=field.getTypeName()%] [%=fragment.name%]
+        [% } %]
+[%   } %]
+[% } %]
+[% for (method in class.bodyDeclarations.select(b | b.isTypeOf(java::MethodDeclaration))) { %]
+  [%=method.getVisibility()%] [%=method.getTypeName()%] [%=method.name%]([%=method.getParams()%])
+[% } %]
+}
+
+[% var visited = Set{};
+for (association in associations) { 
+    var class = association.at(0);
+    if (visited.includes(class)){
+        continue;
+    } else {
+        visited.add(class);
+    }
+%] 
+class [%=class.name%] {
+[% for (field in class.bodyDeclarations.select(b | b.isTypeOf(java::FieldDeclaration))) { %]
+[%   var typeName = field.getTypeName();
+     for (fragment in field.fragments) { %]
+  [%=field.getVisibility()%] [%=field.getTypeName()%] [%=fragment.name%]
+[%   } %]
+[% } %]
+[% for (method in class.bodyDeclarations.select(b | b.isTypeOf(java::MethodDeclaration))) { %]
+  [%=method.getVisibility()%] [%=method.getTypeName()%] [%=method.name%]([%=method.getParams()%])
+[% } %]
+}
+[% } %]
+
+''relationships
+[% for (association in associations) { %]
+[%=classDeclaration.name%] --> [%=association.at(0).name%] : [%=association.at(1)%] 
+[% } %]
+
+@enduml
+
+[%
+
+operation MethodDeclaration getParams() {
+    var params = Sequence{};
+    if (self.parameters == null or self.parameters.size() == 0){
+        return null;
+    }
+    for (i in Sequence{0..self.parameters.size()-1}){
+        var p = self.parameters.get(i);
+        if (p.type.type == null) continue;
+        params.add(p.type.type.name + " " + p.name);
+    }
+    return params.concat(", ");
+}
+
+operation FieldDeclaration getTypeName() {
+    if (self.type == null) {
+        return null;
+    }
+    if (self.type.type == null) {
+        return null;
+    }
+    return self.type.type.name;
+}
+
+operation MethodDeclaration getTypeName() {
+    if (self.returnType == null or self.returnType.type == null) {
+        return null;
+    }
+    return self.returnType.type.name;
+}
+
+operation FieldDeclaration getVisibility() {
+    if (self.modifier == null) {
+        return "+";
+    }
+    if (self.modifier.visibility == VisibilityKind#private){
+        return "-";
+    } else if (self.modifier.visibility  == VisibilityKind#protected){
+        return "#";
+    } else if (self.modifier.visibility  == VisibilityKind#public){
+        return "+";
+    } else {
+        return "+";
+    } 
+}
+
+operation MethodDeclaration getVisibility() {
+    if (self.modifier == null) {
+        return "+";
+    }
+    if (self.modifier.visibility == VisibilityKind#private){
+        return "-";
+    } else if (self.modifier.visibility  == VisibilityKind#protected){
+        return "#";
+    } else if (self.modifier.visibility  == VisibilityKind#public){
+        return "+";
+    } else {
+        return "+";
+    } 
+}
+%]
