@@ -1,9 +1,6 @@
 @startuml
-[%
-var associations = Set{};
-for (class in classes) {
-%]
-
+[% var associations = Set{}; %]
+[% for (class in classes) { %]
 class [%=class.name%] {
 [% for (field in class.bodyDeclarations.select(b | b.isTypeOf(java::FieldDeclaration))) { %]
 [%   var typeName = field.getTypeName();

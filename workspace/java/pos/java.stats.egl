@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title>Statistics:[%=m.name%]</title>
+</head>
+<body>
+<style>
+    .demo {
+        border:1px solid #C0C0C0;
+        border-collapse:collapse;
+        padding:5px;
+    }
+    .demo th {
+        border:1px solid #C0C0C0;
+        padding:5px;
+    }
+    .demo td {
+        border:1px solid #C0C0C0;
+        padding:5px;
+    }
+</style>
+<h1>Statistics: [%=m.name%]</h1>
+<table class="demo">
+    <thead>
+    <tr>
+        <th>Metric</th>
+        <th>Value</th>
+    </tr>
+    </thead>
+    <tbody>
+    <tr>
+        <td>Number of Classes</td>
+        <td>[%=classNum%]</td>
+    </tr>
+    <tr>
+        <td>Number of Fields</td>
+        <td>[%=fieldNum%]</td>
+    </tr>
+    </tbody>
+</table> 
+</body>
+</html>

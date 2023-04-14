@@ -96,22 +96,17 @@ public class PromiseView {
         IncrementalLazyEgxModule module = (IncrementalLazyEgxModule) ((IncrementalLazyGenerationRuleContentPromise) viewTree
             .getPromise()).getGenerationRule().getModule();
 
-//        long genStart = System.currentTimeMillis();
-
+       
 //        Future<ViewContent> result = promiseExecutor.submit(new GetViewContentTask(module, pictoView, viewTree));
 //        vc = result.get();
 
 //        module.startRecording();
         pictoView.renderView(viewTree);
         vc = viewTree.getContent().getFinal(pictoView);
+        
 //        module.stopRecording();
 
-//        PerformanceRecorder.generationTime = System.currentTimeMillis() - genStart;
-//        PerformanceRecord record = new PerformanceRecord(PerformanceRecorder.genenerateAll,
-//            PerformanceRecorder.generateAlways, PerformanceRecorder.globalNumberOfAffectedViews,
-//            PerformanceRecorder.globalNumberIteration, "Server", path, PerformanceRecorder.generationTime, 0,
-//            PerformanceTestType.GENERATION_TIME, PerformanceRecorder.accessRecordResourceSize());
-//        PerformanceRecorder.record(record);
+        
 
       }
 

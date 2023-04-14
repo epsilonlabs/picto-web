@@ -14,6 +14,9 @@ import java.io.File;
 import java.util.HashSet;
 import java.util.Set;
 
+import org.eclipse.epsilon.picto.web.test.PerformanceRecord;
+import org.eclipse.epsilon.picto.web.test.PerformanceRecorder;
+import org.eclipse.epsilon.picto.web.test.PerformanceTestType;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationContext;
 import org.springframework.http.MediaType;
@@ -70,7 +73,12 @@ public class PictoJsonController {
    */
   @GetMapping(path = "/picto", produces = MediaType.APPLICATION_JSON_VALUE)
   public String getPictoJson(String file, String path, String timestamp, Model model) throws Exception {
-    if (FileViewContentCache.getViewContentCache(file) == null) {
+
+    long genStart = System.currentTimeMillis();
+
+    PromiseViewCache promiseViewCache = FileViewContentCache.getViewContentCache(file);
+
+    if (promiseViewCache == null) {
       File modifiedFile = new File(new File(PictoApplication.WORKSPACE + file).getAbsolutePath());
       Set<PictoProject> affectedPictoProjects = new HashSet<>();
       for (PictoProject project : PictoApplication.getPictoProjects()) {
@@ -84,14 +92,20 @@ public class PictoJsonController {
       }
     }
 
-    PromiseViewCache promiseViewCache = FileViewContentCache.getViewContentCache(file);
     String result = "";
-    if (promiseViewCache != null) {
-      PromiseView promiseView = promiseViewCache.getPromiseView(path);
-      if (promiseView != null)
-//        System.out.println("FROM CLICKING NODE");
-        result = promiseView.getViewContent(timestamp);
-    }
+//    if (promiseViewCache != null) {
+    PromiseView promiseView = promiseViewCache.getPromiseView(path);
+//    if (promiseView != null)
+    result = promiseView.getViewContent(timestamp);
+//  }
+
+    PerformanceRecorder.generationTime = System.currentTimeMillis() - genStart;
+
+    PerformanceRecord record = new PerformanceRecord(PerformanceRecorder.genenerateAll,
+        PerformanceRecorder.generateAlways, PerformanceRecorder.globalNumberOfAffectedViews,
+        PerformanceRecorder.globalNumberIteration, "Server", path, PerformanceRecorder.generationTime,
+        result.getBytes().length, PerformanceTestType.GENERATION_TIME, PerformanceRecorder.accessRecordResourceSize());
+    PerformanceRecorder.record(record);
 
     return result;
   }

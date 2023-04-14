@@ -1,15 +1,15 @@
 package org.eclipse.epsilon.picto.pictograph;
 
-import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
 public class Path {
 
   protected boolean isNew = true;
+  protected boolean isDeleted = false;
   protected String name;
-  protected ConcurrentHashMap<String, Property> properties = new ConcurrentHashMap<>();
-//  protected Map<String, Property> properties = new HashMap();
+  protected Map<String, Property> properties = new ConcurrentHashMap<>();
+//  protected Map<String, Property> properties = new HashMap<>();
 
   public String getName() {
     return name;
@@ -19,12 +19,11 @@ public class Path {
     this.name = name;
   }
 
-//  public ConcurrentHashMap<String, Property> getProperties() {
   public Map<String, Property> getProperties() {
     return properties;
   }
 
-  public void setProperties(ConcurrentHashMap<String, Property> properties) {
+  public void setProperties(Map<String, Property> properties) {
     this.properties = properties;
   }
 
@@ -43,4 +42,14 @@ public class Path {
   public void setOld() {
     this.isNew = false;
   }
+
+  public boolean isDeleted() {
+    return isDeleted;
+  }
+
+  public void setDeleted() {
+    this.isDeleted = true;
+  }
+  
+  
 }

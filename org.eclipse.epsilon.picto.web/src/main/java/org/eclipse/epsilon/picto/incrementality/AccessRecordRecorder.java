@@ -17,7 +17,7 @@ public class AccessRecordRecorder extends PropertyAccessRecorder {
 
   private boolean recording = false;
 
-  private final List<AccessRecord> currentPropertyAccesses = new ArrayList<>();
+  private final List<AccessRecord> accessRecords = new ArrayList<>();
   private AccessRecordResource accessRecordResource = null;
 
   protected URI templateUri = null;
@@ -31,13 +31,13 @@ public class AccessRecordRecorder extends PropertyAccessRecorder {
   }
 
   public List<AccessRecord> getCurrentPropertyAccesses() {
-    return currentPropertyAccesses;
+    return accessRecords;
   }
 
   public void updateCurrentPropertyAccessesPath(String path) {
 //  for (AccessRecord r : currentPropertyAccesses) {
-    for (int i = 0; i < currentPropertyAccesses.size(); i++) {
-      AccessRecord r = currentPropertyAccesses.get(i);
+    for (int i = 0; i < accessRecords.size(); i++) {
+      AccessRecord r = accessRecords.get(i);
       r.setPath(path);
       r.setTemplatePath(new File(templateUri).getAbsolutePath());
     }
@@ -45,8 +45,8 @@ public class AccessRecordRecorder extends PropertyAccessRecorder {
 
   public void saveToAccessRecordResource() {
 //    for (AccessRecord r : currentPropertyAccesses) {
-    while (currentPropertyAccesses.size() > 0) {
-      AccessRecord r = currentPropertyAccesses.remove(0);
+    while (accessRecords.size() > 0) {
+      AccessRecord r = accessRecords.remove(0);
       accessRecordResource.add(r);
     }
 //    accessRecordResource.addAll(currentPropertyAccesses);
@@ -147,7 +147,7 @@ public class AccessRecordRecorder extends PropertyAccessRecorder {
   public void record(Object modelElement, String propertyName) {
     if (!PictoApplication.isNonIncremental()) {
       if (recording) {
-        currentPropertyAccesses.add(createPropertyAccess(modelElement, propertyName));
+        accessRecords.add(createPropertyAccess(modelElement, propertyName));
       }
     }
   }
@@ -155,7 +155,7 @@ public class AccessRecordRecorder extends PropertyAccessRecorder {
   public void record(Object modelElement, String propertyName, Object result) {
     if (!PictoApplication.isNonIncremental()) {
       if (recording) {
-        currentPropertyAccesses.add(createPropertyAccess(modelElement, propertyName, result));
+        accessRecords.add(createPropertyAccess(modelElement, propertyName, result));
       }
     }
   }

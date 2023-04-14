@@ -109,7 +109,8 @@ public class JavaPerformanceBenchmark {
     int numberOfViews = 0; // Number of nodes the graph model
 
     int[] numbersOfAffectedViews = null;
-    boolean[] genAllViews = { true, false };
+//    boolean[] genAllViews = { true, false };
+    boolean[] genAllViews = { false, true };
 //    boolean[] genAllViews = { false };
 
     /** comment this if we want to test using the big model */

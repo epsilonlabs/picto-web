@@ -8,6 +8,9 @@ public class Property {
   protected String element;
   protected String resource;
   protected String value;
+  protected String egxModule;
+  protected String eglTemplate;
+  protected String generationRule;
 
   public Property(String propertyId, String resource, String element, String propertyName, String value) {
     super();
@@ -79,4 +82,27 @@ public class Property {
     this.value = value;
   }
 
+  public String getEgxModule() {
+    return egxModule;
+  }
+
+  public void setEgxModule(String egxModule) {
+    this.egxModule = egxModule;
+  }
+
+  public String getEglTemplate() {
+    return eglTemplate;
+  }
+
+  public void setEglTemplate(String eglTemplate) {
+    this.eglTemplate = eglTemplate;
+  }
+
+  public String getGenerationRule() {
+    return generationRule;
+  }
+
+  public void setGenerationRule(String generationRule) {
+    this.generationRule = generationRule;
+  }
 }

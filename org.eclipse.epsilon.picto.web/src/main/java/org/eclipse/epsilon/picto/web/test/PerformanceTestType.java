@@ -25,7 +25,7 @@ public class PerformanceTestType {
   public static final String OVERALL_TIME = "overall time";
   public static final String PROMISE_TIME = "promise generation time";
   public static final String INIT_TIME = "initialisation time";
-  public static final String GENERATION_TIME = "generation time";
+  public static final String GENERATION_TIME = "gen time";
   public static final String CHECKED_PROPERTIES = "checked properties";
   public static final String PROPERTIES = "properties";
 }

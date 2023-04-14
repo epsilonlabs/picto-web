@@ -3,6 +3,7 @@ rule Java2Model
     template : "java.model.egl"
     target : "output/" + m.name + ".puml"
     parameters : Map{
+        "icon" = "icons/tree.png",
         "path" = Sequence{m.name},
         "format" = "puml",
         "classes" =  m.getClasses()
@@ -20,6 +21,19 @@ rule Java2Class
     }
 }
 
+rule Java2Stats {
+    template : "java.stats.egl"
+    target : "output/stats.html"
+    parameters : Map {
+        "path" = Sequence{"Stats"},
+        "icon" = "icons/table.gif",
+        "format" = "html",
+        "m" = Model.all().first(),
+        "classNum" = Model.all().first().getClasses().size(),
+        "fieldNum" = Model.all().first().getFields().size()
+    }
+}
+
 @lazy
 rule Java2Classes {
     template : "java.model.egl"
@@ -28,8 +42,6 @@ rule Java2Classes {
         "classes" =  names.isDefined() ? ClassDeclaration.all.select(c | names.includes(c.name)) : Sequence {}
     }
 }
-
-
 
 operation Model getClasses() {
     var classes = Set{};
@@ -51,6 +63,30 @@ operation Package getClasses() {
         }
     }
     return classes;
+}
+
+operation ClassDeclaration getFields() {
+    var fields = Set{};
+    for (element in self.bodyDeclarations){
+        if (element.isTypeOf(java::FieldDeclaration)) {
+            fields.add(element);
+        } 
+    }
+    return fields;
+}
+
+operation Model getFields() {
+    var classes = Set{};
+    var fields = Set{};
+    for (element in self.ownedElements){
+        if (element.isTypeOf(java::Package)) {
+            classes.addAll(element.getClasses());
+        }
+    }
+    for (class in classes){
+        fields.addAll(class.getFields());
+    }
+    return fields;
 }
 
 operation ClassDeclaration getModelName() {

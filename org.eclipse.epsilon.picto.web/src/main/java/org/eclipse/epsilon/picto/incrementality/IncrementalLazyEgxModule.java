@@ -247,19 +247,7 @@ public class IncrementalLazyEgxModule extends EgxModuleParallelGenerationRuleAto
 //        }
 //      });
 
-//      /** Parallel **/
-//      promises.addAll(elements.parallelStream().map(element -> {
-//        IncrementalLazyGenerationRuleContentPromise result = null;
-//        try {
-//          Object temp = ef.execute(this, context, element);
-//          result = (result instanceof IncrementalLazyGenerationRuleContentPromise)
-//              ? (IncrementalLazyGenerationRuleContentPromise) temp
-//              : null;
-//        } catch (Exception e) {
-//          e.printStackTrace();
-//        }
-//        return result;
-//      }).filter(result -> result != null).collect(Collectors.toList()));
+
 
       /*** FILTER PROMISES ***/
       int size1 = elements.size();
@@ -281,6 +269,7 @@ public class IncrementalLazyEgxModule extends EgxModuleParallelGenerationRuleAto
         }
         System.out.println(" Done: " + (System.currentTimeMillis() - start1) + " ms");
 
+        // detect
         long startTime = System.currentTimeMillis();
         filteredElements = filterContextElements(elements);
         promiseDetectionTime += (System.currentTimeMillis() - startTime);
@@ -288,7 +277,23 @@ public class IncrementalLazyEgxModule extends EgxModuleParallelGenerationRuleAto
       }
       generateAll1stTime = false;
       System.out.println("Elements filtered from " + size1 + " to " + filteredElements.size());
+      /********/
 
+      
+//    /** Parallel **/
+//    promises.addAll(elements.parallelStream().map(element -> {
+//      IncrementalLazyGenerationRuleContentPromise result = null;
+//      try {
+//        Object temp = ef.execute(this, context, element);
+//        result = (result instanceof IncrementalLazyGenerationRuleContentPromise)
+//            ? (IncrementalLazyGenerationRuleContentPromise) temp
+//            : null;
+//      } catch (Exception e) {
+//        e.printStackTrace();
+//      }
+//      return result;
+//    }).filter(result -> result != null).collect(Collectors.toList()));
+//      
       /** Sequential **/
       for (Object element : filteredElements) {
         Object result = ef.execute(this, context, element);
@@ -365,7 +370,7 @@ public class IncrementalLazyEgxModule extends EgxModuleParallelGenerationRuleAto
           eObjectId = resource.getURIFragment(eObject);
         }
         String promiseKey = moduleAndRuleIds + resourceId + "#" + eObjectId;
-        String path = ((AccessGraphResource) accessRecordResource).getPromises().get(promiseKey);
+        String path = ((AccessGraphResource) accessRecordResource).getPromiseKeysToPaths().get(promiseKey);
         if (path == null)
           return element;
 

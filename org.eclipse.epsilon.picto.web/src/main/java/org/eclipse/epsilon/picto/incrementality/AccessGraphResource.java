@@ -11,7 +11,6 @@
 package org.eclipse.epsilon.picto.incrementality;
 
 import java.util.Collection;
-import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
@@ -21,11 +20,9 @@ import java.util.Map.Entry;
 import java.util.Set;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.Executors;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
-import java.util.stream.Collectors;
 
 import org.eclipse.emf.ecore.EObject;
 import org.eclipse.emf.ecore.EStructuralFeature;
@@ -36,8 +33,6 @@ import org.eclipse.epsilon.emc.emf.EmfModel;
 import org.eclipse.epsilon.picto.incrementality.IncrementalLazyEgxModule.IncrementalLazyGenerationRuleContentPromise;
 import org.eclipse.epsilon.picto.pictograph.Path;
 import org.eclipse.epsilon.picto.pictograph.Property;
-
-import net.sourceforge.plantuml.project.lang.SentenceIsDeleted;
 
 public class AccessGraphResource implements AccessRecordResource {
 
@@ -50,7 +45,7 @@ public class AccessGraphResource implements AccessRecordResource {
 //      new LinkedBlockingQueue<Runnable>());
 
   private Map<String, Path> paths = new LinkedHashMap<>();
-  private Map<String, String> promises = new LinkedHashMap<>();
+  private Map<String, String> moduleRuleObjectIdsToPaths = new LinkedHashMap<>();
 
   public static ThreadPoolExecutor getExecutorService() {
     return executorService;
@@ -64,8 +59,8 @@ public class AccessGraphResource implements AccessRecordResource {
     return paths;
   }
 
-  public Map<String, String> getPromises() {
-    return promises;
+  public Map<String, String> getPromiseKeysToPaths() {
+    return moduleRuleObjectIdsToPaths;
   }
 
   public void addAll(List<AccessRecord> currentPropertyAccesses) {
@@ -101,6 +96,7 @@ public class AccessGraphResource implements AccessRecordResource {
         // property
         String propertyId = access.getElementResourceUri() + "#" + access.getElementObjectId() + "#"
             + access.getPropertyName();
+
         Property property = path.getProperty(propertyId);
         if (property == null) {
           property = new Property(propertyId, access.getElementResourceUri(), access.getElementObjectId(),
@@ -108,13 +104,15 @@ public class AccessGraphResource implements AccessRecordResource {
           path.putProperty(propertyId, property);
         }
 
-        // promise
-        String promiseKey = access.getModulePath() + "#" + access.getGenerationRuleName() + "#"
+//        property.getPaths().put(path.getName(), path);
+
+        // Promise
+        String moduleRuleObjectId = access.getModulePath() + "#" + access.getGenerationRuleName() + "#"
             + access.getContextResourceUri() + "#" + access.getContextObjectId();
 //        System.out.println("PK:" + promiseKey);
-        String ps = promises.get(promiseKey);
+        String ps = moduleRuleObjectIdsToPaths.get(moduleRuleObjectId);
         if (ps == null) {
-          promises.put(promiseKey, pathName);
+          moduleRuleObjectIdsToPaths.put(moduleRuleObjectId, pathName);
         }
 
       }
@@ -131,6 +129,13 @@ public class AccessGraphResource implements AccessRecordResource {
     Set<String> toBeDeletedPaths = new HashSet<>();
     Set<String> toBeDeletedProperties = new HashSet<>();
 
+//    properties.values().parallelStream().forEach(property -> {
+//      property.getPaths().entrySet().parallelStream().forEach( entry -> {
+//        invalidatedPaths.add(entry.getKey());
+//      });
+////      invalidatedPaths.addAll(Collections.list(property.getPaths().keys()));
+//    });
+
 //    for (IncrementalLazyGenerationRuleContentPromise promise : promises) {
 //      checkPath(module, invalidatedPaths, toBeDeletedPaths, toBeDeletedProperties, promise);
 //    }
@@ -138,6 +143,7 @@ public class AccessGraphResource implements AccessRecordResource {
     promises.parallelStream().forEach(promise -> {
       checkPath(module, invalidatedPaths, toBeDeletedPaths, toBeDeletedProperties, promise);
     });
+
     return invalidatedPaths;
 
   }
@@ -173,7 +179,7 @@ public class AccessGraphResource implements AccessRecordResource {
       invalidatedPaths.add(pathName);
       return;
     }
-    
+
     if (path.isNew()) {
       invalidatedPaths.add(pathName);
       path.setOld();

@@ -429,7 +429,7 @@ public class JavaPerformanceProcess {
               String name = Client.this.getName();
               int number = Integer.parseInt(name.split("-")[1]);
 
-              for (int i = 0; i < numIter; i++) {
+              for (int i = 0; i <= numIter; i++) {
 
                 // randomly select the view to be requested
 //                String invalidatedView = "/" + classNames.get(random.nextInt(classNames.size()));
