@@ -15,7 +15,6 @@ package org.eclipse.epsilon.picto.web.generator;
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Comparator;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -71,7 +70,11 @@ public class BigModelGenerator {
       bigResource.setURI(org.eclipse.emf.common.util.URI.createFileURI(bigModelFile.getAbsolutePath()));
       resourceSet.getResources().add(bigResource);
 
+      // Keep default path as is, but allow it to be changed with -Depsilon.path=/path/to/epsilon
       String sourcePath = "D:\\PROJECTS\\epsilon\\";
+      if (System.getProperty("epsilon.path") != null) {
+          sourcePath = System.getProperty("epsilon.path");
+      }
 
       System.out.println("Get all projects under " + sourcePath);
       System.out.println();
