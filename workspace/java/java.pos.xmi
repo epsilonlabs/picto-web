@@ -1,0 +1,109 @@
+<?xml version="1.0" encoding="ASCII"?>
+<java:Model xmi:version="2.0" xmlns:xmi="http://www.omg.org/XMI" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:java="http://www.eclipse.org/MoDisco/Java/0.2.incubation/java" name="Point of Sales">
+  <ownedElements name="pos">
+    <ownedElements xsi:type="java:ClassDeclaration" originalCompilationUnit="//@compilationUnits.0" name="Customer" usagesInTypeAccess="//@ownedElements.0/@ownedElements.3/@bodyDeclarations.1/@type">
+      <modifier visibility="public"/>
+    </ownedElements>
+    <ownedElements xsi:type="java:ClassDeclaration" originalCompilationUnit="//@compilationUnits.1" name="Product" usagesInTypeAccess="//@orphanTypes.9/@typeArguments.0 //@ownedElements.0/@ownedElements.4/@bodyDeclarations.1/@type">
+      <modifier visibility="public"/>
+    </ownedElements>
+    <ownedElements xsi:type="java:ClassDeclaration" originalCompilationUnit="//@compilationUnits.2" name="Inventory">
+      <modifier visibility="public"/>
+      <bodyDeclarations xsi:type="java:FieldDeclaration" originalCompilationUnit="//@compilationUnits.2">
+        <modifier visibility="private"/>
+        <type type="//@orphanTypes.9"/>
+        <fragments originalCompilationUnit="//@compilationUnits.2" name="products"/>
+      </bodyDeclarations>
+      <bodyDeclarations xsi:type="java:FieldDeclaration" originalCompilationUnit="//@compilationUnits.2">
+        <modifier visibility="private"/>
+        <type/>
+        <fragments originalCompilationUnit="//@compilationUnits.2" name="address"/>
+      </bodyDeclarations>
+    </ownedElements>
+    <ownedElements xsi:type="java:ClassDeclaration" originalCompilationUnit="//@compilationUnits.3" name="Invoice" usagesInTypeAccess="//@ownedElements.0/@ownedElements.4/@bodyDeclarations.2/@type">
+      <modifier visibility="public"/>
+      <bodyDeclarations xsi:type="java:FieldDeclaration" originalCompilationUnit="//@compilationUnits.3">
+        <modifier visibility="private"/>
+        <type type="//@orphanTypes.10"/>
+        <fragments originalCompilationUnit="//@compilationUnits.3" name="items"/>
+      </bodyDeclarations>
+      <bodyDeclarations xsi:type="java:FieldDeclaration" originalCompilationUnit="//@compilationUnits.3">
+        <modifier visibility="private"/>
+        <type type="//@ownedElements.0/@ownedElements.0"/>
+        <fragments originalCompilationUnit="//@compilationUnits.3" name="customer"/>
+      </bodyDeclarations>
+    </ownedElements>
+    <ownedElements xsi:type="java:ClassDeclaration" originalCompilationUnit="//@compilationUnits.4" name="Item" usagesInTypeAccess="//@orphanTypes.10/@typeArguments.0">
+      <modifier visibility="public"/>
+      <bodyDeclarations xsi:type="java:FieldDeclaration" originalCompilationUnit="//@compilationUnits.4">
+        <modifier visibility="private"/>
+        <type type="//@orphanTypes.0"/>
+        <fragments originalCompilationUnit="//@compilationUnits.4" name="qty"/>
+      </bodyDeclarations>
+      <bodyDeclarations xsi:type="java:FieldDeclaration" originalCompilationUnit="//@compilationUnits.4">
+        <modifier visibility="private"/>
+        <type type="//@ownedElements.0/@ownedElements.1"/>
+        <fragments originalCompilationUnit="//@compilationUnits.4" name="product"/>
+      </bodyDeclarations>
+      <bodyDeclarations xsi:type="java:FieldDeclaration" originalCompilationUnit="//@compilationUnits.4">
+        <modifier visibility="private"/>
+        <type type="//@ownedElements.0/@ownedElements.3"/>
+        <fragments originalCompilationUnit="//@compilationUnits.4" name="invoice"/>
+      </bodyDeclarations>
+    </ownedElements>
+  </ownedElements>
+  <ownedElements name="java" proxy="true">
+    <ownedPackages name="util" proxy="true">
+      <ownedElements xsi:type="java:InterfaceDeclaration" name="List" proxy="true" usagesInImports="//@compilationUnits.2/@imports.0 //@compilationUnits.3/@imports.0" usagesInTypeAccess="//@orphanTypes.9/@type //@orphanTypes.10/@type">
+        <superInterfaces type="//@ownedElements.1/@ownedPackages.0/@ownedElements.1"/>
+        <typeParameters name="E" proxy="true"/>
+      </ownedElements>
+      <ownedElements xsi:type="java:InterfaceDeclaration" name="Collection" proxy="true" usagesInTypeAccess="//@ownedElements.1/@ownedPackages.0/@ownedElements.0/@superInterfaces.0">
+        <superInterfaces type="//@ownedElements.1/@ownedPackages.1/@ownedElements.0"/>
+        <typeParameters name="E" proxy="true"/>
+      </ownedElements>
+    </ownedPackages>
+    <ownedPackages name="lang" proxy="true">
+      <ownedElements xsi:type="java:InterfaceDeclaration" name="Iterable" proxy="true" usagesInTypeAccess="//@ownedElements.1/@ownedPackages.0/@ownedElements.1/@superInterfaces.0">
+        <typeParameters name="T" proxy="true"/>
+      </ownedElements>
+      <ownedElements xsi:type="java:InterfaceDeclaration" name="Comparable" proxy="true">
+        <typeParameters name="T" proxy="true"/>
+      </ownedElements>
+      <ownedElements xsi:type="java:InterfaceDeclaration" name="CharSequence" proxy="true"/>
+      <ownedPackages name="constant" proxy="true">
+        <ownedElements xsi:type="java:InterfaceDeclaration" name="Constable" proxy="true"/>
+        <ownedElements xsi:type="java:InterfaceDeclaration" name="ConstantDesc" proxy="true"/>
+      </ownedPackages>
+    </ownedPackages>
+    <ownedPackages name="io" proxy="true">
+      <ownedElements xsi:type="java:InterfaceDeclaration" name="Serializable" proxy="true"/>
+    </ownedPackages>
+  </ownedElements>
+  <orphanTypes xsi:type="java:PrimitiveTypeInt" name="int" usagesInTypeAccess="//@ownedElements.0/@ownedElements.4/@bodyDeclarations.0/@type"/>
+  <orphanTypes xsi:type="java:PrimitiveTypeLong" name="long"/>
+  <orphanTypes xsi:type="java:PrimitiveTypeFloat" name="float"/>
+  <orphanTypes xsi:type="java:PrimitiveTypeDouble" name="double"/>
+  <orphanTypes xsi:type="java:PrimitiveTypeBoolean" name="boolean"/>
+  <orphanTypes xsi:type="java:PrimitiveTypeVoid" name="void"/>
+  <orphanTypes xsi:type="java:PrimitiveTypeChar" name="char"/>
+  <orphanTypes xsi:type="java:PrimitiveTypeShort" name="short"/>
+  <orphanTypes xsi:type="java:PrimitiveTypeByte" name="byte"/>
+  <orphanTypes xsi:type="java:ParameterizedType" name="java.util.List&lt;pos.Product>" usagesInTypeAccess="//@ownedElements.0/@ownedElements.2/@bodyDeclarations.0/@type">
+    <type type="//@ownedElements.1/@ownedPackages.0/@ownedElements.0"/>
+    <typeArguments type="//@ownedElements.0/@ownedElements.1"/>
+  </orphanTypes>
+  <orphanTypes xsi:type="java:ParameterizedType" name="java.util.List&lt;pos.Item>" usagesInTypeAccess="//@ownedElements.0/@ownedElements.3/@bodyDeclarations.0/@type">
+    <type type="//@ownedElements.1/@ownedPackages.0/@ownedElements.0"/>
+    <typeArguments type="//@ownedElements.0/@ownedElements.4"/>
+  </orphanTypes>
+  <compilationUnits name="Customer.java" originalFilePath="C:\eclipse.picto\workspace\Point of Sales\src\pos\Customer.java" package="//@ownedElements.0" types="//@ownedElements.0/@ownedElements.0"/>
+  <compilationUnits name="Product.java" originalFilePath="C:\eclipse.picto\workspace\Point of Sales\src\pos\Product.java" package="//@ownedElements.0" types="//@ownedElements.0/@ownedElements.1"/>
+  <compilationUnits name="Inventory.java" originalFilePath="C:\eclipse.picto\workspace\Point of Sales\src\pos\Inventory.java" package="//@ownedElements.0" types="//@ownedElements.0/@ownedElements.2">
+    <imports originalCompilationUnit="//@compilationUnits.2" importedElement="//@ownedElements.1/@ownedPackages.0/@ownedElements.0"/>
+  </compilationUnits>
+  <compilationUnits name="Invoice.java" originalFilePath="C:\eclipse.picto\workspace\Point of Sales\src\pos\Invoice.java" package="//@ownedElements.0" types="//@ownedElements.0/@ownedElements.3">
+    <imports originalCompilationUnit="//@compilationUnits.3" importedElement="//@ownedElements.1/@ownedPackages.0/@ownedElements.0"/>
+  </compilationUnits>
+  <compilationUnits name="Item.java" originalFilePath="C:\eclipse.picto\workspace\Point of Sales\src\pos\Item.java" package="//@ownedElements.0" types="//@ownedElements.0/@ownedElements.4"/>
+</java:Model>
