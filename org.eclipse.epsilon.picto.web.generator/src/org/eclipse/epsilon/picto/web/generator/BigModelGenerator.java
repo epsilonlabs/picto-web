@@ -48,8 +48,6 @@ import org.eclipse.modisco.java.emf.JavaPackage;
 
 public class BigModelGenerator {
 
-  static final int NUMBER_OF_ITERATION = 20;
-
   public void generate() {
 
     List<Record> records = new ArrayList<>();

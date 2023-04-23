@@ -55,6 +55,7 @@ public class PerformanceRecorder {
   public static int globalNumberOfViews;
   public static int numberOfAffectingEntities;
   public static long generationTime;
+  public static long totalGenerationTime;
   public static long promiseTime;
   public static File outputFile;
   public static AccessRecordResource accessRecordResource;

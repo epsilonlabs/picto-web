@@ -443,7 +443,7 @@ public class ExpensiveViewBenchmark {
               PerformanceRecord record = new PerformanceRecord(PerformanceRecorder.genenerateAll,
                   PerformanceRecorder.generateAlways, PerformanceRecorder.globalNumberOfAffectedViews,
                   PerformanceRecorder.globalNumberIteration, Client.this.getName(), path, responseTime,
-                  viewBytes.length, PerformanceTestType.RESPONSE_TIME, PerformanceRecorder.accessRecordResourceSize());
+                  viewBytes.length, PerformanceTestType.CLIENT_GENERATION_TIME, PerformanceRecorder.accessRecordResourceSize());
               PerformanceRecorder.record(record);
 
               // record the overall time from changing a model file to receiving the view
@@ -542,13 +542,13 @@ public class ExpensiveViewBenchmark {
               if (size > 0) {
                 String receivedPath = node.get("path").textValue();
 
-                System.out.println("PICTO: Type " + PerformanceTestType.RESPONSE_TIME + ", GenAlways "
+                System.out.println("PICTO: Type " + PerformanceTestType.CLIENT_GENERATION_TIME + ", GenAlways "
                     + PerformanceRecorder.generateAlways + ", N-views " + numberOfNodes + ", Iter " + (i + 1) + ", "
                     + Client.this.getName() + " received, path " + receivedPath + ", time " + waitTime + " ms");
 
                 PerformanceRecord record = new PerformanceRecord(PerformanceRecorder.genenerateAll,
                     PerformanceRecorder.generateAlways, numberOfNodes, i + 1, Client.this.getName(), receivedPath,
-                    waitTime, size, PerformanceTestType.RESPONSE_TIME, PerformanceRecorder.accessRecordResourceSize());
+                    waitTime, size, PerformanceTestType.CLIENT_GENERATION_TIME, PerformanceRecorder.accessRecordResourceSize());
                 PerformanceRecorder.record(record);
               }
 

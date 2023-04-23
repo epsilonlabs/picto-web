@@ -3,6 +3,11 @@ class [%=classDeclaration.name%] {
 [% 
 var associations = Set{};
 
+//var i = 0;
+//while(i <= 100000){
+//    i++;
+//}
+
 %]
 [% for (field in class.bodyDeclarations.select(b | b.isTypeOf(java::FieldDeclaration))) { %]
 [%   var typeName = field.getTypeName();

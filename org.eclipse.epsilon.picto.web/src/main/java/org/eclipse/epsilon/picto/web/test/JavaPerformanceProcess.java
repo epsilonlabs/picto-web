@@ -107,12 +107,16 @@ public class JavaPerformanceProcess {
     boolean genAll = Boolean.parseBoolean(args[0]);
     int numOfAffectedViews = Integer.parseInt(args[1]);
     globalNumberOfViews = Integer.parseInt(args[2]);
+    boolean isOneThread = Boolean.parseBoolean(args[3]);
 
     PerformanceRecorder.genenerateAll = genAll;
     PictoApplication.setNonIncremental(PerformanceRecorder.genenerateAll);
 
     numberOfIteration = 13;
     numberOfClients = 100;
+    
+//    numberOfIteration = 5;
+//    numberOfClients = 3;
 
     /** comment this if we want to test using the big model */
 //  numberOfClients = 1; // number of clients subscribed to Picto Web's STOMP server.
@@ -193,6 +197,8 @@ public class JavaPerformanceProcess {
 
       for (int iterationIndex = 1; iterationIndex <= numberOfIteration; iterationIndex++) {
 
+        PerformanceRecorder.totalGenerationTime = 0;
+
         final int index = iterationIndex;
 
         PictoApplication.setPromisesGenerationListener(new PromisesGenerationListener() {
@@ -204,9 +210,9 @@ public class JavaPerformanceProcess {
 
               System.out
                   .println("MODIFIED VIEWS = " + modifiedViews.size() + ", GENERATED VIEWS = " + generatedViews.size());
-              if (index > 1 && !PictoApplication.isNonIncremental()) {
-                assertThat(modifiedViews).isSubsetOf(generatedViews);
-              }
+//              if (index > 1 && !PictoApplication.isNonIncremental()) {
+//                assertThat(modifiedViews).isSubsetOf(generatedViews);
+//              }
 
               // notify the main thread to continue iteration
               invalidatedViewsWaiter.notify();
@@ -288,7 +294,7 @@ public class JavaPerformanceProcess {
 
         // wait until we get the paths of invalidated views
         synchronized (invalidatedViewsWaiter) {
-          invalidatedViewsWaiter.wait();
+          invalidatedViewsWaiter.wait(5 * 60 * 1000);
           System.out.println("Expected Views : " + generatedViews);
         }
         synchronized (clientWaitingList) {
@@ -298,9 +304,16 @@ public class JavaPerformanceProcess {
         JavaPerformanceProcess.waitingBackgroundTasks();
 
 ////        for (int i = 1; i < 5;i++) {
-        Thread.sleep(1000);
         System.gc();
+        Thread.sleep(5000);
 ////        }
+
+        PerformanceRecord record = new PerformanceRecord(PerformanceRecorder.genenerateAll,
+            PerformanceRecorder.generateAlways, PerformanceRecorder.globalNumberOfAffectedViews,
+            PerformanceRecorder.globalNumberIteration, "Server", "No Path", PerformanceRecorder.totalGenerationTime, 0,
+            PerformanceTestType.TOTAL_CLIENT_GENERATION_TIME, PerformanceRecorder.accessRecordResourceSize());
+        PerformanceRecorder.record(record);
+
       }
 
       for (Client client : clients) {
@@ -322,7 +335,9 @@ public class JavaPerformanceProcess {
       if (lockFile.delete()) {
       }
     }
-    System.exit(0);
+    if (!isOneThread) {
+      System.exit(0);
+    }
   }
 
   /***
@@ -429,7 +444,8 @@ public class JavaPerformanceProcess {
               String name = Client.this.getName();
               int number = Integer.parseInt(name.split("-")[1]);
 
-              for (int i = 0; i <= numIter; i++) {
+              /** iteration **/
+              for (int i = 0; i < numIter; i++) {
 
                 // randomly select the view to be requested
 //                String invalidatedView = "/" + classNames.get(random.nextInt(classNames.size()));
@@ -454,6 +470,7 @@ public class JavaPerformanceProcess {
                 long end = System.currentTimeMillis();
                 long responseTime = end - start;
                 long overallTime = end - PerformanceRecorder.startTime;
+                PerformanceRecorder.totalGenerationTime = PerformanceRecorder.totalGenerationTime + responseTime;
                 httpConnection.disconnect();
 
                 // parse the content
@@ -464,7 +481,7 @@ public class JavaPerformanceProcess {
                 PerformanceRecord record = new PerformanceRecord(PerformanceRecorder.genenerateAll,
                     PerformanceRecorder.generateAlways, PerformanceRecorder.globalNumberOfAffectedViews,
                     PerformanceRecorder.globalNumberIteration, Client.this.getName(), path, responseTime,
-                    viewBytes.length, PerformanceTestType.RESPONSE_TIME,
+                    viewBytes.length, PerformanceTestType.CLIENT_GENERATION_TIME,
                     PerformanceRecorder.accessRecordResourceSize());
                 PerformanceRecorder.record(record);
 

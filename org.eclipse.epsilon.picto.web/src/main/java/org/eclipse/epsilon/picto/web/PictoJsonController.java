@@ -104,7 +104,7 @@ public class PictoJsonController {
     PerformanceRecord record = new PerformanceRecord(PerformanceRecorder.genenerateAll,
         PerformanceRecorder.generateAlways, PerformanceRecorder.globalNumberOfAffectedViews,
         PerformanceRecorder.globalNumberIteration, "Server", path, PerformanceRecorder.generationTime,
-        result.getBytes().length, PerformanceTestType.GENERATION_TIME, PerformanceRecorder.accessRecordResourceSize());
+        result.getBytes().length, PerformanceTestType.SERVER_GENERATION_TIME, PerformanceRecorder.accessRecordResourceSize());
     PerformanceRecorder.record(record);
 
     return result;

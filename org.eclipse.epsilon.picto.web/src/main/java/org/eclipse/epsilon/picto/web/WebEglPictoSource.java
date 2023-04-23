@@ -199,7 +199,6 @@ public class WebEglPictoSource extends EglPictoSource {
 
           Set<String> invalidatedViewPaths = new HashSet<>();
 
-          
 //          Thread.sleep(1000);
 //          start1 = System.currentTimeMillis();
 //          System.out.print("Waiting AccessGraphResource task executor to complete ");
@@ -289,7 +288,7 @@ public class WebEglPictoSource extends EglPictoSource {
             if (!PictoApplication.isNonIncremental() && oldPromiseView != null) {
               promiseView.setHasBeenGenerated(oldPromiseView.hasBeenGenerated());
               promiseView.setEmptyViewContent(oldPromiseView.getEmptyViewContent());
-              promiseView.setViewContent(oldPromiseView.getViewContent());
+//              promiseView.setViewContent(oldPromiseView.getViewContent());
             }
 
             // Check if the path should be processed to generated new view.
@@ -311,18 +310,21 @@ public class WebEglPictoSource extends EglPictoSource {
             // to identify views affected by the last change.
 //            boolean isNew = accessRecordResource.getPathStatus(pathString);
 //            if (isNew) {
-            Thread t = new Thread("Generate-" + promiseView.getPath()) {
-              public void run() {
-                try {
-                  promiseView.getViewContent(null);
+            if (generateAll1stTime) {
+              Thread t = new Thread("Generate-" + promiseView.getPath()) {
+                public void run() {
+                  try {
+                    promiseView.getViewContent(null);
+                    promiseView.setHasBeenGenerated(false);
 //                    String x = promiseView.getViewContent(null);
 //                    System.out.println(x);
-                } catch (Exception e) {
-                  e.printStackTrace();
+                  } catch (Exception e) {
+                    e.printStackTrace();
+                  }
                 }
-              }
-            };
-            t.start();
+              };
+              t.start();
+            }
 //            }
             modifiedViewContents.add(pathString);
 

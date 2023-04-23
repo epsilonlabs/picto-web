@@ -21,11 +21,12 @@ public class PerformanceTestType {
   public static final String LOADING_TIME = "loading time"; 
   public static final String DETECTION_TIME = "detection time";  
   public static final String NOTIFICATION_TIME = "notification time"; 
-  public static final String RESPONSE_TIME = "view generation time"; 
+  public static final String CLIENT_GENERATION_TIME = "view generation time"; 
+  public static final String TOTAL_CLIENT_GENERATION_TIME = "total view generation time"; 
   public static final String OVERALL_TIME = "overall time";
   public static final String PROMISE_TIME = "promise generation time";
   public static final String INIT_TIME = "initialisation time";
-  public static final String GENERATION_TIME = "gen time";
+  public static final String SERVER_GENERATION_TIME = "gen time";
   public static final String CHECKED_PROPERTIES = "checked properties";
   public static final String PROPERTIES = "properties";
 }

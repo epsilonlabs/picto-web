@@ -103,23 +103,26 @@ public class JavaPerformanceBenchmark {
     PerformanceRecorder.header("num,genall,views,iteration,client,path,waittime,bytes,type,properties");
 
     final int numberOfMeasurementPoints = 5;
+    
+//    final int numberOfMeasurementPoints = 3;
 
 //     configuration for smaller experiment
 //    int numberOfViews = 12; // Number of nodes the graph model
     int numberOfViews = 0; // Number of nodes the graph model
 
     int[] numbersOfAffectedViews = null;
-//    boolean[] genAllViews = { true, false };
     boolean[] genAllViews = { false, true };
-//    boolean[] genAllViews = { false };
+//    boolean[] genAllViews = { true, false };
+//    boolean[] genAllViews = { true };
 
     /** comment this if we want to test using the big model */
 //    numberOfClients = 1; // number of clients subscribed to Picto Web's STOMP server.
 //    numberOfIteration = 3; // Number of iteration measuring for each number of affected views
 //    MODEL_ORIGINAL = "/java/java.small.xmi";
 //    MODEL_ORIGINAL = "/java/java.medium.xmi";
-//    MODEL_ORIGINAL = "/java/java.xx.big.xmi";
+    MODEL_ORIGINAL = "/java/java.xx.big.xmi";
 //    MODEL_ORIGINAL = "/java/java.x.big.xmi";
+//    MODEL_ORIGINAL = "/java/java.pos.xmi";
 
     File modelFileOriginal = new File(PictoApplication.WORKSPACE + File.separator + MODEL_ORIGINAL);
     XMIResource resourceOriginal = new XMIResourceImpl(URI.createFileURI(modelFileOriginal.getAbsolutePath()));
@@ -202,14 +205,23 @@ public class JavaPerformanceBenchmark {
 
     PerformanceRecorder.globalNumberOfViews = numberOfViews;
     numberOfViews = classList.size();
-    numbersOfAffectedViews = new int[numberOfMeasurementPoints + 1];
+
+//    // order from low to high
+//    numbersOfAffectedViews = new int[numberOfMeasurementPoints + 1];
+//    for (int i = 0; i < numberOfMeasurementPoints; i++) {
+//      numbersOfAffectedViews[i + 1] = 0 + (numberOfViews / numberOfMeasurementPoints) * (i + 1);
+//    }
+//    numbersOfAffectedViews[0] = numbersOfAffectedViews[numbersOfAffectedViews.length - 1] - 1;
 
     // order from low to high
+    numbersOfAffectedViews = new int[numberOfMeasurementPoints];
     for (int i = 0; i < numberOfMeasurementPoints; i++) {
-      numbersOfAffectedViews[i + 1] = 0 + (numberOfViews / numberOfMeasurementPoints) * (i + 1);
+      numbersOfAffectedViews[i] = 0 + (numberOfViews / numberOfMeasurementPoints) * (i + 1);
     }
-    numbersOfAffectedViews[0] = numbersOfAffectedViews[numbersOfAffectedViews.length - 1] - 1;
+//    numbersOfAffectedViews[0] = numbersOfAffectedViews[numbersOfAffectedViews.length - 1] - 1;
 
+//    numbersOfAffectedViews = new int[] {9872};
+    
     System.out.println("Iteration = " + Arrays.toString(numbersOfAffectedViews));
 
     // modify
@@ -223,11 +235,15 @@ public class JavaPerformanceBenchmark {
 
           // run this code if we want to run the performance benchmark on separate JVM
           // processes
-          String command = String.format("java -jar performance.jar %s %s %s", genAll, numViews, numberOfViews);
+          String command = String.format("java -jar performance.jar %s %s %s %s", genAll, numViews, numberOfViews,
+              false);
           runCommandSync(command);
 
 ////           run this code if we want to only use one JVM process
-//           JavaPerformanceProcess.main(new String[] { String.valueOf(genAll), String.valueOf(numViews), String.valueOf(numberOfViews) });
+//          JavaPerformanceProcess.main(new String[] { String.valueOf(genAll), String.valueOf(numViews),
+//              String.valueOf(numberOfViews), String.valueOf(true) });
+          
+          Thread.sleep(10000);
 
         }
 
