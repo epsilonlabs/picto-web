@@ -45,117 +45,118 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 @RequestMapping("/pictojson")
 public class PictoJsonController {
 
-  /*** The ApplicationContext of Spring Boot ***/
-  @Autowired
-  private ApplicationContext context;
+	/*** The ApplicationContext of Spring Boot ***/
+	@Autowired
+	private ApplicationContext context;
 
-  /***
-   * The constructor to attach the controller to the FileWatcher that monitors
-   * changes on files so that new views can be send to the client via a STOMP
-   * broker server.
-   * 
-   */
-  public PictoJsonController() {
-    FileWatcher.setResponseController(this);
-  }
+	/***
+	 * The constructor to attach the controller to the FileWatcher that monitors
+	 * changes on files so that new views can be send to the client via a STOMP
+	 * broker server.
+	 * 
+	 */
+	public PictoJsonController() {
+		FileWatcher.setResponseController(this);
+	}
 
-  /***
-   * This method receives the JSON requests from clients that come by clicking the
-   * TreeView nodes on the left panel.
-   * 
-   * @param file
-   * @param path
-   * @param name
-   * @param timestamp
-   * @param model
-   * @return
-   * @throws Exception
-   */
-  @GetMapping(path = "/picto", produces = MediaType.APPLICATION_JSON_VALUE)
-  public String getPictoJson(String file, String path, String timestamp, Model model) throws Exception {
+	/***
+	 * This method receives the JSON requests from clients that come by clicking the
+	 * TreeView nodes on the left panel.
+	 * 
+	 * @param file
+	 * @param path
+	 * @param name
+	 * @param timestamp
+	 * @param model
+	 * @return
+	 * @throws Exception
+	 */
+	@GetMapping(path = "/picto", produces = MediaType.APPLICATION_JSON_VALUE)
+	public String getPictoJson(String file, String path, String timestamp, Model model) throws Exception {
 
-    long genStart = System.currentTimeMillis();
+		long genStart = System.currentTimeMillis();
 
-    PromiseViewCache promiseViewCache = FileViewContentCache.getViewContentCache(file);
+		PromiseViewCache promiseViewCache = FileViewContentCache.getViewContentCache(file);
 
-    if (promiseViewCache == null) {
-      File modifiedFile = new File(new File(PictoApplication.WORKSPACE + file).getAbsolutePath());
-      Set<PictoProject> affectedPictoProjects = new HashSet<>();
-      for (PictoProject project : PictoApplication.getPictoProjects()) {
-        if (project.getFiles().contains(modifiedFile)) {
-          affectedPictoProjects.add(project);
-        }
-      }
-      for (PictoProject pictoProject : affectedPictoProjects) {
-        WebEglPictoSource source = new WebEglPictoSource();
-        source.generatePromises(file, pictoProject);
-      }
-    }
+		if (promiseViewCache == null) {
+			File modifiedFile = new File(new File(PictoApplication.WORKSPACE + file).getAbsolutePath());
+			Set<PictoProject> affectedPictoProjects = new HashSet<>();
+			for (PictoProject project : PictoApplication.getPictoProjects()) {
+				if (project.getFiles().contains(modifiedFile)) {
+					affectedPictoProjects.add(project);
+				}
+			}
+			for (PictoProject pictoProject : affectedPictoProjects) {
+				WebEglPictoSource source = new WebEglPictoSource();
+				source.generatePromises(file, pictoProject);
+			}
+		}
 
-    String result = "";
-//    if (promiseViewCache != null) {
-    PromiseView promiseView = promiseViewCache.getPromiseView(path);
-//    if (promiseView != null)
-    result = promiseView.getViewContent(timestamp);
-//  }
+		String result = "";
+		if (promiseViewCache != null) {
+			PromiseView promiseView = promiseViewCache.getPromiseView(path);
+			if (promiseView != null)
+				result = promiseView.getViewContent(timestamp);
+		}
 
-    PerformanceRecorder.generationTime = System.currentTimeMillis() - genStart;
+		PerformanceRecorder.generationTime = System.currentTimeMillis() - genStart;
 
-    PerformanceRecord record = new PerformanceRecord(PerformanceRecorder.genenerateAll,
-        PerformanceRecorder.generateAlways, PerformanceRecorder.globalNumberOfAffectedViews,
-        PerformanceRecorder.globalNumberIteration, "Server", path, PerformanceRecorder.generationTime,
-        result.getBytes().length, PerformanceTestType.SERVER_GENERATION_TIME, PerformanceRecorder.accessRecordResourceSize());
-    PerformanceRecorder.record(record);
+		PerformanceRecord record = new PerformanceRecord(PerformanceRecorder.genenerateAll,
+				PerformanceRecorder.generateAlways, PerformanceRecorder.globalNumberOfAffectedViews,
+				PerformanceRecorder.globalNumberIteration, "Server", path, PerformanceRecorder.generationTime,
+				result.getBytes().length, PerformanceTestType.SERVER_GENERATION_TIME,
+				PerformanceRecorder.accessRecordResourceSize());
+		PerformanceRecorder.record(record);
 
-    return result;
-  }
+		return result;
+	}
 
-  /***
-   * This method sends new views to clients via a STOMP broker server triggered by
-   * (1) Clicking on the TreeView nodes on the left panel of clients, and (2)
-   * Modifying files monitored by Picto Web.
-   * 
-   * @param modifiedFile
-   * @throws Exception
-   */
-  @MessageMapping("/picto-web")
-  @SendTo("/topic/picto")
-  public void sendChangesToBroker(File modifiedFile) throws Exception {
+	/***
+	 * This method sends new views to clients via a STOMP broker server triggered by
+	 * (1) Clicking on the TreeView nodes on the left panel of clients, and (2)
+	 * Modifying files monitored by Picto Web.
+	 * 
+	 * @param modifiedFile
+	 * @throws Exception
+	 */
+	@MessageMapping("/picto-web")
+	@SendTo("/topic/picto")
+	public void sendChangesToBroker(File modifiedFile) throws Exception {
 
-    Set<PictoProject> affectedPictoProjects = new HashSet<>();
-    for (PictoProject project : PictoApplication.getPictoProjects()) {
-      if (project.getFiles().contains(modifiedFile)) {
-        affectedPictoProjects.add(project);
-      }
-    }
-    for (PictoProject pictoProject : affectedPictoProjects) {
+		Set<PictoProject> affectedPictoProjects = new HashSet<>();
+		for (PictoProject project : PictoApplication.getPictoProjects()) {
+			if (project.getFiles().contains(modifiedFile)) {
+				affectedPictoProjects.add(project);
+			}
+		}
+		for (PictoProject pictoProject : affectedPictoProjects) {
 
-      String modifiedFilePath = modifiedFile.getAbsolutePath()
-          .replace(new File(PictoApplication.WORKSPACE).getAbsolutePath(), "").replace("\\", "/");
+			String modifiedFilePath = modifiedFile.getAbsolutePath()
+					.replace(new File(PictoApplication.WORKSPACE).getAbsolutePath(), "").replace("\\", "/");
 
-      WebEglPictoSource source = new WebEglPictoSource();
+			WebEglPictoSource source = new WebEglPictoSource();
 
-      Set<String> modifiedObjects = source.generatePromises(modifiedFilePath, pictoProject, true);
+			Set<String> modifiedObjects = source.generatePromises(modifiedFilePath, pictoProject, true);
 
-      String pictoFilePath = pictoProject.getPictoFile().getAbsolutePath()
-          .replace(new File(PictoApplication.WORKSPACE).getAbsolutePath(), "").replace("\\", "/");
+			String pictoFilePath = pictoProject.getPictoFile().getAbsolutePath()
+					.replace(new File(PictoApplication.WORKSPACE).getAbsolutePath(), "").replace("\\", "/");
 
-      MessageChannel brokerChannel = context.getBean("brokerChannel", MessageChannel.class);
-      System.out.println("Sending " + modifiedObjects.size() + " views");
+			MessageChannel brokerChannel = context.getBean("brokerChannel", MessageChannel.class);
+			System.out.println("Sending " + modifiedObjects.size() + " views");
 
-      PictoResponse response = new PictoResponse();
-      response.setType("newviews");
-      response.setFilename(pictoFilePath);
+			PictoResponse response = new PictoResponse();
+			response.setType("newviews");
+			response.setFilename(pictoFilePath);
 
-      ObjectMapper mapper = new ObjectMapper();
-      String affectedViews = mapper.writerWithDefaultPrettyPrinter().writeValueAsString(modifiedObjects);
-      response.setContent(affectedViews);
-      String content = mapper.writerWithDefaultPrettyPrinter().writeValueAsString(response);
+			ObjectMapper mapper = new ObjectMapper();
+			String affectedViews = mapper.writerWithDefaultPrettyPrinter().writeValueAsString(modifiedObjects);
+			response.setContent(affectedViews);
+			String content = mapper.writerWithDefaultPrettyPrinter().writeValueAsString(response);
 
-      SimpMessagingTemplate messaging = new SimpMessagingTemplate(brokerChannel);
-      String topicName = "/topic/picto" + pictoFilePath;
-      messaging.convertAndSend(topicName, content.getBytes());
-    }
-  }
+			SimpMessagingTemplate messaging = new SimpMessagingTemplate(brokerChannel);
+			String topicName = "/topic/picto" + pictoFilePath;
+			messaging.convertAndSend(topicName, content.getBytes());
+		}
+	}
 
 }
