@@ -18,20 +18,7 @@ package org.eclipse.epsilon.picto.web;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.List;
 
-import org.eclipse.emf.common.util.URI;
-import org.eclipse.emf.ecore.resource.Resource;
-import org.eclipse.emf.ecore.resource.ResourceSet;
-import org.eclipse.emf.ecore.resource.impl.ResourceSetImpl;
-import org.eclipse.emf.ecore.xmi.XMIResource;
-import org.eclipse.emf.ecore.xmi.impl.XMIResourceImpl;
-import org.eclipse.epsilon.flexmi.FlexmiResourceFactory;
-import org.eclipse.epsilon.picto.dom.CustomView;
-import org.eclipse.epsilon.picto.dom.Model;
-import org.eclipse.epsilon.picto.dom.Parameter;
-import org.eclipse.epsilon.picto.dom.Picto;
 import org.eclipse.epsilon.picto.dom.PictoPackage;
 import org.eclipse.jgit.api.Git;
 import org.eclipse.jgit.api.errors.GitAPIException;
@@ -54,12 +41,15 @@ import ch.qos.logback.classic.Level;
 import ch.qos.logback.classic.Logger;
 
 /**
+ * This class is responsible for retrieving files from the supplied Git
+ * repository address and Picto file path.
+ * 
  * @author Alfa Yohannis
  *
  */
 public class PictoRepository {
 
-  static String workspace = "dummy-workspace";
+  String workspace = PictoApplication.WORKSPACE;
 
   /**
    * @param args
@@ -73,7 +63,7 @@ public class PictoRepository {
 
     Logger logger = (Logger) LoggerFactory.getLogger(org.slf4j.Logger.ROOT_LOGGER_NAME);
     logger.setLevel(Level.OFF);
-     
+
     PictoPackage.eINSTANCE.eClass();
 
     String repo = "https://github.com/epsilonlabs/picto-web";
@@ -82,11 +72,24 @@ public class PictoRepository {
     String revision = "";
 
     PictoRepository pictoRepo = new PictoRepository();
+    pictoRepo.setWorkspace("dummy-workspace");
     pictoRepo.retrievePicto(pictoFilePath, repo, branch, revision);
 
     System.out.println("Finished!");
   }
 
+  public String getWorkspace() {
+    return workspace;
+  }
+
+  public void setWorkspace(String workspace) {
+    this.workspace = workspace;
+  }
+
+  
+  public void retrievePicto(String pictoFilePath, String repoAddress) throws InvalidRemoteException, TransportException, IOException, GitAPIException {
+    this.retrievePicto(pictoFilePath, repoAddress, null, null);
+  }
   /***
    * 
    * @param pictoFilePath
@@ -102,6 +105,10 @@ public class PictoRepository {
   public void retrievePicto(String pictoFilePath, String repoAddress, String branch, String revision)
       throws InvalidRemoteException, TransportException, IOException, GitAPIException {
 
+    if (branch == null || branch.trim().length() == 0) {
+      branch = "main";
+    }
+
     String pictoParentDir = pictoFilePath.substring(0, pictoFilePath.lastIndexOf("/") + 1);
 
     String localTargetDirName = (new File(workspace)).getAbsolutePath() + File.separator
@@ -111,51 +118,21 @@ public class PictoRepository {
       localTargetDir.mkdirs();
     }
 
-    System.out.println("Checking out " + repoAddress + " to " + localTargetDirName);
+    System.out.println("Checking out '" + repoAddress + "' to '" + localTargetDirName + "'");
 
     DfsRepositoryDescription repoDesc = new DfsRepositoryDescription();
     InMemoryRepository repository = new InMemoryRepository(repoDesc);
     Git git = new Git(repository);
     git.fetch().setRemote(repoAddress).setRefSpecs(new RefSpec("+refs/heads/*:refs/heads/*")).call();
 
-    ObjectId commitId = repository.resolve("refs/heads/" + branch);
+    ObjectId commitId = null;
+    if (revision == null || revision.trim().length() == 0) {
+      commitId = repository.resolve("refs/heads/" + branch);
+    } else {
+      commitId = repository.resolve(revision);
+    }
 
-    File pictoFile = this.retrieveFile(localTargetDir, repository, commitId, pictoParentDir);
-
-//    File pictoFile = this.retrieveFile(localTargetDir, repository, commitId, pictoFilePath);
-
-//    // load and the retrieved picto file and then collect all other related files
-//    // (e.g., metamodel, model, etc.)
-//    ResourceSet resourceSet = new ResourceSetImpl();
-//    resourceSet.getResourceFactoryRegistry().getExtensionToFactoryMap().put("*", new FlexmiResourceFactory());
-//    Resource resource = resourceSet
-//        .getResource(org.eclipse.emf.common.util.URI.createFileURI(pictoFile.getAbsolutePath()), true);
-//    resource.load(null);
-//    Picto picto = (Picto) resource.getContents().get(0);
-//
-//    List<String> relatedFilesPaths = new ArrayList<>();
-//    if (picto.getTransformation() != null) {
-//      relatedFilesPaths.add(picto.getTransformation());
-//    }
-//    for (Model model : picto.getModels()) {
-//      for (Parameter parameter : model.getParameters()) {
-//        if (parameter.getName().equals("metamodelFile") && parameter.getFile() != null) {
-//          relatedFilesPaths.add((String) parameter.getFile());
-//        } else if (parameter.getName().equals("modelFile") && parameter.getFile() != null) {
-//          relatedFilesPaths.add((String) parameter.getFile());
-//        }
-//      }
-//    }
-//    for (CustomView view : picto.getCustomViews()) {
-//      if (view.getSource() != null) {
-//        relatedFilesPaths.add(view.getSource());
-//      }
-//    }
-//
-//    // get all other files
-//    for (String relatedFilePath : relatedFilesPaths) {
-//      this.retrieveFile(localTargetDir, repository, commitId, pictoParentDir + relatedFilePath);
-//    }
+    this.retrieveFile(localTargetDir, repository, commitId, pictoParentDir);
 
     git.close();
   }
@@ -166,9 +143,6 @@ public class PictoRepository {
    * @param repository
    * @param commitId
    * @param filePath
-   * @param repo
-   * @param branch
-   * @param revision
    * @return
    * @throws IOException
    * @throws GitAPIException
@@ -206,44 +180,13 @@ public class PictoRepository {
           fOS.write(bytes);
           System.out.println(outputFile.getAbsolutePath() + " created");
         } catch (Exception e) {
-          System.out
-              .println("Error writing " + output + " from repo to local");
+          System.out.println("Error writing " + output + " from repo to local");
         }
       }
     }
     treeWalk.close();
     revWalk.close();
 
-//    try (RevWalk revWalk = new RevWalk(repository)) {
-//      try (TreeWalk treeWalk = TreeWalk.forPath(repository, filePath, revWalk.parseCommit(commitId).getTree())) {
-//        if (treeWalk == null) {
-//          System.out.println(String.format("Could not find path '%s'", filePath));
-//          return null;
-//        }
-//
-//        ObjectId blobId = treeWalk.getObjectId(0);
-//        try (ObjectReader objectReader = repository.newObjectReader()) {
-//          ObjectLoader objectLoader = objectReader.open(blobId);
-////          objectLoader.copyTo(System.out);
-//          byte[] bytes = objectLoader.getBytes();
-//          String output = targetDir.getAbsolutePath() + "/" + filePath;
-//          output = output.replace("/", File.separator);
-//          outputFile = new File(output);
-//          outputFile.getParentFile().mkdirs();
-//          try (FileOutputStream fOS = new FileOutputStream(output)) {
-//            fOS.write(bytes);
-//            System.out.println(outputFile.getAbsolutePath() + " created");
-//          } catch (Exception e) {
-//            System.out.println(
-//                "There was an error writing the contents of the file in the repository into the provided file.");
-//          }
-//        }
-//      } catch (Exception e) {
-//        System.out.println("There was an error traversing the Git tree to retrieve the file contents.");
-//      }
-//    } catch (Exception e) {
-//      System.out.println("There was an error accessing the Git repository to retrieve the file contents.");
-//    }
     return outputFile;
   }
 

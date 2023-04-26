@@ -10,26 +10,40 @@ SPDX-License-Identifier: EPL-2.0
 -->
 <html xmlns:th="http://www.thymeleaf.org">
 <head>
-  <title>Picto Web Workspace</title>
-  <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
-  <link type="text/css" rel="stylesheet" href="/webjars/bootstrap/css/bootstrap.min.css">
-  <link type="text/css" rel="stylesheet" href="dist/themes/default/style.css">
-  <link type="text/css" rel="stylesheet" href="main.css">
-  <script type="text/javascript" src="/webjars/jquery/jquery.min.js"></script>
-  <script type="text/javascript" src="dist/jstree.js"></script>
-  <script type="text/javascript" src="/picto.js"></script>
+<title>Picto Web Workspace</title>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+<link type="text/css" rel="stylesheet"
+	href="/webjars/bootstrap/css/bootstrap.min.css">
+<link type="text/css" rel="stylesheet"
+	href="dist/themes/default/style.css">
+<link type="text/css" rel="stylesheet" href="main.css">
+<script type="text/javascript" src="/webjars/jquery/jquery.min.js"></script>
+<script type="text/javascript" src="dist/jstree.js"></script>
+<script type="text/javascript" src="/picto.js"></script>
 </head>
 
 <body>
-  <div class="parent">
-    <div class="child">
-      <h1>Picto Web Workspace</h1>
-      <input type="text" id="searchTree" name="searchTree"></input>
-      <div id="tree"></div>
-    </div>
-  </div>
+	<div class="parent">
+		<div class="leftChild">
+			<h1>Add Online Picto File</h1>
+			<form id="addRepoForm" action="/">
+				<label for="repo">The Repo address of the Picto file:</label><br />
+				<input type="text" id="repo" name="repo" size="50"
+					placeholder="https://github.com/epsilonlabs/picto-web"></input> <br />
+				<label for="picto">The Path to the Picto file in the repo:</label><br />
+				<input type="text" id="file" name="file" size="50"
+					placeholder="workspace/socialnetwork/socialnetwork.model.picto"></input>
+				<br /> <input type="submit" value=" Add "></input>
+			</form>
+		</div>
+		<div class="centreChild">
+			<h1>Picto Web Workspace</h1>
+			<input type="text" id="searchTree" name="searchTree"></input>
+			<div id="tree"></div>
+		</div>
+	</div>
 
-  <script th:inline="javascript">
+	<script th:inline="javascript">
     var pictofiles = [[${pictofiles}]];
     // console.log(pictofiles);
     var workspace = Picto.listToJsTreeData(pictofiles);

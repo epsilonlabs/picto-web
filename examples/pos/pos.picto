@@ -1,13 +1,13 @@
 <?nsuri picto?>
-<picto format="egx" transformation="pos/java.pos.egx">
+<picto format="egx" transformation="java.pos.egx">
     <model type="EMF">
         <parameter name="name" value="M"/>
         <parameter name="metamodelUri" value="http://www.eclipse.org/MoDisco/Java/0.2.incubation/java"/>
         <parameter name="metamodelFile" file="java.ecore"/>
-        <parameter name="modelFile" file="pos/java.pos.xmi"/>s
+        <parameter name="modelFile" file="java.pos.xmi"/>s
     </model>
     <view path="Custom, Invoice and Inventory" icon="icons/diagram.gif" type="Java2Classes">
         <parameter name="names" values="Invoice, Inventory"/>
     </view>         
-    <view path="Readme" icon="icons/document.gif" format="markdown" source="pos/readme.md" position="0"/>        
+    <view path="Readme" icon="icons/document.gif" format="markdown" source="readme.md" position="0"/>        
 </picto>

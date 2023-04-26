@@ -8,6 +8,7 @@ import java.util.Set;
 import java.util.stream.Collectors;
 
 import org.eclipse.jgit.api.Git;
+import org.eclipse.jgit.api.errors.GitAPIException;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -25,89 +26,98 @@ import org.springframework.web.bind.annotation.GetMapping;
 @Controller
 public class PictoController {
 
-	/***
-	 * A controller method to display the page that shows the Picto files under
-	 * Workspace. It uses the 'pictofiles' template under 'resource/templates' for
-	 * the page.
-	 * 
-	 * @param information
-	 * @param model
-	 * @return
-	 * @throws IOException
-	 */
-	@GetMapping(value = "/")
-	public String getPictoFiles(String information, Model model) throws IOException {
-		List<String> pictoFiles = ProjectTreeToJson.getPictoFiles(PictoApplication.WORKSPACE).stream()
-				.map(s -> s.replace("\\", "/")).collect(Collectors.toList());
-		model.addAttribute("pictofiles", pictoFiles);
-		return "pictofiles";
-	}
+  /***
+   * A controller method to display the page that shows the Picto files under
+   * Workspace. It uses the 'pictofiles' template under 'resource/templates' for
+   * the page.
+   * 
+   * @param information
+   * @param model
+   * @return
+   * @throws IOException
+   */
+  @GetMapping(value = "/")
+  public String getPictoFiles(String information, String repo, String file, Model model) throws IOException {
 
-	/***
-	 * This controller method displays Picto Web's main page consists of two panels:
-	 * the tree view panel on the left side and the view panel on the right side. It
-	 * uses the 'picto' template under 'resource/templates' for the page.
-	 * 
-	 * @param file
-	 * @param path
-	 * @param name
-	 * @param timestamp
-	 * @param model
-	 * @return
-	 * @throws Exception
-	 */
-	@GetMapping(value = "/picto")
-	public String getPicto(String file, String path, String repo, String timestamp, Model model) throws Exception {
-		model.addAttribute("pictoName", file);
+    try {
+      if (repo != null && file != null) {
+        PictoRepository pictoRepo = new PictoRepository();
+        pictoRepo.retrievePicto(file, repo);
+      }
+    } catch (IOException | GitAPIException e) {
+      e.printStackTrace();
+    }
 
-		// retrieve from git hub
-		if (repo != null) {
-			model.addAttribute("repo", repo);
-			File workspace = new File(PictoApplication.WORKSPACE);
-			Git git = Git.cloneRepository().setURI(repo).setDirectory(workspace).call();
+    List<String> pictoFiles = ProjectTreeToJson.getPictoFiles(PictoApplication.WORKSPACE).stream()
+        .map(s -> s.replace("\\", "/")).collect(Collectors.toList());
+    model.addAttribute("pictofiles", pictoFiles);
+    return "pictofiles";
+  }
+
+  /***
+   * This controller method displays Picto Web's main page consists of two panels:
+   * the tree view panel on the left side and the view panel on the right side. It
+   * uses the 'picto' template under 'resource/templates' for the page.
+   * 
+   * @param file
+   * @param path
+   * @param name
+   * @param timestamp
+   * @param model
+   * @return
+   * @throws Exception
+   */
+  @GetMapping(value = "/picto")
+  public String getPicto(String file, String path, String repo, String timestamp, Model model) throws Exception {
+    model.addAttribute("pictoName", file);
+
+    // retrieve from git hub
+    if (repo != null) {
+      model.addAttribute("repo", repo);
+      File workspace = new File(PictoApplication.WORKSPACE);
+      Git git = Git.cloneRepository().setURI(repo).setDirectory(workspace).call();
 //			git.checkout();
-			
-			
-		}
 
-		if (FileViewContentCache.getViewContentCache(file) == null) {
-			File modifiedFile = new File(new File(PictoApplication.WORKSPACE + file).getAbsolutePath());
-			Set<PictoProject> affectedPictoProjects = new HashSet<>();
-			for (PictoProject project : PictoApplication.getPictoProjects()) {
-				if (project.getFiles().contains(modifiedFile)) {
-					affectedPictoProjects.add(project);
-				}
-			}
-			for (PictoProject pictoProject : affectedPictoProjects) {
-				WebEglPictoSource source = new WebEglPictoSource();
-				source.generatePromises(file, pictoProject);
-			}
-		}
+    }
 
-		if (path == null) {
-			PromiseView treePromiseView = FileViewContentCache.getViewContentCache(file)
-					.getPromiseView(FileViewContentCache.PICTO_TREE);
-			String treeResult = (timestamp == null) ? treePromiseView.getViewContent()
-					: treePromiseView.getViewContent(timestamp);
-			model.addAttribute("treeResponse", treeResult);
-		} else {
-			PromiseView treePromiseView = FileViewContentCache.getViewContentCache(file)
-					.getPromiseView(FileViewContentCache.PICTO_TREE);
-			String treeResult = (timestamp == null) ? treePromiseView.getViewContent()
-					: treePromiseView.getViewContent(timestamp);
-			model.addAttribute("treeResponse", treeResult);
+    if (FileViewContentCache.getViewContentCache(file) == null) {
+      File modifiedFile = new File(new File(PictoApplication.WORKSPACE + file).getAbsolutePath());
+      Set<PictoProject> affectedPictoProjects = new HashSet<>();
+      for (PictoProject project : PictoApplication.getPictoProjects()) {
+        if (project.getFiles().contains(modifiedFile)) {
+          affectedPictoProjects.add(project);
+        }
+      }
+      for (PictoProject pictoProject : affectedPictoProjects) {
+        WebEglPictoSource source = new WebEglPictoSource();
+        source.generatePromises(file, pictoProject);
+      }
+    }
 
-			String viewResult = null;
-			PromiseView promiseView = FileViewContentCache.getViewContentCache(file).getPromiseView(path);
-			if (promiseView != null) {
+    if (path == null) {
+      PromiseView treePromiseView = FileViewContentCache.getViewContentCache(file)
+          .getPromiseView(FileViewContentCache.PICTO_TREE);
+      String treeResult = (timestamp == null) ? treePromiseView.getViewContent()
+          : treePromiseView.getViewContent(timestamp);
+      model.addAttribute("treeResponse", treeResult);
+    } else {
+      PromiseView treePromiseView = FileViewContentCache.getViewContentCache(file)
+          .getPromiseView(FileViewContentCache.PICTO_TREE);
+      String treeResult = (timestamp == null) ? treePromiseView.getViewContent()
+          : treePromiseView.getViewContent(timestamp);
+      model.addAttribute("treeResponse", treeResult);
+
+      String viewResult = null;
+      PromiseView promiseView = FileViewContentCache.getViewContentCache(file).getPromiseView(path);
+      if (promiseView != null) {
 //        System.out.println("FROM URL BAR");
-				viewResult = promiseView.getViewContent(timestamp);
-				model.addAttribute("viewResponse", viewResult);
-			}
-			model.addAttribute("selectedUri", path);
-		}
+        viewResult = promiseView.getViewContent(timestamp);
+        model.addAttribute("viewResponse", viewResult);
+      }
+      model.addAttribute("selectedUri", path);
+    }
 
-		return "picto";
-	}
+    return "picto";
+  }
 
 }

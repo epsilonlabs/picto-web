@@ -6,7 +6,7 @@ The file displays a static image, `Invoice`'s class diagram, and embedded PlantU
 <tr>
 <td>
 
-![Epsilon logo](java/pos/epsilon.png)
+![Epsilon logo](pos/epsilon.png)
 
 </td>
 <td>
