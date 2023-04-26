@@ -86,10 +86,16 @@ public class PictoRepository {
     this.workspace = workspace;
   }
 
-  
-  public void retrievePicto(String pictoFilePath, String repoAddress) throws InvalidRemoteException, TransportException, IOException, GitAPIException {
+  public void retrievePicto(String pictoFilePath, String repoAddress)
+      throws InvalidRemoteException, TransportException, IOException, GitAPIException {
     this.retrievePicto(pictoFilePath, repoAddress, null, null);
   }
+
+  public void retrievePicto(String pictoFilePath, String repoAddress, String branch)
+      throws InvalidRemoteException, TransportException, IOException, GitAPIException {
+    this.retrievePicto(pictoFilePath, repoAddress, branch, null);
+  }
+
   /***
    * 
    * @param pictoFilePath
@@ -132,7 +138,7 @@ public class PictoRepository {
       commitId = repository.resolve(revision);
     }
 
-    this.retrieveFile(localTargetDir, repository, commitId, pictoParentDir);
+    this.retrieveFiles(localTargetDir, repository, commitId, pictoParentDir);
 
     git.close();
   }
@@ -149,7 +155,7 @@ public class PictoRepository {
    * @throws InvalidRemoteException
    * @throws TransportException
    */
-  private File retrieveFile(File targetDir, InMemoryRepository repository, ObjectId commitId, String filePath)
+  private File retrieveFiles(File targetDir, InMemoryRepository repository, ObjectId commitId, String filePath)
       throws IOException, GitAPIException, InvalidRemoteException, TransportException {
 
     File outputFile = null;

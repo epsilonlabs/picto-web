@@ -37,14 +37,31 @@ public class PictoController {
    * @throws IOException
    */
   @GetMapping(value = "/")
-  public String getPictoFiles(String information, String repo, String file, Model model) throws IOException {
+  public String getPictoFiles(String information, String repo, String file, String branch, String revision, Model model)
+      throws IOException {
 
     try {
       if (repo != null && file != null) {
+        FileWatcher.pause();
         PictoRepository pictoRepo = new PictoRepository();
-        pictoRepo.retrievePicto(file, repo);
+        if (repo != null && file != null && branch == null && revision == null) {
+          pictoRepo.retrievePicto(file, repo);
+        } else if (branch != null && revision == null) {
+          pictoRepo.retrievePicto(file, repo, branch);
+        } else if (branch != null && revision != null) {
+          pictoRepo.retrievePicto(file, repo, branch, revision);
+        }
+        FileWatcher.unpause();
+
+        String pictoFilePath = PictoApplication.WORKSPACE + repo.substring(repo.lastIndexOf("/") + 1, repo.length())
+            + File.separator + file;
+        pictoFilePath = pictoFilePath.replace("/", File.separator);
+
+        PictoProject.createPictoProject(new File(new File(pictoFilePath).getAbsolutePath()));
       }
     } catch (IOException | GitAPIException e) {
+      e.printStackTrace();
+    } catch (Exception e) {
       e.printStackTrace();
     }
 
@@ -71,14 +88,7 @@ public class PictoController {
   public String getPicto(String file, String path, String repo, String timestamp, Model model) throws Exception {
     model.addAttribute("pictoName", file);
 
-    // retrieve from git hub
-    if (repo != null) {
-      model.addAttribute("repo", repo);
-      File workspace = new File(PictoApplication.WORKSPACE);
-      Git git = Git.cloneRepository().setURI(repo).setDirectory(workspace).call();
-//			git.checkout();
-
-    }
+//    List<PictoProject>  x = PictoApplication.getPictoProjects();
 
     if (FileViewContentCache.getViewContentCache(file) == null) {
       File modifiedFile = new File(new File(PictoApplication.WORKSPACE + file).getAbsolutePath());

@@ -132,28 +132,6 @@ public class PictoApplication implements ApplicationListener<ApplicationContextE
   }
 
   public static void exit() throws IOException, InterruptedException {
-//    Set<Thread> threads = Thread
-//        .getAllStackTraces().keySet().stream().filter(t -> t.isAlive() && (t.getName().startsWith("MessageBroker-")
-//            || t.getName().startsWith("clientInboundChannel-") || t.getName().startsWith("clientOutboundChannel-")))
-//        .collect(Collectors.toSet());
-//    while (threads.size() > 0) {
-//      for (Thread thread : threads) {
-//        try {
-//            thread.stop();
-//        } catch (Exception e) {
-////          e.printStackTrace();
-//        }
-//        try {
-//          thread.interrupt();
-//        } catch (Exception e) {
-////          e.printStackTrace();
-//        }
-//      }
-//      threads = Thread
-//          .getAllStackTraces().keySet().stream().filter(t -> t.isAlive() && (t.getName().startsWith("MessageBroker-")
-//              || t.getName().startsWith("clientInboundChannel-") || t.getName().startsWith("clientOutboundChannel-")))
-//          .collect(Collectors.toSet());
-//    }
     FileWatcher.stopWatching();
     FileViewContentCache.clear();
 //    ExecutorService px = PromiseView.getPromiseExecutor();

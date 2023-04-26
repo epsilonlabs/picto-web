@@ -1,12 +1,3 @@
-/*********************************************************************
-* Copyright (c) 2022 The University of York.
-*
-* This program and the accompanying materials are made
-* available under the terms of the Eclipse Public License 2.0
-* which is available at https://www.eclipse.org/legal/epl-2.0/
-*
-* SPDX-License-Identifier: EPL-2.0
-**********************************************************************/
 
 package org.eclipse.epsilon.picto.web;
 
@@ -105,7 +96,7 @@ public class WebEglPictoSource extends EglPictoSource {
    * @return The paths affected by the modification.
    * @throws Exception
    */
-  @SuppressWarnings({ "unchecked", "deprecation", "null" })
+  @SuppressWarnings({ "deprecation", "null" })
   public Set<String> generatePromises(String modifiedFilePath, PictoProject pictoProject, boolean fromFileWatcher)
       throws Exception {
     long loadingStartTime = System.currentTimeMillis();
@@ -115,11 +106,12 @@ public class WebEglPictoSource extends EglPictoSource {
     try {
 
       PictoView pictoView = new PictoView();
-      ViewTree rootViewTree = pictoView.getViewTree();
 
       File pictoFile = pictoProject.getPictoFile();
       String pictoFilePath = pictoFile.getAbsolutePath()
           .replace(new File(PictoApplication.WORKSPACE).getAbsolutePath(), "").replace("\\", "/");
+
+      ViewTree rootViewTree = pictoView.getViewTree();
 
       PromiseViewCache viewContentCache = FileViewContentCache.addPictoFile(pictoFilePath);
       AccessRecordResource accessRecordResource = FileViewContentCache.createAccessRecordResource(pictoFilePath);
@@ -438,6 +430,8 @@ public class WebEglPictoSource extends EglPictoSource {
           }
         }
       }
+
+//      FileViewContentCache.cacheViewTree(existingView.getPathString(), existingView);
     }
   }
 
@@ -561,6 +555,11 @@ public class WebEglPictoSource extends EglPictoSource {
    */
   private PictoResponse generateJsTreeData(String filename, ViewTree viewTree) throws JsonProcessingException {
     JsTreeNode root = new JsTreeNode();
+    root.setPath(FileViewContentCache.PICTO_TREE);
+//    root = FileViewContentCache.cacheRootJsTreeNode(filename, root);
+
+    root = FileViewContentCache.addCachedJsTreeNode(filename, viewTree.getPathString(), root);
+    
     copyViewTreeToJsTreeData(filename, viewTree, root);
     List<JsTreeNode> jsTreeNodes = new ArrayList<>();
     jsTreeNodes.addAll(root.getChildren());
@@ -586,16 +585,34 @@ public class WebEglPictoSource extends EglPictoSource {
    * @param jsTreeNode
    */
   private void copyViewTreeToJsTreeData(String filename, ViewTree viewTree, JsTreeNode jsTreeNode) {
-    for (ViewTree viewTreeChild : viewTree.getChildren()) {
-      JsTreeNode jsonChild = new JsTreeNode();
-      jsTreeNode.getChildren().add(jsonChild);
-      copyViewTreeToJsTreeData(filename, viewTreeChild, jsonChild);
+
+    if (viewTree.getPathString().equals("/Social Network/Charlie")) {
+      System.console();
     }
+    
     String text = viewTree.getName();
     jsTreeNode.setText(text);
     jsTreeNode.setPath(viewTree.getPathString());
     if (viewTree.getIcon() != null) {
       jsTreeNode.setIcon(viewTree.getIcon());
+    }
+
+    for (ViewTree viewTreeChild : viewTree.getChildren()) {
+
+      if (viewTreeChild.getPathString().equals("/Social Network/Daniel")) {
+        System.console();
+      }
+
+      JsTreeNode jsonChild = new JsTreeNode();
+      boolean isNew = false;
+      if (FileViewContentCache.getCachedJsTreeNode(filename, viewTreeChild.getPathString()) == null){
+        isNew = true;
+      }
+      jsonChild = FileViewContentCache.addCachedJsTreeNode(filename, viewTreeChild.getPathString(), jsonChild);
+      copyViewTreeToJsTreeData(filename, viewTreeChild, jsonChild);
+      if (isNew) {
+        jsTreeNode.getChildren().add(jsonChild);
+      }
     }
   }
 

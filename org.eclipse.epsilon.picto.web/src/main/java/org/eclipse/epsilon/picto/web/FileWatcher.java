@@ -1,3 +1,13 @@
+/*********************************************************************
+* Copyright (c) 2022 The University of York.
+*
+* This program and the accompanying materials are made
+* available under the terms of the Eclipse Public License 2.0
+* which is available at https://www.eclipse.org/legal/epl-2.0/
+*
+* SPDX-License-Identifier: EPL-2.0
+**********************************************************************/
+
 package org.eclipse.epsilon.picto.web;
 
 import static java.nio.file.StandardWatchEventKinds.ENTRY_CREATE;
@@ -15,7 +25,9 @@ import java.nio.file.WatchService;
 import java.util.HashMap;
 import java.util.List;
 
-import org.eclipse.epsilon.picto.web.test.PerformanceRecorder;
+import javax.xml.parsers.DocumentBuilder;
+import javax.xml.parsers.DocumentBuilderFactory;
+
 import org.springframework.beans.factory.annotation.Autowired;
 
 /***
@@ -33,6 +45,7 @@ public class FileWatcher extends Thread {
   public PictoJsonController pictoJsonController;
 
   private boolean isRunning = false;
+  private static boolean isPaused = false;
 
   private WatchService watcher;
 
@@ -43,6 +56,18 @@ public class FileWatcher extends Thread {
   public FileWatcher(PictoJsonController pictoJsonController) {
     this.pictoJsonController = pictoJsonController;
     this.setName(FileWatcher.class.getSimpleName());
+  }
+
+  public boolean isPaused() {
+    return isPaused;
+  }
+
+  public static void pause() {
+    isPaused = true;
+  }
+
+  public static void unpause() {
+    isPaused = false;
   }
 
   public void terminate() throws IOException {
@@ -79,10 +104,14 @@ public class FileWatcher extends Thread {
           Thread.sleep(100);
           path = keys.get(key);
           if (path == null) {
-            System.err.println("WatchKey not recognized!!");
+            System.err.println("WatchKey not recognised!!");
             continue;
           }
         } catch (Exception ex) {
+          return;
+        }
+
+        if (isPaused) {
           return;
         }
 
@@ -102,20 +131,27 @@ public class FileWatcher extends Thread {
             File modifiedFile = new File(path.toString() + File.separator + filePath.toString());
 
             System.out.println("Modified file: " + modifiedFile.getAbsolutePath());
-//
-            long size = 0;
-//            System.out.print("Wait until model is fully stored ");
-//            while (! modifiedFile.exists() || !modifiedFile.canRead() || !modifiedFile.canWrite()) {
-//              Thread.sleep(100);
-//              System.out.print(".");
-//            }
 
-            while (size != modifiedFile.length() || size == 0) {
-              size = modifiedFile.length();
-              Thread.sleep(10);
-//              System.out.print(".");
+            boolean isDocumentValid = false;
+            int counter = 0;
+            while (!isDocumentValid) {
+              try {
+                DocumentBuilderFactory documentBuilderFactory = DocumentBuilderFactory.newInstance();
+                DocumentBuilder documentBuilder = documentBuilderFactory.newDocumentBuilder();
+                documentBuilder.parse(modifiedFile);
+                isDocumentValid = true;
+                break;
+              } catch (Exception e) {
+                System.out.println("Error reading " + modifiedFile.getAbsolutePath());
+                Thread.sleep(1000);
+                System.out.println("Retry to read");
+              }
+              if (counter == 3) {
+                System.out.println("Cannot read the file. Cancel further processes.");
+                return;
+              }
+              counter += 1;
             }
-//            System.out.println(" Done");
 
             try {
               this.notifyFileChange(modifiedFile);
