@@ -1,108 +1,129 @@
 package org.eclipse.epsilon.picto.pictograph;
 
 public class Property {
-  protected boolean isDeleted = false;
-  protected boolean isNew = true;
-  protected String propertyId;
-  protected String propertyName;
-  protected String element;
-  protected String resource;
-  protected String value;
-  protected String egxModule;
-  protected String eglTemplate;
-  protected String generationRule;
+	protected boolean isDeleted = false;
+	protected boolean isNew = true;
+	protected String propertyId;
+	protected String propertyName;
+	protected String contextElement;
+	protected String contextResource;
+	protected String element;
+	protected String resource;
+	protected String value;
+	protected String egxModule;
+	protected String eglTemplate;
+	protected String generationRule;
 
-  public Property(String propertyId, String resource, String element, String propertyName, String value) {
-    super();
-    this.isNew = true;
-    this.propertyId = propertyId;
-    this.propertyName = propertyName;
-    this.element = element;
-    this.resource = resource;
-    this.value = value;
-  }
+	public Property(String propertyId, String contextResource, String contextElement, String resource, String element,
+			String propertyName, String value) {
+		super();
+		this.isNew = true;
+		this.propertyId = propertyId;
+		this.propertyName = propertyName;
+		this.contextElement = contextElement;
+		this.contextResource = contextResource;
+		this.element = element;
+		this.resource = resource;
+		this.value = value;
+	}
 
-  public String toString() {
-    return propertyId + ", " + value + ", deleted:" + isDeleted;
-  }
+	public String getContextElement() {
+		return contextElement;
+	}
 
-  public void setDeleted() {
-    this.isDeleted = true;
-  }
+	public void setContextElement(String contextElement) {
+		this.contextElement = contextElement;
+	}
 
-  public boolean isDeleted() {
-    return isDeleted;
-  }
+	public String getContextResource() {
+		return contextResource;
+	}
 
-  public String getPropertyId() {
-    return propertyId;
-  }
+	public void setContextResource(String contextResource) {
+		this.contextResource = contextResource;
+	}
 
-  public void setPropertyId(String propertyId) {
-    this.propertyId = propertyId;
-  }
+	public String toString() {
+		return propertyId + ", " + value + ", deleted:" + isDeleted;
+	}
 
-  public String getPropertyName() {
-    return propertyName;
-  }
+	public void setDeleted() {
+		this.isDeleted = true;
+	}
 
-  public void setPropertyName(String propertyName) {
-    this.propertyName = propertyName;
-  }
+	public boolean isDeleted() {
+		return isDeleted;
+	}
 
-  public String getElement() {
-    return element;
-  }
+	public String getPropertyId() {
+		return propertyId;
+	}
 
-  public void setElement(String element) {
-    this.element = element;
-  }
+	public void setPropertyId(String propertyId) {
+		this.propertyId = propertyId;
+	}
 
-  public String getResource() {
-    return resource;
-  }
+	public String getPropertyName() {
+		return propertyName;
+	}
 
-  public void setResource(String resource) {
-    this.resource = resource;
-  }
+	public void setPropertyName(String propertyName) {
+		this.propertyName = propertyName;
+	}
 
-  public boolean isNew() {
-    return isNew;
-  }
+	public String getElement() {
+		return element;
+	}
 
-  public void setOld() {
-    isNew = false;
-  }
+	public void setElement(String element) {
+		this.element = element;
+	}
 
-  public String getValue() {
-    return value;
-  }
+	public String getResource() {
+		return resource;
+	}
 
-  public void setValue(String value) {
-    this.value = value;
-  }
+	public void setResource(String resource) {
+		this.resource = resource;
+	}
 
-  public String getEgxModule() {
-    return egxModule;
-  }
+	public boolean isNew() {
+		return isNew;
+	}
 
-  public void setEgxModule(String egxModule) {
-    this.egxModule = egxModule;
-  }
+	public void setOld() {
+		isNew = false;
+	}
 
-  public String getEglTemplate() {
-    return eglTemplate;
-  }
+	public String getValue() {
+		return value;
+	}
 
-  public void setEglTemplate(String eglTemplate) {
-    this.eglTemplate = eglTemplate;
-  }
+	public void setValue(String value) {
+		this.value = value;
+	}
 
-  public String getGenerationRule() {
-    return generationRule;
-  }
+	public String getEgxModule() {
+		return egxModule;
+	}
 
-  public void setGenerationRule(String generationRule) {
-    this.generationRule = generationRule;
-  }
+	public void setEgxModule(String egxModule) {
+		this.egxModule = egxModule;
+	}
+
+	public String getEglTemplate() {
+		return eglTemplate;
+	}
+
+	public void setEglTemplate(String eglTemplate) {
+		this.eglTemplate = eglTemplate;
+	}
+
+	public String getGenerationRule() {
+		return generationRule;
+	}
+
+	public void setGenerationRule(String generationRule) {
+		this.generationRule = generationRule;
+	}
 }

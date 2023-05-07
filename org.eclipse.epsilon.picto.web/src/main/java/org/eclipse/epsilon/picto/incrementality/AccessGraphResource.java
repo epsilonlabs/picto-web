@@ -11,7 +11,6 @@
 package org.eclipse.epsilon.picto.incrementality;
 
 import java.util.Collection;
-import java.util.HashSet;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -34,271 +33,321 @@ import org.eclipse.epsilon.picto.incrementality.IncrementalLazyEgxModule.Increme
 import org.eclipse.epsilon.picto.pictograph.Path;
 import org.eclipse.epsilon.picto.pictograph.Property;
 
+/***
+ * 
+ * @author alfa
+ *
+ */
 public class AccessGraphResource implements AccessRecordResource {
 
-//  private static ThreadPoolExecutor executorService = (ThreadPoolExecutor) Executors
-//      .newFixedThreadPool(Runtime.getRuntime().availableProcessors());
-//  private static ThreadPoolExecutor executorService = (ThreadPoolExecutor) Executors.newFixedThreadPool(1);
-  private static ThreadPoolExecutor executorService = new ThreadPoolExecutor(Runtime.getRuntime().availableProcessors(),
-      Runtime.getRuntime().availableProcessors(), 1, TimeUnit.MINUTES, new LinkedBlockingQueue<Runnable>());
-//  private static ThreadPoolExecutor executorService = new ThreadPoolExecutor(1, 1, 1, TimeUnit.MINUTES,
-//      new LinkedBlockingQueue<Runnable>());
+	private static ThreadPoolExecutor executorService = new ThreadPoolExecutor(Runtime.getRuntime().availableProcessors(),
+			Runtime.getRuntime().availableProcessors(), 1, TimeUnit.MINUTES, new LinkedBlockingQueue<Runnable>());
 
-  private Map<String, Path> paths = new LinkedHashMap<>();
-  private Map<String, String> moduleRuleObjectIdsToPaths = new LinkedHashMap<>();
+	private Map<String, Path> paths = new LinkedHashMap<>();
+	private Map<String, String> moduleRuleObjectIdsToPaths = new LinkedHashMap<>();
 
-  public static ThreadPoolExecutor getExecutorService() {
-    return executorService;
-  }
+	public static ThreadPoolExecutor getExecutorService() {
+		return executorService;
+	}
 
-  public int size() {
-    return paths.size();
-  }
+	public int size() {
+		return paths.size();
+	}
 
-  public Map<String, Path> getTraceIndex() {
-    return paths;
-  }
+	public Map<String, Path> getTraceIndex() {
+		return paths;
+	}
 
-  public Map<String, String> getPromiseKeysToPaths() {
-    return moduleRuleObjectIdsToPaths;
-  }
+	public Map<String, String> getPromiseKeysToPaths() {
+		return moduleRuleObjectIdsToPaths;
+	}
 
-  public void addAll(List<AccessRecord> currentPropertyAccesses) {
-    currentPropertyAccesses.parallelStream().forEach(access -> {
-      this.add(access);
-    });
-  }
+	public void addAll(List<AccessRecord> currentPropertyAccesses) {
+		currentPropertyAccesses.parallelStream().forEach(access -> {
+			this.add(access);
+		});
+	}
 
-  @SuppressWarnings("null")
-  @Override
-  public void add(AccessRecord access) {
+	@Override
+	public void add(AccessRecord access) {
 
-    Thread t = new Thread("SaveToGraph-" + access.toString()) {
+		Thread t = new Thread("SaveToGraph-" + access.toString()) {
 
-      @Override
-      public void run() {
+			@Override
+			public void run() {
 
-        // skip
-        if (access.getPath() == null || access.getPropertyName() == null || access.getElementResourceUri() == null
-            || access.getElementObjectId() == null) {
-          return;
-        }
+				// skip
+				if (access.getPath() == null || access.getPropertyName() == null || access.getElementResourceUri() == null
+						|| access.getElementObjectId() == null) {
+					return;
+				}
 
-        // path
-        String pathName = access.getPath();
-        Path path = paths.get(pathName);
-        if (path == null) {
-          path = new Path();
-          path.setName(pathName);
-          paths.put(pathName, path);
-        }
+				// path
+				String pathName = access.getPath();
+				Path path = paths.get(pathName);
+				if (path == null) {
+					path = new Path();
+					path.setName(pathName);
+					paths.put(pathName, path);
+				}
 
-        // property
-        String propertyId = access.getElementResourceUri() + "#" + access.getElementObjectId() + "#"
-            + access.getPropertyName();
+				// property
+				String propertyId = access.getElementResourceUri() + "#" + access.getElementObjectId() + "#"
+						+ access.getPropertyName();
 
-        Property property = path.getProperty(propertyId);
-        if (property == null) {
-          property = new Property(propertyId, access.getElementResourceUri(), access.getElementObjectId(),
-              access.getPropertyName(), access.getValue());
-          path.putProperty(propertyId, property);
-        }
+				Property property = path.getProperty(propertyId);
+				if (property == null) {
+					property = new Property(propertyId, access.getContextResourceUri(), access.getContextObjectId(),
+							access.getElementResourceUri(), access.getElementObjectId(), access.getPropertyName(), access.getValue());
+					path.putProperty(propertyId, property);
+				}
 
-//        property.getPaths().put(path.getName(), path);
+				// Promise
+				String moduleRuleObjectId = access.getModulePath() + "#" + access.getGenerationRuleName() + "#"
+						+ access.getContextResourceUri() + "#" + access.getContextObjectId();
+				String ps = moduleRuleObjectIdsToPaths.get(moduleRuleObjectId);
+				if (ps == null) {
+					moduleRuleObjectIdsToPaths.put(moduleRuleObjectId, pathName);
+				}
 
-        // Promise
-        String moduleRuleObjectId = access.getModulePath() + "#" + access.getGenerationRuleName() + "#"
-            + access.getContextResourceUri() + "#" + access.getContextObjectId();
-//        System.out.println("PK:" + promiseKey);
-        String ps = moduleRuleObjectIdsToPaths.get(moduleRuleObjectId);
-        if (ps == null) {
-          moduleRuleObjectIdsToPaths.put(moduleRuleObjectId, pathName);
-        }
+			}
+		};
+		executorService.submit(t);
 
-      }
-    };
-    executorService.submit(t);
+	}
 
-  }
+	@Override
+	public Set<String> getInvalidatedViewPaths(List<IncrementalLazyGenerationRuleContentPromise> promises,
+			EgxModule module) {
 
-  @Override
-  public Set<String> getInvalidatedViewPaths(List<IncrementalLazyGenerationRuleContentPromise> promises,
-      EgxModule module) {
+		Set<String> invalidatedPaths = ConcurrentHashMap.newKeySet();
 
-    Set<String> invalidatedPaths = ConcurrentHashMap.newKeySet();
-    Set<String> toBeDeletedPaths = new HashSet<>();
-    Set<String> toBeDeletedProperties = new HashSet<>();
+		promises.parallelStream().forEach(promise -> {
+			checkPath(module, invalidatedPaths, promise);
+		});
 
-//    properties.values().parallelStream().forEach(property -> {
-//      property.getPaths().entrySet().parallelStream().forEach( entry -> {
-//        invalidatedPaths.add(entry.getKey());
-//      });
-////      invalidatedPaths.addAll(Collections.list(property.getPaths().keys()));
-//    });
+		return invalidatedPaths;
 
-//    for (IncrementalLazyGenerationRuleContentPromise promise : promises) {
-//      checkPath(module, invalidatedPaths, toBeDeletedPaths, toBeDeletedProperties, promise);
-//    }
+	}
 
-    promises.parallelStream().forEach(promise -> {
-      checkPath(module, invalidatedPaths, toBeDeletedPaths, toBeDeletedProperties, promise);
-    });
+	/***
+	 * 
+	 * @param module
+	 * @param invalidatedPaths
+	 * @param toBeDeletedPaths
+	 * @param toBeDeletedProperties
+	 * @param promise
+	 */
+	public void checkPath(EgxModule module, Set<String> invalidatedPaths,
+			IncrementalLazyGenerationRuleContentPromise promise) {
+		String pathName = IncrementalityUtil.getPath(promise);
+		this.checkPath(module, invalidatedPaths, pathName, true);
+	}
 
-    return invalidatedPaths;
+	/***
+	 * 
+	 * @param module
+	 * @param invalidatedPaths
+	 * @param toBeDeletedPaths
+	 * @param toBeDeletedProperties
+	 * @param pathName
+	 */
+	public void checkPath(EgxModule module, Set<String> invalidatedPaths, String pathName, boolean changeState) {
 
-  }
+		// path
+		Path path = paths.get(pathName);
+		if (path == null) {
+			invalidatedPaths.add(pathName);
+			return;
+		}
 
-  /***
-   * 
-   * @param module
-   * @param invalidatedPaths
-   * @param toBeDeletedPaths
-   * @param toBeDeletedProperties
-   * @param promise
-   */
-  public void checkPath(EgxModule module, Set<String> invalidatedPaths, Set<String> toBeDeletedPaths,
-      Set<String> toBeDeletedProperties, IncrementalLazyGenerationRuleContentPromise promise) {
-    String pathName = IncrementalityUtil.getPath(promise);
-    this.checkPath(module, invalidatedPaths, toBeDeletedPaths, toBeDeletedProperties, pathName, true);
-  }
+		if (path.isNew()) {
+			invalidatedPaths.add(pathName);
+			path.setOld();
+			return;
+		}
 
-  /***
-   * 
-   * @param module
-   * @param invalidatedPaths
-   * @param toBeDeletedPaths
-   * @param toBeDeletedProperties
-   * @param pathName
-   */
-  public void checkPath(EgxModule module, Set<String> invalidatedPaths, Set<String> toBeDeletedPaths,
-      Set<String> toBeDeletedProperties, String pathName, boolean changeState) {
+		Iterator<Entry<String, Property>> iterator = path.getProperties().entrySet().iterator();
+		while (iterator.hasNext()) {
+			Entry<String, Property> entry = iterator.next();
+			Property property = entry.getValue();
+			if (property.isDeleted()) {
+				continue;
+			}
 
-    // path
-    Path path = paths.get(pathName);
-    if (path == null) {
-      invalidatedPaths.add(pathName);
-      return;
-    }
+			// context resource
+			EmfModel contextEmfModel = ((EmfModel) module.getContext().getModelRepository().getModels().stream()
+					.filter(
+							m -> ((AbstractEmfModel) m).getResource().getURI().toFileString().equals(property.getContextResource()))
+					.findFirst().orElse(null));
+			if (contextEmfModel != null) {
 
-    if (path.isNew()) {
-      invalidatedPaths.add(pathName);
-      path.setOld();
-      return;
-    }
+				Resource contextResource = contextEmfModel.getResource();
+				if (contextResource == null) {
+					invalidatedPaths.add(pathName);
+					path.setDeleted();
+					property.setDeleted();
+					continue;
+				}
 
-//    if (path.getName().equals("/Social Network")) {
-//      this.printIncrementalRecords();
-//      System.console();
-//    }
+				// context eObject
+				EObject eContextObject = contextResource.getEObject(property.getContextElement());
+				if (eContextObject == null) {
+					invalidatedPaths.add(pathName);
+					path.setDeleted();
+					property.setDeleted();
+					continue;
+				}
+			}
 
-    Iterator<Entry<String, Property>> iterator = path.getProperties().entrySet().iterator();
-    while (iterator.hasNext()) {
-      Entry<String, Property> entry = iterator.next();
-      Property property = entry.getValue();
-      if (property.isDeleted()) {
-        continue;
-      }
+			// resource
+			Resource resource = ((EmfModel) module.getContext().getModelRepository().getModels().stream()
+					.filter(m -> ((AbstractEmfModel) m).getResource().getURI().toFileString().equals(property.getResource()))
+					.findFirst().orElse(null)).getResource();
+			if (resource == null) {
+				invalidatedPaths.add(pathName);
+				property.setDeleted();
+				continue;
+			}
 
-      // resource
-      Resource resource = ((EmfModel) module.getContext().getModelRepository().getModels().stream()
-          .filter(m -> ((AbstractEmfModel) m).getResource().getURI().toFileString().equals(property.getResource()))
-          .findFirst().orElse(null)).getResource();
-      if (resource == null) {
-        invalidatedPaths.add(pathName);
-        property.setDeleted();
-        continue;
-      }
+			// eObject
+			EObject eObject = resource.getEObject(property.getElement());
+			if (eObject == null) {
+				invalidatedPaths.add(pathName);
+				property.setDeleted();
+				continue;
+			}
 
-      // eObject
-      EObject eObject = resource.getEObject(property.getElement());
-      if (eObject == null) {
-        invalidatedPaths.add(pathName);
-        property.setDeleted();
-        continue;
-      }
+			// property
+			EStructuralFeature feature = eObject.eClass().getEStructuralFeature(property.getPropertyName());
+			Object currentValueObject = (feature != null) ? eObject.eGet(feature) : null;
+			String currentValue = AccessRecord.convertValueToString(currentValueObject);
+			if (!IncrementalityUtil.equals(currentValue, property.getValue())) {
+				invalidatedPaths.add(pathName);
+				if (changeState) {
+					property.setValue(currentValue);
+				}
+			}
 
-      // property
-      EStructuralFeature feature = eObject.eClass().getEStructuralFeature(property.getPropertyName());
-      Object currentValueObject = (feature != null) ? eObject.eGet(feature) : null;
-      String currentValue = AccessRecord.convertValueToString(currentValueObject);
-      if (!IncrementalityUtil.equals(currentValue, property.getValue())) {
-        invalidatedPaths.add(pathName);
-        if (changeState) {
-          property.setValue(currentValue);
-        }
-      }
+			if (property.isNew()) {
+				property.setOld();
+			}
+		}
 
-      if (property.isNew()) {
-        property.setOld();
-      }
-    }
+	}
 
-  }
+	@Override
+	public List<AccessRecord> getIncrementalRecords() {
+		return null;
+	}
 
-  @Override
-  public List<AccessRecord> getIncrementalRecords() {
-    // TODO Auto-generated method stub
-    return null;
-  }
+	@Override
+	public void printIncrementalRecords() {
+		System.out.println();
+		synchronized (paths) {
+			for (Entry<String, Path> entry : paths.entrySet()) {
+				System.out.println(entry.getKey());
+				Map<String, Property> properties = entry.getValue().getProperties();
+				synchronized (properties) {
+					for (Property property : properties.values()) {
+						System.out.print("+---");
+						System.out.println(property);
+					}
+				}
+			}
+		}
+	}
 
-  @Override
-  public void printIncrementalRecords() {
-    System.out.println();
-    synchronized (paths) {
-      for (Entry<String, Path> entry : paths.entrySet()) {
-        System.out.println(entry.getKey());
-        Map<String, Property> properties = entry.getValue().getProperties();
-        synchronized (properties) {
-          for (Property property : properties.values()) {
-            System.out.print("+---");
-            System.out.println(property);
-          }
-        }
-      }
-    }
-  }
+	@Override
+	public void updateStatusToProcessed(Collection<String> paths) {
 
-  @Override
-  public void updateStatusToProcessed(Collection<String> paths) {
+	}
 
-  }
+	/***
+	 * Remove all paths and properties that are flagged deleted.
+	 */
+	public void clean() {
 
-  @Override
-  public void clear() {
-    for (Path path : paths.values()) {
-      path.getProperties().clear();
-    }
-    paths.clear();
-  }
+		Thread t = new Thread("RemoveDeletedPathsAndProperties") {
+			public void run() {
+				System.out.print("Removing deleted paths and properties ... ");
+				while (AccessGraphResource.getExecutorService().getQueue().size() > 0
+						&& AccessGraphResource.getExecutorService().getActiveCount() > 0) {
+					try {
+						Thread.sleep(1000);
+					} catch (Exception e) {
+						e.printStackTrace();
+					}
 
-  @Override
-  public void updatePath(String modulePath, String ruleName, String contextResourceUri, String contextObjectId,
-      String path) {
+					if (AccessGraphResource.getExecutorService().getQueue().size() == 0
+							&& AccessGraphResource.getExecutorService().getActiveCount() == 0) {
 
-  }
+						// remove deleted properties in each path
+						AccessGraphResource.this.paths.values().parallelStream().forEach(path -> {
+							Iterator<Entry<String, Property>> propertyIterator = path.getProperties().entrySet().iterator();
+							while (propertyIterator.hasNext()) {
+								Entry<String, Property> propertyEntry = propertyIterator.next();
+								Property property = propertyEntry.getValue();
+								if (property.isDeleted())
+									propertyIterator.remove();
+							}
+						});
 
-  @Override
-  public boolean getPathStatus(String pathString) {
-    Path path = paths.get(pathString);
-    return (path != null) ? path.isNew() : false;
-  }
+						// remove deleted paths
+						Iterator<Entry<String, Path>> pathIterator = AccessGraphResource.this.paths.entrySet().iterator();
+						while (pathIterator.hasNext()) {
+							Entry<String, Path> pathEntry = pathIterator.next();
+							Path path = pathEntry.getValue();
+							if (path.isDeleted())
+								pathIterator.remove();
+						}
+					} // if
+				} // while
 
-  class RecordTask implements Callable<Object> {
+				System.out.println("Done");
 
-    AccessRecord access;
+			} // run
+		};
+		t.start();
+		executorService.submit(t);
+	}
 
-    /**
-     * 
-     */
-    public RecordTask(AccessRecord access) {
-      this.access = access;
-    }
+	@Override
+	public void clear() {
+		for (Path path : paths.values()) {
+			path.getProperties().clear();
+		}
+		paths.clear();
+	}
 
-    @Override
-    public Object call() throws Exception {
+	@Override
+	public void updatePath(String modulePath, String ruleName, String contextResourceUri, String contextObjectId,
+			String path) {
 
-      return null;
-    }
+	}
 
-  }
+	@Override
+	public boolean getPathStatus(String pathString) {
+		Path path = paths.get(pathString);
+		return (path != null) ? path.isNew() : false;
+	}
+
+	class RecordTask implements Callable<Object> {
+
+		AccessRecord access;
+
+		/**
+		 * 
+		 */
+		public RecordTask(AccessRecord access) {
+			this.access = access;
+		}
+
+		@Override
+		public Object call() throws Exception {
+
+			return null;
+		}
+
+	}
 }

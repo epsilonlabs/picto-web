@@ -111,16 +111,16 @@ public class JavaPerformanceBenchmark {
     int numberOfViews = 0; // Number of nodes the graph model
 
     int[] numbersOfAffectedViews = null;
-    boolean[] genAllViews = { false, true };
+//    boolean[] genAllViews = { false, true };
 //    boolean[] genAllViews = { true, false };
-//    boolean[] genAllViews = { true };
+    boolean[] genAllViews = { false };
 
     /** comment this if we want to test using the big model */
 //    numberOfClients = 1; // number of clients subscribed to Picto Web's STOMP server.
 //    numberOfIteration = 3; // Number of iteration measuring for each number of affected views
 //    MODEL_ORIGINAL = "/java/java.small.xmi";
 //    MODEL_ORIGINAL = "/java/java.medium.xmi";
-    MODEL_ORIGINAL = "/java/java.xx.big.xmi";
+//    MODEL_ORIGINAL = "/java/java.xx.big.xmi";
 //    MODEL_ORIGINAL = "/java/java.x.big.xmi";
 //    MODEL_ORIGINAL = "/java/java.pos.xmi";
 

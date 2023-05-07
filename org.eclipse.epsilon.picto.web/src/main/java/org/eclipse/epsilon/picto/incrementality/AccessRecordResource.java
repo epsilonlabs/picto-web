@@ -9,29 +9,28 @@ import org.eclipse.epsilon.picto.incrementality.IncrementalLazyEgxModule.Increme
 
 public interface AccessRecordResource {
 
-  public void add(AccessRecord access);
+	public void add(AccessRecord access);
 
-  public List<AccessRecord> getIncrementalRecords();
+	public List<AccessRecord> getIncrementalRecords();
 
-  public void printIncrementalRecords();
+	public void printIncrementalRecords();
 
-  public void updateStatusToProcessed(Collection<String> paths);
+	public void updateStatusToProcessed(Collection<String> paths);
 
-  public Set<String> getInvalidatedViewPaths(List<IncrementalLazyGenerationRuleContentPromise> promises,
-      EgxModule module);
+	public Set<String> getInvalidatedViewPaths(List<IncrementalLazyGenerationRuleContentPromise> promises,
+			EgxModule module);
 
-  public void clear();
+	public void clear();
+	
+	public void clean();
 
-  public void updatePath(String modulePath, String ruleName, String contextResourceUri, String contextObjectId,
-      String path);
+	public void updatePath(String modulePath, String ruleName, String contextResourceUri, String contextObjectId,
+			String path);
 
-  public boolean getPathStatus(String pathString);
+	public boolean getPathStatus(String pathString);
 
-  public int size();
+	public int size();
 
-  /**
-   * @param currentPropertyAccesses
-   */
-  public void addAll(List<AccessRecord> currentPropertyAccesses);
+	public void addAll(List<AccessRecord> currentPropertyAccesses);
 
 }

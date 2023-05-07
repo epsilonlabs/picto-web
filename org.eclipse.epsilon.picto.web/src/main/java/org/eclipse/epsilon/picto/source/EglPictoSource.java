@@ -360,7 +360,6 @@ public abstract class EglPictoSource implements PictoSource {
 	}
 	
 	protected IPath waitForPath(IEditorPart editorPart) {
-		// TODO FIXME : Why is this not using wait / notify mechanism?
 		int attempts = 0;
 		int maxAttempts = 50;
 		IPath iPath = getPath(editorPart);

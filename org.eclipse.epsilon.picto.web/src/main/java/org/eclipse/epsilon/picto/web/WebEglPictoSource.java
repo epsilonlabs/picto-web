@@ -73,123 +73,123 @@ import com.fasterxml.jackson.databind.ObjectMapper;
  */
 public class WebEglPictoSource extends EglPictoSource {
 
-  public static boolean generateAll1stTime = true; // true for first time running
+	public static boolean generateAll1stTime = true; // true for first time running
 
-  public Set<String> generatePromises(String modifiedFilePath, PictoProject pictoProject) throws Exception {
-    return this.generatePromises(modifiedFilePath, pictoProject, false);
-  }
+	public Set<String> generatePromises(String modifiedFilePath, PictoProject pictoProject) throws Exception {
+		return this.generatePromises(modifiedFilePath, pictoProject, false);
+	}
 
-  /***
-   * This method is executed when a file associated with a Picto file is modified,
-   * Picto Web is accessed for the first time. The method generate Promises, which
-   * contain references to EGX rules, EGL templates, and models. The final views
-   * haven't been generated yet. When the promises are executed, they generate the
-   * final views displayed to users.
-   * 
-   * @param modifiedFilePath The path to the modified file.
-   * @param pictoProject     The PictoProject, a concept that .
-   * @param fromFileWatcher  Indicating if the the method is executed by the
-   *                         FileWatcher. False means the method is triggered by a
-   *                         request from a client (e.g., when Picto Web is
-   *                         accessed for the first time), not from file
-   *                         modification.
-   * @return The paths affected by the modification.
-   * @throws Exception
-   */
-  @SuppressWarnings({ "deprecation", "null" })
-  public Set<String> generatePromises(String modifiedFilePath, PictoProject pictoProject, boolean fromFileWatcher)
-      throws Exception {
-    long loadingStartTime = System.currentTimeMillis();
+	/***
+	 * This method is executed when a file associated with a Picto file is modified,
+	 * Picto Web is accessed for the first time. The method generate Promises, which
+	 * contain references to EGX rules, EGL templates, and models. The final views
+	 * haven't been generated yet. When the promises are executed, they generate the
+	 * final views displayed to users.
+	 * 
+	 * @param modifiedFilePath The path to the modified file.
+	 * @param pictoProject     The PictoProject, a concept that .
+	 * @param fromFileWatcher  Indicating if the the method is executed by the
+	 *                         FileWatcher. False means the method is triggered by a
+	 *                         request from a client (e.g., when Picto Web is
+	 *                         accessed for the first time), not from file
+	 *                         modification.
+	 * @return The paths affected by the modification.
+	 * @throws Exception
+	 */
+	@SuppressWarnings({ "deprecation", "null" })
+	public Set<String> generatePromises(String modifiedFilePath, PictoProject pictoProject, boolean fromFileWatcher)
+			throws Exception {
+		long loadingStartTime = System.currentTimeMillis();
 //    PerformanceRecorder.startTime = loadingStartTime;
 
-    Set<String> modifiedViewContents = new HashSet<>();
-    try {
+		Set<String> modifiedViewContents = new HashSet<>();
+		try {
 
-      PictoView pictoView = new PictoView();
+			PictoView pictoView = new PictoView();
 
-      File pictoFile = pictoProject.getPictoFile();
-      String pictoFilePath = pictoFile.getAbsolutePath()
-          .replace(new File(PictoApplication.WORKSPACE).getAbsolutePath(), "").replace("\\", "/");
+			File pictoFile = pictoProject.getPictoFile();
+			String pictoFilePath = pictoFile.getAbsolutePath()
+					.replace(new File(PictoApplication.WORKSPACE).getAbsolutePath(), "").replace("\\", "/");
 
-      ViewTree rootViewTree = pictoView.getViewTree();
+			ViewTree rootViewTree = pictoView.getViewTree();
 
-      PromiseViewCache viewContentCache = FileViewContentCache.addPictoFile(pictoFilePath);
-      AccessRecordResource accessRecordResource = FileViewContentCache.createAccessRecordResource(pictoFilePath);
+			PromiseViewCache viewContentCache = FileViewContentCache.addPictoFile(pictoFilePath);
+			AccessRecordResource accessRecordResource = FileViewContentCache.createAccessRecordResource(pictoFilePath);
 
-      PerformanceRecorder.accessRecordResource = accessRecordResource;
+			PerformanceRecorder.accessRecordResource = accessRecordResource;
 
-      Picto picto = this.getRenderingMetadata(pictoFile);
+			Picto picto = this.getRenderingMetadata(pictoFile);
 
-      if (picto != null) {
+			if (picto != null) {
 
-        // Define the EgxModule.
-        IEolModule module;
-        if (picto.getFormat() == null)
-          picto.setFormat("egx");
-        if ("egx".equals(picto.getFormat())) {
-          module = new IncrementalLazyEgxModule(accessRecordResource);
-          // ((IncrementalLazyEgxModule) module).getContext().setParallelism(32);
-        } else {
-          module = new EglTemplateFactoryModuleAdapter(new EglFileGeneratingTemplateFactory());
-        }
+				// Define the EgxModule.
+				IEolModule module;
+				if (picto.getFormat() == null)
+					picto.setFormat("egx");
+				if ("egx".equals(picto.getFormat())) {
+					module = new IncrementalLazyEgxModule(accessRecordResource);
+					// ((IncrementalLazyEgxModule) module).getContext().setParallelism(32);
+				} else {
+					module = new EglTemplateFactoryModuleAdapter(new EglFileGeneratingTemplateFactory());
+				}
 
-        // Get the transformation context.
-        IEolContext context = module.getContext();
+				// Get the transformation context.
+				IEolContext context = module.getContext();
 
-        // Get all parameters from the Picto file.
-        FrameStack fs = context.getFrameStack();
-        for (Parameter customParameter : picto.getParameters()) {
-          fs.put(new Variable(customParameter.getName(), getValue(customParameter), EolAnyType.Instance));
-        }
+				// Get all parameters from the Picto file.
+				FrameStack fs = context.getFrameStack();
+				for (Parameter customParameter : picto.getParameters()) {
+					fs.put(new Variable(customParameter.getName(), getValue(customParameter), EolAnyType.Instance));
+				}
 
-        // Parse the EgxModule.
-        URI transformationUri = null;
-        if (picto.getTransformation() != null) {
-          transformationUri = new File(
-              pictoFile.getParentFile().getAbsolutePath() + File.separator + picto.getTransformation()).toURI();
-          module.parse(transformationUri);
-        } else {
-          module.parse("");
-        }
+				// Parse the EgxModule.
+				URI transformationUri = null;
+				if (picto.getTransformation() != null) {
+					transformationUri = new File(
+							pictoFile.getParentFile().getAbsolutePath() + File.separator + picto.getTransformation()).toURI();
+					module.parse(transformationUri);
+				} else {
+					module.parse("");
+				}
 
-        // load all models defined in the Picto file
-        File mainModelFile = null;
-        for (Model toBeLoadedModel : picto.getModels()) {
-          File modelFile = null;
-          File metamodelFile = null;
-          String modelName = null;
-          String metamodelUri = null;
-          for (Parameter param : toBeLoadedModel.getParameters()) {
-            if (param.getName().equals(EmfModel.PROPERTY_NAME)) {
-              modelName = (String) param.getValue();
-            } else if (param.getName().equals(EmfModel.PROPERTY_MODEL_FILE)) {
-              modelFile = new File(pictoFile.getParent() + File.separator + param.getFile());
-              if (mainModelFile == null)
-                mainModelFile = modelFile;
-            } else if (param.getName().equals(EmfModel.PROPERTY_METAMODEL_FILE)) {
-              metamodelFile = new File(pictoFile.getParent() + File.separator + param.getFile());
-            } else if (param.getName().equals(EmfModel.PROPERTY_METAMODEL_URI)) {
-              metamodelUri = (String) param.getValue();
-            }
-          }
-          IModel loadedModel = loadModel(modelName, metamodelUri, modelFile, metamodelFile);
-          models.add(loadedModel);
-        }
+				// load all models defined in the Picto file
+				File mainModelFile = null;
+				for (Model toBeLoadedModel : picto.getModels()) {
+					File modelFile = null;
+					File metamodelFile = null;
+					String modelName = null;
+					String metamodelUri = null;
+					for (Parameter param : toBeLoadedModel.getParameters()) {
+						if (param.getName().equals(EmfModel.PROPERTY_NAME)) {
+							modelName = (String) param.getValue();
+						} else if (param.getName().equals(EmfModel.PROPERTY_MODEL_FILE)) {
+							modelFile = new File(pictoFile.getParent() + File.separator + param.getFile());
+							if (mainModelFile == null)
+								mainModelFile = modelFile;
+						} else if (param.getName().equals(EmfModel.PROPERTY_METAMODEL_FILE)) {
+							metamodelFile = new File(pictoFile.getParent() + File.separator + param.getFile());
+						} else if (param.getName().equals(EmfModel.PROPERTY_METAMODEL_URI)) {
+							metamodelUri = (String) param.getValue();
+						}
+					}
+					IModel loadedModel = loadModel(modelName, metamodelUri, modelFile, metamodelFile);
+					models.add(loadedModel);
+				}
 
-        context.getModelRepository().addModels(models);
+				context.getModelRepository().addModels(models);
 
-        // LOADING TIME
-        /** Calculate the loading time from a change on a file to getting promises **/
-        PerformanceRecorder.loadingTime = System.currentTimeMillis() - loadingStartTime;
-        PerformanceRecord record = new PerformanceRecord(PerformanceRecorder.genenerateAll,
-            PerformanceRecorder.generateAlways, PerformanceRecorder.globalNumberOfAffectedViews,
-            PerformanceRecorder.globalNumberIteration, "Server", "No Path", PerformanceRecorder.loadingTime, 0,
-            PerformanceTestType.LOADING_TIME, PerformanceRecorder.accessRecordResourceSize());
-        PerformanceRecorder.record(record);
+				// LOADING TIME
+				/** Calculate the loading time from a change on a file to getting promises **/
+				PerformanceRecorder.loadingTime = System.currentTimeMillis() - loadingStartTime;
+				PerformanceRecord record = new PerformanceRecord(PerformanceRecorder.genenerateAll,
+						PerformanceRecorder.generateAlways, PerformanceRecorder.globalNumberOfAffectedViews,
+						PerformanceRecorder.globalNumberIteration, "Server", "No Path", PerformanceRecorder.loadingTime, 0,
+						PerformanceTestType.LOADING_TIME, PerformanceRecorder.accessRecordResourceSize());
+				PerformanceRecorder.record(record);
 
-        if ("egx".equals(picto.getFormat())) {
+				if ("egx".equals(picto.getFormat())) {
 
-          Set<String> invalidatedViewPaths = new HashSet<>();
+					Set<String> invalidatedViewPaths = new HashSet<>();
 
 //          Thread.sleep(1000);
 //          start1 = System.currentTimeMillis();
@@ -203,645 +203,646 @@ public class WebEglPictoSource extends EglPictoSource {
 //          System.out.println(" Done: " + (System.currentTimeMillis() - start1) + " ms");
 //          System.out.println();
 
-          // PROMISE TIME
-          long promiseStartTime = System.currentTimeMillis();
-          List<IncrementalLazyGenerationRuleContentPromise> promises = generatePromises(picto, module, context, fs);
-          PerformanceRecorder.promiseTime = System.currentTimeMillis() - promiseStartTime;
-          if (!PictoApplication.isNonIncremental())
-            PerformanceRecorder.promiseTime -= ((IncrementalLazyEgxModule) module).getPromiseDetectionTime();
-          record = new PerformanceRecord(PerformanceRecorder.genenerateAll, PerformanceRecorder.generateAlways,
-              PerformanceRecorder.globalNumberOfAffectedViews, PerformanceRecorder.globalNumberIteration, "Server",
-              "No Path", PerformanceRecorder.promiseTime, 0, PerformanceTestType.PROMISE_TIME,
-              PerformanceRecorder.accessRecordResourceSize());
-          PerformanceRecorder.record(record);
-          System.out.println("Done");
-          System.out.println();
+					// PROMISE TIME
+					long promiseStartTime = System.currentTimeMillis();
+					List<IncrementalLazyGenerationRuleContentPromise> promises = generatePromises(picto, module, context, fs);
+					PerformanceRecorder.promiseTime = System.currentTimeMillis() - promiseStartTime;
+					if (!PictoApplication.isNonIncremental())
+						PerformanceRecorder.promiseTime -= ((IncrementalLazyEgxModule) module).getPromiseDetectionTime();
+					record = new PerformanceRecord(PerformanceRecorder.genenerateAll, PerformanceRecorder.generateAlways,
+							PerformanceRecorder.globalNumberOfAffectedViews, PerformanceRecorder.globalNumberIteration, "Server",
+							"No Path", PerformanceRecorder.promiseTime, 0, PerformanceTestType.PROMISE_TIME,
+							PerformanceRecorder.accessRecordResourceSize());
+					PerformanceRecorder.record(record);
+					System.out.println("Done");
+					System.out.println();
 
-          // WAITING ...
-          long start2 = System.currentTimeMillis();
-          System.out.print("Waiting AccessGraphResource task executor to complete ");
-          while (AccessGraphResource.getExecutorService().getQueue().size() > 0
-              && AccessGraphResource.getExecutorService().getActiveCount() > 0) {
-            System.out.print(AccessGraphResource.getExecutorService().getQueue().size());
-            System.out.print(".");
-            Thread.sleep(1000);
-          }
-          System.out.println(" Done: " + (System.currentTimeMillis() - start2) + " ms");
-          System.out.println();
+					// WAITING ...
+					long start2 = System.currentTimeMillis();
+					System.out.print("Waiting AccessGraphResource task executor to complete ");
+					while (AccessGraphResource.getExecutorService().getQueue().size() > 0
+							&& AccessGraphResource.getExecutorService().getActiveCount() > 0) {
+						System.out.print(AccessGraphResource.getExecutorService().getQueue().size());
+						System.out.print(".");
+						Thread.sleep(1000);
+					}
+					System.out.println(" Done: " + (System.currentTimeMillis() - start2) + " ms");
+					System.out.println();
 
-          // if picto generation is not non-incremental = selective (re)generation.
-          if (!PictoApplication.isNonIncremental()) {
-            // DETECTION TIME
-            System.out.print("Detecting invalidated views ... ");
-            long detectionStartTime = System.currentTimeMillis();
-            invalidatedViewPaths.addAll(accessRecordResource.getInvalidatedViewPaths(promises, (EgxModule) module));
-            /** Calculate the detection time of invalidated views **/
-            PerformanceRecorder.detectionTime = System.currentTimeMillis() - detectionStartTime;
-            PerformanceRecorder.detectionTime += ((IncrementalLazyEgxModule) module).getPromiseDetectionTime();
-            PerformanceRecord r = new PerformanceRecord(PerformanceRecorder.genenerateAll,
-                PerformanceRecorder.generateAlways, PerformanceRecorder.globalNumberOfAffectedViews,
-                PerformanceRecorder.globalNumberIteration, "Server", "No Path", PerformanceRecorder.detectionTime, 0,
-                PerformanceTestType.DETECTION_TIME, PerformanceRecorder.accessRecordResourceSize());
-            PerformanceRecorder.record(r);
-            System.out.print("Done");
-          }
+					// if picto generation is not non-incremental = selective (re)generation.
+					if (!PictoApplication.isNonIncremental()) {
+						// DETECTION TIME
+						System.out.print("Detecting invalidated views ... ");
+						long detectionStartTime = System.currentTimeMillis();
+						invalidatedViewPaths.addAll(accessRecordResource.getInvalidatedViewPaths(promises, (EgxModule) module));
+						/** Calculate the detection time of invalidated views **/
+						PerformanceRecorder.detectionTime = System.currentTimeMillis() - detectionStartTime;
+						PerformanceRecorder.detectionTime += ((IncrementalLazyEgxModule) module).getPromiseDetectionTime();
+						PerformanceRecord r = new PerformanceRecord(PerformanceRecorder.genenerateAll,
+								PerformanceRecorder.generateAlways, PerformanceRecorder.globalNumberOfAffectedViews,
+								PerformanceRecorder.globalNumberIteration, "Server", "No Path", PerformanceRecorder.detectionTime, 0,
+								PerformanceTestType.DETECTION_TIME, PerformanceRecorder.accessRecordResourceSize());
+						PerformanceRecorder.record(r);
+						System.out.print("Done");
+					}
 
-          PerformanceRecorder.initialisationTime = System.currentTimeMillis() - loadingStartTime;
-          record = new PerformanceRecord(PerformanceRecorder.genenerateAll, PerformanceRecorder.generateAlways,
-              PerformanceRecorder.globalNumberOfAffectedViews, PerformanceRecorder.globalNumberIteration, "Server",
-              "No Path", PerformanceRecorder.initialisationTime, 0, PerformanceTestType.INIT_TIME,
-              PerformanceRecorder.accessRecordResourceSize());
-          PerformanceRecorder.record(record);
+					PerformanceRecorder.initialisationTime = System.currentTimeMillis() - loadingStartTime;
+					record = new PerformanceRecord(PerformanceRecorder.genenerateAll, PerformanceRecorder.generateAlways,
+							PerformanceRecorder.globalNumberOfAffectedViews, PerformanceRecorder.globalNumberIteration, "Server",
+							"No Path", PerformanceRecorder.initialisationTime, 0, PerformanceTestType.INIT_TIME,
+							PerformanceRecorder.accessRecordResourceSize());
+					PerformanceRecorder.record(record);
 
-          /** loop through the content promises of rules **/
-          // System.out.println("\nGENERATING VIEWS: ");
-          // generate view for each promises
-          System.out.println("Total " + promises.size() + " promises are to be processed");
-          int num = 0;
-          for (IncrementalLazyGenerationRuleContentPromise promise : promises) {
+					/** loop through the content promises of rules **/
+					// System.out.println("\nGENERATING VIEWS: ");
+					// generate view for each promises
+					System.out.println("Total " + promises.size() + " promises are to be processed");
+					int num = 0;
+					for (IncrementalLazyGenerationRuleContentPromise promise : promises) {
 
-            long start = System.currentTimeMillis();
+						long start = System.currentTimeMillis();
 
-            String pathString = IncrementalityUtil.getPath(promise);
-            System.out.print(++num + "," + promises.size() + "," + pathString);
+						String pathString = IncrementalityUtil.getPath(promise);
+						System.out.print(++num + "," + promises.size() + "," + pathString);
 
 //            System.out.print("Processing " + ++num + " of " + promises.size() + " - " + pathString + " ... ");
 
-            ViewTree viewTree = generateViewTree(rootViewTree, promise);
+						ViewTree viewTree = generateViewTree(rootViewTree, promise);
 
-            // Replace the old promises with the new ones. Replacement is required to ensure
-            // the same instances of resources, egx, and templates across the promises.
-            PromiseView promiseView = new PromiseView(pictoFilePath, pictoView, viewTree);
-            PromiseView oldPromiseView = viewContentCache.putPromiseView(promiseView);
+						// Replace the old promises with the new ones. Replacement is required to ensure
+						// the same instances of resources, egx, and templates across the promises.
+						PromiseView promiseView = new PromiseView(pictoFilePath, pictoView, viewTree);
+						PromiseView oldPromiseView = viewContentCache.putPromiseView(promiseView);
 
-            // if the generation is selective, copy the old contents to the new ones
-            // because we don't want to regenerate the views as they are same.
-            // although the promise views
-            if (!PictoApplication.isNonIncremental() && oldPromiseView != null) {
-              promiseView.setHasBeenGenerated(oldPromiseView.hasBeenGenerated());
-              promiseView.setEmptyViewContent(oldPromiseView.getEmptyViewContent());
+						// if the generation is selective, copy the old contents to the new ones
+						// because we don't want to regenerate the views as they are same.
+						// although the promise views
+						if (!PictoApplication.isNonIncremental() && oldPromiseView != null) {
+							promiseView.setHasBeenGenerated(oldPromiseView.hasBeenGenerated());
+							promiseView.setEmptyViewContent(oldPromiseView.getEmptyViewContent());
 //              promiseView.setViewContent(oldPromiseView.getViewContent());
-            }
+						}
 
-            // Check if the path should be processed to generated new view.
-            // Skip to next promise if path is not in the invalidatedViewPaths.
-            if (!generateAll1stTime && !PictoApplication.isNonIncremental()) {
-              if (!invalidatedViewPaths.contains(pathString)) {
-                System.out.print(",SKIPPED");
-                System.out.println("," + (System.currentTimeMillis() - start));
-                continue;
-              }
-            }
+						// Check if the path should be processed to generated new view.
+						// Skip to next promise if path is not in the invalidatedViewPaths.
+						if (!generateAll1stTime && !PictoApplication.isNonIncremental()) {
+							if (!invalidatedViewPaths.contains(pathString)) {
+								System.out.print(",SKIPPED");
+								System.out.println("," + (System.currentTimeMillis() - start));
+								continue;
+							}
+						}
 
-            // set the setHasBeenGenerated to false so that the invalidated view should be
-            // (re)generated when requested or the view is created for the first time
-            promiseView.setHasBeenGenerated(false);
+						// set the setHasBeenGenerated to false so that the invalidated view should be
+						// (re)generated when requested or the view is created for the first time
+						promiseView.setHasBeenGenerated(false);
 
-            // Immediately generates the final view of a new, recently added view
-            // into the modified contents to help construct accessresource which is used
-            // to identify views affected by the last change.
+						// Immediately generates the final view of a new, recently added view
+						// into the modified contents to help construct accessresource which is used
+						// to identify views affected by the last change.
 //            boolean isNew = accessRecordResource.getPathStatus(pathString);
 //            if (isNew) {
-            if (generateAll1stTime) {
-              Thread t = new Thread("Generate-" + promiseView.getPath()) {
-                public void run() {
-                  try {
-                    promiseView.getViewContent(null);
-                    promiseView.setHasBeenGenerated(false);
+						if (generateAll1stTime) {
+							Thread t = new Thread("Generate-" + promiseView.getPath()) {
+								public void run() {
+									try {
+										promiseView.getViewContent(null);
+										promiseView.setHasBeenGenerated(false);
 //                    String x = promiseView.getViewContent(null);
 //                    System.out.println(x);
-                  } catch (Exception e) {
-                    e.printStackTrace();
-                  }
-                }
-              };
-              t.start();
-            }
+									} catch (Exception e) {
+										e.printStackTrace();
+									}
+								}
+							};
+							t.start();
+						}
 //            }
-            modifiedViewContents.add(pathString);
+						modifiedViewContents.add(pathString);
 
-            System.out.print(",PROCESSED");
-            System.out.println("," + (System.currentTimeMillis() - start));
-          }
+						System.out.print(",PROCESSED");
+						System.out.println("," + (System.currentTimeMillis() - start));
+					}
 
 //          accessRecordResource.printIncrementalRecords();
 //          accessRecordResource.updateStatusToProcessed(invalidatedViewPaths);
-          generateAll1stTime = false;
 
-          // System.out.println();
-        }
-        // if it's other than EGX transformation, use static content promise.
-        else {
-          String content = module.execute() + "";
-          rootViewTree = new ViewTree();
-          rootViewTree.setPromise(new StaticContentPromise(content));
-          rootViewTree.setFormat(picto.getFormat());
-        }
+					generateAll1stTime = false;
 
-        // Handle static views (i.e. where source != null), add the custom view loaded
-        // from a file
-        // defined in the picto file
-        handleStaticViews(modifiedViewContents, rootViewTree, pictoFilePath, viewContentCache, picto, module,
-            pictoView);
+					// System.out.println();
+				}
+				// if it's other than EGX transformation, use static content promise.
+				else {
+					String content = module.execute() + "";
+					rootViewTree = new ViewTree();
+					rootViewTree.setPromise(new StaticContentPromise(content));
+					rootViewTree.setFormat(picto.getFormat());
+				}
 
-        // Handle patches for existing views (i.e. where source == null and type/rule ==
-        // null)
-        handlePatchesForExistingViews(rootViewTree, picto);
+				// Handle static views (i.e. where source != null), add the custom view loaded
+				// from a file
+				// defined in the picto file
+				handleStaticViews(modifiedViewContents, rootViewTree, pictoFilePath, viewContentCache, picto, module,
+						pictoView);
 
-        // set URIs of rootViewTree
-        if (transformationUri != null) {
-          rootViewTree.getBaseUris().add(transformationUri);
-          rootViewTree.getBaseUris().add(transformationUri.resolve("./icons/"));
-        }
-        rootViewTree.getBaseUris().add(new URI(mainModelFile.toURI().toString()));
+				// Handle patches for existing views (i.e. where source == null and type/rule ==
+				// null)
+				handlePatchesForExistingViews(rootViewTree, picto);
 
-        // generate JSON of the JsTree library (the tree panel on the client-side web
-        // browser)
-        PictoResponse pictoResponse = generateJsTreeData(pictoFilePath, rootViewTree);
-        pictoResponse.setFilename(pictoFilePath);
-        PromiseView promiseView = new PromiseView(pictoResponse);
-        viewContentCache.putPromiseView(promiseView);
-        modifiedViewContents.add(promiseView.getPath());
+				// set URIs of rootViewTree
+				if (transformationUri != null) {
+					rootViewTree.getBaseUris().add(transformationUri);
+					rootViewTree.getBaseUris().add(transformationUri.resolve("./icons/"));
+				}
+				rootViewTree.getBaseUris().add(new URI(mainModelFile.toURI().toString()));
 
-      } else {
-        rootViewTree = createEmptyViewTree();
-        PictoResponse pictoResponse = generateJsTreeData(pictoFilePath, rootViewTree);
-        pictoResponse.setFilename(pictoFilePath);
-        PromiseView promiseView = new PromiseView(pictoResponse);
-        modifiedViewContents.add(promiseView.getPath());
-      }
+				// generate JSON of the JsTree library (the tree panel on the client-side web
+				// browser)
+				PictoResponse pictoResponse = generateJsTreeData(pictoFilePath, rootViewTree);
+				pictoResponse.setFilename(pictoFilePath);
+				PromiseView promiseView = new PromiseView(pictoResponse);
+				viewContentCache.putPromiseView(promiseView);
+				modifiedViewContents.add(promiseView.getPath());
 
-    } catch (
+			} else {
+				rootViewTree = createEmptyViewTree();
+				PictoResponse pictoResponse = generateJsTreeData(pictoFilePath, rootViewTree);
+				pictoResponse.setFilename(pictoFilePath);
+				PromiseView promiseView = new PromiseView(pictoResponse);
+				modifiedViewContents.add(promiseView.getPath());
+			}
 
-    Exception ex) {
-      ex.printStackTrace();
-    }
+			// remove deleted paths and properties
+			accessRecordResource.clean();
+		} catch (Exception ex) {
+			ex.printStackTrace();
+		}
 
-    // Returning the modifiedViewContents to external components
-    PictoApplication.getPromisesGenerationListener().onGenerated(modifiedViewContents);
+		// Returning the modifiedViewContents to external components
+		PictoApplication.getPromisesGenerationListener().onGenerated(modifiedViewContents);
 
-    return modifiedViewContents;
+		return modifiedViewContents;
 
-  }
+	}
 
-  @SuppressWarnings("unchecked")
-  public List<IncrementalLazyGenerationRuleContentPromise> generatePromises(Picto picto, IEolModule module,
-      IEolContext context, FrameStack fs) throws EolRuntimeException {
-    /** PROPERTY ACCESS RECORDS **/
-    System.out.print("Creating Promises ... ");
-    List<IncrementalLazyGenerationRuleContentPromise> promises = (List<IncrementalLazyGenerationRuleContentPromise>) module
-        .execute();
-    /**
-     * the handleDynamicViews will add the generated lazy contents (tagged
-     * with @lazy in the EGX) to instances to handled later in the next loop
-     **/
-    promises.addAll(handleCustomViews(picto, module, context, fs));
-    return promises;
-  }
+	@SuppressWarnings("unchecked")
+	public List<IncrementalLazyGenerationRuleContentPromise> generatePromises(Picto picto, IEolModule module,
+			IEolContext context, FrameStack fs) throws EolRuntimeException {
+		/** PROPERTY ACCESS RECORDS **/
+		System.out.print("Creating Promises ... ");
+		List<IncrementalLazyGenerationRuleContentPromise> promises = (List<IncrementalLazyGenerationRuleContentPromise>) module
+				.execute();
+		/**
+		 * the handleDynamicViews will add the generated lazy contents (tagged
+		 * with @lazy in the EGX) to instances to handled later in the next loop
+		 **/
+		promises.addAll(handleCustomViews(picto, module, context, fs));
+		return promises;
+	}
 
-  /***
-   * The method to handle patches for existing views.
-   * 
-   * @param rootViewTree
-   * @param renderingMetadata
-   */
-  private void handlePatchesForExistingViews(ViewTree rootViewTree, Picto renderingMetadata) {
-    for (CustomView customView : renderingMetadata.getCustomViews().stream()
-        .filter(cv -> cv.getSource() == null && cv.getType() == null).collect(Collectors.toList())) {
-      ArrayList<String> path = new ArrayList<>();
-      path.add(rootViewTree.getName());
-      path.addAll(customView.getPath());
+	/***
+	 * The method to handle patches for existing views.
+	 * 
+	 * @param rootViewTree
+	 * @param renderingMetadata
+	 */
+	private void handlePatchesForExistingViews(ViewTree rootViewTree, Picto renderingMetadata) {
+		for (CustomView customView : renderingMetadata.getCustomViews().stream()
+				.filter(cv -> cv.getSource() == null && cv.getType() == null).collect(Collectors.toList())) {
+			ArrayList<String> path = new ArrayList<>();
+			path.add(rootViewTree.getName());
+			path.addAll(customView.getPath());
 
-      ViewTree existingView = rootViewTree.forPath(path);
+			ViewTree existingView = rootViewTree.forPath(path);
 
-      if (existingView != null) {
-        if (customView.getIcon() != null)
-          existingView.setIcon(customView.getIcon());
-        if (customView.getFormat() != null)
-          existingView.setFormat(customView.getFormat());
-        if (customView.getPosition() != null)
-          existingView.setPosition(customView.getPosition());
+			if (existingView != null) {
+				if (customView.getIcon() != null)
+					existingView.setIcon(customView.getIcon());
+				if (customView.getFormat() != null)
+					existingView.setFormat(customView.getFormat());
+				if (customView.getPosition() != null)
+					existingView.setPosition(customView.getPosition());
 
-        existingView.getPatches().addAll(customView.getPatches());
-        if (customView.eIsSet(PictoPackage.eINSTANCE.getCustomView_Layers())) {
-          Collection<?> layers = customView.getLayers();
-          for (Layer layer : existingView.getLayers()) {
-            layer.setActive(layers.contains(layer.getId()));
-          }
-        }
-      }
+				existingView.getPatches().addAll(customView.getPatches());
+				if (customView.eIsSet(PictoPackage.eINSTANCE.getCustomView_Layers())) {
+					Collection<?> layers = customView.getLayers();
+					for (Layer layer : existingView.getLayers()) {
+						layer.setActive(layers.contains(layer.getId()));
+					}
+				}
+			}
 
 //      FileViewContentCache.cacheViewTree(existingView.getPathString(), existingView);
-    }
-  }
+		}
+	}
 
-  /***
-   * The method to handle static view, the view loaded from a HTML file.
-   * 
-   * @param modifiedViewContents
-   * @param rootViewTree
-   * @param pictoFilePath
-   * @param viewContentCache
-   * @param picto
-   * @param module
-   * @param pictoView
-   * @throws Exception
-   */
-  private void handleStaticViews(Set<String> modifiedViewContents, ViewTree rootViewTree, String pictoFilePath,
-      PromiseViewCache viewContentCache, Picto picto, IEolModule module, PictoView pictoView) throws Exception {
-    for (CustomView customView : picto.getCustomViews().stream().filter(cv -> cv.getSource() != null)
-        .collect(Collectors.toList())) {
-      String format = customView.getFormat() != null ? customView.getFormat() : getDefaultFormat();
-      String icon = customView.getIcon() != null ? customView.getIcon() : getDefaultIcon();
+	/***
+	 * The method to handle static view, the view loaded from a HTML file.
+	 * 
+	 * @param modifiedViewContents
+	 * @param rootViewTree
+	 * @param pictoFilePath
+	 * @param viewContentCache
+	 * @param picto
+	 * @param module
+	 * @param pictoView
+	 * @throws Exception
+	 */
+	private void handleStaticViews(Set<String> modifiedViewContents, ViewTree rootViewTree, String pictoFilePath,
+			PromiseViewCache viewContentCache, Picto picto, IEolModule module, PictoView pictoView) throws Exception {
+		for (CustomView customView : picto.getCustomViews().stream().filter(cv -> cv.getSource() != null)
+				.collect(Collectors.toList())) {
+			String format = customView.getFormat() != null ? customView.getFormat() : getDefaultFormat();
+			String icon = customView.getIcon() != null ? customView.getIcon() : getDefaultIcon();
 
-      rootViewTree.add(customView.getPath(),
-          new ViewTree(
-              new StaticContentPromise(new File(
-                  new File(customView.eResource().getURI().toFileString()).getParentFile(), customView.getSource())),
-              format, icon, customView.getPosition(), customView.getPatches(), Collections.emptyList()));
+			rootViewTree.add(customView.getPath(),
+					new ViewTree(
+							new StaticContentPromise(new File(
+									new File(customView.eResource().getURI().toFileString()).getParentFile(), customView.getSource())),
+							format, icon, customView.getPosition(), customView.getPatches(), Collections.emptyList()));
 
-      ViewTree vt = rootViewTree.getChildren().get(rootViewTree.getChildren().size() - 1);
+			ViewTree vt = rootViewTree.getChildren().get(rootViewTree.getChildren().size() - 1);
 
-      PromiseView promiseView = new PromiseView(pictoFilePath, pictoView, vt);
-      viewContentCache.putPromiseView(promiseView.getPath(), promiseView);
-      modifiedViewContents.add(promiseView.getPath());
-    }
-  }
+			PromiseView promiseView = new PromiseView(pictoFilePath, pictoView, vt);
+			viewContentCache.putPromiseView(promiseView.getPath(), promiseView);
+			modifiedViewContents.add(promiseView.getPath());
+		}
+	}
 
-  /***
-   * The method to handle custom views defined in the Picto file.
-   * 
-   * @param picto
-   * @param module
-   * @param context
-   * @param fs
-   * @return
-   * @throws EolRuntimeException
-   */
-  private List<IncrementalLazyGenerationRuleContentPromise> handleCustomViews(Picto picto, IEolModule module,
-      IEolContext context, FrameStack fs) throws EolRuntimeException {
-    List<IncrementalLazyGenerationRuleContentPromise> customPromises = new ArrayList<>();
-    List<CustomView> customViews = picto.getCustomViews().stream().filter(cv -> cv.getType() != null)
-        .collect(Collectors.toList());
-    for (CustomView customView : customViews) {
+	/***
+	 * The method to handle custom views defined in the Picto file.
+	 * 
+	 * @param picto
+	 * @param module
+	 * @param context
+	 * @param fs
+	 * @return
+	 * @throws EolRuntimeException
+	 */
+	private List<IncrementalLazyGenerationRuleContentPromise> handleCustomViews(Picto picto, IEolModule module,
+			IEolContext context, FrameStack fs) throws EolRuntimeException {
+		List<IncrementalLazyGenerationRuleContentPromise> customPromises = new ArrayList<>();
+		List<CustomView> customViews = picto.getCustomViews().stream().filter(cv -> cv.getType() != null)
+				.collect(Collectors.toList());
+		for (CustomView customView : customViews) {
 
-      IncrementalLazyGenerationRule generationRule = ((IncrementalLazyEgxModule) module).getGenerationRules().stream()
-          .filter(r -> r.getName().equals(customView.getType()) && r instanceof IncrementalLazyGenerationRule)
-          .map(IncrementalLazyGenerationRule.class::cast).findFirst().orElse(null);
+			IncrementalLazyGenerationRule generationRule = ((IncrementalLazyEgxModule) module).getGenerationRules().stream()
+					.filter(r -> r.getName().equals(customView.getType()) && r instanceof IncrementalLazyGenerationRule)
+					.map(IncrementalLazyGenerationRule.class::cast).findFirst().orElse(null);
 
-      if (generationRule != null) {
-        Object source = null;
-        if (generationRule.getSourceParameter() != null) {
-          String sourceParameterName = generationRule.getSourceParameter().getName();
-          Parameter sourceParameter = customView.getParameters().stream()
-              .filter(sp -> sp.getName().equals(sourceParameterName)).findFirst().orElse(null);
-          if (sourceParameter != null) {
-            customView.getParameters().remove(sourceParameter);
-            source = sourceParameter.getValue();
-          }
-        }
+			if (generationRule != null) {
+				Object source = null;
+				if (generationRule.getSourceParameter() != null) {
+					String sourceParameterName = generationRule.getSourceParameter().getName();
+					Parameter sourceParameter = customView.getParameters().stream()
+							.filter(sp -> sp.getName().equals(sourceParameterName)).findFirst().orElse(null);
+					if (sourceParameter != null) {
+						customView.getParameters().remove(sourceParameter);
+						source = sourceParameter.getValue();
+					}
+				}
 
-        if (customView.getPath() != null)
-          customView.getParameters().add(createParameter("path", customView.getPath()));
-        if (customView.getIcon() != null)
-          customView.getParameters().add(createParameter("icon", customView.getIcon()));
-        if (customView.getFormat() != null)
-          customView.getParameters().add(createParameter("format", customView.getFormat()));
-        customView.getParameters().add(createParameter("patches", customView.getPatches()));
-        if (customView.getPosition() != null)
-          customView.getParameters().add(createParameter("position", customView.getPosition()));
-        if (customView.eIsSet(PictoPackage.eINSTANCE.getCustomView_Layers())) {
-          customView.getParameters().add(createParameter("activeLayers", customView.getLayers()));
-        }
+				if (customView.getPath() != null)
+					customView.getParameters().add(createParameter("path", customView.getPath()));
+				if (customView.getIcon() != null)
+					customView.getParameters().add(createParameter("icon", customView.getIcon()));
+				if (customView.getFormat() != null)
+					customView.getParameters().add(createParameter("format", customView.getFormat()));
+				customView.getParameters().add(createParameter("patches", customView.getPatches()));
+				if (customView.getPosition() != null)
+					customView.getParameters().add(createParameter("position", customView.getPosition()));
+				if (customView.eIsSet(PictoPackage.eINSTANCE.getCustomView_Layers())) {
+					customView.getParameters().add(createParameter("activeLayers", customView.getLayers()));
+				}
 
-        for (Parameter customViewParameter : customView.getParameters()) {
-          fs.put(new Variable(customViewParameter.getName(), getValue(customViewParameter), EolAnyType.Instance));
-        }
+				for (Parameter customViewParameter : customView.getParameters()) {
+					fs.put(new Variable(customViewParameter.getName(), getValue(customViewParameter), EolAnyType.Instance));
+				}
 
 //        ((IncrementalLazyEgxModule) module).stopRecording();
-        IncrementalLazyGenerationRuleContentPromise contentPromise = (IncrementalLazyGenerationRuleContentPromise) generationRule
-            .execute(context, source);
+				IncrementalLazyGenerationRuleContentPromise contentPromise = (IncrementalLazyGenerationRuleContentPromise) generationRule
+						.execute(context, source);
 //        ((IncrementalLazyEgxModule) module).stopRecording();
 //				WebEglPictoSource.updateIncrementalResource(module, "/" + String.join("/", customView.getPath()));
 
-        Collection<Variable> variables = contentPromise.getVariables();
+				Collection<Variable> variables = contentPromise.getVariables();
 
-        for (Parameter parameter : customView.getParameters()) {
-          Object value = getValue(parameter);
-          String paramName = parameter.getName();
+				for (Parameter parameter : customView.getParameters()) {
+					Object value = getValue(parameter);
+					String paramName = parameter.getName();
 
-          Variable variable = variables.stream().filter(v -> v.getName().equals(paramName)).findAny().orElse(null);
+					Variable variable = variables.stream().filter(v -> v.getName().equals(paramName)).findAny().orElse(null);
 
-          if (variable != null) {
-            variable.setValue(value, context);
-          } else {
-            variables.add(new Variable(paramName, value, EolAnyType.Instance, false));
-          }
-        }
-        customPromises.add(contentPromise);
-      }
-    }
-    return customPromises;
-  }
+					if (variable != null) {
+						variable.setValue(value, context);
+					} else {
+						variables.add(new Variable(paramName, value, EolAnyType.Instance, false));
+					}
+				}
+				customPromises.add(contentPromise);
+			}
+		}
+		return customPromises;
+	}
 
-  /***
-   * Generate the response containing the data for the JsTree panel on the client
-   * side.
-   * 
-   * @param filename
-   * @param viewTree
-   * @return
-   * @throws JsonProcessingException
-   */
-  private PictoResponse generateJsTreeData(String filename, ViewTree viewTree) throws JsonProcessingException {
-    JsTreeNode root = new JsTreeNode();
-    root.setPath(FileViewContentCache.PICTO_TREE);
+	/***
+	 * Generate the response containing the data for the JsTree panel on the client
+	 * side.
+	 * 
+	 * @param filename
+	 * @param viewTree
+	 * @return
+	 * @throws JsonProcessingException
+	 */
+	private PictoResponse generateJsTreeData(String filename, ViewTree viewTree) throws JsonProcessingException {
+		JsTreeNode root = new JsTreeNode();
+		root.setPath(FileViewContentCache.PICTO_TREE);
 //    root = FileViewContentCache.cacheRootJsTreeNode(filename, root);
 
-    root = FileViewContentCache.addCachedJsTreeNode(filename, viewTree.getPathString(), root);
-    
-    copyViewTreeToJsTreeData(filename, viewTree, root);
-    List<JsTreeNode> jsTreeNodes = new ArrayList<>();
-    jsTreeNodes.addAll(root.getChildren());
+		root = FileViewContentCache.addCachedJsTreeNode(filename, viewTree.getPathString(), root);
 
-    String response = new ObjectMapper().writerWithDefaultPrettyPrinter().writeValueAsString(jsTreeNodes);
+		copyViewTreeToJsTreeData(filename, viewTree, root);
+		List<JsTreeNode> jsTreeNodes = new ArrayList<>();
+		jsTreeNodes.addAll(root.getChildren());
 
-    PictoResponse pictoResponse = new PictoResponse();
-    pictoResponse.setFilename(filename);
-    pictoResponse.setPath(FileViewContentCache.PICTO_TREE);
-    pictoResponse.setType("treeview");
-    pictoResponse.setContent(response);
+		String response = new ObjectMapper().writerWithDefaultPrettyPrinter().writeValueAsString(jsTreeNodes);
 
-    return pictoResponse;
+		PictoResponse pictoResponse = new PictoResponse();
+		pictoResponse.setFilename(filename);
+		pictoResponse.setPath(FileViewContentCache.PICTO_TREE);
+		pictoResponse.setType("treeview");
+		pictoResponse.setContent(response);
 
-  }
+		return pictoResponse;
 
-  /***
-   * Copy some information from the Picto ViewTree nodes to JsTree nodes to
-   * represent the ViewTree as JsTree on the client side.
-   * 
-   * @param filename
-   * @param viewTree
-   * @param jsTreeNode
-   */
-  private void copyViewTreeToJsTreeData(String filename, ViewTree viewTree, JsTreeNode jsTreeNode) {
+	}
 
-    if (viewTree.getPathString().equals("/Social Network/Charlie")) {
-      System.console();
-    }
-    
-    String text = viewTree.getName();
-    jsTreeNode.setText(text);
-    jsTreeNode.setPath(viewTree.getPathString());
-    if (viewTree.getIcon() != null) {
-      jsTreeNode.setIcon(viewTree.getIcon());
-    }
+	/***
+	 * Copy some information from the Picto ViewTree nodes to JsTree nodes to
+	 * represent the ViewTree as JsTree on the client side.
+	 * 
+	 * @param filename
+	 * @param viewTree
+	 * @param jsTreeNode
+	 */
+	private void copyViewTreeToJsTreeData(String filename, ViewTree viewTree, JsTreeNode jsTreeNode) {
 
-    for (ViewTree viewTreeChild : viewTree.getChildren()) {
+		if (viewTree.getPathString().equals("/Social Network/Charlie")) {
+			System.console();
+		}
 
-      if (viewTreeChild.getPathString().equals("/Social Network/Daniel")) {
-        System.console();
-      }
+		String text = viewTree.getName();
+		jsTreeNode.setText(text);
+		jsTreeNode.setPath(viewTree.getPathString());
+		if (viewTree.getIcon() != null) {
+			jsTreeNode.setIcon(viewTree.getIcon());
+		}
 
-      JsTreeNode jsonChild = new JsTreeNode();
-      boolean isNew = false;
-      if (FileViewContentCache.getCachedJsTreeNode(filename, viewTreeChild.getPathString()) == null){
-        isNew = true;
-      }
-      jsonChild = FileViewContentCache.addCachedJsTreeNode(filename, viewTreeChild.getPathString(), jsonChild);
-      copyViewTreeToJsTreeData(filename, viewTreeChild, jsonChild);
-      if (isNew) {
-        jsTreeNode.getChildren().add(jsonChild);
-      }
-    }
-  }
+		for (ViewTree viewTreeChild : viewTree.getChildren()) {
 
-  /***
-   * Load model file as an EmfModel.
-   * 
-   * @param modelName
-   * @param metamodelUri
-   * @param modelFile
-   * @param metamodelFile
-   * @return
-   * @throws Exception
-   */
-  private IModel loadModel(String modelName, String metamodelUri, File modelFile, File metamodelFile) throws Exception {
-    org.eclipse.emf.common.util.URI uri = (metamodelFile != null) ? loadMetamodel(metamodelFile) : null;
+			if (viewTreeChild.getPathString().equals("/Social Network/Daniel")) {
+				System.console();
+			}
 
-    EmfModel newModel = null;
-    Cache cache = CachedResourceSet.getCache();
-    cache.clear();
-    if (modelFile.getName().endsWith(".model") || modelFile.getName().endsWith(".xmi")) {
-      newModel = new EmfModel();
-    } else {
-      newModel = new InMemoryEmfModel(modelName, getResource(modelFile));
-    }
-    newModel.setReadOnLoad(true);
-    newModel.setExpand(true);
-    newModel.setName(modelName);
+			JsTreeNode jsonChild = new JsTreeNode();
+			boolean isNew = false;
+			if (FileViewContentCache.getCachedJsTreeNode(filename, viewTreeChild.getPathString()) == null) {
+				isNew = true;
+			}
+			jsonChild = FileViewContentCache.addCachedJsTreeNode(filename, viewTreeChild.getPathString(), jsonChild);
+			copyViewTreeToJsTreeData(filename, viewTreeChild, jsonChild);
+			if (isNew) {
+				jsTreeNode.getChildren().add(jsonChild);
+			}
+		}
+	}
 
-    if (modelFile != null)
-      newModel.setModelFile(modelFile.getAbsolutePath());
-    if (metamodelUri != null)
-      newModel.setMetamodelUri(metamodelUri);
-    if (metamodelFile != null)
-      newModel.setMetamodelFile(metamodelFile.getAbsolutePath());
-    if (uri != null)
-      newModel.setMetamodelFileUri(uri);
+	/***
+	 * Load model file as an EmfModel.
+	 * 
+	 * @param modelName
+	 * @param metamodelUri
+	 * @param modelFile
+	 * @param metamodelFile
+	 * @return
+	 * @throws Exception
+	 */
+	private IModel loadModel(String modelName, String metamodelUri, File modelFile, File metamodelFile) throws Exception {
+		org.eclipse.emf.common.util.URI uri = (metamodelFile != null) ? loadMetamodel(metamodelFile) : null;
 
-    if (modelFile.getName().endsWith(".model") || modelFile.getName().endsWith(".xmi")) {
-      newModel.load();
-    }
+		EmfModel newModel = null;
+		Cache cache = CachedResourceSet.getCache();
+		cache.clear();
+		if (modelFile.getName().endsWith(".model") || modelFile.getName().endsWith(".xmi")) {
+			newModel = new EmfModel();
+		} else {
+			newModel = new InMemoryEmfModel(modelName, getResource(modelFile));
+		}
+		newModel.setReadOnLoad(true);
+		newModel.setExpand(true);
+		newModel.setName(modelName);
 
-    return newModel;
+		if (modelFile != null)
+			newModel.setModelFile(modelFile.getAbsolutePath());
+		if (metamodelUri != null)
+			newModel.setMetamodelUri(metamodelUri);
+		if (metamodelFile != null)
+			newModel.setMetamodelFile(metamodelFile.getAbsolutePath());
+		if (uri != null)
+			newModel.setMetamodelFileUri(uri);
 
-  }
+		if (modelFile.getName().endsWith(".model") || modelFile.getName().endsWith(".xmi")) {
+			newModel.load();
+		}
 
-  /***
-   * Load a metamodel from a file.
-   * 
-   * @param metamodelFile The File object that represents the file.
-   * @return
-   * @throws Exception
-   */
-  private org.eclipse.emf.common.util.URI loadMetamodel(File metamodelFile) throws Exception {
-    org.eclipse.emf.common.util.URI uri = org.eclipse.emf.common.util.URI
-        .createFileURI(metamodelFile.getAbsolutePath());
-    EmfUtil.register(uri, EPackage.Registry.INSTANCE);
-    return uri;
-  }
+		return newModel;
 
-  /***
-   * Load a resource from a file.
-   * 
-   * @param modelFile The File object that represents the file.
-   * @return The Resource.
-   */
-  private Resource getResource(File modelFile) {
-    ResourceSet resourceSet = new ResourceSetImpl();
-    resourceSet.getPackageRegistry().put(EcorePackage.eNS_URI, EcorePackage.eINSTANCE);
-    resourceSet.getResourceFactoryRegistry().getExtensionToFactoryMap().put("xmi", new XMIResourceFactoryImpl());
-    resourceSet.getResourceFactoryRegistry().getExtensionToFactoryMap().put("ecore", new EcoreResourceFactoryImpl());
-    resourceSet.getResourceFactoryRegistry().getExtensionToFactoryMap().put("emf", new EmfaticResourceFactory());
-    resourceSet.getResourceFactoryRegistry().getExtensionToFactoryMap().put("model", new XMIResourceFactoryImpl());
-    resourceSet.getResourceFactoryRegistry().getExtensionToFactoryMap().put("*", new FlexmiResourceFactory());
-    Resource resource = resourceSet
-        .getResource(org.eclipse.emf.common.util.URI.createFileURI(modelFile.getAbsolutePath()), true);
-    try {
-      resource.load(null);
-      return resource;
-    } catch (IOException e) {
-      e.printStackTrace();
-    }
-    return null;
-  }
+	}
 
-  /***
-   * Load the Picto file to get the rendering metadata.
-   * 
-   * @param pictoFile The File object that represents the Picto file.
-   * @return
-   */
-  private Picto getRenderingMetadata(File pictoFile) {
-    try {
-      ResourceSet resourceSet = new ResourceSetImpl();
-      resourceSet.getResourceFactoryRegistry().getExtensionToFactoryMap().put("*", new FlexmiResourceFactory());
-      Resource resource = resourceSet
-          .getResource(org.eclipse.emf.common.util.URI.createFileURI(pictoFile.getAbsolutePath()), true);
-      resource.load(null);
-      return (Picto) resource.getContents().iterator().next();
-    } catch (Exception ex) {
-      return null;
-    }
-  }
+	/***
+	 * Load a metamodel from a file.
+	 * 
+	 * @param metamodelFile The File object that represents the file.
+	 * @return
+	 * @throws Exception
+	 */
+	private org.eclipse.emf.common.util.URI loadMetamodel(File metamodelFile) throws Exception {
+		org.eclipse.emf.common.util.URI uri = org.eclipse.emf.common.util.URI
+				.createFileURI(metamodelFile.getAbsolutePath());
+		EmfUtil.register(uri, EPackage.Registry.INSTANCE);
+		return uri;
+	}
 
-  /***
-   * A method to generate ViewTree data structure, the tree displayed on the left
-   * panel.
-   * 
-   * @param rootViewTree
-   * @param promise
-   * @return
-   */
-  @SuppressWarnings("unchecked")
-  public static ViewTree generateViewTree(ViewTree rootViewTree, IncrementalLazyGenerationRuleContentPromise promise) {
-    String format = getDefaultFormat();
-    String icon = getDefaultIcon();
-    List<Patch> patches = new ArrayList<>(1);
-    Collection<String> path = Arrays.asList("");
-    List<Layer> layers = new ArrayList<>();
-    Variable layersVariable = null;
-    Integer position = null;
+	/***
+	 * Load a resource from a file.
+	 * 
+	 * @param modelFile The File object that represents the file.
+	 * @return The Resource.
+	 */
+	private Resource getResource(File modelFile) {
+		ResourceSet resourceSet = new ResourceSetImpl();
+		resourceSet.getPackageRegistry().put(EcorePackage.eNS_URI, EcorePackage.eINSTANCE);
+		resourceSet.getResourceFactoryRegistry().getExtensionToFactoryMap().put("xmi", new XMIResourceFactoryImpl());
+		resourceSet.getResourceFactoryRegistry().getExtensionToFactoryMap().put("ecore", new EcoreResourceFactoryImpl());
+		resourceSet.getResourceFactoryRegistry().getExtensionToFactoryMap().put("emf", new EmfaticResourceFactory());
+		resourceSet.getResourceFactoryRegistry().getExtensionToFactoryMap().put("model", new XMIResourceFactoryImpl());
+		resourceSet.getResourceFactoryRegistry().getExtensionToFactoryMap().put("*", new FlexmiResourceFactory());
+		Resource resource = resourceSet
+				.getResource(org.eclipse.emf.common.util.URI.createFileURI(modelFile.getAbsolutePath()), true);
+		try {
+			resource.load(null);
+			return resource;
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+		return null;
+	}
 
-    Collection<Variable> instanceVariables = promise.getVariables();
+	/***
+	 * Load the Picto file to get the rendering metadata.
+	 * 
+	 * @param pictoFile The File object that represents the Picto file.
+	 * @return
+	 */
+	private Picto getRenderingMetadata(File pictoFile) {
+		try {
+			ResourceSet resourceSet = new ResourceSetImpl();
+			resourceSet.getResourceFactoryRegistry().getExtensionToFactoryMap().put("*", new FlexmiResourceFactory());
+			Resource resource = resourceSet
+					.getResource(org.eclipse.emf.common.util.URI.createFileURI(pictoFile.getAbsolutePath()), true);
+			resource.load(null);
+			return (Picto) resource.getContents().iterator().next();
+		} catch (Exception ex) {
+			return null;
+		}
+	}
 
-    for (Variable variable : instanceVariables) {
-      Object varValue = variable.getValue();
-      switch (variable.getName()) {
-      case "format": {
-        format = varValue + "";
-        break;
-      }
-      case "path": {
-        if (!(varValue instanceof Collection)) {
-          (path = (Collection<String>) (varValue = new ArrayList<>(1))).add(Objects.toString(varValue));
-        } else if (!((Collection<?>) varValue).isEmpty()) {
-          path = ((Collection<?>) varValue).stream().map(Objects::toString).collect(Collectors.toList());
-        }
-        break;
-      }
-      case "icon": {
-        icon = varValue + "";
-        break;
-      }
-      case "position": {
-        if (varValue instanceof Integer) {
-          position = (Integer) varValue;
-        } else if (varValue != null) {
-          position = Integer.parseInt(varValue.toString());
-        }
-        break;
-      }
-      case "layers": {
-        layersVariable = variable;
-        for (Object layerMapObject : (Iterable<?>) varValue) {
-          Map<Object, Object> layerMap = (Map<Object, Object>) layerMapObject;
-          Layer layer = new Layer();
-          layer.setId(layerMap.get("id") + "");
-          layer.setTitle(layerMap.get("title") + "");
-          if (layerMap.containsKey("active")) {
-            layer.setActive((boolean) layerMap.get("active"));
-          }
-          layers.add(layer);
-        }
-        break;
-      }
-      case "patches": {
-        if (varValue instanceof List) {
-          patches = (List<Patch>) varValue;
-        } else if (varValue instanceof Patch) {
-          patches.add((Patch) varValue);
-        } else if (varValue instanceof Collection) {
-          patches.addAll((Collection<? extends Patch>) varValue);
-        }
-        break;
-      }
-      }
+	/***
+	 * A method to generate ViewTree data structure, the tree displayed on the left
+	 * panel.
+	 * 
+	 * @param rootViewTree
+	 * @param promise
+	 * @return
+	 */
+	@SuppressWarnings("unchecked")
+	public static ViewTree generateViewTree(ViewTree rootViewTree, IncrementalLazyGenerationRuleContentPromise promise) {
+		String format = getDefaultFormat();
+		String icon = getDefaultIcon();
+		List<Patch> patches = new ArrayList<>(1);
+		Collection<String> path = Arrays.asList("");
+		List<Layer> layers = new ArrayList<>();
+		Variable layersVariable = null;
+		Integer position = null;
 
-    }
+		Collection<Variable> instanceVariables = promise.getVariables();
 
-    // If this is a custom view there may be an activeLayers variable in the
-    // variables list
-    Variable activeLayersVariable = instanceVariables.stream().filter(v -> v.getName().equals("activeLayers")).findAny()
-        .orElse(null);
-    if (activeLayersVariable != null) {
-      Collection<?> activeLayers = (Collection<?>) activeLayersVariable.getValue();
-      for (Layer layer : layers) {
-        layer.setActive(activeLayers.contains(layer.getId()));
-      }
-    }
+		for (Variable variable : instanceVariables) {
+			Object varValue = variable.getValue();
+			switch (variable.getName()) {
+			case "format": {
+				format = varValue + "";
+				break;
+			}
+			case "path": {
+				if (!(varValue instanceof Collection)) {
+					(path = (Collection<String>) (varValue = new ArrayList<>(1))).add(Objects.toString(varValue));
+				} else if (!((Collection<?>) varValue).isEmpty()) {
+					path = ((Collection<?>) varValue).stream().map(Objects::toString).collect(Collectors.toList());
+				}
+				break;
+			}
+			case "icon": {
+				icon = varValue + "";
+				break;
+			}
+			case "position": {
+				if (varValue instanceof Integer) {
+					position = (Integer) varValue;
+				} else if (varValue != null) {
+					position = Integer.parseInt(varValue.toString());
+				}
+				break;
+			}
+			case "layers": {
+				layersVariable = variable;
+				for (Object layerMapObject : (Iterable<?>) varValue) {
+					Map<Object, Object> layerMap = (Map<Object, Object>) layerMapObject;
+					Layer layer = new Layer();
+					layer.setId(layerMap.get("id") + "");
+					layer.setTitle(layerMap.get("title") + "");
+					if (layerMap.containsKey("active")) {
+						layer.setActive((boolean) layerMap.get("active"));
+					}
+					layers.add(layer);
+				}
+				break;
+			}
+			case "patches": {
+				if (varValue instanceof List) {
+					patches = (List<Patch>) varValue;
+				} else if (varValue instanceof Patch) {
+					patches.add((Patch) varValue);
+				} else if (varValue instanceof Collection) {
+					patches.addAll((Collection<? extends Patch>) varValue);
+				}
+				break;
+			}
+			}
 
-    // Replace layers variable from list of maps to list of Layer objects
-    if (layersVariable != null) {
-      instanceVariables.remove(layersVariable);
-    }
-    instanceVariables.add(Variable.createReadOnlyVariable("layers", layers));
+		}
 
-    ViewTree vt = new ViewTree(promise, format, icon, position, patches, layers);
-    rootViewTree.add(new ArrayList<>(path), vt);
+		// If this is a custom view there may be an activeLayers variable in the
+		// variables list
+		Variable activeLayersVariable = instanceVariables.stream().filter(v -> v.getName().equals("activeLayers")).findAny()
+				.orElse(null);
+		if (activeLayersVariable != null) {
+			Collection<?> activeLayers = (Collection<?>) activeLayersVariable.getValue();
+			for (Layer layer : layers) {
+				layer.setActive(activeLayers.contains(layer.getId()));
+			}
+		}
 
-    return vt;
-  }
+		// Replace layers variable from list of maps to list of Layer objects
+		if (layersVariable != null) {
+			instanceVariables.remove(layersVariable);
+		}
+		instanceVariables.add(Variable.createReadOnlyVariable("layers", layers));
 
-  @Override
-  public void showElement(String id, String uri, IEditorPart editor) {
-    // TODO Auto-generated method stub
+		ViewTree vt = new ViewTree(promise, format, icon, position, patches, layers);
+		rootViewTree.add(new ArrayList<>(path), vt);
 
-  }
+		return vt;
+	}
 
-  @Override
-  protected Picto getRenderingMetadata(IEditorPart editorPart) {
-    // TODO Auto-generated method stub
-    return null;
-  }
+	@Override
+	public void showElement(String id, String uri, IEditorPart editor) {
+		// TODO Auto-generated method stub
 
-  @Override
-  protected Resource getResource(IEditorPart editorPart) {
-    // TODO Auto-generated method stub
-    return null;
-  }
+	}
 
-  @Override
-  protected IFile getFile(IEditorPart editorPart) {
-    // TODO Auto-generated method stub
-    return null;
-  }
+	@Override
+	protected Picto getRenderingMetadata(IEditorPart editorPart) {
+		// TODO Auto-generated method stub
+		return null;
+	}
 
-  @Override
-  protected boolean supportsEditorType(IEditorPart editorPart) {
-    // TODO Auto-generated method stub
-    return false;
-  }
+	@Override
+	protected Resource getResource(IEditorPart editorPart) {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	@Override
+	protected IFile getFile(IEditorPart editorPart) {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	@Override
+	protected boolean supportsEditorType(IEditorPart editorPart) {
+		// TODO Auto-generated method stub
+		return false;
+	}
 
 }
