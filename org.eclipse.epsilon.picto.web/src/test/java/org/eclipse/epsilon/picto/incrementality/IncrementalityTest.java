@@ -1,5 +1,5 @@
 /*********************************************************************
-* Copyright (c) 2008 The University of York.
+* Copyright (c) 2022 The University of York.
 *
 * This program and the accompanying materials are made
 * available under the terms of the Eclipse Public License 2.0
@@ -26,7 +26,7 @@ import org.eclipse.emf.ecore.util.EcoreUtil;
 import org.eclipse.emf.ecore.xmi.XMIResource;
 import org.eclipse.emf.ecore.xmi.impl.XMIResourceImpl;
 import org.eclipse.epsilon.picto.dom.PictoPackage;
-import org.eclipse.epsilon.picto.web.FileViewContentCache;
+import org.eclipse.epsilon.picto.web.PictoCache;
 import org.eclipse.epsilon.picto.web.PictoApplication;
 import org.eclipse.epsilon.picto.web.PictoProject;
 import org.eclipse.epsilon.picto.web.WebEglPictoSource;
@@ -45,62 +45,64 @@ import com.google.common.io.Files;
  */
 class IncrementalityTest {
 
-  private static File pictoFile;
-  private static File modelFile;
-  private static File modelFileBackup;
-  private String modifiedFilePath;
-  private WebEglPictoSource eglPictoSource;
-  private XMIResource res;
+	private static File pictoFile;
+	private static File modelFile;
+	private static File modelFileBackup;
+	private String modifiedFilePath;
+	private WebEglPictoSource eglPictoSource;
+	private XMIResource res;
 
-  private AccessRecordResource accessRecordResource = null;
+	private AccessRecordResource accessRecordResource = null;
 
-  @BeforeAll
-  static void setUpBeforeClass() throws Exception {
-    PictoPackage.eINSTANCE.eClass();
-  }
+	@BeforeAll
+	static void setUpBeforeClass() throws Exception {
+		PictoPackage.eINSTANCE.eClass();
+	}
 
-  public Set<String> setUp(String pictoFileName, String modelFileName) throws Exception {
-    pictoFile = new File(PictoApplication.WORKSPACE + pictoFileName);
-    modelFile = new File(PictoApplication.WORKSPACE + modelFileName);
-    modelFileBackup = new File(modelFile.getAbsolutePath() + ".backup");
-    modifiedFilePath = pictoFile.getAbsolutePath()
-        .replace(new File(PictoApplication.WORKSPACE).getAbsolutePath() + File.separator, "").replace("\\", "/");
+	public Set<String> setUp(String pictoFileName, String modelFileName) throws Exception {
+		pictoFile = new File(PictoApplication.WORKSPACE + pictoFileName);
+		modelFile = new File(PictoApplication.WORKSPACE + modelFileName);
+		modelFileBackup = new File(modelFile.getAbsolutePath() + ".backup");
+		modifiedFilePath = pictoFile.getAbsolutePath()
+				.replace(new File(PictoApplication.WORKSPACE).getAbsolutePath() + File.separator, "").replace("\\", "/");
 
-    accessRecordResource = FileViewContentCache.createAccessRecordResource(pictoFileName);
+		accessRecordResource = PictoCache.createAccessRecordResource(pictoFileName);
 
-    // backup model file
-    Files.copy(modelFile, modelFileBackup);
+		// backup model file
+		Files.copy(modelFile, modelFileBackup);
 
-    eglPictoSource = new WebEglPictoSource();
-    Set<String> result = eglPictoSource.generatePromises(modifiedFilePath, PictoProject.createPictoProject(pictoFile),
-        true);
+		eglPictoSource = new WebEglPictoSource();
+		Set<String> result = eglPictoSource.generatePromises(modifiedFilePath, 
+				PictoProject.createPictoProject(pictoFile),
+				true);
 
-    res = (new XMIResourceImpl(URI.createFileURI(modelFile.getAbsolutePath())));
-    res.load(null);
-    return result;
-  }
+		res = (new XMIResourceImpl(URI.createFileURI(modelFile.getAbsolutePath())));
+		res.load(null);
+		return result;
+	}
 
-  @AfterEach
-  void tearDown() throws Exception {
-    accessRecordResource.clear();
-    FileViewContentCache.clear();
-    res.unload();
-    modelFile.delete();
-    Files.copy(modelFileBackup, modelFile);
-    modelFileBackup.delete();
-    Thread.sleep(1000);
-  }
+	@AfterEach
+	void tearDown() throws Exception {
+		WebEglPictoSource.generateAll1stTime = true;
+		accessRecordResource.clear();
+		PictoCache.clear();
+		res.unload();
+		modelFile.delete();
+		Files.copy(modelFileBackup, modelFile);
+		modelFileBackup.delete();
+		Thread.sleep(1000);
+	}
 
-  @Test
-  void testGeneration() throws Exception {
-    System.out.println("\n" + new Object() {
-    }.getClass().getEnclosingMethod().getName());
+	@Test
+	void testGeneration() throws Exception {
+		System.out.println("\n" + new Object() {
+		}.getClass().getEnclosingMethod().getName());
 
-    Set<String> generatedViews = setUp("socialnetwork/socialnetwork.model.picto", "socialnetwork/socialnetwork.model");
+		Set<String> generatedViews = setUp("socialnetwork/socialnetwork.model.picto", "socialnetwork/socialnetwork.model");
 
-    assertThat(generatedViews).containsExactlyInAnyOrder("/Social Network", "/Social Network/Alice",
-        "/Social Network/Bob", "/Social Network/Charlie", "/Stats", "/Custom/Alice and Bob", "/Readme", "/");
-  }
+		assertThat(generatedViews).containsExactlyInAnyOrder("/Social Network", "/Social Network/Alice",
+				"/Social Network/Bob", "/Social Network/Charlie", "/Stats", "/Custom/Alice and Bob", "/Readme", "/");
+	}
 
   @Test
   void testUpdateEglDoc() throws Exception {
@@ -186,40 +188,40 @@ class IncrementalityTest {
     assertThat(generatedViews).containsExactlyInAnyOrder("/", "/Readme", "/Custom/Alice and Bob", "/Social Network", "/Social Network/Alice", "/Stats");
   }
 
-  @SuppressWarnings("unchecked")
-  @Test
-  void testAddReference() throws Exception {
-    System.out.println("\n" + new Object() {
-    }.getClass().getEnclosingMethod().getName());
-    setUp("socialnetwork/socialnetwork.model.picto", "socialnetwork/socialnetwork.model");
+	@SuppressWarnings("unchecked")
+	@Test
+	void testAddReference() throws Exception {
+		System.out.println("\n" + new Object() {
+		}.getClass().getEnclosingMethod().getName());
+		setUp("socialnetwork/socialnetwork.model.picto", "socialnetwork/socialnetwork.model");
 
-    EObject sn = res.getEObject("0"); // get social Network (id = 0)
-    EClass socialNetwork = sn.eClass();
-    EStructuralFeature peopleProperty = socialNetwork.getEStructuralFeature("people");
+		EObject sn = res.getEObject("0"); // get social Network (id = 0)
+		EClass socialNetwork = sn.eClass();
+		EStructuralFeature peopleProperty = socialNetwork.getEStructuralFeature("people");
 
-    EObject alice = res.getEObject("1"); // get Alice (id = 1)
-    EClass person = alice.eClass();
-    EStructuralFeature nameProperty = person.getEStructuralFeature("name");
-    EStructuralFeature dislikesProperty = person.getEStructuralFeature("dislikes");
+		EObject alice = res.getEObject("1"); // get Alice (id = 1)
+		EClass person = alice.eClass();
+		EStructuralFeature nameProperty = person.getEStructuralFeature("name");
+		EStructuralFeature dislikesProperty = person.getEStructuralFeature("dislikes");
 
-    EObject dan = EcoreUtil.create(person);
-    dan.eSet(nameProperty, "Dan");
+		EObject dan = EcoreUtil.create(person);
+		dan.eSet(nameProperty, "Dan");
 
-    EList<EObject> people = (EList<EObject>) sn.eGet(peopleProperty);
-    people.add(dan);
-    res.setID(dan, "4");
+		EList<EObject> people = (EList<EObject>) sn.eGet(peopleProperty);
+		people.add(dan);
+		res.setID(dan, "4");
 
-    EList<EObject> dislikes = (EList<EObject>) alice.eGet(dislikesProperty);
-    dislikes.add(dan);
-    res.save(null);
-    Thread.sleep(1000);
+		EList<EObject> dislikes = (EList<EObject>) alice.eGet(dislikesProperty);
+		dislikes.add(dan);
+		res.save(null);
+		Thread.sleep(1000);
 
-    eglPictoSource = new WebEglPictoSource();
-    Set<String> generatedViews = eglPictoSource.generatePromises(modifiedFilePath,
-        PictoProject.createPictoProject(pictoFile), true);
-    assertThat(generatedViews).containsExactlyInAnyOrder("/", "/Readme", "/Custom/Alice and Bob", "/Social Network", "/Social Network/Alice",
-        "/Social Network/Dan", "/Stats");
-  }
+		eglPictoSource = new WebEglPictoSource();
+		Set<String> generatedViews = eglPictoSource.generatePromises(modifiedFilePath,
+				PictoProject.createPictoProject(pictoFile), true);
+		assertThat(generatedViews).containsExactlyInAnyOrder("/", "/Readme", "/Custom/Alice and Bob", "/Social Network",
+				"/Social Network/Alice", "/Social Network/Dan", "/Stats");
+	}
 
   @SuppressWarnings("unchecked")
   @Test

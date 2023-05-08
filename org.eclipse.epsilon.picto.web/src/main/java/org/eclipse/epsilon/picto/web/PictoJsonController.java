@@ -76,7 +76,7 @@ public class PictoJsonController {
 
 		long genStart = System.currentTimeMillis();
 
-		PromiseViewCache promiseViewCache = FileViewContentCache.getViewContentCache(file);
+		PromiseViewCache promiseViewCache = PictoCache.getViewContentCache(file);
 
 		if (promiseViewCache == null) {
 			File modifiedFile = new File(new File(PictoApplication.WORKSPACE + file).getAbsolutePath());

@@ -11,6 +11,7 @@
 package org.eclipse.epsilon.picto.incrementality;
 
 import java.util.Collection;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -22,16 +23,23 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
+import java.util.stream.Collector;
+import java.util.stream.Collectors;
 
+import org.apache.tomcat.util.descriptor.web.ContextResource;
 import org.eclipse.emf.ecore.EObject;
 import org.eclipse.emf.ecore.EStructuralFeature;
 import org.eclipse.emf.ecore.resource.Resource;
+import org.eclipse.emf.ecore.xmi.XMIResource;
 import org.eclipse.epsilon.egl.EgxModule;
 import org.eclipse.epsilon.emc.emf.AbstractEmfModel;
 import org.eclipse.epsilon.emc.emf.EmfModel;
 import org.eclipse.epsilon.picto.incrementality.IncrementalLazyEgxModule.IncrementalLazyGenerationRuleContentPromise;
 import org.eclipse.epsilon.picto.pictograph.Path;
 import org.eclipse.epsilon.picto.pictograph.Property;
+import org.eclipse.epsilon.pinset.parse.Pinset_EolParserRules.collectionType_return;
+
+import net.sourceforge.plantuml.bpm.Col;
 
 /***
  * 
@@ -46,15 +54,21 @@ public class AccessGraphResource implements AccessRecordResource {
 	private Map<String, Path> paths = new LinkedHashMap<>();
 	private Map<String, String> moduleRuleObjectIdsToPaths = new LinkedHashMap<>();
 
+	private Set<String> deletedPaths = new HashSet<>();
+
 	public static ThreadPoolExecutor getExecutorService() {
 		return executorService;
+	}
+
+	public Set<String> getDeletedPaths() {
+		return deletedPaths;
 	}
 
 	public int size() {
 		return paths.size();
 	}
 
-	public Map<String, Path> getTraceIndex() {
+	public Map<String, Path> getPaths() {
 		return paths;
 	}
 
@@ -71,10 +85,13 @@ public class AccessGraphResource implements AccessRecordResource {
 	@Override
 	public void add(AccessRecord access) {
 
+		
 		Thread t = new Thread("SaveToGraph-" + access.toString()) {
 
 			@Override
 			public void run() {
+				
+//				System.out.println(access.toString());
 
 				// skip
 				if (access.getPath() == null || access.getPropertyName() == null || access.getElementResourceUri() == null
@@ -155,11 +172,17 @@ public class AccessGraphResource implements AccessRecordResource {
 	public void checkPath(EgxModule module, Set<String> invalidatedPaths, String pathName, boolean changeState) {
 
 		// path
+		System.out.println("ALFA: " + pathName);
+		if (pathName.equals("/Social Network/Alice")) {
+			System.console();
+		}
+		
 		Path path = paths.get(pathName);
 		if (path == null) {
 			invalidatedPaths.add(pathName);
 			return;
 		}
+
 
 		if (path.isNew()) {
 			invalidatedPaths.add(pathName);
@@ -172,22 +195,24 @@ public class AccessGraphResource implements AccessRecordResource {
 			Entry<String, Property> entry = iterator.next();
 			Property property = entry.getValue();
 			if (property.isDeleted()) {
-				continue;
+//				continue;
 			}
 
 			// context resource
+			Resource contextResource = null;
 			EmfModel contextEmfModel = ((EmfModel) module.getContext().getModelRepository().getModels().stream()
 					.filter(
 							m -> ((AbstractEmfModel) m).getResource().getURI().toFileString().equals(property.getContextResource()))
 					.findFirst().orElse(null));
 			if (contextEmfModel != null) {
 
-				Resource contextResource = contextEmfModel.getResource();
+				contextResource = contextEmfModel.getResource();
 				if (contextResource == null) {
 					invalidatedPaths.add(pathName);
 					path.setDeleted();
 					property.setDeleted();
-					continue;
+					deletedPaths.add(pathName);
+//					continue;
 				}
 
 				// context eObject
@@ -196,7 +221,8 @@ public class AccessGraphResource implements AccessRecordResource {
 					invalidatedPaths.add(pathName);
 					path.setDeleted();
 					property.setDeleted();
-					continue;
+					deletedPaths.add(pathName);
+//					continue;
 				}
 			}
 
@@ -224,6 +250,56 @@ public class AccessGraphResource implements AccessRecordResource {
 			String currentValue = AccessRecord.convertValueToString(currentValueObject);
 			if (!IncrementalityUtil.equals(currentValue, property.getValue())) {
 				invalidatedPaths.add(pathName);
+
+				String strVal = property.getValue();
+				System.console();
+
+				// check if the value
+				if (contextResource != null && feature.getEType() instanceof EObject) {
+					if (feature.isMany()) {
+						String temp = strVal.split("#")[0];
+						temp = temp.substring(1, temp.length() - 1);
+						String[] idsTypes = temp.split(",");
+						for (String idType : idsTypes) {
+							String id = idType.split(":")[0];
+							EObject obj = ((XMIResource) contextResource).getEObject(id);
+							if (obj == null) {
+
+								String uri = resource.getURI().toFileString();
+								List<String> paths = moduleRuleObjectIdsToPaths.entrySet().parallelStream()
+										.filter(e -> e.getKey().contains(uri) && e.getKey().contains(id)).map(e -> e.getValue())
+										.collect(Collectors.toList());
+								
+								deletedPaths.addAll(paths);
+								
+								paths.parallelStream().forEach(p -> {
+									AccessGraphResource.this.paths.get(p).setDeleted();
+								});
+								
+								invalidatedPaths.addAll(paths);
+							}
+						}
+					} else if (strVal != null) {
+						String id = strVal.split("#")[0];
+						EObject obj = ((XMIResource) contextResource).getEObject(id);
+						if (obj == null) {
+
+							String uri = resource.getURI().toFileString();
+							List<String> paths = moduleRuleObjectIdsToPaths.entrySet().parallelStream()
+									.filter(e -> e.getKey().contains(uri) && e.getKey().contains(id)).map(e -> e.getValue())
+									.collect(Collectors.toList());
+							deletedPaths.addAll(paths);
+							
+							paths.parallelStream().forEach(p -> {
+								AccessGraphResource.this.paths.get(p).setDeleted();
+							});
+							
+							invalidatedPaths.addAll(paths);
+						}
+					}
+				}
+
+				// should the current value replace the previous value in the property
 				if (changeState) {
 					property.setValue(currentValue);
 				}
@@ -261,55 +337,6 @@ public class AccessGraphResource implements AccessRecordResource {
 	@Override
 	public void updateStatusToProcessed(Collection<String> paths) {
 
-	}
-
-	/***
-	 * Remove all paths and properties that are flagged deleted.
-	 */
-	public void clean() {
-
-		Thread t = new Thread("RemoveDeletedPathsAndProperties") {
-			public void run() {
-				System.out.print("Removing deleted paths and properties ... ");
-				while (AccessGraphResource.getExecutorService().getQueue().size() > 0
-						&& AccessGraphResource.getExecutorService().getActiveCount() > 0) {
-					try {
-						Thread.sleep(1000);
-					} catch (Exception e) {
-						e.printStackTrace();
-					}
-
-					if (AccessGraphResource.getExecutorService().getQueue().size() == 0
-							&& AccessGraphResource.getExecutorService().getActiveCount() == 0) {
-
-						// remove deleted properties in each path
-						AccessGraphResource.this.paths.values().parallelStream().forEach(path -> {
-							Iterator<Entry<String, Property>> propertyIterator = path.getProperties().entrySet().iterator();
-							while (propertyIterator.hasNext()) {
-								Entry<String, Property> propertyEntry = propertyIterator.next();
-								Property property = propertyEntry.getValue();
-								if (property.isDeleted())
-									propertyIterator.remove();
-							}
-						});
-
-						// remove deleted paths
-						Iterator<Entry<String, Path>> pathIterator = AccessGraphResource.this.paths.entrySet().iterator();
-						while (pathIterator.hasNext()) {
-							Entry<String, Path> pathEntry = pathIterator.next();
-							Path path = pathEntry.getValue();
-							if (path.isDeleted())
-								pathIterator.remove();
-						}
-					} // if
-				} // while
-
-				System.out.println("Done");
-
-			} // run
-		};
-		t.start();
-		executorService.submit(t);
 	}
 
 	@Override

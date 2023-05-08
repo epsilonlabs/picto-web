@@ -113,8 +113,8 @@ public class WebEglPictoSource extends EglPictoSource {
 
 			ViewTree rootViewTree = pictoView.getViewTree();
 
-			PromiseViewCache viewContentCache = FileViewContentCache.addPictoFile(pictoFilePath);
-			AccessRecordResource accessRecordResource = FileViewContentCache.createAccessRecordResource(pictoFilePath);
+			PromiseViewCache viewContentCache = PictoCache.addPictoFile(pictoFilePath);
+			AccessRecordResource accessRecordResource = PictoCache.createAccessRecordResource(pictoFilePath);
 
 			PerformanceRecorder.accessRecordResource = accessRecordResource;
 
@@ -338,6 +338,13 @@ public class WebEglPictoSource extends EglPictoSource {
 					rootViewTree.setPromise(new StaticContentPromise(content));
 					rootViewTree.setFormat(picto.getFormat());
 				}
+				
+				// remove deleted paths and properties
+				PictoCache.removeDeletedPathsAndProperties();
+				
+				// remove tree views
+				PictoCache.removeCachedJsTreeNode(pictoFilePath, accessRecordResource.getDeletedPaths());
+				accessRecordResource.getDeletedPaths().clear();
 
 				// Handle static views (i.e. where source != null), add the custom view loaded
 				// from a file
@@ -372,8 +379,6 @@ public class WebEglPictoSource extends EglPictoSource {
 				modifiedViewContents.add(promiseView.getPath());
 			}
 
-			// remove deleted paths and properties
-			accessRecordResource.clean();
 		} catch (Exception ex) {
 			ex.printStackTrace();
 		}
@@ -556,10 +561,11 @@ public class WebEglPictoSource extends EglPictoSource {
 	 */
 	private PictoResponse generateJsTreeData(String filename, ViewTree viewTree) throws JsonProcessingException {
 		JsTreeNode root = new JsTreeNode();
-		root.setPath(FileViewContentCache.PICTO_TREE);
-//    root = FileViewContentCache.cacheRootJsTreeNode(filename, root);
+		root.setPath(PictoCache.PICTO_TREE);
+		
+    root = PictoCache.cacheRootJsTreeNode(filename, root);
 
-		root = FileViewContentCache.addCachedJsTreeNode(filename, viewTree.getPathString(), root);
+		root = PictoCache.addCachedJsTreeNode(filename, viewTree.getPathString(), root);
 
 		copyViewTreeToJsTreeData(filename, viewTree, root);
 		List<JsTreeNode> jsTreeNodes = new ArrayList<>();
@@ -569,7 +575,7 @@ public class WebEglPictoSource extends EglPictoSource {
 
 		PictoResponse pictoResponse = new PictoResponse();
 		pictoResponse.setFilename(filename);
-		pictoResponse.setPath(FileViewContentCache.PICTO_TREE);
+		pictoResponse.setPath(PictoCache.PICTO_TREE);
 		pictoResponse.setType("treeview");
 		pictoResponse.setContent(response);
 
@@ -606,10 +612,10 @@ public class WebEglPictoSource extends EglPictoSource {
 
 			JsTreeNode jsonChild = new JsTreeNode();
 			boolean isNew = false;
-			if (FileViewContentCache.getCachedJsTreeNode(filename, viewTreeChild.getPathString()) == null) {
+			if (PictoCache.getCachedJsTreeNode(filename, viewTreeChild.getPathString()) == null) {
 				isNew = true;
 			}
-			jsonChild = FileViewContentCache.addCachedJsTreeNode(filename, viewTreeChild.getPathString(), jsonChild);
+			jsonChild = PictoCache.addCachedJsTreeNode(filename, viewTreeChild.getPathString(), jsonChild);
 			copyViewTreeToJsTreeData(filename, viewTreeChild, jsonChild);
 			if (isNew) {
 				jsTreeNode.getChildren().add(jsonChild);

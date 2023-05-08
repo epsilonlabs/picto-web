@@ -68,7 +68,7 @@ public class PromiseView {
 
 	public String getViewContent(String clientTimestamp) throws Exception {
 
-		if (path.equals(FileViewContentCache.PICTO_TREE)) {
+		if (path.equals(PictoCache.PICTO_TREE)) {
 			return viewContent;
 		}
 

@@ -10,6 +10,7 @@
 package org.eclipse.epsilon.picto.web;
 
 import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.List;
 
 public class JsTreeNode {
@@ -20,6 +21,26 @@ public class JsTreeNode {
 //	protected String icon = "jstree-folder";
 	protected String icon = "icons/diagram.gif";
 //	protected JsTreeState state = new JsTreeState();
+
+	public JsTreeNode removeNode(String path) {
+		JsTreeNode result = null;
+		Iterator<JsTreeNode> iterator = children.iterator();
+		while(iterator.hasNext()) {
+			JsTreeNode node = iterator.next();
+			result = node.removeNode(path);
+			if (result != null) {
+				break;
+			}
+			if (path.equals(node.getPath())) {
+				iterator.remove();
+				result = node;
+				break;
+			}
+			
+		}
+
+		return result;
+	}
 
 	public List<JsTreeNode> getChildren() {
 		return children;

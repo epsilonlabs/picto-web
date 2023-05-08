@@ -2,13 +2,17 @@ package org.eclipse.epsilon.picto.incrementality;
 
 import java.util.Collection;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
 import org.eclipse.epsilon.egl.EgxModule;
 import org.eclipse.epsilon.picto.incrementality.IncrementalLazyEgxModule.IncrementalLazyGenerationRuleContentPromise;
+import org.eclipse.epsilon.picto.pictograph.Path;
 
 public interface AccessRecordResource {
 
+	public Set<String> getDeletedPaths();
+		
 	public void add(AccessRecord access);
 
 	public List<AccessRecord> getIncrementalRecords();
@@ -22,7 +26,7 @@ public interface AccessRecordResource {
 
 	public void clear();
 	
-	public void clean();
+	public Map<String, Path> getPaths();
 
 	public void updatePath(String modulePath, String ruleName, String contextResourceUri, String contextObjectId,
 			String path);

@@ -90,7 +90,7 @@ public class PictoController {
 
 //    List<PictoProject>  x = PictoApplication.getPictoProjects();
 
-    if (FileViewContentCache.getViewContentCache(file) == null) {
+    if (PictoCache.getViewContentCache(file) == null) {
       File modifiedFile = new File(new File(PictoApplication.WORKSPACE + file).getAbsolutePath());
       Set<PictoProject> affectedPictoProjects = new HashSet<>();
       for (PictoProject project : PictoApplication.getPictoProjects()) {
@@ -105,20 +105,20 @@ public class PictoController {
     }
 
     if (path == null) {
-      PromiseView treePromiseView = FileViewContentCache.getViewContentCache(file)
-          .getPromiseView(FileViewContentCache.PICTO_TREE);
+      PromiseView treePromiseView = PictoCache.getViewContentCache(file)
+          .getPromiseView(PictoCache.PICTO_TREE);
       String treeResult = (timestamp == null) ? treePromiseView.getViewContent()
           : treePromiseView.getViewContent(timestamp);
       model.addAttribute("treeResponse", treeResult);
     } else {
-      PromiseView treePromiseView = FileViewContentCache.getViewContentCache(file)
-          .getPromiseView(FileViewContentCache.PICTO_TREE);
+      PromiseView treePromiseView = PictoCache.getViewContentCache(file)
+          .getPromiseView(PictoCache.PICTO_TREE);
       String treeResult = (timestamp == null) ? treePromiseView.getViewContent()
           : treePromiseView.getViewContent(timestamp);
       model.addAttribute("treeResponse", treeResult);
 
       String viewResult = null;
-      PromiseView promiseView = FileViewContentCache.getViewContentCache(file).getPromiseView(path);
+      PromiseView promiseView = PictoCache.getViewContentCache(file).getPromiseView(path);
       if (promiseView != null) {
 //        System.out.println("FROM URL BAR");
         viewResult = promiseView.getViewContent(timestamp);

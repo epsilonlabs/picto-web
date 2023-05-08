@@ -133,7 +133,7 @@ public class PictoApplication implements ApplicationListener<ApplicationContextE
 
   public static void exit() throws IOException, InterruptedException {
     FileWatcher.stopWatching();
-    FileViewContentCache.clear();
+    PictoCache.clear();
 //    ExecutorService px = PromiseView.getPromiseExecutor();
 //    px.shutdown();
 //    context.close();

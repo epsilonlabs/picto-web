@@ -241,49 +241,6 @@ public class IncrementalLazyEgxModule extends EgxModuleParallelGenerationRuleAto
 			String moduleId = IncrementalLazyEgxModule.this.getFile().getAbsolutePath();
 			String moduleAndRuleIds = moduleId + "#" + ruleId + "#";
 
-//      List<Object> filteredElements = Collections.synchronizedList(new ArrayList<>());
-//      elements.parallelStream().forEach(element -> {
-//        String resourceId = null;
-//        String eObjectId = null;
-//        if (element instanceof EObject) {
-//          EObject eObject = (EObject) element;
-//          Resource resource = eObject.eResource();
-//          resourceId = eObject.eResource().getURI().toFileString();
-//          eObjectId = resource.getURIFragment(eObject);
-//        }
-//        String promiseKey = moduleAndRuleIds + resourceId + "#" + eObjectId;
-//        String path = ((AccessGraphResource) accessRecordResource).getPromises().get(promiseKey);
-//
-//        Set<String> invalidatedViewPaths = new HashSet<String>();
-//        ((AccessGraphResource) accessRecordResource).checkPath((EgxModule) context.getModule(), invalidatedViewPaths,
-//            new HashSet<>(), new HashSet<>(), path, false);
-//        if (invalidatedViewPaths.size() != 0) {
-//          filteredElements.add(element);
-//        }
-//      });
-
-//      Map<Object, Object> temp = new ConcurrentHashMap<>();
-//      elements.parallelStream().forEach(element -> {
-//        String resourceId = null;
-//        String eObjectId = null;
-//        if (element instanceof EObject) {
-//          EObject eObject = (EObject) element;
-//          Resource resource = eObject.eResource();
-//          resourceId = eObject.eResource().getURI().toFileString();
-//          eObjectId = resource.getURIFragment(eObject);
-//        }
-//        String promiseKey = moduleAndRuleIds + resourceId + "#" + eObjectId;
-//        String path = ((AccessGraphResource) accessRecordResource).getPromises().get(promiseKey);
-//
-//        Set<String> invalidatedViewPaths = new HashSet<String>();
-//        ((AccessGraphResource) accessRecordResource).checkPath((EgxModule) context.getModule(), invalidatedViewPaths,
-//            new HashSet<>(), new HashSet<>(), path, false);
-//        if (invalidatedViewPaths.size() != 0) {
-//          temp.put(path, element);
-//        }
-//      });
-//      List<Object> filteredElements = new ArrayList<>(temp.values());
-
 			List<Object> filteredElements = elements.parallelStream().map(element -> {
 				String resourceId = null;
 				String eObjectId = null;

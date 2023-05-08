@@ -279,7 +279,7 @@ public class PerformanceRecorder {
   }
 
   public static int getPropertyCount() {
-    return ((AccessGraphResource) accessRecordResource).getTraceIndex().entrySet().stream()
+    return ((AccessGraphResource) accessRecordResource).getPaths().entrySet().stream()
         .mapToInt(e -> e.getValue().getProperties().size()).sum();
   }
 }
