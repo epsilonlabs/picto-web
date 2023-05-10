@@ -17,6 +17,9 @@ package org.eclipse.epsilon.picto.web;
 
 import java.io.File;
 import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.util.Comparator;
 
 import org.eclipse.epsilon.picto.dom.PictoPackage;
 import org.eclipse.jgit.api.CloneCommand;
@@ -210,9 +213,6 @@ public class PictoRepository {
 				+ repoAddress.substring(repoAddress.lastIndexOf("/") + 1, repoAddress.length());
 		File localTargetDir = new File(localTargetDirName);
 
-//		if (localTargetDir.exists()) {
-//			Files.walk(localTargetDir.toPath()).sorted(Comparator.reverseOrder()).map(Path::toFile).forEach(File::delete);
-//		}
 		if (!localTargetDir.exists()) {
 			localTargetDir.mkdirs();
 		}
@@ -238,11 +238,16 @@ public class PictoRepository {
 				System.out.println("Local repository is in sync with the remote repository.");
 				gitFetch.close();
 				return;
-			} 
+			}
 		}
 		gitFetch.close();
 
 		System.out.print("Clone remote to local ...");
+
+		//delete the target local directory first
+		if (localTargetDir.exists()) {
+			Files.walk(localTargetDir.toPath()).sorted(Comparator.reverseOrder()).map(Path::toFile).forEach(File::delete);
+		}
 		
 		// clone
 		CloneCommand command = Git.cloneRepository();
