@@ -34,13 +34,13 @@ SPDX-License-Identifier: EPL-2.0
 					for="picto">Picto file's path in the repository:</label><br /> <input
 					type="text" id="file" name="file" size="50"
 					placeholder="e.g., workspace/socialnetwork/socialnetwork.model.picto"
-					value=examples/pos/pos.picto></input>
-				<br /> <label for="picto">Repository's branch name:</label><br />
-				<input type="text" id="branch" name="branch" size="50"
-					placeholder="e.g., main, itchy-teeth" value="optimised-detection"></input> <br /> <label
-					for="picto">Revision/commitId:</label><br /> <input type="text"
-					id="revision" name="revision" size="50"
-					placeholder="e.g., 2c22a26c73b5a2e7cfde96c370b8ecf596818666"></input>
+					value=examples/pos/pos.picto></input> <br /> <label for="picto">Repository's
+					branch name:</label><br /> <input type="text" id="branch" name="branch"
+					size="50" placeholder="e.g., main, itchy-teeth"
+					value="optimised-detection"></input> <br /><!--  
+					<label for="picto">Revision/commitId:</label><br />
+				<input type="text" id="revision" name="revision" size="50"
+					placeholder="e.g., 2c22a26c73b5a2e7cfde96c370b8ecf596818666"></input> -->
 				<br /> <input id="addButton" type="submit" value="Add" width="50"></input>
 			</form>
 		</div>
@@ -52,9 +52,11 @@ SPDX-License-Identifier: EPL-2.0
 	</div>
 
 	<script th:inline="javascript">
-    var pictofiles = [[${pictofiles}]];
+    //var pictofiles = [[${pictofiles}]];
     // console.log(pictofiles);
-    var workspace = Picto.listToJsTreeData(pictofiles);
+    //var workspace = Picto.listToJsTreeData(pictofiles);
+    var workspace = JSON.parse([[${ pictofiles }]]);
+    console.log(workspace);
 
     /** JsTree **/
     var jsTreeConfig = {
@@ -87,7 +89,14 @@ SPDX-License-Identifier: EPL-2.0
         if (path.endsWith(".picto")) {
           // console.log(path);
           var url = 'picto?file=' + path;
-          // console.log(url);
+          
+          var node = data.instance.get_node(data.selected[0]);
+          if (node.original.repo != null)
+        	  url = url + "&repo=" + node.original.repo;
+          if (node.original.branch != null)
+        	  url = url + "&branch=" + node.original.branch;
+          
+       // console.log(url);
           window.open(url, '_blank');
         }
       }

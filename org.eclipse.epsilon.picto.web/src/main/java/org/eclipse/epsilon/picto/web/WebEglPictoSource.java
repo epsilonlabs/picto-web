@@ -627,14 +627,14 @@ public class WebEglPictoSource extends EglPictoSource {
 	 * Load model file as an EmfModel.
 	 * 
 	 * @param modelName
-	 * @param metamodelUri
+	 * @param metamodelUriString
 	 * @param modelFile
 	 * @param metamodelFile
 	 * @return
 	 * @throws Exception
 	 */
-	private IModel loadModel(String modelName, String metamodelUri, File modelFile, File metamodelFile) throws Exception {
-		org.eclipse.emf.common.util.URI uri = (metamodelFile != null) ? loadMetamodel(metamodelFile) : null;
+	private IModel loadModel(String modelName, String metamodelUriString, File modelFile, File metamodelFile) throws Exception {
+		org.eclipse.emf.common.util.URI metamodelUri = (metamodelFile != null) ? loadMetamodel(metamodelFile) : null;
 
 		EmfModel newModel = null;
 		Cache cache = CachedResourceSet.getCache();
@@ -650,12 +650,12 @@ public class WebEglPictoSource extends EglPictoSource {
 
 		if (modelFile != null)
 			newModel.setModelFile(modelFile.getAbsolutePath());
-		if (metamodelUri != null)
-			newModel.setMetamodelUri(metamodelUri);
+		if (metamodelUriString != null)
+			newModel.setMetamodelUri(metamodelUriString);
 		if (metamodelFile != null)
 			newModel.setMetamodelFile(metamodelFile.getAbsolutePath());
-		if (uri != null)
-			newModel.setMetamodelFileUri(uri);
+		if (metamodelUri != null)
+			newModel.setMetamodelFileUri(metamodelUri);
 
 		if (modelFile.getName().endsWith(".model") || modelFile.getName().endsWith(".xmi")) {
 			newModel.load();

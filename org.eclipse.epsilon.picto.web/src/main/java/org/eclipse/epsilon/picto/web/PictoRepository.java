@@ -16,25 +16,20 @@
 package org.eclipse.epsilon.picto.web;
 
 import java.io.File;
-import java.io.FileOutputStream;
 import java.io.IOException;
 
 import org.eclipse.epsilon.picto.dom.PictoPackage;
+import org.eclipse.jgit.api.CloneCommand;
 import org.eclipse.jgit.api.Git;
 import org.eclipse.jgit.api.errors.GitAPIException;
 import org.eclipse.jgit.api.errors.InvalidRemoteException;
 import org.eclipse.jgit.api.errors.TransportException;
-import org.eclipse.jgit.internal.storage.dfs.DfsRepositoryDescription;
-import org.eclipse.jgit.internal.storage.dfs.InMemoryRepository;
-import org.eclipse.jgit.lib.ObjectId;
-import org.eclipse.jgit.lib.ObjectLoader;
-import org.eclipse.jgit.lib.ObjectReader;
+import org.eclipse.jgit.lib.Constants;
+import org.eclipse.jgit.lib.Ref;
+import org.eclipse.jgit.lib.Repository;
 import org.eclipse.jgit.revwalk.RevCommit;
-import org.eclipse.jgit.revwalk.RevTree;
-import org.eclipse.jgit.revwalk.RevWalk;
+import org.eclipse.jgit.transport.FetchResult;
 import org.eclipse.jgit.transport.RefSpec;
-import org.eclipse.jgit.treewalk.TreeWalk;
-import org.eclipse.jgit.treewalk.filter.PathFilter;
 import org.slf4j.LoggerFactory;
 
 import ch.qos.logback.classic.Level;
@@ -49,151 +44,219 @@ import ch.qos.logback.classic.Logger;
  */
 public class PictoRepository {
 
-  String workspace = PictoApplication.WORKSPACE;
+	String workspace = PictoApplication.WORKSPACE;
 
-  /**
-   * @param args
-   * @throws GitAPIException
-   * @throws TransportException
-   * @throws InvalidRemoteException
-   * @throws IOException
-   */
-  public static void main(String[] args)
-      throws InvalidRemoteException, TransportException, GitAPIException, IOException {
+	/**
+	 * @param args
+	 * @throws GitAPIException
+	 * @throws TransportException
+	 * @throws InvalidRemoteException
+	 * @throws IOException
+	 */
+	public static void main(String[] args)
+			throws InvalidRemoteException, TransportException, GitAPIException, IOException {
 
-    Logger logger = (Logger) LoggerFactory.getLogger(org.slf4j.Logger.ROOT_LOGGER_NAME);
-    logger.setLevel(Level.OFF);
+		Logger logger = (Logger) LoggerFactory.getLogger(org.slf4j.Logger.ROOT_LOGGER_NAME);
+		logger.setLevel(Level.OFF);
 
-    PictoPackage.eINSTANCE.eClass();
+		PictoPackage.eINSTANCE.eClass();
 
-    String repo = "https://github.com/epsilonlabs/picto-web";
-    String pictoFilePath = "workspace/socialnetwork/socialnetwork.model.picto";
-    String branch = "main";
-    String revision = "";
+		String repo = "https://github.com/epsilonlabs/picto-web";
+		String pictoFilePath = "workspace/socialnetwork/socialnetwork.model.picto";
+		String branch = "main";
+		String revision = "";
 
-    PictoRepository pictoRepo = new PictoRepository();
-    pictoRepo.setWorkspace("dummy-workspace");
-    pictoRepo.retrievePicto(pictoFilePath, repo, branch, revision);
+		PictoRepository pictoRepo = new PictoRepository();
+		pictoRepo.setWorkspace("dummy-workspace");
+		pictoRepo.retrievePicto(pictoFilePath, repo, branch, revision);
 
-    System.out.println("Finished!");
-  }
+		System.out.println("Finished!");
+	}
 
-  public String getWorkspace() {
-    return workspace;
-  }
+	/***
+	 * Check if a file inside a work tree.
+	 * 
+	 * @param file
+	 * @return
+	 * @throws IOException
+	 */
+	private static File getWorkingGitDir(File file) {
 
-  public void setWorkspace(String workspace) {
-    this.workspace = workspace;
-  }
+		String workspace = new File(PictoApplication.WORKSPACE).getAbsolutePath();
+		File workingGitFile = null;
 
-  public void retrievePicto(String pictoFilePath, String repoAddress)
-      throws InvalidRemoteException, TransportException, IOException, GitAPIException {
-    this.retrievePicto(pictoFilePath, repoAddress, null, null);
-  }
+		while (file.getParent() != null && !file.getAbsolutePath().equals(workspace)) {
+			for (File f : file.getParentFile().listFiles()) {
+				System.out.println(f.getAbsolutePath());
+				if (f.getName().equals(".git") && f.isDirectory()) {
+					workingGitFile = f;
+					break;
+				}
+			}
+			if (workingGitFile != null) {
+				break;
+			}
+			file = file.getParentFile();
+		}
 
-  public void retrievePicto(String pictoFilePath, String repoAddress, String branch)
-      throws InvalidRemoteException, TransportException, IOException, GitAPIException {
-    this.retrievePicto(pictoFilePath, repoAddress, branch, null);
-  }
+		return (workingGitFile != null) ? workingGitFile.getParentFile() : null;
+	}
 
-  /***
-   * 
-   * @param pictoFilePath
-   * @param repoAddress
-   * @param branch
-   * @param revision
-   * @throws InvalidRemoteException
-   * @throws TransportException
-   * @throws IOException
-   * @throws GitAPIException
-   */
+	/***
+	 * Get the the url of the file's repo.
+	 * 
+	 * @param file
+	 * @return Return null if the file is not under a valid repo.s
+	 */
+	public static String getRepoUrl(File file) {
+		String address = null;
+		File repoDir = PictoRepository.getWorkingGitDir(file);
+		if (repoDir != null) {
+			try {
 
-  public void retrievePicto(String pictoFilePath, String repoAddress, String branch, String revision)
-      throws InvalidRemoteException, TransportException, IOException, GitAPIException {
+				Git git = Git.open(repoDir);
+				address = git.getRepository().getConfig().getString("remote", "origin", "url");
+			} catch (IOException e) {
+				e.printStackTrace();
+			}
+		}
+		return address;
+	}
 
-    if (branch == null || branch.trim().length() == 0) {
-      branch = "main";
-    }
+	/***
+	 * Get the the file's repository.
+	 * 
+	 * @param file
+	 * @return Return null if the file is not under a valid repo.
+	 */
+	public static Repository getRepo(File file) {
+		File repoDir = PictoRepository.getWorkingGitDir(file);
+		if (repoDir != null) {
+			try {
 
-    String pictoParentDir = pictoFilePath.substring(0, pictoFilePath.lastIndexOf("/") + 1);
+				Git git = Git.open(repoDir);
+				return git.getRepository();
+			} catch (IOException e) {
+				e.printStackTrace();
+			}
+		}
+		return null;
+	}
 
-    String localTargetDirName = (new File(workspace)).getAbsolutePath() + File.separator
-        + repoAddress.substring(repoAddress.lastIndexOf("/") + 1, repoAddress.length());
-    File localTargetDir = new File(localTargetDirName);
-    if (!localTargetDir.exists()) {
-      localTargetDir.mkdirs();
-    }
+	/***
+	 * Get the the branch name of the file's repo.
+	 * 
+	 * @param file
+	 * @return Return null if the file is not under a valid repo.
+	 */
+	public static String getRepoBranch(File file) {
+		String branch = null;
+		File repoDir = PictoRepository.getWorkingGitDir(file);
+		if (repoDir != null) {
+			try {
 
-    System.out.println("Checking out '" + repoAddress + "' to '" + localTargetDirName + "'");
+				Git git = Git.open(repoDir);
+				branch = git.getRepository().getBranch();
+			} catch (IOException e) {
+				e.printStackTrace();
+			}
+		}
+		return branch;
+	}
 
-    DfsRepositoryDescription repoDesc = new DfsRepositoryDescription();
-    InMemoryRepository repository = new InMemoryRepository(repoDesc);
-    Git git = new Git(repository);
-    git.fetch().setRemote(repoAddress).setRefSpecs(new RefSpec("+refs/heads/*:refs/heads/*")).call();
+	/***
+	 * Get Workspace
+	 * 
+	 * @return
+	 */
+	public String getWorkspace() {
+		return workspace;
+	}
 
-    ObjectId commitId = null;
-    if (revision == null || revision.trim().length() == 0) {
-      commitId = repository.resolve("refs/heads/" + branch);
-    } else {
-      commitId = repository.resolve(revision);
-    }
+	public void setWorkspace(String workspace) {
+		this.workspace = workspace;
+	}
 
-    this.retrieveFiles(localTargetDir, repository, commitId, pictoParentDir);
+	public void retrievePicto(String pictoFilePath, String repoAddress)
+			throws InvalidRemoteException, TransportException, IOException, GitAPIException {
+		this.retrievePicto(pictoFilePath, repoAddress, null, null);
+	}
 
-    git.close();
-  }
+	public void retrievePicto(String pictoFilePath, String repoAddress, String branch)
+			throws InvalidRemoteException, TransportException, IOException, GitAPIException {
+		this.retrievePicto(pictoFilePath, repoAddress, branch, null);
+	}
 
-  /***
-   * 
-   * @param targetDir
-   * @param repository
-   * @param commitId
-   * @param filePath
-   * @return
-   * @throws IOException
-   * @throws GitAPIException
-   * @throws InvalidRemoteException
-   * @throws TransportException
-   */
-  private File retrieveFiles(File targetDir, InMemoryRepository repository, ObjectId commitId, String filePath)
-      throws IOException, GitAPIException, InvalidRemoteException, TransportException {
+	/***
+	 * 
+	 * @param pictoFilePath
+	 * @param repoAddress
+	 * @param branch
+	 * @param revision
+	 * @throws InvalidRemoteException
+	 * @throws TransportException
+	 * @throws IOException
+	 * @throws GitAPIException
+	 */
 
-    File outputFile = null;
+	public void retrievePicto(String pictoFilePath, String repoAddress, String branch, String revision)
+			throws InvalidRemoteException, TransportException, IOException, GitAPIException {
 
-    String pictoFileNoSlash = filePath;
-    while (pictoFileNoSlash.length() > 0 && pictoFileNoSlash.charAt(0) == '/') {
-      pictoFileNoSlash = pictoFileNoSlash.substring(1, pictoFileNoSlash.length());
-    }
+		if (branch == null || branch.trim().length() == 0) {
+			branch = "main";
+		}
 
-    RevWalk revWalk = new RevWalk(repository);
-    RevCommit commit = revWalk.parseCommit(commitId);
-    RevTree tree = commit.getTree();
-    TreeWalk treeWalk = new TreeWalk(repository);
-    treeWalk.addTree(tree);
-    treeWalk.setRecursive(true);
-    treeWalk.setFilter(PathFilter.create(filePath));
-    while (treeWalk.next()) {
-      ObjectId blobId = treeWalk.getObjectId(0);
-      try (ObjectReader objectReader = repository.newObjectReader()) {
-        ObjectLoader objectLoader = objectReader.open(blobId);
-//        objectLoader.copyTo(System.out);
-        byte[] bytes = objectLoader.getBytes();
-        String output = targetDir.getAbsolutePath() + "/" + treeWalk.getPathString();
-        output = output.replace("/", File.separator);
-        outputFile = new File(output);
-        outputFile.getParentFile().mkdirs();
-        try (FileOutputStream fOS = new FileOutputStream(output)) {
-          fOS.write(bytes);
-          System.out.println(outputFile.getAbsolutePath() + " created");
-        } catch (Exception e) {
-          System.out.println("Error writing " + output + " from repo to local");
-        }
-      }
-    }
-    treeWalk.close();
-    revWalk.close();
+		String localTargetDirName = (new File(workspace)).getAbsolutePath() + File.separator
+				+ repoAddress.substring(repoAddress.lastIndexOf("/") + 1, repoAddress.length());
+		File localTargetDir = new File(localTargetDirName);
 
-    return outputFile;
-  }
+//		if (localTargetDir.exists()) {
+//			Files.walk(localTargetDir.toPath()).sorted(Comparator.reverseOrder()).map(Path::toFile).forEach(File::delete);
+//		}
+		if (!localTargetDir.exists()) {
+			localTargetDir.mkdirs();
+		}
+
+		System.out.println("Checking out '" + repoAddress + "' to '" + localTargetDirName + "'");
+
+		// fetch, check if remote and local are same
+		Git gitFetch = Git.open(localTargetDir);
+		Repository repository = gitFetch.getRepository();
+
+		FetchResult fetchResult = gitFetch.fetch().setRemote(repoAddress).setInitialBranch(branch)
+				.setRefSpecs(new RefSpec("+refs/heads/*:refs/heads/*")).call();
+
+		String name = Constants.R_HEADS + repository.getBranch();
+
+		Ref trackingRefUpdate = fetchResult.getAdvertisedRef(name);
+
+		if (trackingRefUpdate != null) {
+			RevCommit localCommit = repository.parseCommit(repository.resolve(Constants.HEAD));
+			RevCommit remoteCommit = repository.parseCommit(trackingRefUpdate.getObjectId());
+			// return if they are equal
+			if (localCommit.equals(remoteCommit)) {
+				System.out.println("Local repository is in sync with the remote repository.");
+				gitFetch.close();
+				return;
+			} 
+		}
+		gitFetch.close();
+
+		System.out.print("Clone remote to local ...");
+		
+		// clone
+		CloneCommand command = Git.cloneRepository();
+		command = command.setURI(repoAddress).setDirectory(localTargetDir).setBranch(branch);
+
+		Git gitCheckout = command.call();
+
+		if (revision != null && revision.trim().length() > 0) {
+			gitCheckout.checkout().setName(revision).call();
+//				git.checkout().setCreateBranch(true).setName(branch).setStartPoint(revision).call();
+		}
+
+		gitCheckout.close();
+		System.out.print(" Done");
+	}
 
 }

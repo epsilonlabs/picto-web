@@ -18,14 +18,19 @@ public class JsTreeNode {
 	protected List<JsTreeNode> children = new ArrayList<>();
 	protected String text;
 	protected String path;
-//	protected String icon = "jstree-folder";
 	protected String icon = "icons/diagram.gif";
-//	protected JsTreeState state = new JsTreeState();
+	protected String url;
 
+	/***
+	 * Find a node with the specified path and remove it.
+	 * 
+	 * @param path
+	 * @return
+	 */
 	public JsTreeNode removeNode(String path) {
 		JsTreeNode result = null;
 		Iterator<JsTreeNode> iterator = children.iterator();
-		while(iterator.hasNext()) {
+		while (iterator.hasNext()) {
 			JsTreeNode node = iterator.next();
 			result = node.removeNode(path);
 			if (result != null) {
@@ -36,7 +41,7 @@ public class JsTreeNode {
 				result = node;
 				break;
 			}
-			
+
 		}
 
 		return result;
@@ -66,19 +71,19 @@ public class JsTreeNode {
 		this.icon = icon;
 	}
 
-//	public JsTreeState getState() {
-//		return state;
-//	}
-//
-//	public void setState(JsTreeState state) {
-//		this.state = state;
-//	}
-
 	public String getPath() {
 		return path;
 	}
 
 	public void setPath(String path) {
 		this.path = path;
+	}
+
+	public String getUrl() {
+		return url;
+	}
+
+	public void setUrl(String url) {
+		this.url = url;
 	}
 }

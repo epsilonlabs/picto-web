@@ -24,6 +24,8 @@ Picto.tempSelectedNode = null; // temporary holder when refreshing jstree
 Picto.tempSelectedPath = null; // temporary holder when refreshing jstree
 Picto.views = new Map();
 Picto.disableJsTreeOnSelectEvent = false;
+Picto.repo = null;
+Picto.branch = null;
 
 /**
  * Covert a json object to string. The object contains the information of the file selected,
@@ -341,8 +343,15 @@ Picto.draw = function (label, url) {
   request.open("GET", "/pictojson" + urlWithTimestamp);
   request.send();
 
-  window.history.pushState(null, label, url);
+	//var temp = window.location.href;
+	if (Picto.repo != null)
+		url = url + "&repo=" + Picto.repo;
+	if (Picto.branch != null)
+		url = url + "&branch=" + Picto.branch;
+	//window.location.href = temp;
 
+  window.history.pushState(null, label, url);
+    
   return false;
 }
 
@@ -363,7 +372,6 @@ Picto.connectToServer = function (pictoFile) {
         return;
       }
       Picto.render(view);
-
     });
   }
   );

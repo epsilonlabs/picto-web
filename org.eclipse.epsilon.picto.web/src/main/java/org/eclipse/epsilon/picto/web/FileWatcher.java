@@ -39,205 +39,205 @@ import org.springframework.beans.factory.annotation.Autowired;
 
 public class FileWatcher extends Thread {
 
-  public static FileWatcher FILE_WATCHER;
+	public static FileWatcher FILE_WATCHER;
 
-  @Autowired
-  public PictoJsonController pictoJsonController;
+	@Autowired
+	public PictoJsonController pictoJsonController;
 
-  private boolean isRunning = false;
-  private static boolean isPaused = false;
+	private boolean isRunning = false;
+	private static boolean isPaused = false;
 
-  private WatchService watcher;
+	private WatchService watcher;
 
-  public FileWatcher() {
-    this.setName(FileWatcher.class.getSimpleName());
-  }
+	public FileWatcher() {
+		this.setName(FileWatcher.class.getSimpleName());
+	}
 
-  public FileWatcher(PictoJsonController pictoJsonController) {
-    this.pictoJsonController = pictoJsonController;
-    this.setName(FileWatcher.class.getSimpleName());
-  }
+	public FileWatcher(PictoJsonController pictoJsonController) {
+		this.pictoJsonController = pictoJsonController;
+		this.setName(FileWatcher.class.getSimpleName());
+	}
 
-  public boolean isPaused() {
-    return isPaused;
-  }
+	public boolean isPaused() {
+		return isPaused;
+	}
 
-  public static void pause() {
-    isPaused = true;
-  }
+	public static void pause() {
+		isPaused = true;
+	}
 
-  public static void unpause() {
-    isPaused = false;
-  }
+	public static void unpause() {
+		isPaused = false;
+	}
 
-  public void terminate() throws IOException {
-    isRunning = false;
-    if (watcher != null)
-      watcher.close();
-  }
+	public void terminate() throws IOException {
+		isRunning = false;
+		if (watcher != null)
+			watcher.close();
+	}
 
 //  @MessageMapping("/gs-guide-websocket")
-  public void notifyFileChange(File modifiedFile) throws Exception {
-    if (this.pictoJsonController != null) {
-      this.pictoJsonController.sendChangesToBroker(modifiedFile);
-    } else {
-      System.out.println("No PictoJsonController attached");
-    }
-  }
+	public void notifyFileChange(File modifiedFile) throws Exception {
+		if (this.pictoJsonController != null) {
+			this.pictoJsonController.sendChangesToBroker(modifiedFile);
+		} else {
+			System.out.println("No PictoJsonController attached");
+		}
+	}
 
-  @Override
-  public void run() {
-    try {
+	@Override
+	public void run() {
+		try {
 //      // System.out.println("YYYYY");
-      HashMap<WatchKey, Path> keys = new HashMap<WatchKey, Path>();
-      watcher = FileSystems.getDefault().newWatchService();
-      registerDirectory(watcher, PictoApplication.WORKSPACE, keys);
+			HashMap<WatchKey, Path> keys = new HashMap<WatchKey, Path>();
+			watcher = FileSystems.getDefault().newWatchService();
+			registerDirectory(watcher, PictoApplication.WORKSPACE, keys);
 
-      isRunning = true;
+			isRunning = true;
 
-      while (isRunning) {
+			firstWhile: while (isRunning) {
 
-        WatchKey key;
-        Path path;
-        try {
-          key = watcher.take();
-          Thread.sleep(100);
-          path = keys.get(key);
-          if (path == null) {
-            System.err.println("WatchKey not recognised!!");
-            continue;
-          }
-        } catch (Exception ex) {
-          return;
-        }
+				WatchKey key;
+				Path path;
+				try {
+					key = watcher.take();
+					Thread.sleep(100);
+					path = keys.get(key);
+					if (path == null) {
+						System.err.println("WatchKey not recognised!!");
+						continue;
+					}
+				} catch (Exception ex) {
+					continue;
+				}
 
-        if (isPaused) {
-          return;
-        }
+				if (isPaused) {
+					continue;
+				}
 
-        List<WatchEvent<?>> events = key.pollEvents();
-        for (WatchEvent<?> event : events) {
+				List<WatchEvent<?>> events = key.pollEvents();
+				for (WatchEvent<?> event : events) {
 
-          @SuppressWarnings("unchecked")
-          WatchEvent<Path> ev = (WatchEvent<Path>) event;
-          Path filePath = ev.context();
+					@SuppressWarnings("unchecked")
+					WatchEvent<Path> ev = (WatchEvent<Path>) event;
+					Path filePath = ev.context();
 
-          if (filePath.toString().endsWith(".picto")
+					if (filePath.toString().endsWith(".picto")
 //              || filePath.toString().endsWith(".egx")
 //              || filePath.toString().endsWith(".egl") 
-              || filePath.toString().endsWith(".flexmi") || filePath.toString().endsWith(".model")
-              || filePath.toString().endsWith(".emf") || filePath.toString().endsWith(".xmi")) {
+							|| filePath.toString().endsWith(".flexmi") || filePath.toString().endsWith(".model")
+							|| filePath.toString().endsWith(".emf") || filePath.toString().endsWith(".xmi")) {
 
-            File modifiedFile = new File(path.toString() + File.separator + filePath.toString());
+						File modifiedFile = new File(path.toString() + File.separator + filePath.toString());
 
-            System.out.println("Modified file: " + modifiedFile.getAbsolutePath());
+						System.out.println("Modified file: " + modifiedFile.getAbsolutePath());
 
-            boolean isDocumentValid = false;
-            int counter = 0;
-            while (!isDocumentValid) {
-              try {
-                DocumentBuilderFactory documentBuilderFactory = DocumentBuilderFactory.newInstance();
-                DocumentBuilder documentBuilder = documentBuilderFactory.newDocumentBuilder();
-                documentBuilder.parse(modifiedFile);
-                isDocumentValid = true;
-                break;
-              } catch (Exception e) {
-                System.out.println("Error reading " + modifiedFile.getAbsolutePath());
-                Thread.sleep(1000);
-                System.out.println("Retry to read");
-              }
-              if (counter == 3) {
-                System.out.println("Cannot read the file. Cancel further processes.");
-                return;
-              }
-              counter += 1;
-            }
+						boolean isDocumentValid = false;
+						int counter = 0;
+						while (!isDocumentValid) {
+							try {
+								DocumentBuilderFactory documentBuilderFactory = DocumentBuilderFactory.newInstance();
+								DocumentBuilder documentBuilder = documentBuilderFactory.newDocumentBuilder();
+								documentBuilder.parse(modifiedFile);
+								isDocumentValid = true;
+								break;
+							} catch (Exception e) {
+								System.out.println("Error reading " + modifiedFile.getAbsolutePath());
+								Thread.sleep(1000);
+								System.out.println("Retry to read");
+							}
+							if (counter == 3) {
+								System.out.println("Cannot read the file. Cancel further processes.");
+								continue firstWhile;
+							}
+							counter += 1;
+						}
 
-            try {
-              this.notifyFileChange(modifiedFile);
-              break;
-            } catch (Exception e) {
-              e.printStackTrace();
-              System.console();
-            }
-          }
-        }
+						try {
+							this.notifyFileChange(modifiedFile);
+							break;
+						} catch (Exception e) {
+							e.printStackTrace();
+							System.console();
+						}
+					}
+				}
 
-        boolean valid = key.reset();
-        if (!valid) {
-          // System.out.println("Picto: FileWatcher is not valid anymore!");
-          break;
-        }
+				boolean valid = key.reset();
+				if (!valid) {
+					// System.out.println("Picto: FileWatcher is not valid anymore!");
+					break;
+				}
 
-      }
-      watcher.close();
-    } catch (Exception e) {
-      e.printStackTrace();
-    }
-  }
+			}
+			watcher.close();
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+	}
 
-  private void registerDirectory(WatchService watcher, String directory, HashMap<WatchKey, Path> keys)
-      throws Exception {
-    Path dir = Paths.get(directory).toAbsolutePath();
-    WatchKey key = dir.register(watcher, ENTRY_CREATE, ENTRY_DELETE, ENTRY_MODIFY);
-    keys.put(key, dir);
-    // System.out.println("PICTO: Watch Service registered for dir: " + dir);
+	private void registerDirectory(WatchService watcher, String directory, HashMap<WatchKey, Path> keys)
+			throws Exception {
+		Path dir = Paths.get(directory).toAbsolutePath();
+		WatchKey key = dir.register(watcher, ENTRY_CREATE, ENTRY_DELETE, ENTRY_MODIFY);
+		keys.put(key, dir);
+		// System.out.println("PICTO: Watch Service registered for dir: " + dir);
 
-    File file = new File(directory);
-    for (File f : file.listFiles()) {
-      if (f.isDirectory()) {
-        registerDirectory(watcher, f.getAbsolutePath(), keys);
-      }
-    }
-  }
+		File file = new File(directory);
+		for (File f : file.listFiles()) {
+			if (f.isDirectory()) {
+				registerDirectory(watcher, f.getAbsolutePath(), keys);
+			}
+		}
+	}
 
-  public static void scanPictoFiles() throws Exception {
-    scanPictoFiles(PictoApplication.WORKSPACE);
-  }
+	public static void scanPictoFiles() throws Exception {
+		scanPictoFiles(PictoApplication.WORKSPACE);
+	}
 
-  private static void scanPictoFiles(String directory) throws Exception {
-    File file = new File(directory);
-    for (File f : file.listFiles()) {
-      if (f.isDirectory()) {
-        scanPictoFiles(f.getAbsolutePath());
-      }
-      if (f.isFile() && f.getName().endsWith(".picto")) {
-        // System.out.println("PICTO: Found Picto file: " + file.getAbsolutePath());
-        PictoProject.createPictoProject(f);
-      }
-    }
-  }
+	private static void scanPictoFiles(String directory) throws Exception {
+		File file = new File(directory);
+		for (File f : file.listFiles()) {
+			if (f.isDirectory()) {
+				scanPictoFiles(f.getAbsolutePath());
+			}
+			if (f.isFile() && f.getName().endsWith(".picto")) {
+				// System.out.println("PICTO: Found Picto file: " + file.getAbsolutePath());
+				PictoProject.createPictoProject(f);
+			}
+		}
+	}
 
-  public PictoJsonController getPictoJsonController() {
-    return pictoJsonController;
-  }
+	public PictoJsonController getPictoJsonController() {
+		return pictoJsonController;
+	}
 
-  public void setPictoJsonController(PictoJsonController pictoJsonController) {
-    this.pictoJsonController = pictoJsonController;
-  }
+	public void setPictoJsonController(PictoJsonController pictoJsonController) {
+		this.pictoJsonController = pictoJsonController;
+	}
 
-  public static void startWatching() {
-    if (FILE_WATCHER == null)
-      FILE_WATCHER = new FileWatcher();
-    FILE_WATCHER.start();
-  }
+	public static void startWatching() {
+		if (FILE_WATCHER == null)
+			FILE_WATCHER = new FileWatcher();
+		FILE_WATCHER.start();
+	}
 
-  public static void setResponseController(PictoJsonController pictoJsonController) {
-    if (FILE_WATCHER == null)
-      FILE_WATCHER = new FileWatcher();
-    FILE_WATCHER.setPictoJsonController(pictoJsonController);
-  }
+	public static void setResponseController(PictoJsonController pictoJsonController) {
+		if (FILE_WATCHER == null)
+			FILE_WATCHER = new FileWatcher();
+		FILE_WATCHER.setPictoJsonController(pictoJsonController);
+	}
 
-  public static void startWatching(PictoJsonController pictoJsonController) {
-    if (FILE_WATCHER == null)
-      FILE_WATCHER = new FileWatcher(pictoJsonController);
-    FILE_WATCHER.start();
-  }
+	public static void startWatching(PictoJsonController pictoJsonController) {
+		if (FILE_WATCHER == null)
+			FILE_WATCHER = new FileWatcher(pictoJsonController);
+		FILE_WATCHER.start();
+	}
 
-  public static void stopWatching() throws IOException, InterruptedException {
-    if (FILE_WATCHER != null) {
-      FILE_WATCHER.terminate();
-      FILE_WATCHER = null;
-    }
-  }
+	public static void stopWatching() throws IOException, InterruptedException {
+		if (FILE_WATCHER != null) {
+			FILE_WATCHER.terminate();
+			FILE_WATCHER = null;
+		}
+	}
 }
