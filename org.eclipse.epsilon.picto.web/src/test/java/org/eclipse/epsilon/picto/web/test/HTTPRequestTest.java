@@ -81,7 +81,7 @@ import com.google.common.io.Files;
  */
 public class HTTPRequestTest {
 
-	private static final String LOCALHOST = "http://localhost:8081/pictojson/picto?";
+	private static final String LOCALHOST = "http://localhost:8080/pictojson/picto?";
 
 	private static Thread pictoAppThread;
 	private static DocumentBuilder builder;
@@ -224,7 +224,7 @@ public class HTTPRequestTest {
 		WebSocketStompClient stompClient = new WebSocketStompClient(sockJsClient);
 
 		// connect
-		StompSession session = stompClient.connect("ws://localhost:8081/picto-web", new SessionHandler()).get();
+		StompSession session = stompClient.connect("ws://localhost:8080/picto-web", new SessionHandler()).get();
 
 		// subscribe
 		ResponseHolder responseHolder = new ResponseHolder();

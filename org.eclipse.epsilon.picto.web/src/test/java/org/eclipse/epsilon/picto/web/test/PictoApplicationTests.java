@@ -59,7 +59,7 @@ import com.fasterxml.jackson.databind.JsonNode;
 @AutoConfigureMockMvc
 class PictoApplicationTests {
 
-  private static final String LOCALHOST = "http://localhost:8081/pictojson/picto?";
+  private static final String LOCALHOST = "http://localhost:8080/pictojson/picto?";
 
   @BeforeAll
   static void setUpBeforeClass() throws Exception {
