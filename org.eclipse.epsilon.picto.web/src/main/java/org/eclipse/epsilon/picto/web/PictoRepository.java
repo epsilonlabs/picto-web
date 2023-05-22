@@ -220,35 +220,39 @@ public class PictoRepository {
 		System.out.println("Checking out '" + repoAddress + "' to '" + localTargetDirName + "'");
 
 		// fetch, check if remote and local are same
-		Git gitFetch = Git.open(localTargetDir);
-		Repository repository = gitFetch.getRepository();
+		try {
+			Git gitFetch = Git.open(localTargetDir);
+			Repository repository = gitFetch.getRepository();
 
-		FetchResult fetchResult = gitFetch.fetch().setRemote(repoAddress).setInitialBranch(branch)
-				.setRefSpecs(new RefSpec("+refs/heads/*:refs/heads/*")).call();
+			FetchResult fetchResult = gitFetch.fetch().setRemote(repoAddress).setInitialBranch(branch)
+					.setRefSpecs(new RefSpec("+refs/heads/*:refs/heads/*")).call();
 
-		String name = Constants.R_HEADS + repository.getBranch();
+			String name = Constants.R_HEADS + repository.getBranch();
 
-		Ref trackingRefUpdate = fetchResult.getAdvertisedRef(name);
+			Ref trackingRefUpdate = fetchResult.getAdvertisedRef(name);
 
-		if (trackingRefUpdate != null) {
-			RevCommit localCommit = repository.parseCommit(repository.resolve(Constants.HEAD));
-			RevCommit remoteCommit = repository.parseCommit(trackingRefUpdate.getObjectId());
-			// return if they are equal
-			if (localCommit.equals(remoteCommit)) {
-				System.out.println("Local repository is in sync with the remote repository.");
-				gitFetch.close();
-				return;
+			if (trackingRefUpdate != null) {
+				RevCommit localCommit = repository.parseCommit(repository.resolve(Constants.HEAD));
+				RevCommit remoteCommit = repository.parseCommit(trackingRefUpdate.getObjectId());
+				// return if they are equal
+				if (localCommit.equals(remoteCommit)) {
+					System.out.println("Local repository is in sync with the remote repository.");
+					gitFetch.close();
+					return;
+				}
 			}
+			gitFetch.close();
+		} catch (Exception e) {
+			e.printStackTrace();
 		}
-		gitFetch.close();
 
 		System.out.print("Clone remote to local ...");
 
-		//delete the target local directory first
+		// delete the target local directory first
 		if (localTargetDir.exists()) {
 			Files.walk(localTargetDir.toPath()).sorted(Comparator.reverseOrder()).map(Path::toFile).forEach(File::delete);
 		}
-		
+
 		// clone
 		CloneCommand command = Git.cloneRepository();
 		command = command.setURI(repoAddress).setDirectory(localTargetDir).setBranch(branch);

@@ -68,6 +68,7 @@ import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
 
 import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.node.MissingNode;
 import com.google.common.io.Files;
 
 /***
@@ -80,313 +81,318 @@ import com.google.common.io.Files;
  */
 public class HTTPRequestTest {
 
-  private static final String LOCALHOST = "http://localhost:8081/pictojson/picto?";
+	private static final String LOCALHOST = "http://localhost:8081/pictojson/picto?";
 
-  private static Thread pictoAppThread;
-  private static DocumentBuilder builder;
+	private static Thread pictoAppThread;
+	private static DocumentBuilder builder;
 
-  private static File tempModelFile;
+	private static File tempModelFile;
 
-  private static File modelFileBackup;
+	private static File modelFileBackup;
 
-  private static File modelFile;
+	private static File modelFile;
 
-  /***
-   * Initialise and run Picto Web server.
-   * 
-   * @throws Exception
-   */
-  @BeforeAll
-  static void setUpBeforeClass() throws Exception {
-    PictoPackage.eINSTANCE.eClass();
-    String[] args = new String[] {};
-    pictoAppThread = new Thread() {
-      @Override
-      public void run() {
-        try {
-          PictoApplication.main(args);
-        } catch (Exception e) {
-          e.printStackTrace();
-        }
-      }
-    };
-    PictoApplication.setPictoWebOnLoadedListener(new PictoWebOnLoadedListener() {
-      @Override
-      public void onLoaded() {
-        if (args != null) {
-          synchronized (args) {
-            args.notify();
-          }
-        }
-      }
-      // ---
-    });
-    synchronized (args) {
-      pictoAppThread.start();
-      args.wait();
-    }
+	/***
+	 * Initialise and run Picto Web server.
+	 * 
+	 * @throws Exception
+	 */
+	@BeforeAll
+	static void setUpBeforeClass() throws Exception {
+		PictoPackage.eINSTANCE.eClass();
+		String[] args = new String[] {};
+		pictoAppThread = new Thread() {
+			@Override
+			public void run() {
+				try {
+					PictoApplication.main(args);
+				} catch (Exception e) {
+					e.printStackTrace();
+				}
+			}
+		};
+		PictoApplication.setPictoWebOnLoadedListener(new PictoWebOnLoadedListener() {
+			@Override
+			public void onLoaded() {
+				if (args != null) {
+					synchronized (args) {
+						args.notify();
+					}
+				}
+			}
+			// ---
+		});
+		synchronized (args) {
+			pictoAppThread.start();
+			args.wait();
+		}
 
-    DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
-    builder = factory.newDocumentBuilder();
-  }
+		DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
+		builder = factory.newDocumentBuilder();
+	}
 
-  /***
-   * Shutdown Picto Web server.
-   * 
-   * @throws Exception
-   */
-  @AfterAll
-  static void tearDownAfterClass() throws Exception {
+	/***
+	 * Shutdown Picto Web server.
+	 * 
+	 * @throws Exception
+	 */
+	@AfterAll
+	static void tearDownAfterClass() throws Exception {
 
-    try {
-      FileWatcher.stopWatching();
-      PictoApplication.exit();
-      if (modelFile.exists())
-        modelFile.delete();
-      Files.copy(modelFileBackup, modelFile);
-    } catch (Exception e) {
-      e.printStackTrace();
-    }
-  }
+		try {
+			FileWatcher.stopWatching();
+			PictoApplication.exit();
+			if (modelFile.exists())
+				modelFile.delete();
+			Files.copy(modelFileBackup, modelFile);
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+	}
 
-  @BeforeEach
-  void setUp() throws Exception {
-  }
+	@BeforeEach
+	void setUp() throws Exception {
+	}
 
-  @AfterEach
-  void tearDown() throws Exception {
-  }
+	@AfterEach
+	void tearDown() throws Exception {
+	}
 
-  /***
-   * Using the '/socialnetwork/socialnetwork.model.picto' file under the
-   * Workspace, this method tests whether '/Social Network' path returns a view
-   * that contains Alice, Bob, and Charlie.
-   * 
-   * @throws IOException
-   * @throws SAXException
-   * @throws XPathExpressionException
-   */
-  @Test
-  public void testGetSocialNetwork() throws IOException, SAXException, XPathExpressionException {
-    String expectedPath = "/Social Network";
-    String expectedFile = "/socialnetwork/socialnetwork.model.picto";
-    Map<String, String> parameters = new HashMap<>();
-    parameters.put("file", expectedFile);
-    parameters.put("path", expectedPath);
-    parameters.put("name", "Social Network");
+	/***
+	 * Using the '/socialnetwork/socialnetwork.model.picto' file under the
+	 * Workspace, this method tests whether '/Social Network' path returns a view
+	 * that contains Alice, Bob, and Charlie.
+	 * 
+	 * @throws IOException
+	 * @throws SAXException
+	 * @throws XPathExpressionException
+	 * @throws InterruptedException
+	 */
+	@Test
+	public void testGetSocialNetwork() throws IOException, SAXException, XPathExpressionException, InterruptedException {
+		String expectedPath = "/Social Network";
+		String expectedFile = "/socialnetwork/socialnetwork.model.picto";
+		Map<String, String> parameters = new HashMap<>();
+		parameters.put("file", expectedFile);
+		parameters.put("path", expectedPath);
+		parameters.put("name", "Social Network");
 
-    String paramString = TestUtil.getParamsString(parameters);
+		String paramString = TestUtil.getParamsString(parameters);
 
-    String GET_URL = LOCALHOST + paramString;
+		String GET_URL = LOCALHOST + paramString;
 
-    JsonNode node = TestUtil.requestView(GET_URL);
-    String actualPath = node.get("path").textValue();
+		Thread.sleep(2000);
+
+		System.out.println(GET_URL);
+		JsonNode node = TestUtil.requestView(GET_URL);
+		if (node instanceof MissingNode) {
+			node = TestUtil.requestView(GET_URL);
+		}
+		String actualPath = node.get("path").textValue();
 //    String actualFile = node.get("filename").textValue();
-    assertThat(expectedPath.equals(actualPath));
+		assertThat(expectedPath.equals(actualPath));
 
-    Set<String> expectedNames = new HashSet<String>(Arrays.asList(new String[] { "Alice", "Bob", "Charlie" }));
+		Set<String> expectedNames = new HashSet<String>(Arrays.asList(new String[] { "Alice", "Bob", "Charlie" }));
 
-    String htmlString = node.get("content").textValue();
-    Document html = builder.parse(new InputSource(new StringReader(htmlString)));
+		String htmlString = node.get("content").textValue();
+		Document html = builder.parse(new InputSource(new StringReader(htmlString)));
 
-    XPath xPath = XPathFactory.newInstance().newXPath();
-    String expression = "//g[@class='node']/title";
-    NodeList elements = (NodeList) xPath.compile(expression).evaluate(html, XPathConstants.NODESET);
+		XPath xPath = XPathFactory.newInstance().newXPath();
+		String expression = "//g[@class='node']/title";
+		NodeList elements = (NodeList) xPath.compile(expression).evaluate(html, XPathConstants.NODESET);
 
-    Set<String> actualNames = new HashSet<String>(TestUtil.toStringList(elements));
+		Set<String> actualNames = new HashSet<String>(TestUtil.toStringList(elements));
 
-    assertThat(actualNames.equals(expectedNames));
-  }
+		assertThat(actualNames.equals(expectedNames));
+	}
 
-  /***
-   * This test modifies the '/socialnetwork/socialnetwork.model.picto' file under
-   * the Workspace by adding Daniel and the check whether '/Social Network' path
-   * returns a view that contains Alice, Bob, Charlie, and the new node, Daniel.
-   * 
-   * @throws Exception
-   */
-  @Test
-  public void testPushUpdatedView() throws Exception {
+	/***
+	 * This test modifies the '/socialnetwork/socialnetwork.model.picto' file under
+	 * the Workspace by adding Daniel and the check whether '/Social Network' path
+	 * returns a view that contains Alice, Bob, Charlie, and the new node, Daniel.
+	 * 
+	 * @throws Exception
+	 */
+	@Test
+	public void testPushUpdatedView() throws Exception {
 
-    // initialise connection to the stomp server
-    StandardWebSocketClient client = new StandardWebSocketClient();
-    List<Transport> transports = new ArrayList<>(1);
-    transports.add(new WebSocketTransport(client));
-    SockJsClient sockJsClient = new SockJsClient(transports);
-    WebSocketStompClient stompClient = new WebSocketStompClient(sockJsClient);
+		// initialise connection to the stomp server
+		StandardWebSocketClient client = new StandardWebSocketClient();
+		List<Transport> transports = new ArrayList<>(1);
+		transports.add(new WebSocketTransport(client));
+		SockJsClient sockJsClient = new SockJsClient(transports);
+		WebSocketStompClient stompClient = new WebSocketStompClient(sockJsClient);
 
-    // connect
-    StompSession session = stompClient.connect("ws://localhost:8081/picto-web", new SessionHandler()).get();
+		// connect
+		StompSession session = stompClient.connect("ws://localhost:8081/picto-web", new SessionHandler()).get();
 
-    // subscribe
-    ResponseHolder responseHolder = new ResponseHolder();
-    session.subscribe("/topic/picto/socialnetwork/socialnetwork.model.picto", new StompHandler(responseHolder));
+		// subscribe
+		ResponseHolder responseHolder = new ResponseHolder();
+		session.subscribe("/topic/picto/socialnetwork/socialnetwork.model.picto", new StompHandler(responseHolder));
 
-    // change the file
-    String tmpdir = PictoApplication.TEMP;
-    String modelFileName = "socialnetwork/socialnetwork.model";
-    String metamodelFileName = "socialnetwork/socialnetwork.ecore";
-    modelFile = new File(PictoApplication.WORKSPACE + modelFileName);
-    tempModelFile = new File(PictoApplication.TEMP + modelFile.getName());
-    if (!(new File(PictoApplication.TEMP).exists())){
-      (new File(PictoApplication.TEMP)).mkdir();
-    }
-    Files.copy(modelFile, tempModelFile);
-    
-    File metamodelFile = new File(PictoApplication.WORKSPACE + metamodelFileName);
+		// change the file
+		String tmpdir = PictoApplication.TEMP;
+		String modelFileName = "socialnetwork/socialnetwork.model";
+		String metamodelFileName = "socialnetwork/socialnetwork.ecore";
+		modelFile = new File(PictoApplication.WORKSPACE + modelFileName);
+		tempModelFile = new File(PictoApplication.TEMP + modelFile.getName());
+		if (!(new File(PictoApplication.TEMP).exists())) {
+			(new File(PictoApplication.TEMP)).mkdir();
+		}
+		Files.copy(modelFile, tempModelFile);
 
-    modelFileBackup = new File(tmpdir + File.separator + modelFile.getName() + ".backup");
-    Files.copy(modelFile, modelFileBackup);
+		File metamodelFile = new File(PictoApplication.WORKSPACE + metamodelFileName);
 
-    // load the metamodel
-    org.eclipse.emf.common.util.URI uri = org.eclipse.emf.common.util.URI
-        .createFileURI(metamodelFile.getAbsolutePath());
-    EmfUtil.register(uri, EPackage.Registry.INSTANCE);
+		modelFileBackup = new File(tmpdir + File.separator + modelFile.getName() + ".backup");
+		Files.copy(modelFile, modelFileBackup);
 
-    // load the model
-    XMIResource res = (new XMIResourceImpl(URI.createFileURI(tempModelFile.getAbsolutePath())));
-    res.load(null);
+		// load the metamodel
+		org.eclipse.emf.common.util.URI uri = org.eclipse.emf.common.util.URI
+				.createFileURI(metamodelFile.getAbsolutePath());
+		EmfUtil.register(uri, EPackage.Registry.INSTANCE);
 
-    // modify model
-    EObject sn = res.getEObject("0"); // get Alice (id = 1)
-    EClass socialNetwork = sn.eClass();
-    EStructuralFeature peopleProperty = socialNetwork.getEStructuralFeature("people");
+		// load the model
+		XMIResource res = (new XMIResourceImpl(URI.createFileURI(tempModelFile.getAbsolutePath())));
+		res.load(null);
 
-    EObject alice = res.getEObject("1"); // get Alice (id = 1)
-    EClass person = alice.eClass();
-    EStructuralFeature nameProperty = person.getEStructuralFeature("name");
+		// modify model
+		EObject sn = res.getEObject("0"); // get Alice (id = 1)
+		EClass socialNetwork = sn.eClass();
+		EStructuralFeature peopleProperty = socialNetwork.getEStructuralFeature("people");
 
-    EObject dan = EcoreUtil.create(person);
-    dan.eSet(nameProperty, "Dan");
+		EObject alice = res.getEObject("1"); // get Alice (id = 1)
+		EClass person = alice.eClass();
+		EStructuralFeature nameProperty = person.getEStructuralFeature("name");
 
-    @SuppressWarnings("unchecked")
-    EList<EObject> people = (EList<EObject>) sn.eGet(peopleProperty);
-    people.add(dan);
-    res.setID(dan, "4");
-    res.save(res.getDefaultSaveOptions());
-    Thread.sleep(1000);
-    Files.copy(tempModelFile, modelFile);
-    Thread.sleep(1000);
-    
+		EObject dan = EcoreUtil.create(person);
+		dan.eSet(nameProperty, "Dan");
+
+		@SuppressWarnings("unchecked")
+		EList<EObject> people = (EList<EObject>) sn.eGet(peopleProperty);
+		people.add(dan);
+		res.setID(dan, "4");
+		res.save(res.getDefaultSaveOptions());
+		Thread.sleep(1000);
+		Files.copy(tempModelFile, modelFile);
+		Thread.sleep(1000);
+
 //    for(String s: Files.readLines(modelFile, StandardCharsets.UTF_8)) {
 //      System.out.println(s);
 //    }
-    
+
 //    res.save(res.getDefaultSaveOptions());
-    
+
 //    Thread.sleep(10000);
-    synchronized (responseHolder) {
-      responseHolder.wait(1000);
-    }
+		synchronized (responseHolder) {
+			responseHolder.wait(1000);
+		}
 
-    Set<String> expectedNames = new HashSet<String>(Arrays.asList(new String[] { "Alice", "Bob", "Charlie", "Dan" }));
+		Set<String> expectedNames = new HashSet<String>(Arrays.asList(new String[] { "Alice", "Bob", "Charlie", "Dan" }));
 
-    String expectedPath = "/Social Network";
-    String expectedFile = "/socialnetwork/socialnetwork.model.picto";
+		String expectedPath = "/Social Network";
+		String expectedFile = "/socialnetwork/socialnetwork.model.picto";
 
-    Map<String, String> parameters = new HashMap<>();
-    parameters.put("file", expectedFile);
-    parameters.put("path", expectedPath);
-    parameters.put("name", "Social Network");
+		Map<String, String> parameters = new HashMap<>();
+		parameters.put("file", expectedFile);
+		parameters.put("path", expectedPath);
+		parameters.put("name", "Social Network");
 
-    String paramString = TestUtil.getParamsString(parameters);
-    String GET_URL = LOCALHOST + paramString;
+		String paramString = TestUtil.getParamsString(parameters);
+		String GET_URL = LOCALHOST + paramString;
 
+		JsonNode node = TestUtil.requestView(GET_URL);
+		String content = node.get("content").textValue();
 
-
-    JsonNode node = TestUtil.requestView(GET_URL);
-    String content = node.get("content").textValue();
-
-    Document html = builder.parse(new InputSource(new StringReader(content)));
-    XPath xPath = XPathFactory.newInstance().newXPath();
-    String expression = "//g[@class='node']/title";
-    NodeList elements = (NodeList) xPath.compile(expression).evaluate(html, XPathConstants.NODESET);
-    Set<String> actualNames = new HashSet<String>(TestUtil.toStringList(elements));
+		Document html = builder.parse(new InputSource(new StringReader(content)));
+		XPath xPath = XPathFactory.newInstance().newXPath();
+		String expression = "//g[@class='node']/title";
+		NodeList elements = (NodeList) xPath.compile(expression).evaluate(html, XPathConstants.NODESET);
+		Set<String> actualNames = new HashSet<String>(TestUtil.toStringList(elements));
 
 //  close all connections, stop monitoring files, delete the modified model, and restore the backup model
-    session.disconnect();
-    sockJsClient.stop();
-    stompClient.stop();
-    
+		session.disconnect();
+		sockJsClient.stop();
+		stompClient.stop();
+
 //    assertThat(actualNames).containsExactlyElementsOf(expectedNames);
 
-    System.console();
-  }
+		System.console();
+	}
 
-  /***
-   * An internal handler class when connecting to the STOMP server.
-   * 
-   * @author Alfa Yohannis
-   *
-   */
-  class SessionHandler extends StompSessionHandlerAdapter {
+	/***
+	 * An internal handler class when connecting to the STOMP server.
+	 * 
+	 * @author Alfa Yohannis
+	 *
+	 */
+	class SessionHandler extends StompSessionHandlerAdapter {
 
-    /***
-     * Display the sessionId when connection to the Stomp Server is successful.
-     */
-    public void afterConnected(StompSession stompSession, StompHeaders stompHeaders) {
-      System.out.println("Connected with sessionId " + stompSession.getSessionId());
-    }
-  }
+		/***
+		 * Display the sessionId when connection to the Stomp Server is successful.
+		 */
+		public void afterConnected(StompSession stompSession, StompHeaders stompHeaders) {
+			System.out.println("Connected with sessionId " + stompSession.getSessionId());
+		}
+	}
 
-  /***
-   * A class to hold the json returned from Picto Web server
-   * 
-   * @author Alfa Yohannis
-   *
-   */
-  static public class ResponseHolder {
-    List<String> jsonStrings = new ArrayList<>();
+	/***
+	 * A class to hold the json returned from Picto Web server
+	 * 
+	 * @author Alfa Yohannis
+	 *
+	 */
+	static public class ResponseHolder {
+		List<String> jsonStrings = new ArrayList<>();
 
-    public List<String> getResponseStrings() {
-      return jsonStrings;
-    }
-  }
+		public List<String> getResponseStrings() {
+			return jsonStrings;
+		}
+	}
 
-  /***
-   * An internal handler class that handles the STOMP response from the server.
-   * Using this class, we can get the values, the returned pages, returned from
-   * Picto Web server.
-   * 
-   * @author Alfa Yohannis
-   *
-   */
+	/***
+	 * An internal handler class that handles the STOMP response from the server.
+	 * Using this class, we can get the values, the returned pages, returned from
+	 * Picto Web server.
+	 * 
+	 * @author Alfa Yohannis
+	 *
+	 */
 
-  static class StompHandler implements StompFrameHandler {
-    private ResponseHolder answer;
+	static class StompHandler implements StompFrameHandler {
+		private ResponseHolder answer;
 
-    /***
-     * The constructor receives a CompletableFuture<String> to hold the value (json
-     * object string) returned from the server.
-     * 
-     * @param answer
-     * @param numberOfExpectedJsons
-     */
-    StompHandler(ResponseHolder answer) {
-      this.answer = answer;
-    }
+		/***
+		 * The constructor receives a CompletableFuture<String> to hold the value (json
+		 * object string) returned from the server.
+		 * 
+		 * @param answer
+		 * @param numberOfExpectedJsons
+		 */
+		StompHandler(ResponseHolder answer) {
+			this.answer = answer;
+		}
 
-    public Type getPayloadType(StompHeaders headers) {
-      return byte[].class;
-    }
+		public Type getPayloadType(StompHeaders headers) {
+			return byte[].class;
+		}
 
-    /***
-     * This method receives the page returned by Picto Web server.
-     * 
-     * @param payload The payload (.e.g., json, html) returned by the server.
-     * @param headers The Stomp Headers.
-     */
-    public void handleFrame(StompHeaders headers, Object payload) {
-      answer.getResponseStrings().add((new String((byte[]) payload)));
-      synchronized (answer) {
-        answer.notify();
-      }
-    }
+		/***
+		 * This method receives the page returned by Picto Web server.
+		 * 
+		 * @param payload The payload (.e.g., json, html) returned by the server.
+		 * @param headers The Stomp Headers.
+		 */
+		public void handleFrame(StompHeaders headers, Object payload) {
+			answer.getResponseStrings().add((new String((byte[]) payload)));
+			synchronized (answer) {
+				answer.notify();
+			}
+		}
 
-  }
+	}
 
-  public static DocumentBuilder getBuilder() {
-    return builder;
-  }
+	public static DocumentBuilder getBuilder() {
+		return builder;
+	}
 
 }
