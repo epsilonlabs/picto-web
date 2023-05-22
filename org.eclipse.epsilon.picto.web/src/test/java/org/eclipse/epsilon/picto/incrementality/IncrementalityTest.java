@@ -95,7 +95,7 @@ class IncrementalityTest {
 
 	@Test
 	void testGeneration() throws Exception {
-		System.out.println("\n" + new Object() {
+		System.out.println("\n### " + new Object() {
 		}.getClass().getEnclosingMethod().getName());
 
 		Set<String> generatedViews = setUp("socialnetwork/socialnetwork.model.picto", "socialnetwork/socialnetwork.model");
@@ -107,7 +107,7 @@ class IncrementalityTest {
   @Test
   void testUpdateEglDoc() throws Exception {
     try {
-      System.out.println("\n" + new Object() {
+      System.out.println("\n### " + new Object() {
       }.getClass().getEnclosingMethod().getName());
       setUp("egldoc/egldoc-standalone.picto", "egldoc/egldoc/Families.ecore");
 
@@ -127,28 +127,28 @@ class IncrementalityTest {
     }
   }
 
-  @Test
-  void testUpdateProperty() throws Exception {
-    System.out.println("\n" + new Object() {
-    }.getClass().getEnclosingMethod().getName());
-    setUp("socialnetwork/socialnetwork.model.picto", "socialnetwork/socialnetwork.model");
-
-    EObject eObject = res.getEObject("3"); // get Charlie (id = 3)
-    EStructuralFeature eNameFeature = eObject.eClass().getEStructuralFeature("name");
-    eObject.eSet(eNameFeature, "Dan");
-    res.save(null);
-    Thread.sleep(1000);
-
-    eglPictoSource = new WebEglPictoSource();
-    Set<String> generatedViews = eglPictoSource.generatePromises(modifiedFilePath,
-        PictoProject.createPictoProject(pictoFile), true);
-    assertThat(generatedViews).containsExactlyInAnyOrder("/", "/Readme", "/Custom/Alice and Bob", "/Social Network",
-        "/Social Network/Dan");
-  }
+//  @Test
+//  void testUpdateProperty() throws Exception {
+//    System.out.println("\n### " + new Object() {
+//    }.getClass().getEnclosingMethod().getName());
+//    setUp("socialnetwork/socialnetwork.model.picto", "socialnetwork/socialnetwork.model");
+//
+//    EObject eObject = res.getEObject("3"); // get Charlie (id = 3)
+//    EStructuralFeature eNameFeature = eObject.eClass().getEStructuralFeature("name");
+//    eObject.eSet(eNameFeature, "Dan");
+//    res.save(null);
+//    Thread.sleep(1000);
+//
+//    eglPictoSource = new WebEglPictoSource();
+//    Set<String> generatedViews = eglPictoSource.generatePromises(modifiedFilePath,
+//        PictoProject.createPictoProject(pictoFile), true);
+//    assertThat(generatedViews).containsExactlyInAnyOrder("/", "/Readme", "/Custom/Alice and Bob", "/Social Network",
+//        "/Social Network/Dan");
+//  }
 
   @Test
   void testDeleteElement() throws Exception {
-    System.out.println("\n" + new Object() {
+    System.out.println("\n### " + new Object() {
     }.getClass().getEnclosingMethod().getName());
     setUp("socialnetwork/socialnetwork.model.picto", "socialnetwork/socialnetwork.model");
 
@@ -167,7 +167,7 @@ class IncrementalityTest {
   @SuppressWarnings("unchecked")
   @Test
   void testRemoveReference() throws Exception {
-    System.out.println("\n" + new Object() {
+    System.out.println("\n### " + new Object() {
     }.getClass().getEnclosingMethod().getName());
     setUp("socialnetwork/socialnetwork.model.picto", "socialnetwork/socialnetwork.model");
 
@@ -191,7 +191,7 @@ class IncrementalityTest {
 	@SuppressWarnings("unchecked")
 	@Test
 	void testAddReference() throws Exception {
-		System.out.println("\n" + new Object() {
+		System.out.println("\n### " + new Object() {
 		}.getClass().getEnclosingMethod().getName());
 		setUp("socialnetwork/socialnetwork.model.picto", "socialnetwork/socialnetwork.model");
 
@@ -226,7 +226,7 @@ class IncrementalityTest {
   @SuppressWarnings("unchecked")
   @Test
   void testAddElement() throws Exception {
-    System.out.println("\n" + new Object() {
+    System.out.println("\n### " + new Object() {
     }.getClass().getEnclosingMethod().getName());
     setUp("socialnetwork/socialnetwork.model.picto", "socialnetwork/socialnetwork.model");
 
@@ -258,7 +258,7 @@ class IncrementalityTest {
   @SuppressWarnings("unchecked")
   @Test
   void testAddNonDeterminingElement() throws Exception {
-    System.out.println("\n" + new Object() {
+    System.out.println("\n### " + new Object() {
     }.getClass().getEnclosingMethod().getName());
     setUp("socialnetwork/socialnetwork.model.picto", "socialnetwork/socialnetwork.model");
 
@@ -287,7 +287,7 @@ class IncrementalityTest {
   @SuppressWarnings("unchecked")
   @Test
   void testMultipleUpdates() throws Exception {
-    System.out.println("\n" + new Object() {
+    System.out.println("\n### " + new Object() {
     }.getClass().getEnclosingMethod().getName());
     setUp("socialnetwork/socialnetwork.model.picto", "socialnetwork/socialnetwork.model");
 

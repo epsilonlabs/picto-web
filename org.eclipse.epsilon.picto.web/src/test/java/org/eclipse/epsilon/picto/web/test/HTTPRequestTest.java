@@ -47,6 +47,7 @@ import org.eclipse.epsilon.emc.emf.EmfUtil;
 import org.eclipse.epsilon.picto.dom.PictoPackage;
 import org.eclipse.epsilon.picto.web.FileWatcher;
 import org.eclipse.epsilon.picto.web.PictoApplication;
+import org.eclipse.epsilon.picto.web.PictoCache;
 import org.eclipse.epsilon.picto.web.PictoWebOnLoadedListener;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.AfterEach;
@@ -140,14 +141,18 @@ public class HTTPRequestTest {
 	static void tearDownAfterClass() throws Exception {
 
 		try {
-			FileWatcher.stopWatching();
+			//PictoCache.clear();
+//			FileWatcher.stopWatching();
 			PictoApplication.exit();
 			if (modelFile.exists())
 				modelFile.delete();
 			Files.copy(modelFileBackup, modelFile);
+			modelFileBackup.delete();
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
+		
+//		Thread.sleep(5000);
 	}
 
 	@BeforeEach

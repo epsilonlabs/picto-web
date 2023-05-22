@@ -167,7 +167,7 @@ public class AccessGraphResource implements AccessRecordResource {
 	public void checkPath(EgxModule module, Set<String> invalidatedPaths, String pathName, boolean changeState) {
 
 		// path
-		System.out.println("ALFA: " + pathName);
+		//System.out.println("ALFA: " + pathName);
 		if (pathName.equals("/Social Network/Alice")) {
 			System.console();
 		}
