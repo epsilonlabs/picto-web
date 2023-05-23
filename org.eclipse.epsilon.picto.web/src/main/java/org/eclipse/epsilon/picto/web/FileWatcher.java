@@ -17,6 +17,7 @@ import static java.nio.file.StandardWatchEventKinds.ENTRY_MODIFY;
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.FileSystems;
+import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.nio.file.WatchEvent;
@@ -196,16 +197,24 @@ public class FileWatcher extends Thread {
 	}
 
 	private static void scanPictoFiles(String directory) throws Exception {
-		File file = new File(directory);
-		for (File f : file.listFiles()) {
+		Path file = new File(directory).toPath();
+		Files.list(file).forEach(p -> {
+//		for (File f : Files.list(file)) {
+			File f = p.toFile();
 			if (f.isDirectory()) {
-				scanPictoFiles(f.getAbsolutePath());
+				try {
+					scanPictoFiles(f.getAbsolutePath());
+				} catch (Exception e) {
+				}
 			}
 			if (f.isFile() && f.getName().endsWith(".picto")) {
 				// System.out.println("PICTO: Found Picto file: " + file.getAbsolutePath());
-				PictoProject.createPictoProject(f);
+				try {
+					PictoProject.createPictoProject(f);
+				} catch (Exception e) {
+				}
 			}
-		}
+		});
 	}
 
 	public PictoJsonController getPictoJsonController() {

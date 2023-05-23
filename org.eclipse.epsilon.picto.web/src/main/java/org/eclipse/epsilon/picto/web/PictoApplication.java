@@ -96,7 +96,7 @@ public class PictoApplication implements ApplicationListener<ApplicationContextE
   public static void main(String... args) throws Exception {
 
     PictoApplication.args = args;
-
+    
     commandLine = new CommandLine(new PictoApplication());
     commandLine.execute(args);
 
