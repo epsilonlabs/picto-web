@@ -137,6 +137,7 @@ public class FileWatcher extends Thread {
 						int counter = 0;
 						while (!isDocumentValid) {
 							try {
+								counter += 1;
 								DocumentBuilderFactory documentBuilderFactory = DocumentBuilderFactory.newInstance();
 								DocumentBuilder documentBuilder = documentBuilderFactory.newDocumentBuilder();
 								documentBuilder.parse(modifiedFile);
@@ -146,12 +147,12 @@ public class FileWatcher extends Thread {
 								System.out.println("Error reading " + modifiedFile.getAbsolutePath());
 								Thread.sleep(1000);
 								System.out.println("Retry to read");
+								
 							}
 							if (counter == 3) {
 								System.out.println("Cannot read the file. Cancel further processes.");
 								continue firstWhile;
 							}
-							counter += 1;
 						}
 
 						try {
@@ -185,11 +186,22 @@ public class FileWatcher extends Thread {
 		// System.out.println("PICTO: Watch Service registered for dir: " + dir);
 
 		File file = new File(directory);
-		for (File f : file.listFiles()) {
-			if (f.isDirectory()) {
-				registerDirectory(watcher, f.getAbsolutePath(), keys);
+
+		Files.list(Paths.get(file.toURI())).forEach(p -> {
+			if (p.toFile().isDirectory()) {
+				try {
+					registerDirectory(watcher, p.toFile().getAbsolutePath(), keys);
+				} catch (Exception e) {
+					e.printStackTrace();
+				}
 			}
-		}
+		});
+
+//		for (File f : file.listFiles()) {
+//			if (f.isDirectory()) {
+//				registerDirectory(watcher, f.getAbsolutePath(), keys);
+//			}
+//		}
 	}
 
 	public static void scanPictoFiles() throws Exception {

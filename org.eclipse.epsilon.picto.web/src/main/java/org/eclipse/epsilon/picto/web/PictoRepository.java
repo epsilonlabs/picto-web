@@ -19,6 +19,7 @@ import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.Comparator;
 
 import org.eclipse.epsilon.picto.dom.PictoPackage;
@@ -83,20 +84,23 @@ public class PictoRepository {
 	 * @return
 	 * @throws IOException
 	 */
-	private static File getWorkingGitDir(File file) {
+	private static File getWorkingGitDir(File file) throws IOException {
 
 		String workspace = new File(PictoApplication.WORKSPACE).getAbsolutePath();
 		File workingGitFile = null;
 
 		while (file.getParent() != null && !file.getAbsolutePath().equals(workspace)) {
-			for (File f : file.getParentFile().listFiles()) {
-				System.out.println(f.getAbsolutePath());
-				if (f.getName().equals(".git") && f.isDirectory()) {
-					workingGitFile = f;
-					break;
-				}
+
+			if (file.getParentFile() == null) {
+				break;
 			}
-			if (workingGitFile != null) {
+
+			Path path = Files.list(Paths.get(file.getParentFile().toURI()))
+					.filter(p -> p.toFile().getName().equals(".git") && p.toFile().isDirectory()).findFirst()
+					.orElse(null);
+
+			if (path != null) {
+				workingGitFile = path.toFile();
 				break;
 			}
 			file = file.getParentFile();
@@ -110,8 +114,9 @@ public class PictoRepository {
 	 * 
 	 * @param file
 	 * @return Return null if the file is not under a valid repo.s
+	 * @throws IOException
 	 */
-	public static String getRepoUrl(File file) {
+	public static String getRepoUrl(File file) throws IOException {
 		String address = null;
 		File repoDir = PictoRepository.getWorkingGitDir(file);
 		if (repoDir != null) {
@@ -131,8 +136,9 @@ public class PictoRepository {
 	 * 
 	 * @param file
 	 * @return Return null if the file is not under a valid repo.
+	 * @throws IOException
 	 */
-	public static Repository getRepo(File file) {
+	public static Repository getRepo(File file) throws IOException {
 		File repoDir = PictoRepository.getWorkingGitDir(file);
 		if (repoDir != null) {
 			try {
@@ -151,8 +157,9 @@ public class PictoRepository {
 	 * 
 	 * @param file
 	 * @return Return null if the file is not under a valid repo.
+	 * @throws IOException
 	 */
-	public static String getRepoBranch(File file) {
+	public static String getRepoBranch(File file) throws IOException {
 		String branch = null;
 		File repoDir = PictoRepository.getWorkingGitDir(file);
 		if (repoDir != null) {
@@ -243,14 +250,15 @@ public class PictoRepository {
 			}
 			gitFetch.close();
 		} catch (Exception e) {
-			e.printStackTrace();
+			System.out.println("Repo doesn't exist");
 		}
 
 		System.out.print("Clone remote to local ...");
 
 		// delete the target local directory first
 		if (localTargetDir.exists()) {
-			Files.walk(localTargetDir.toPath()).sorted(Comparator.reverseOrder()).map(Path::toFile).forEach(File::delete);
+			Files.walk(localTargetDir.toPath()).sorted(Comparator.reverseOrder()).map(Path::toFile)
+					.forEach(File::delete);
 		}
 
 		// clone

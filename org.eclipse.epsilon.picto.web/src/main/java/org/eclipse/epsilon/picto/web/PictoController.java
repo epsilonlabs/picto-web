@@ -37,18 +37,18 @@ public class PictoController {
 	 * @throws IOException
 	 */
 	@GetMapping(value = "/")
-	public String getPictoFiles(String information, String repo, String file, String branch, String revision, Model model)
-			throws IOException {
+	public String getPictoFiles(String information, String repo, String file, String branch, String revision,
+			Model model) throws IOException {
 
 		retrieveRepo(file, repo, branch, revision);
 
 //		List<String> pictoFiles = ProjectTreeToJson.getPictoFiles(PictoApplication.WORKSPACE).stream()
 //				.map(s -> s.replace("\\", "/")).collect(Collectors.toList());
 //		model.addAttribute("pictofiles", pictoFiles);
-		
+
 		String files = ProjectTreeToJson.convert(PictoApplication.WORKSPACE);
 		model.addAttribute("pictofiles", files);
-		
+
 		return "pictofiles";
 	}
 
@@ -80,10 +80,17 @@ public class PictoController {
 				if (!file.startsWith("/"))
 					file = "/" + file;
 
-				String pictoFilePath = PictoApplication.WORKSPACE + file;
+				String pictoFilePath = PictoApplication.WORKSPACE;
+				if (repo != null) {
+					String repoName = File.separator + repo.substring(repo.lastIndexOf("/") + 1, repo.length());
+					if (!file.startsWith(repoName))
+						pictoFilePath = pictoFilePath + repoName;
+				}
+				pictoFilePath = pictoFilePath + File.separator + file;
 				pictoFilePath = pictoFilePath.replace("/", File.separator);
 
-				PictoProject.createPictoProject(new File(new File(pictoFilePath).getAbsolutePath()));
+				File pictoFile = new File(new File(pictoFilePath).getAbsolutePath());
+				PictoProject.createPictoProject(pictoFile);
 
 			}
 		} catch (IOException | GitAPIException e) {

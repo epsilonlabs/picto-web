@@ -33,10 +33,13 @@ public class ProjectTreeToJson {
 	}
 
 	public static List<String> getPictoFiles(String path) throws IOException {
+		
 		List<String> paths = Files.walk(Paths.get(path)).filter(p -> !Files.isDirectory(p)).map(p -> p.toString())
 				.filter(f -> f.toLowerCase().endsWith(".picto")).collect(Collectors.toList());
+		
 		paths = paths.stream().map(s -> s.replace(PictoApplication.WORKSPACE, "").replace("\\", "/"))
 				.collect(Collectors.toList());
+		
 		return paths;
 	}
 
