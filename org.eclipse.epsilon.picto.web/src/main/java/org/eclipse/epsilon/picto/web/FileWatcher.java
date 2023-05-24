@@ -185,7 +185,7 @@ public class FileWatcher extends Thread {
 		keys.put(key, dir);
 		// System.out.println("PICTO: Watch Service registered for dir: " + dir);
 
-		File file = new File(directory);
+		File file = new File(directory).getAbsoluteFile();
 
 		Files.list(Paths.get(file.toURI())).forEach(p -> {
 			if (p.toFile().isDirectory()) {
@@ -209,8 +209,8 @@ public class FileWatcher extends Thread {
 	}
 
 	private static void scanPictoFiles(String directory) throws Exception {
-		Path file = new File(directory).toPath();
-		Files.list(file).forEach(p -> {
+		Path path = (new File(directory)).getAbsoluteFile().toPath();
+		Files.list(path).forEach(p -> {
 //		for (File f : Files.list(file)) {
 			File f = p.toFile();
 			if (f.isDirectory()) {
