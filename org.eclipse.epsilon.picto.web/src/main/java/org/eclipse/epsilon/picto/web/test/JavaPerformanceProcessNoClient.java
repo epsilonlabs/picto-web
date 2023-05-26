@@ -13,25 +13,15 @@ package org.eclipse.epsilon.picto.web.test;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import java.io.File;
-import java.io.IOException;
-import java.io.InputStream;
-import java.lang.reflect.Type;
-import java.net.HttpURLConnection;
-import java.net.URL;
 import java.nio.file.Files;
 import java.nio.file.StandardCopyOption;
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.Comparator;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.LinkedHashSet;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Random;
 import java.util.Set;
-import java.util.concurrent.ExecutionException;
 import java.util.stream.Collectors;
 
 import org.eclipse.emf.common.util.TreeIterator;
@@ -51,20 +41,7 @@ import org.eclipse.gmt.modisco.java.Model;
 import org.eclipse.gmt.modisco.java.Package;
 import org.eclipse.gmt.modisco.java.VariableDeclarationFragment;
 import org.eclipse.gmt.modisco.java.emf.meta.JavaPackage;
-import org.eclipse.jetty.client.HttpClient;
-import org.eclipse.jetty.util.thread.QueuedThreadPool;
-import org.springframework.messaging.simp.stomp.StompFrameHandler;
-import org.springframework.messaging.simp.stomp.StompHeaders;
-import org.springframework.messaging.simp.stomp.StompSession;
-import org.springframework.messaging.simp.stomp.StompSessionHandlerAdapter;
-import org.springframework.scheduling.concurrent.DefaultManagedTaskScheduler;
-import org.springframework.web.socket.messaging.WebSocketStompClient;
-import org.springframework.web.socket.sockjs.client.JettyXhrTransport;
-import org.springframework.web.socket.sockjs.client.SockJsClient;
-import org.springframework.web.socket.sockjs.client.Transport;
 
-import com.fasterxml.jackson.core.type.TypeReference;
-import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 /***

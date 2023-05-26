@@ -9,49 +9,45 @@ which is available at https://www.eclipse.org/legal/epl-2.0/
 SPDX-License-Identifier: EPL-2.0
 -->
 <html xmlns:th="http://www.thymeleaf.org">
+
 <head>
-<title>Picto Web Workspace</title>
-<meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
-<link type="text/css" rel="stylesheet"
-	href="/webjars/bootstrap/css/bootstrap.min.css">
-<link type="text/css" rel="stylesheet"
-	href="dist/themes/default/style.css">
-<link type="text/css" rel="stylesheet" href="main.css">
-<script type="text/javascript" src="/webjars/jquery/jquery.min.js"></script>
-<script type="text/javascript" src="dist/jstree.js"></script>
-<script type="text/javascript" src="/picto.js"></script>
+  <title>Picto Web Workspace</title>
+  <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+  <link type="text/css" rel="stylesheet" href="/webjars/bootstrap/css/bootstrap.min.css">
+  <link type="text/css" rel="stylesheet" href="dist/themes/default/style.css">
+  <link type="text/css" rel="stylesheet" href="main.css">
+  <script type="text/javascript" src="/webjars/jquery/jquery.min.js"></script>
+  <script type="text/javascript" src="dist/jstree.js"></script>
+  <script type="text/javascript" src="/picto.js"></script>
 </head>
 
 <body>
-	<div class="parent">
-		<div class="leftChild">
-			<h1>Add Online Picto File</h1>
-			<form id="addRepoForm" action="/">
-				<label for="repo">Picto file's Git repository address:</label><br />
-				<input type="text" id="repo" name="repo" size="50"
-					placeholder="e.g., https://github.com/epsilonlabs/picto-web"
-					value="https://github.com/epsilonlabs/picto-web"></input> <br /> <label
-					for="picto">Picto file's path in the repository:</label><br /> <input
-					type="text" id="file" name="file" size="50"
-					placeholder="e.g., workspace/socialnetwork/socialnetwork.model.picto"
-					value=examples/pos/pos.picto></input> <br /> <label for="picto">Repository's
-					branch name:</label><br /> <input type="text" id="branch" name="branch"
-					size="50" placeholder="e.g., main, itchy-teeth"
-					value="optimised-detection"></input> <br /><!--  
+  <div class="parent">
+    <div class="leftChild">
+      <h1>Add Online Picto File</h1>
+      <form id="addRepoForm" action="/">
+        <label for="repo">Picto file's Git repository address:</label><br />
+        <input type="text" id="repo" name="repo" size="50" placeholder="e.g., https://github.com/epsilonlabs/picto-web"
+          value="https://github.com/epsilonlabs/picto-web"></input> <br /> <label for="picto">Picto file's path in the
+          repository:</label><br /> <input type="text" id="file" name="file" size="50"
+          placeholder="e.g., workspace/socialnetwork/socialnetwork.model.picto" value=examples/pos/pos.picto></input>
+        <br /> <label for="picto">Repository's
+          branch name:</label><br /> <input type="text" id="branch" name="branch" size="50"
+          placeholder="e.g., main, itchy-teeth" value="optimised-detection"></input> <br /><!--  
 					<label for="picto">Revision/commitId:</label><br />
 				<input type="text" id="revision" name="revision" size="50"
 					placeholder="e.g., 2c22a26c73b5a2e7cfde96c370b8ecf596818666"></input> -->
-				<br /> <input id="addButton" type="submit" value="Add" width="50"></input>
-			</form>
-		</div>
-		<div class="centreChild">
-			<h1>Picto Web Workspace</h1>
-			<input type="text" id="searchTree" name="searchTree"></input>
-			<div id="tree"></div>
-		</div>
-	</div>
+        <br /> <input id="addButton" type="submit" value="Add" width="50"></input>
+      </form>
+    </div>
+    <div class="centreChild">
+      <h1>Picto Web Workspace</h1>
+      <input type="text" id="searchTree" name="searchTree"></input>
+      <div id="tree"></div>
+    </div>
+  </div>
 
-	<script th:inline="javascript">
+  <script th:inline="javascript">
     //var pictofiles = [[${pictofiles}]];
     // console.log(pictofiles);
     //var workspace = Picto.listToJsTreeData(pictofiles);
@@ -72,7 +68,7 @@ SPDX-License-Identifier: EPL-2.0
             "separator_after": true,
             "label": "Open Tab ...",
             "title": "Open in a new tab",
-            "action": function () {alert("Open in a new tab");}
+            "action": function () { alert("Open in a new tab"); }
           }
           //
         }
@@ -89,14 +85,14 @@ SPDX-License-Identifier: EPL-2.0
         if (path.endsWith(".picto")) {
           // console.log(path);
           var url = 'picto?file=' + path;
-          
+
           var node = data.instance.get_node(data.selected[0]);
           if (node.original.repo != null)
-        	  url = url + "&repo=" + node.original.repo;
+            url = url + "&repo=" + node.original.repo;
           if (node.original.branch != null)
-        	  url = url + "&branch=" + node.original.branch;
-          
-       // console.log(url);
+            url = url + "&branch=" + node.original.branch;
+
+          // console.log(url);
           window.open(url, '_blank');
         }
       }
@@ -104,7 +100,7 @@ SPDX-License-Identifier: EPL-2.0
 
     var to = false;
     $('#searchTree').keyup(function () {
-      if (to) {clearTimeout(to);}
+      if (to) { clearTimeout(to); }
       to = setTimeout(function () {
         var v = $('#searchTree').val();
         // console.log(v);

@@ -3,11 +3,8 @@ package org.eclipse.epsilon.picto.web;
 import java.io.File;
 import java.io.IOException;
 import java.util.HashSet;
-import java.util.List;
 import java.util.Set;
-import java.util.stream.Collectors;
 
-import org.eclipse.jgit.api.Git;
 import org.eclipse.jgit.api.errors.GitAPIException;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
@@ -26,6 +23,8 @@ import org.springframework.web.bind.annotation.GetMapping;
 @Controller
 public class PictoController {
 
+	private static final String SLASH_STR = "/";
+
 	/***
 	 * A controller method to display the page that shows the Picto files under
 	 * Workspace. It uses the 'pictofiles' template under 'resource/templates' for
@@ -36,15 +35,11 @@ public class PictoController {
 	 * @return
 	 * @throws IOException
 	 */
-	@GetMapping(value = "/")
+	@GetMapping(value = SLASH_STR)
 	public String getPictoFiles(String information, String repo, String file, String branch, String revision,
 			Model model) throws IOException {
 
 		retrieveRepo(file, repo, branch, revision);
-
-//		List<String> pictoFiles = ProjectTreeToJson.getPictoFiles(PictoApplication.WORKSPACE).stream()
-//				.map(s -> s.replace("\\", "/")).collect(Collectors.toList());
-//		model.addAttribute("pictofiles", pictoFiles);
 
 		String files = ProjectTreeToJson.convert(PictoApplication.WORKSPACE);
 		model.addAttribute("pictofiles", files);
@@ -77,17 +72,27 @@ public class PictoController {
 					pictoRepo.retrievePicto(file, repo, branch, revision);
 				}
 
-				if (!file.startsWith("/"))
-					file = "/" + file;
+				if (!file.startsWith(SLASH_STR))
+					file = SLASH_STR + file;
 
 				String pictoFilePath = PictoApplication.WORKSPACE;
+
+				String projectName = File.separator + repo.substring(repo.lastIndexOf(SLASH_STR) + 1, repo.length());
 				if (repo != null) {
-					String repoName = File.separator + repo.substring(repo.lastIndexOf("/") + 1, repo.length());
-					if (!file.startsWith(repoName))
-						pictoFilePath = pictoFilePath + repoName;
+					String hash = PictoRepository.generateHash(repo, branch);
+					if (file.startsWith(projectName)) {
+						file = file.replaceFirst(projectName, SLASH_STR + hash);
+					}
+					if (!file.startsWith(projectName) && !file.startsWith(SLASH_STR + hash)) {
+						pictoFilePath = pictoFilePath + projectName;
+						pictoFilePath = pictoFilePath.replaceFirst(projectName, hash);
+					}
 				}
-				pictoFilePath = pictoFilePath + File.separator + file;
-				pictoFilePath = pictoFilePath.replace("/", File.separator);
+				pictoFilePath = pictoFilePath + file;
+				pictoFilePath = pictoFilePath.replace(SLASH_STR, File.separator);
+
+				// /home/alfa/projects/picto-web/org.eclipse.epsilon.picto.web/../workspace
+				// /picto-web/examples/pos/pos.picto
 
 				File pictoFile = new File(new File(pictoFilePath).getAbsolutePath());
 				PictoProject.createPictoProject(pictoFile);
@@ -125,7 +130,14 @@ public class PictoController {
 		retrieveRepo(file, repo, branch, revision);
 
 		if (PictoCache.getViewContentCache(file) == null) {
-			File modifiedFile = new File(new File(PictoApplication.WORKSPACE + file).getAbsolutePath());
+			String filePath = PictoApplication.WORKSPACE + file;
+			if (repo != null) {
+				String projectName = File.separator + repo.substring(repo.lastIndexOf(SLASH_STR) + 1, repo.length());
+				String hash = PictoRepository.generateHash(repo, branch);
+				filePath = filePath.replaceFirst(projectName, hash);
+			}
+
+			File modifiedFile = new File(new File(filePath).getAbsolutePath());
 			Set<PictoProject> affectedPictoProjects = new HashSet<>();
 			for (PictoProject project : PictoApplication.getPictoProjects()) {
 				if (project.getFiles().contains(modifiedFile)) {
@@ -136,6 +148,12 @@ public class PictoController {
 				WebEglPictoSource source = new WebEglPictoSource();
 				source.generatePromises(file, pictoProject);
 			}
+		}
+
+		if (repo != null) {
+			String projectName = repo.substring(repo.lastIndexOf(SLASH_STR) + 1, repo.length());
+			String hash = PictoRepository.generateHash(repo, branch);
+			file = file.replaceFirst(projectName, hash);
 		}
 
 		if (path == null) {

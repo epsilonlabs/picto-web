@@ -593,9 +593,9 @@ public class WebEglPictoSource extends EglPictoSource {
 	 */
 	private void copyViewTreeToJsTreeData(String filename, ViewTree viewTree, JsTreeNode jsTreeNode) {
 
-		if (viewTree.getPathString().equals("/Social Network/Charlie")) {
-			System.console();
-		}
+//		if (viewTree.getPathString().equals("/Social Network/Charlie")) {
+//			System.console();
+//		}
 
 		String text = viewTree.getName();
 		jsTreeNode.setText(text);
@@ -606,9 +606,9 @@ public class WebEglPictoSource extends EglPictoSource {
 
 		for (ViewTree viewTreeChild : viewTree.getChildren()) {
 
-			if (viewTreeChild.getPathString().equals("/Social Network/Daniel")) {
-				System.console();
-			}
+//			if (viewTreeChild.getPathString().equals("/Social Network/Daniel")) {
+//				System.console();
+//			}
 
 			JsTreeNode jsonChild = new JsTreeNode();
 			boolean isNew = false;

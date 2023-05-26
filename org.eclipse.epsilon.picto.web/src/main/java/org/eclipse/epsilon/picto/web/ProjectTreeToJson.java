@@ -52,14 +52,14 @@ public class ProjectTreeToJson {
 	 * @throws IOException
 	 * @throws GitAPIException
 	 */
-	public static String convert(String path) throws IOException {
-		List<String> paths = getPictoFiles(path);
+	public static String convert(String rootPath) throws IOException {
+		List<String> paths = getPictoFiles(rootPath);
 
 		ObjectMapper mapper = new ObjectMapper();
 		ArrayNode root = mapper.createArrayNode();
 
-		for (String p : paths) {
-			File f = new File(PictoApplication.WORKSPACE + "/" + p);
+		for (String path : paths) {
+			File f = new File(PictoApplication.WORKSPACE + "/" + path);
 
 			Repository repository = PictoRepository.getRepo(f);
 
@@ -70,8 +70,8 @@ public class ProjectTreeToJson {
 				branch = repository.getBranch();
 			}
 
-			System.out.println(p);
-			String[] fragments = p.split("\\/|\\\\");
+			System.out.println(path);
+			String[] fragments = path.split("\\/|\\\\");
 
 			ObjectNode parent = null;
 			for (int i = 0; i < fragments.length; i++) {

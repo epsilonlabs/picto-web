@@ -17,9 +17,13 @@ package org.eclipse.epsilon.picto.web;
 
 import java.io.File;
 import java.io.IOException;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.security.MessageDigest;
+import java.security.NoSuchAlgorithmException;
+import java.util.Base64;
 import java.util.Comparator;
 
 import org.eclipse.epsilon.picto.dom.PictoPackage;
@@ -56,9 +60,10 @@ public class PictoRepository {
 	 * @throws TransportException
 	 * @throws InvalidRemoteException
 	 * @throws IOException
+	 * @throws NoSuchAlgorithmException
 	 */
 	public static void main(String[] args)
-			throws InvalidRemoteException, TransportException, GitAPIException, IOException {
+			throws InvalidRemoteException, TransportException, GitAPIException, IOException, NoSuchAlgorithmException {
 
 		Logger logger = (Logger) LoggerFactory.getLogger(org.slf4j.Logger.ROOT_LOGGER_NAME);
 		logger.setLevel(Level.OFF);
@@ -188,50 +193,52 @@ public class PictoRepository {
 	}
 
 	public void retrievePicto(String pictoFilePath, String repoAddress)
-			throws InvalidRemoteException, TransportException, IOException, GitAPIException {
+			throws InvalidRemoteException, TransportException, IOException, GitAPIException, NoSuchAlgorithmException {
 		this.retrievePicto(pictoFilePath, repoAddress, null, null);
 	}
 
 	public void retrievePicto(String pictoFilePath, String repoAddress, String branch)
-			throws InvalidRemoteException, TransportException, IOException, GitAPIException {
+			throws InvalidRemoteException, TransportException, IOException, GitAPIException, NoSuchAlgorithmException {
 		this.retrievePicto(pictoFilePath, repoAddress, branch, null);
 	}
 
 	/***
 	 * 
 	 * @param pictoFilePath
-	 * @param repoAddress
+	 * @param repo
 	 * @param branch
 	 * @param revision
 	 * @throws InvalidRemoteException
 	 * @throws TransportException
 	 * @throws IOException
 	 * @throws GitAPIException
+	 * @throws NoSuchAlgorithmException
 	 */
 
-	public void retrievePicto(String pictoFilePath, String repoAddress, String branch, String revision)
-			throws InvalidRemoteException, TransportException, IOException, GitAPIException {
+	public void retrievePicto(String pictoFilePath, String repo, String branch, String revision)
+			throws InvalidRemoteException, TransportException, IOException, GitAPIException, NoSuchAlgorithmException {
 
 		if (branch == null || branch.trim().length() == 0) {
 			branch = "main";
 		}
 
-		String localTargetDirName = (new File(workspace)).getAbsolutePath() + File.separator
-				+ repoAddress.substring(repoAddress.lastIndexOf("/") + 1, repoAddress.length());
+		String hashedRepo = generateHash(repo, branch);
+
+		String localTargetDirName = (new File(workspace)).getAbsolutePath() + File.separator + hashedRepo;
 		File localTargetDir = new File(localTargetDirName);
 
 		if (!localTargetDir.exists()) {
 			localTargetDir.mkdirs();
 		}
 
-		System.out.println("Checking out '" + repoAddress + "' to '" + localTargetDirName + "'");
+		System.out.println("Checking out '" + repo + "' to '" + localTargetDirName + "'");
 
 		// fetch, check if remote and local are same
 		try {
 			Git gitFetch = Git.open(localTargetDir);
 			Repository repository = gitFetch.getRepository();
 
-			FetchResult fetchResult = gitFetch.fetch().setRemote(repoAddress).setInitialBranch(branch)
+			FetchResult fetchResult = gitFetch.fetch().setRemote(repo).setInitialBranch(branch)
 					.setRefSpecs(new RefSpec("+refs/heads/*:refs/heads/*")).call();
 
 			String name = Constants.R_HEADS + repository.getBranch();
@@ -263,7 +270,7 @@ public class PictoRepository {
 
 		// clone
 		CloneCommand command = Git.cloneRepository();
-		command = command.setURI(repoAddress).setDirectory(localTargetDir).setBranch(branch);
+		command = command.setURI(repo).setDirectory(localTargetDir).setBranch(branch);
 
 		Git gitCheckout = command.call();
 
@@ -274,6 +281,16 @@ public class PictoRepository {
 
 		gitCheckout.close();
 		System.out.print(" Done");
+	}
+
+	public static String generateHash(String repo, String branch) throws NoSuchAlgorithmException {
+		MessageDigest digest = MessageDigest.getInstance("MD5");
+		byte[] bytes = digest.digest((repo + branch).getBytes(StandardCharsets.UTF_8));
+		StringBuilder sb = new StringBuilder();
+		for (byte b : bytes) {
+			sb.append(String.format("%02x", b));
+		}
+		return sb.toString();
 	}
 
 }

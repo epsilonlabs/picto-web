@@ -82,38 +82,6 @@ Picto.listToJsTreeData = function (list) {
   return tree;
 }
 
-// /***
-//  * Get the TreeView.
-//  */
-// Picto.executeCode = function () {
-//   // console.log("Get TreeView ...");
-//   this.stompClient.send("/app/treeview", {}, this.convertToPictoRequest(this.pictoFile, "TreeView", ""));
-//   // console.log("Code sent.");
-// }
-
-// Picto.projectTree = function () {
-//   // console.log("Get Project Tree ...");
-//   this.stompClient.send("/app/projecttree", {}, this.convertToPictoRequest(this.pictoFile, "ProjectTree", ""));
-//   // console.log("Code sent.");
-// }
-
-// Picto.getTreeView = function () {
-//   // console.log("Get Treeview ...");
-//   this.stompClient.send("/app/treeview", {}, this.convertToPictoRequest(this.pictoFile, "TreeView", ""));
-//   // console.log("Code sent.");
-// }
-
-// Picto.openFile = function (filename) {
-//   // console.log("Open File ...");
-//   this.stompClient.send("/app/treeview", {}, this.convertToPictoRequest(this.pictoFile, "TreeView", filename));
-//   //this.stompClient.send("/app/openfile", {}, this.convertToPictoRequest(this.pictoFile, "OpenFile", filename));
-//   // console.log("Code sent.");
-// }
-
-// Picto.displayResult = function (message) {
-//   $("#greetings").append("<tr><td>" + message + "</td></tr>");
-// }
-
 /**
  * Create the the tree on the left panel.
  * @param {*} treeView 
@@ -331,27 +299,32 @@ Picto.getView = function (event) {
 Picto.draw = function (label, url) {
 
   var localView = Picto.views.get(Picto.selectedPath);
-  var urlWithTimestamp;
+  var newUrl;
   if (localView != null && localView.timestamp != null) {
-    urlWithTimestamp = url + '&timestamp=' + localView.timestamp;
+    newUrl = url + '&timestamp=' + localView.timestamp;
   } else {
-    urlWithTimestamp = url;
+    newUrl = url;
   }
+
+  if (Picto.repo != null)
+  newUrl = newUrl + "&repo=" + Picto.repo;
+  if (Picto.branch != null)
+  newUrl = newUrl + "&branch=" + Picto.branch;
 
   var request = new XMLHttpRequest();
   request.addEventListener("load", Picto.getView);
-  request.open("GET", "/pictojson" + urlWithTimestamp);
+  request.open("GET", "/pictojson" + newUrl);
   request.send();
 
-	//var temp = window.location.href;
-	if (Picto.repo != null)
-		url = url + "&repo=" + Picto.repo;
-	if (Picto.branch != null)
-		url = url + "&branch=" + Picto.branch;
-	//window.location.href = temp;
+  // //var temp = window.location.href;
+  // if (Picto.repo != null)
+  //   url = url + "&repo=" + Picto.repo;
+  // if (Picto.branch != null)
+  //   url = url + "&branch=" + Picto.branch;
+  // //window.location.href = temp;
 
-  window.history.pushState(null, label, url);
-    
+  // window.history.pushState(null, label, newUrl);
+
   return false;
 }
 

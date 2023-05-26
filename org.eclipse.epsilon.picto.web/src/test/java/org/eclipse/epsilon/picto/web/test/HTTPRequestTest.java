@@ -12,13 +12,10 @@ package org.eclipse.epsilon.picto.web.test;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-import java.io.ByteArrayOutputStream;
 import java.io.File;
-import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.StringReader;
 import java.lang.reflect.Type;
-import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
@@ -45,9 +42,7 @@ import org.eclipse.emf.ecore.xmi.XMIResource;
 import org.eclipse.emf.ecore.xmi.impl.XMIResourceImpl;
 import org.eclipse.epsilon.emc.emf.EmfUtil;
 import org.eclipse.epsilon.picto.dom.PictoPackage;
-import org.eclipse.epsilon.picto.web.FileWatcher;
 import org.eclipse.epsilon.picto.web.PictoApplication;
-import org.eclipse.epsilon.picto.web.PictoCache;
 import org.eclipse.epsilon.picto.web.PictoWebOnLoadedListener;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.AfterEach;
@@ -152,6 +147,7 @@ public class HTTPRequestTest {
 			e.printStackTrace();
 		}
 		
+//		System.exit(0);
 //		Thread.sleep(5000);
 	}
 

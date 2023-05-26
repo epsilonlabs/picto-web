@@ -45,6 +45,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 @RequestMapping("/pictojson")
 public class PictoJsonController {
 
+	private static final String SLASH_STR = "/";
 	/*** The ApplicationContext of Spring Boot ***/
 	@Autowired
 	private ApplicationContext context;
@@ -72,9 +73,16 @@ public class PictoJsonController {
 	 * @throws Exception
 	 */
 	@GetMapping(path = "/picto", produces = MediaType.APPLICATION_JSON_VALUE)
-	public String getPictoJson(String file, String path, String timestamp, Model model) throws Exception {
+	public String getPictoJson(String file, String path, String timestamp, String repo, String branch, Model model)
+			throws Exception {
 
 		long genStart = System.currentTimeMillis();
+
+		if (repo != null) {
+			String projectName = repo.substring(repo.lastIndexOf(SLASH_STR) + 1, repo.length());
+			String hash = PictoRepository.generateHash(repo, branch);
+			file = file.replaceFirst(projectName, hash);
+		}
 
 		PromiseViewCache promiseViewCache = PictoCache.getViewContentCache(file);
 
@@ -132,14 +140,14 @@ public class PictoJsonController {
 		for (PictoProject pictoProject : affectedPictoProjects) {
 
 			String modifiedFilePath = modifiedFile.getAbsolutePath()
-					.replace(new File(PictoApplication.WORKSPACE).getAbsolutePath(), "").replace("\\", "/");
+					.replace(new File(PictoApplication.WORKSPACE).getAbsolutePath(), "").replace("\\", SLASH_STR);
 
 			WebEglPictoSource source = new WebEglPictoSource();
 
 			Set<String> modifiedObjects = source.generatePromises(modifiedFilePath, pictoProject, true);
 
 			String pictoFilePath = pictoProject.getPictoFile().getAbsolutePath()
-					.replace(new File(PictoApplication.WORKSPACE).getAbsolutePath(), "").replace("\\", "/");
+					.replace(new File(PictoApplication.WORKSPACE).getAbsolutePath(), "").replace("\\", SLASH_STR);
 
 			MessageChannel brokerChannel = context.getBean("brokerChannel", MessageChannel.class);
 			System.out.println("Sending " + modifiedObjects.size() + " views");

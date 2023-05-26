@@ -34,6 +34,7 @@ public class PictoCache {
 	public static void clear() {
 		fileViewContentCache.values().forEach(e -> e.clear());
 		fileViewContentCache.clear();
+		
 		for (AccessRecordResource accessRecordResource : fileAccessRecordResources.values()) {
 			accessRecordResource.clear();
 		}
@@ -41,6 +42,7 @@ public class PictoCache {
 
 		pathToJsTreeNodeMaps.values().forEach(e -> e.clear());
 		pathToJsTreeNodeMaps.clear();
+		
 		rootJsTreeNodes.clear();
 	}
 
@@ -71,9 +73,9 @@ public class PictoCache {
 	public static void removeCachedJsTreeNode(String pictoFilename, Set<String> deletedPaths) {
 		Map<String, JsTreeNode> map = pathToJsTreeNodeMaps.get(pictoFilename);
 		for (String path : deletedPaths) {
-			JsTreeNode node = map.remove(path);
+			map.remove(path);
 			JsTreeNode root = rootJsTreeNodes.get(pictoFilename);
-			JsTreeNode deletedNode = root.removeNode(path);
+			root.removeNode(path);
 			System.console();
 		}
 	}
@@ -131,7 +133,6 @@ public class PictoCache {
 				System.out.print("Removing deleted paths and properties ... ");
 
 				for (Entry<String, AccessRecordResource> entry : fileAccessRecordResources.entrySet()) {
-					String pictoFilename = entry.getKey();
 					AccessRecordResource accessRecordResource = entry.getValue();
 					Map<String, Path> paths = accessRecordResource.getPaths();
 					

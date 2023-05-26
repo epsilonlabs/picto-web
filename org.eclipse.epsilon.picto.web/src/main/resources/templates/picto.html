@@ -9,34 +9,29 @@ which is available at https://www.eclipse.org/legal/epl-2.0/
 SPDX-License-Identifier: EPL-2.0
 -->
 <html xmlns:th="http://www.thymeleaf.org">
+
 <head>
-<title th:text="'Picto: ' + ${pictoName}"></title>
-<meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
-<link type="text/css" rel="stylesheet"
-	href="/webjars/bootstrap/css/bootstrap.min.css">
-<link type="text/css" rel="stylesheet" href="css/goldenlayout-base.css" />
-<link type="text/css" rel="stylesheet"
-	href="css/goldenlayout-light-theme.css">
-<link type="text/css" rel="stylesheet"
-	href="dist/themes/default/style.css">
-<link type="text/css" rel="stylesheet" href="css/jstree-custom.css">
-<link type="text/css" rel="stylesheet"
-	href="css/goldenlayout-custom.css">
-<link type="text/css" rel="stylesheet" href="main.css">
-<script type="text/javascript" src="/webjars/jquery/jquery.min.js"></script>
-<script type="text/javascript"
-	src="/webjars/sockjs-client/sockjs.min.js"></script>
-<script type="text/javascript"
-	src="/webjars/stomp-websocket/stomp.min.js"></script>
-<script type="text/javascript" src="js/goldenlayout.js"></script>
-<script type="text/javascript" src="js/marked.min.js"></script>
-<script type="text/javascript" src="js/svg-pan-zoom.js"></script>
-<script type="text/javascript" src="dist/jstree.js"></script>
-<script type="text/javascript" src="/picto.js"></script>
+  <title th:text="'Picto: ' + ${pictoName}"></title>
+  <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+  <link type="text/css" rel="stylesheet" href="/webjars/bootstrap/css/bootstrap.min.css">
+  <link type="text/css" rel="stylesheet" href="css/goldenlayout-base.css" />
+  <link type="text/css" rel="stylesheet" href="css/goldenlayout-light-theme.css">
+  <link type="text/css" rel="stylesheet" href="dist/themes/default/style.css">
+  <link type="text/css" rel="stylesheet" href="css/jstree-custom.css">
+  <link type="text/css" rel="stylesheet" href="css/goldenlayout-custom.css">
+  <link type="text/css" rel="stylesheet" href="main.css">
+  <script type="text/javascript" src="/webjars/jquery/jquery.min.js"></script>
+  <script type="text/javascript" src="/webjars/sockjs-client/sockjs.min.js"></script>
+  <script type="text/javascript" src="/webjars/stomp-websocket/stomp.min.js"></script>
+  <script type="text/javascript" src="js/goldenlayout.js"></script>
+  <script type="text/javascript" src="js/marked.min.js"></script>
+  <script type="text/javascript" src="js/svg-pan-zoom.js"></script>
+  <script type="text/javascript" src="dist/jstree.js"></script>
+  <script type="text/javascript" src="/picto.js"></script>
 </head>
 
 <body>
-	<script th:inline="javascript">
+  <script th:inline="javascript">
     var pictoName = [[${ pictoName }]];
     var selectedUri = [[${ selectedUri }]];
     var treeResponse = JSON.parse([[${ treeResponse }]]);
@@ -53,20 +48,20 @@ SPDX-License-Identifier: EPL-2.0
     Picto.repo = null;
     Picto.branch = null;
     var entries = href.split("&");
-    for (var key in entries){
-    	entry = entries[key].trim();
-  	  if (entry.startsWith("repo=")){
-  			Picto.repo = entry.split("=")[1]; 
-  	  } else if (entry.startsWith("branch=")){
-				Picto.branch = entry.split("=")[1]; 
-		  }
+    for (var key in entries) {
+      entry = entries[key].trim();
+      if (entry.startsWith("repo=")) {
+        Picto.repo = entry.split("=")[1];
+      } else if (entry.startsWith("branch=")) {
+        Picto.branch = entry.split("=")[1];
+      }
     }
-    
+
 
 
     /*** GOLDEN LAYOUT ***/
     var config = {
-	  dimensions: {
+      dimensions: {
         headerHeight: 36
       },
       settings: {
@@ -118,8 +113,8 @@ SPDX-License-Identifier: EPL-2.0
     myLayout.registerComponent('Visualisation', function (container,
       componentState) {
       container.getElement()
-        .html('<div id="visualisationLoader" class="loader"></div>'  +
-        '<div id="visualisation" class="visualisation"></div>');
+        .html('<div id="visualisationLoader" class="loader"></div>' +
+          '<div id="visualisation" class="visualisation"></div>');
 
       var layoutSettings = container.layoutManager.config.settings;
       layoutSettings.showMaximiseIcon = false;
@@ -179,7 +174,7 @@ SPDX-License-Identifier: EPL-2.0
 
       $('#tree').on("select_node.jstree", function (event, data) {
         if (data.selected.length) {
-          if (Picto.disableJsTreeOnSelectEvent){
+          if (Picto.disableJsTreeOnSelectEvent) {
             console.log("skip " + data.node.text);
             return;
           }
@@ -187,9 +182,9 @@ SPDX-License-Identifier: EPL-2.0
           Picto.selectedPath = path;
           console.log(path);
           var label = pictoName + '#' + path;
-          var url = '/picto?file=' + pictoName + '&path=' + path + '&name=' + data.node.text ;
-           
-          Picto.draw(label, url);         
+          var url = '/picto?file=' + pictoName + '&path=' + path + '&name=' + data.node.text;
+
+          Picto.draw(label, url);
         }
       });
 
